@@ -1,0 +1,7 @@
+{
+    "The :attribute must contain at least one letter.": ":attribute musí obsahovať minimálne jedno písmeno.",
+    "The :attribute must contain at least one number.": ":attribute musí obsahovať minimálne jedno číslo.",
+    "The :attribute must contain at least one symbol.": ":attribute musí obsahovať minimálne jeden znak.",
+    "The :attribute must contain at least one uppercase and one lowercase letter.": ":attribute musí obsahovať minimálne jedno veľké a jedno malé písmeno.",
+    "The given :attribute has appeared in a data leak. Please choose a different :attribute.": ":attribute nie je bezpečné. Prosím zvoľte iné heslo."
+}
