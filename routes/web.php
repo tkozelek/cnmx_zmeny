@@ -4,6 +4,7 @@ use App\Http\Controllers\BugReportController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\ForgottenPasswordController;
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleAssignmentController;
 use App\Http\Controllers\SettingsController;
@@ -44,9 +45,9 @@ Route::middleware(['allowed'])->controller(CalendarController::class)->group(fun
 
 // Admin stuff
 Route::middleware(['role:3'])->prefix('admin')->group(function () {
-    Route::get('/pouzivatelia', [ProfileController::class, 'index'])->name('admin.users.index');
+    Route::get('/pouzivatelia', [AdminController::class, 'index'])->name('admin.users.index');
 
-    Route::get('/{user}/edit', [ProfileController::class, 'edit'])->name('admin.users.edit');
+    Route::get('/{user}/edit', [AdminController::class, 'edit'])->name('admin.users.edit');
     Route::put('/{user}', [UserController::class, 'update'])->name('admin.users.update');
     Route::delete('/{user}/destroy', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
@@ -86,6 +87,10 @@ Route::middleware(['allowed'])->group(function () {
         Route::get('/', 'index')->name('bugreport.index');
         Route::post('/store', 'store')->name('bugreport.store');
         Route::get('/{bug}/destroy', 'destroy')->name('bugreport.destroy');
+    });
+
+    Route::prefix('/profil')->controller(ProfileController::class)->group(function () {
+        Route::get('/', 'index')->name('profile.index');
     });
 
     Route::get('/upload/{file}/download', [FileUploadController::class, 'download'])->name('files.download');

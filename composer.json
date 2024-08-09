@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.1",
         "barryvdh/laravel-ide-helper": "^3.0",
+        "consoletvs/charts": "6.*",
         "enyo/dropzone": "^5.9",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.10",

@@ -92,12 +92,16 @@ class User extends Authenticatable
         return Carbon::parse($date)->format('d.m.Y H:i:s');
     }
 
+    public function getDate($date) {
+        return Carbon::parse($date)->format('d.m.Y H:i:s');
+    }
+
     public function __toString()
     {
         return $this->lastname.' '.mb_substr($this->name, 0, 1).'.';
     }
 
-    public function sendPasswordResetNotification($token)
+    public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
     }
