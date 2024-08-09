@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.dz-success-mark svg g path{
+    fill: #198754 !important;
+}
