@@ -54,7 +54,7 @@
                         @foreach($users as $user)
                             <x-table-row>
                                 <x-table-cell-header class="px-6 py-4 font-medium whitespace-nowrap text-white">
-                                    {{ $user->lastname.' '.$user->name }}
+                                    <a href="{{ route('profile.show', ['user' => $user->id]) }}">{{ $user->lastname.' '.$user->name }}</a>
                                 </x-table-cell-header>
                                 <x-table-cell>{{ $user->email }}</x-table-cell>
                                 <x-table-cell>{{ $user->role->text }}</x-table-cell>
