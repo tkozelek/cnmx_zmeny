@@ -91,6 +91,7 @@ Route::middleware(['allowed'])->group(function () {
 
     Route::prefix('/profil')->controller(ProfileController::class)->group(function () {
         Route::get('/', 'index')->name('profile.index');
+        Route::get('/{user}', 'show')->name('profile.show');
     });
 
     Route::get('/upload/{file}/download', [FileUploadController::class, 'download'])->name('files.download');
