@@ -18,23 +18,31 @@
             <div class="col-span-1 md:col-span-3 lg:col-span-4 p-4 text-white border-black border-2">
                 <section>
                     <div class="float-end">
-                        <select name="date" id="date" class="border text-sm rounded-lg w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500">
-                            <option>Celá doba</option>
-                            <option>Mesiac</option>
-                            <option>Rok</option>
-                        </select>
+                        <form id="dateForm" action="{{ route('profile.show', ['user' => $user->id]) }}" method="get">
+                            <select name="date" id="date" class="border text-sm rounded-lg w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all" {{ request()->get('date') == 'all' ? 'selected' : '' }}>Celá doba</option>
+                                <option value="month" {{ request()->get('date') == 'month' ? 'selected' : '' }}>Mesiac</option>
+                                <option value="year" {{ request()->get('date') == 'year' ? 'selected' : '' }}>Rok</option>
+                            </select>
+                        </form>
                     </div>
                 </section>
-                <p class="text-2xl ">Frekvencia zapisovaných dni v danom období</p>
-                <p class="text-xl mb-3 text-gray-300">Za dané časové obdobie má zapísaných: x dni</p>
+                <p class="text-2xl">Frekvencia zapisovaných dni v danom období</p>
+                <p class="text-xl mb-3 text-gray-300">Za dané časové obdobie má zapísaných: {{ $daysCount }} dni</p>
                 <section class="bg-gray-300">
-                    <div class="">
-                        {!! $chartuserdays->container() !!}
-                        {!! $chartuserdays->script() !!}
+                    <div style="width: 90%; margin: auto;">
+                        <canvas id="barChart"></canvas>
                     </div>
                 </section>
             </div>
         </div>
     </div>
+
+    <script>
+        var chartData = @json($arr);
+        document.getElementById('date').addEventListener('change', function() {
+            document.getElementById('dateForm').submit();
+        });
+    </script>
 </x-layout>
 

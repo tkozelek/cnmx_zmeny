@@ -59,6 +59,11 @@ Route::middleware(['role:3'])->prefix('admin')->group(function () {
     Route::get('/rozpis/{week}', [RoleAssignmentController::class, 'show'])->name('admin.roles.index');
 });
 
+Route::prefix('/profil')->controller(ProfileController::class)->middleware('role:3')->group(function () {
+    Route::get('/', 'index')->name('profile.index');
+    Route::get('/{user}', 'show')->name('profile.show');
+});
+
 Route::middleware(['role:3'])->name('files.')->group(function () {
     Route::post('/uploads', [FileUploadController::class, 'store'])->name('store');
     Route::delete('/upload/{file}/destroy', [FileUploadController::class, 'destroy'])->name('destroy');
@@ -75,7 +80,8 @@ Route::middleware(['allowed'])->group(function () {
     Route::prefix('/dovolenka')->controller(HolidayController::class)->group(function () {
         Route::get('/', 'index')->name('holiday.index');
         Route::post('/save', 'store')->name('holiday.store');
-        Route::get('/{holiday}/end', 'end')->name('holiday.end');
+        Route::patch('/{holiday}/end', 'end')->name('holiday.end');
+        Route::delete('/{holiday}/destroy', 'destroy')->name('holiday.destroy');
     });
 
     Route::prefix('/users')->controller(UserController::class)->group(function (){
@@ -87,11 +93,6 @@ Route::middleware(['allowed'])->group(function () {
         Route::get('/', 'index')->name('bugreport.index');
         Route::post('/store', 'store')->name('bugreport.store');
         Route::get('/{bug}/destroy', 'destroy')->name('bugreport.destroy');
-    });
-
-    Route::prefix('/profil')->controller(ProfileController::class)->group(function () {
-        Route::get('/', 'index')->name('profile.index');
-        Route::get('/{user}', 'show')->name('profile.show');
     });
 
     Route::get('/upload/{file}/download', [FileUploadController::class, 'download'])->name('files.download');

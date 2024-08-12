@@ -38,7 +38,19 @@ class HolidayController extends Controller
         $holiday->id_user = auth()->user()->id;
         $holiday->save();
 
-        return back()->with(['message' => 'Hotovo']);
+        return back()->with(['message' => 'Absencia vytvorená.']);
+    }
+
+    public function destroy(Holiday $holiday) {
+        if ($holiday->id_user != auth()->user()->id && !auth()->user()->hasRole(config('constants.roles.admin'))) {
+            abort(401, "Nemáš prístup");
+        }
+        if (now() <= $holiday->date_to->addWeek()) {
+            abort(403, 'Zakázané.');
+        }
+
+        $holiday->delete();
+        return back()->with(['message' => 'Vymazané.']);
     }
 
     public function end(Holiday $holiday) {
@@ -47,9 +59,9 @@ class HolidayController extends Controller
         }
 
         $holiday->date_canceled = Carbon::now();
-        $holiday->save();
+        $holiday->update();
 
-        return back()->with(['message' => 'Vykonane.']);
+        return back()->with(['message' => 'Absencia ukončená.']);
     }
 
     public function messages(): array
@@ -64,13 +76,15 @@ class HolidayController extends Controller
     private function getAllActive() {
         return Holiday::with('user')->where('date_to', '>=', Carbon::now()->format('Y-m-d'))
             ->whereNull('date_canceled')
+            ->orderBy('date_to', 'desc')
             ->get();
     }
 
     private function getAllInactive() {
         return Holiday::with('user')->where('date_to', '<', Carbon::now()->format('Y-m-d'))
             ->orWhereNotNull('date_canceled')
-            ->get();
+            ->orderBy('date_to', 'desc')
+            ->simplePaginate(15);
     }
 
 }
