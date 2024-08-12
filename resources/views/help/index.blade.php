@@ -73,7 +73,9 @@
                     <ul class="list-disc list-inside mb-4">
                         <li>Ak máte nejaký deň, kedy výhradne nechcete pracovať.</li>
                         <li>Možnosť pridania absencie na viac ako jeden deň.</li>
+                        <li>Po týždni od dátumu skončenia platnosti absencie, je možné ju vymazať.</li>
                     </ul>
+
 
                     <h3 class="text-xl font-semibold mb-2">Nastavenia</h3>
                     <p class="mb-4">V sekcii nastavení je aktuálne možnosť zmeny hesla.</p>

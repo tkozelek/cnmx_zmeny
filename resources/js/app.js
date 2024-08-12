@@ -6,6 +6,8 @@ import {Datepicker} from "flowbite-datepicker";
 import sk from "flowbite-datepicker/locales/sk";
 import Dropzone  from "dropzone";
 import Sortable from "sortablejs";
+import {Chart, registerables} from "chart.js";
+
 
 $(document).ready(function() {
     function ajaxRequest(url, method, data, successCallback, errorCallback) {
@@ -165,3 +167,43 @@ $(document).ready(function () {
         })
     }
 });
+
+Chart.register(...registerables);
+var ctx = document.getElementById('barChart').getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota', 'Nedeľa'],
+        datasets: [{
+            label: 'Počty dni',
+            data: chartData,
+            backgroundColor: 'rgba(5,19,183,0.2)',
+            borderColor: 'rgb(21,26,155)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'Frekvencia zapisovanych dni',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0,
+                },
+                grace: '5%',
+            }
+        },
+        elements: {
+            bar: {
+                backgroundColor: '#ea3308'
+            }
+        }
+    }
+});
+
+

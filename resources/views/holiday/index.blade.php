@@ -62,8 +62,24 @@
                                 <x-table-cell>{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m.Y') }}</x-table-cell>
                                 <x-table-cell> {{ $absence->popis }}</x-table-cell>
                                 @if(!$absence->date_canceled && $absence->date_to >= \Carbon\Carbon::now()->format('Y-m-d'))
-                                    <x-table-cell class="flex flex-row flex-wrap items-center !px-3 !py-2">
-                                        <a href="{{ url('/dovolenka/'.$absence->id.'/end') }}" class="mx-2 px-3 py-2 bg-red-400 hover:bg-red-600 text-black font-bold rounded m-1"><i class="fa-solid fa-x"></i></a>
+                                    <x-table-cell class="flex flex-row flex-wrap items-center !px-6 !py-2">
+                                        <form action="{{ route('holiday.end', $absence->id) }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="py-2 px-3 bg-red-400 hover:bg-red-600 text-black font-bold rounded" style="margin: 0;">
+                                                <i class="fa-solid fa-x"></i>
+                                            </button>
+                                        </form>
+                                    </x-table-cell>
+                                @elseif(now() >= $absence->date_to->addWeek())
+                                    <x-table-cell class="!py-2 !px-6">
+                                        <form action="{{ route('holiday.destroy', $absence->id) }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="py-2 px-3 bg-red-400 hover:bg-red-600 text-black font-bold rounded" style="margin: 0;">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </x-table-cell>
                                 @else
                                     <x-table-cell>
@@ -134,6 +150,7 @@
                     @endforeach
                     </tbody>
                 </table>
+                {{ $inactive->links() }}
             </div>
         @endif
     </div>
