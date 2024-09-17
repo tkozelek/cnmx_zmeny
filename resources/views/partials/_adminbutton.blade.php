@@ -11,7 +11,7 @@
     @endif
 
 
-    <a href="{{ url('/admin/export/'.$week->id) }}" class="bg-green-800 hover:bg-green-900 text-white mx-5 font-bold p-2 rounded" type="submit">
+    <a href="{{ route('admin.calendar.export', ['week' => $week->id]) }}" class="bg-green-800 hover:bg-green-900 text-white mx-5 font-bold p-2 rounded" type="submit">
         <i class="fa-solid fa-download"></i> Excel
     </a>
 

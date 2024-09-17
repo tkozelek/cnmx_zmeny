@@ -50,7 +50,13 @@ class CalendarController extends Controller
         $week->locked = !$week->locked;
 
         $week->save();
-        return redirect()->route('calendar.show', ['week' => $week->id])->with(['message' => 'Vykonané.']);
+        $message = '';
+        if ($week->locked)
+            $message = 'Týždeň bol uzamknutý.';
+        else
+            $message = 'Týždeň bol odomknutý.';
+
+        return redirect()->route('calendar.show', ['week' => $week->id])->with(['message' => $message]);
     }
 
     public function export(Week $week)
@@ -92,6 +98,12 @@ class CalendarController extends Controller
             $message = 'User added to day';
         }
         return response()->json(['message' => $message, 'users' => $day->users()->get()]);
+    }
+
+    public function destroy(Day $day, User $user)
+    {
+        $user->days()->detach($day->id);
+        return back()->with(['message' => 'Použivateľ bol vymazaný z daného dňa.']);
     }
 
     /**

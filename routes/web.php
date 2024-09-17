@@ -52,7 +52,8 @@ Route::middleware(['role:3'])->prefix('admin')->group(function () {
     Route::delete('/{user}/destroy', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
     Route::get('/{week}/lock', [CalendarController::class, 'lock'])->name('admin.calendar.lock');
-    Route::get('/export/{week}', [CalendarController::class, 'export'])->name('admin.calendar.export');
+    Route::get('/{week}/export', [CalendarController::class, 'export'])->name('admin.calendar.export');
+    Route::post('/{day}/{user}/destroy', [CalendarController::class, 'destroy'])->name('admin.calendar.userdestroy');
 
     Route::post('/pouzivatelia/vytvorit', [UserController::class, 'add'])->name('admin.pouzivatelia.add');
 
