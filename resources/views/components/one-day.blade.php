@@ -20,6 +20,16 @@
                         <x-row-user class="line-through">
                             {{ $user.' ' }} @isset($user->pivot->popis) <small>({{$user->pivot->popis}})</small> @endisset
                         </x-row-user>
+                    @elseif (auth()->user()->hasRole(config('constants.roles.admin')))
+                        <x-row-user class="flex justify-center hover:gap-3 group">
+                            <a href="{{ route('profile.show', $user->id) }}">{{ $user.' ' }} @isset($user->pivot->popis) <small>({{$user->pivot->popis}})</small> @endisset </a>
+                            <form action="{{ route('admin.calendar.userdestroy', ['day' => $day->id, 'user' => $user->id]) }}" method="POST" class="">
+                                @csrf
+                                <button type="submit" class="text-black font-bold rounded ml-5 hidden group-hover:block" style="margin: 0;">
+                                    <i class="fa-solid fa-x text-red-900"></i>
+                                </button>
+                            </form>
+                        </x-row-user>
                     @else
                         <x-row-user>
                             {{ $user.' ' }} @isset($user->pivot->popis) <small>({{$user->pivot->popis}})</small> @endisset
