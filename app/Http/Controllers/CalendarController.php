@@ -102,8 +102,11 @@ class CalendarController extends Controller
 
     public function destroy(Day $day, User $user)
     {
-        $user->days()->detach($day->id);
-        return back()->with(['message' => 'Použivateľ bol vymazaný z daného dňa.']);
+        if ($user->days()->detach($day->id))
+            return back()->with(['message' => 'Použivateľ bol vymazaný z daného dňa.']);
+        else {
+            return back()->with(['message' => 'Nastala chyba, použivateľ nebol vymazaný.']);
+        }
     }
 
     /**
