@@ -25,7 +25,8 @@
                         </div>
                         <!-- Modal body -->
                         <div class="px-4 pb-4">
-                            <form class="space-y-4" action="{{url('/dovolenka/save')}}" method="post">
+                            <form class="space-y-4" action="{{ url('/dovolenka/save') }}" method="post">
+                                <input type="hidden" name="form_token" value="{{ session()->get('form_token') }}">
                                 @csrf
                                 @include('partials._datepicker')
                                 <div>
@@ -150,7 +151,7 @@
                     @endforeach
                     </tbody>
                 </table>
-                {{ $inactive->links() }}
+                {{ $inactive->onEachSide(3)->links() }}
             </div>
         @endif
     </div>

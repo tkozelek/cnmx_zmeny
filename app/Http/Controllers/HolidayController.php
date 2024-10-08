@@ -6,6 +6,7 @@ use App\Models\Holiday;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Str;
 
 class HolidayController extends Controller
 {
@@ -13,11 +14,15 @@ class HolidayController extends Controller
         $absences = auth()->user()->holidays()->with('user')->orderBy('date_to', 'desc')->get();
         $active = null;
         $inactive = null;
+
+        session()->put('form_token', Str::random(40));
+
         if (auth()->user()->hasRole(3)) {
             $active = $this->getAllActive();
             $inactive = $this->getAllInactive();
         }
         return view('holiday.index', [
+
             'absences' => $absences,
             'active' => $active,
             'inactive' => $inactive,
@@ -28,8 +33,17 @@ class HolidayController extends Controller
         $formFields = $request->validate([
             'date_from' => 'required',
             'date_to' => 'required',
-            'popis' => 'required'
+            'popis' => 'required',
+            'form_token' => 'required'
         ], $this->messages());
+
+        $sessionToken = $request->session()->get('form_token');
+
+        if ($sessionToken !== $request->input('form_token')) {
+            return back()->with('message', 'Nespravný token, obnov stránku.');
+        }
+
+        $request->session()->put('form_token', Str::random(40));
 
         $formFields['date_from'] = Carbon::parse($request->input('date_from'))->format('Y-m-d');
         $formFields['date_to'] = Carbon::parse($request->input('date_to'))->format('Y-m-d');
@@ -84,7 +98,7 @@ class HolidayController extends Controller
         return Holiday::with('user')->where('date_to', '<', Carbon::now()->format('Y-m-d'))
             ->orWhereNotNull('date_canceled')
             ->orderBy('date_to', 'desc')
-            ->simplePaginate(15);
+            ->paginate(5);
     }
 
 }
