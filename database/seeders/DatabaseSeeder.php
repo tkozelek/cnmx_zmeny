@@ -3,10 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\Day;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use function Sodium\add;
 
 class DatabaseSeeder extends Seeder
 {

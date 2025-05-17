@@ -1,19 +1,16 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BugReportController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\ForgottenPasswordController;
 use App\Http\Controllers\HelpController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RoleAssignmentController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\Listing;
-use App\Http\Controllers\CalendarController;
-use App\Http\Controllers\HolidayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,8 +26,8 @@ use App\Http\Controllers\HolidayController;
 // Register form
 Route::get('/registracia', [UserController::class, 'create'])->name('register')->middleware('guest');
 Route::get('/prihlasenie', [UserController::class, 'login'])->name('login')->middleware('guest');
-Route::post("/registracia", [UserController::class, 'store'])->name('register.store');
-Route::post("/prihlasenie", [UserController::class, 'authenticate'])->name('login.auth');
+Route::post('/registracia', [UserController::class, 'store'])->name('register.store');
+Route::post('/prihlasenie', [UserController::class, 'authenticate'])->name('login.auth');
 
 Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
 
@@ -56,8 +53,6 @@ Route::middleware(['role:3'])->prefix('admin')->group(function () {
     Route::post('/{day}/{user}/destroy', [CalendarController::class, 'destroy'])->name('admin.calendar.userdestroy');
 
     Route::post('/pouzivatelia/vytvorit', [UserController::class, 'add'])->name('admin.pouzivatelia.add');
-
-    Route::get('/rozpis/{week}', [RoleAssignmentController::class, 'show'])->name('admin.roles.index');
 });
 
 Route::prefix('/profil')->controller(ProfileController::class)->middleware('role:3')->group(function () {
@@ -85,7 +80,7 @@ Route::middleware(['allowed'])->group(function () {
         Route::delete('/{holiday}/destroy', 'destroy')->name('holiday.destroy');
     });
 
-    Route::prefix('/users')->controller(UserController::class)->group(function (){
+    Route::prefix('/users')->controller(UserController::class)->group(function () {
         Route::get('/change-password', 'changePassword')->name('changePassword');
         Route::post('/change-password', 'changePasswordSave')->name('postChangePassword');
     });
@@ -105,7 +100,3 @@ Route::middleware(['guest'])->prefix('/zabudnute-heslo')->group(function () {
     Route::get('/{token}', [ForgottenPasswordController::class, 'show'])->name('password.reset');
     Route::post('/store', [ForgottenPasswordController::class, 'store'])->name('password.store');
 });
-
-
-
-

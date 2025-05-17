@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\DaysExport;
 use App\Exports\WeeklyScheduleExport;
 use App\Models\Day;
 use App\Models\File;
@@ -11,22 +10,17 @@ use App\Models\User;
 use App\Models\Week;
 use App\Services\LocalizationService;
 use App\Services\WeekService;
-use Carbon\Exceptions\InvalidFormatException;
-use Illuminate\Config\Repository;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
-use PhpOffice\PhpSpreadsheet\Exception;
 
 class CalendarController extends Controller
 {
-
     private int $num_of_weeks;
+
     private LocalizationService $localizationService;
+
     private WeekService $weekService;
 
     public function __construct(WeekService $weekService, LocalizationService $localizationService)
@@ -36,27 +30,28 @@ class CalendarController extends Controller
         $this->localizationService = $localizationService;
     }
 
-    public function index() {
+    public function index()
+    {
         return $this->getData($this->weekService->getActiveWeek());
     }
 
-    public function show(Week $week) {
+    public function show(Week $week)
+    {
         return $this->getData($week);
     }
 
-    public function lock(Week $week) {
+    public function lock(Week $week)
+    {
         $this->weekService->checkAndGenerateWeeks($this->num_of_weeks);
 
-        $week->locked = !$week->locked;
+        $week->locked = ! $week->locked;
 
         $week->save();
-        $message = '';
-        if ($week->locked)
-            $message = 'Týždeň bol uzamknutý.';
-        else
-            $message = 'Týždeň bol odomknutý.';
 
-        return redirect()->route('calendar.show', ['week' => $week->id])->with(['message' => $message]);
+        $week->locked ? $msg = 'Týždeň zamknutý.' : $msg = 'Týždeň odomknutý.';
+        $week->locked ? $icon = 'fa fa-lock' : $icon = 'fa fa-lock-open';
+
+        return redirect()->route('calendar.show', ['week' => $week->id])->with(['message' => $msg, 'icon' => $icon]);
     }
 
     public function export(Week $week)
@@ -72,19 +67,20 @@ class CalendarController extends Controller
         $user = auth()->user();
         $dayId = $request->input('day');
 
-        if ($user->id_role == config('constants.roles.zablokovany'))
-            return response()->json(['message' => 'User is locked', 'error' => 10], 400);
+        if ($user->id_role == config('constants.roles.zablokovany')) {
+            return response()->json(['message' => 'Uživateľ je zablokovaný', 'error' => 10], 400);
+        }
 
         $day = Day::with('week', 'users')->find($dayId);
 
-        if (!$day) {
-            return response()->json(['message' => 'Day not found'], 404);
+        if (! $day) {
+            return response()->json(['message' => 'Deň nebol nájdený'], 404);
         }
 
         $week = $day->week;
 
         if ($week->locked) {
-            return response()->json(['message' => 'Week is locked', 'error' => 10], 400);
+            return response()->json(['message' => 'Týždeň je uzamknutý', 'error' => 10], 400);
         }
 
         $existingUser = $day->users->contains($user->id);
@@ -97,20 +93,21 @@ class CalendarController extends Controller
             $day->users()->attach($user->id, ['popis' => $popis]);
             $message = 'User added to day';
         }
+
         return response()->json(['message' => $message, 'users' => $day->users()->get()]);
     }
 
     public function destroy(Day $day, User $user)
     {
-        if ($user->days()->detach($day->id))
+        if ($user->days()->detach($day->id)) {
             return back()->with(['message' => 'Použivateľ bol vymazaný z daného dňa.']);
-        else {
+        } else {
             return back()->with(['message' => 'Nastala chyba, použivateľ nebol vymazaný.']);
         }
     }
 
     /**
-     * @param $id
+     * @param  $id
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
      */
     public function getData(Week $week): View
@@ -137,14 +134,13 @@ class CalendarController extends Controller
                 ->get();
         }
 
-
         return view('calendar.index', [
             'days' => $days,
             'week' => $week,
-            'userCount' => $userDayCount ?  : null,
-            'absences' => $absences ?  : null,
-            'files' => $files ?  : null,
-            'title' => 'ZAPISOVANIE'
+            'userCount' => $userDayCount ?: null,
+            'absences' => $absences ?: null,
+            'files' => $files ?: null,
+            'title' => 'ZAPISOVANIE',
         ]);
     }
 }

@@ -5,7 +5,6 @@ use Illuminate\Support\ServiceProvider;
 
 return [
 
-
     'charset' => 'utf-8',
     /*
     |--------------------------------------------------------------------------
@@ -188,7 +187,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
-        'Excel' => \Maatwebsite\Excel\Excel::class
+        'Excel' => \Maatwebsite\Excel\Excel::class,
     ])->toArray(),
 
 ];

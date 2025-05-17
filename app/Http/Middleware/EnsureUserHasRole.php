@@ -15,7 +15,7 @@ class EnsureUserHasRole
      */
     public function handle(Request $request, Closure $next, int $role): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect('/prihlasenie')->with(['message' => 'Musis sa prihlasit.']);
         }
 

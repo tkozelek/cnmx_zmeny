@@ -1,6 +1,6 @@
 <div>
     <div class="container mx-auto">
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg min-h-80">
+        <div class="relative shadow-md sm:rounded-lg min-h-80">
             <div class="flex flex-column sm:flex-row flex-wrap sm:space-y-0 items-center justify-between bg-gray-800 p-2">
                 <div>
                     <button id="dropdownRadioButton" data-dropdown-toggle="dropdownRadio" class="inline-flex items-center border focus:outline-none focus:ring-4 font-medium rounded-lg text-sm px-3 py-1.5 bg-gray-800 text-white border-gray-600 hover:bg-gray-700 hover:border-gray-600 focus:ring-gray-700" type="button">
@@ -39,8 +39,9 @@
                     <input type="text" wire:model.live="search" id="table-search" class="block p-2 ps-10 text-sm w-60  border rounded-lg bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Vyhladaj meno...">
                 </div>
             </div>
-            <table class="w-full text-sm text-left rtl:text-right  text-gray-400">
-                <thead class="text-xs uppercase bg-gray-900 text-gray-400">
+            <div class="relative overflow-x-auto mb-1">
+                <table class="w-full  text-sm text-left rtl:text-right  text-gray-400">
+                    <thead class="text-xs uppercase bg-gray-900 text-gray-400">
                     <tr>
                         <x-table-cell-header-sortby :sortby="'name'">Meno</x-table-cell-header-sortby>
                         <x-table-cell-header-sortby :sortby="'email'">E-mail</x-table-cell-header-sortby>
@@ -48,8 +49,8 @@
                         <x-table-cell-header-sortby :sortby="'updated_at'">Posledná úprava</x-table-cell-header-sortby>
                         <x-table-cell-header>Akcia</x-table-cell-header>
                     </tr>
-                </thead>
-                <tbody wire:loading.class="opacity-75">
+                    </thead>
+                    <tbody wire:loading.class="opacity-75">
                     @if(isset($users) && count($users) > 0)
                         @foreach($users as $user)
                             <x-table-row>
@@ -70,8 +71,10 @@
                             </x-table-row>
                         @endforeach
                     @endif
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
+
             {{ $users->links() }}
         </div>
     </div>

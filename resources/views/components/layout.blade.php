@@ -68,8 +68,9 @@
                                 <a class="block px-4 py-2 mt-3 text-sm font-semibold bg-transparent rounded-lg hover:bg-gray-600 focus:bg-gray-600 focus:text-white hover:text-white text-gray-200 md:mt-0 focus:outline-none focus:shadow-outline" href="{{route('holiday.index')}}">
                                     Absencia
                                 </a>
-                                <a class="block px-4 py-2 mt-3 text-sm font-semibold bg-transparent rounded-lg hover:bg-gray-600 focus:bg-gray-600 focus:text-white hover:text-white text-gray-200 md:mt-0 focus:outline-none focus:shadow-outline" href="{{route('settings.index')}}">
-                                    Nastavenia
+                                <a class="block px-4 py-2 mt-3 text-sm font-semibold bg-transparent rounded-lg hover:bg-gray-600 focus:bg-gray-600 focus:text-white hover:text-white text-gray-200 md:mt-0 focus:outline-none focus:shadow-outline"
+                                   href="{{route('settings.password')}}">
+                                    Zmena hesla
                                 </a>
                                 <a class="block px-4 py-2 mt-3 text-sm font-semibold bg-transparent rounded-lg hover:bg-gray-600 focus:bg-gray-600 focus:text-white hover:text-white text-gray-200 md:mt-0 focus:outline-none focus:shadow-outline" href="{{route('bugreport.index')}}">
                                     Nahlasiť chybu

@@ -17,6 +17,6 @@ return [
     'sent' => 'Bol vám zaslaný e-mail na obnovu hesla!',
     'throttled' => 'Prosím čakajte pred ďalším pokusom.',
     'token' => 'Neplatný pokus na obnovu hesla.',
-    'user' => "Používateľ s danou e-mail adresou neexistuje.",
+    'user' => 'Používateľ s danou e-mail adresou neexistuje.',
 
 ];

@@ -102,7 +102,7 @@ return [
             'table' => 'password_reset_tokens',
             'expire' => 1440,
             'throttle' => 0,
-        ]
+        ],
     ],
 
     /*

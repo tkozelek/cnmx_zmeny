@@ -4,12 +4,14 @@ namespace App;
 
 class Helpers
 {
-    public static function findIdInArray($id, $array): bool {
+    public static function findIdInArray($id, $array): bool
+    {
         foreach ($array as $key => $val) {
             if ($val['id'] == $id) {
                 return true;
             }
         }
+
         return false;
     }
 

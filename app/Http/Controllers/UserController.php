@@ -17,20 +17,19 @@ class UserController extends Controller
 
     /**
      * Create a new controller instance.
-     *
-     * @param FileService $fileService
      */
     public function __construct(FileService $fileService)
     {
         $this->fileService = $fileService;
     }
 
-
-    public function create() {
+    public function create()
+    {
         return view('users.register');
     }
 
-    public function store(UserRegistrationRequest $request) {
+    public function store(UserRegistrationRequest $request)
+    {
         $validatedData = $request->validated();
         // hash
         $validatedData['password'] = Hash::make($validatedData['password']);
@@ -50,50 +49,55 @@ class UserController extends Controller
     {
         $formFields = $request->validate([
             'current_password' => 'required',
-            'new_password' => 'required|confirmed|min:5'
+            'new_password' => 'required|confirmed|min:5',
         ], $this->messages());
 
         $user = auth()->user();
 
-        if (!Hash::check($request->get('current_password'), $user->password))
-        {
-            return back()->with('message', "Zle aktuálne heslo.");
+        if (! Hash::check($request->get('current_password'), $user->password)) {
+            return back()->with('message', 'Zle aktuálne heslo.');
         }
 
         $user->password = Hash::make($formFields['new_password']);
         $user->save();
+
         return back()->with('message', 'Heslo bolo úspešne zmenené.');
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         auth()->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')->with('message','Boli ste úspešné odhlásený.');
+        return redirect('/')->with('message', 'Boli ste úspešné odhlásený.');
     }
 
-    public function login() {
+    public function login()
+    {
         return view('users.login');
     }
 
-    public function authenticate(Request $request) {
+    public function authenticate(Request $request)
+    {
         $remember = $request->has('remember');
         $formFields = $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
         ], $this->messages());
 
         if (auth()->attempt($formFields, $remember)) {
             $request->session()->regenerate();
 
-            return redirect('/')->with('message','Úspešné prihlásený.');
+            return redirect('/')->with('message', 'Úspešné prihlásený.');
         }
+
         return back()->with(['message' => 'Nesprávne údajé.'])->onlyInput('email');
     }
 
-    public function update(Request $request, User $user) {
+    public function update(Request $request, User $user)
+    {
         $formFields = $request->validate([
             'name' => ['required'],
             'lastname' => ['required'],
@@ -106,12 +110,13 @@ class UserController extends Controller
         return redirect('/admin/pouzivatelia')->with(['message' => 'Uspesne zmenene.', 'edit' => 'yes']);
     }
 
-    public function add(Request $request) {
+    public function add(Request $request)
+    {
         $formFields = $request->validate([
             'name' => ['required'],
             'lastname' => ['required'],
             'email' => ['required', 'email', Rule::unique('users', 'email')],
-            'id_role' => 'required'
+            'id_role' => 'required',
         ]);
         $formFields['password'] = Hash::make(Str::random(12));
 
@@ -129,14 +134,15 @@ class UserController extends Controller
             $error = 10;
         }
 
-        if ($status != Password::RESET_LINK_SENT || $error == 10 ) {
+        if ($status != Password::RESET_LINK_SENT || $error == 10) {
             return back()->with(['message' => 'Nastala chyba, kontaktujte administratora.']);
         }
 
         return back()->with(['message' => 'Pouzivatel uspesne vytvoreny']);
     }
 
-    public function destroy(User $user) {
+    public function destroy(User $user)
+    {
         $files = $user->files();
 
         foreach ($files as $file) {
@@ -150,7 +156,8 @@ class UserController extends Controller
         return to_route('admin.users.index')->with(['message' => 'Účet zmazaný.']);
     }
 
-    public function getNewUserCount() {
+    public function getNewUserCount()
+    {
         return User::where('id_role', config('constants.roles.neovereny'))->count();
     }
 

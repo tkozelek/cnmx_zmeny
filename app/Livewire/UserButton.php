@@ -7,7 +7,9 @@ use Livewire\Component;
 class UserButton extends Component
 {
     public $dayId;
+
     public $locked;
+
     public $users;
 
     public function mount($dayId, $locked, $users)

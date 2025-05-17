@@ -13,16 +13,15 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, CanResetPassword;
+    use CanResetPassword, HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
-
     protected $attributes = [
-      'id_role' => 1,
+        'id_role' => 1,
     ];
 
     protected $fillable = [
@@ -31,7 +30,7 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
-        'id_role'
+        'id_role',
     ];
 
     /**
@@ -43,7 +42,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'id_role',
-        'email'
+        'email',
     ];
 
     /**
@@ -55,11 +54,13 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function days() {
+    public function days()
+    {
         return $this->belongsToMany(Day::class, 'user_days', 'id_user', 'id_day');
     }
 
-    public function holidays() {
+    public function holidays()
+    {
         return $this->hasMany(Holiday::class, 'id_user');
     }
 
@@ -68,7 +69,8 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'id_role');
     }
 
-    public function files() {
+    public function files()
+    {
         return $this->hasMany(File::class, 'id_user');
     }
 
@@ -92,7 +94,8 @@ class User extends Authenticatable
         return Carbon::parse($date)->format('d.m.Y H:i:s');
     }
 
-    public function getDate($date) {
+    public function getDate($date)
+    {
         return Carbon::parse($date)->format('d.m.Y H:i:s');
     }
 

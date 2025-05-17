@@ -11,11 +11,13 @@ use Str;
 
 class ForgottenPasswordController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         return view('passwordreset.index');
     }
 
-    public function send(Request $request) {
+    public function send(Request $request)
+    {
         $request->validate(['email' => 'required|email']);
 
         $status = Password::sendResetLink(
@@ -25,11 +27,13 @@ class ForgottenPasswordController extends Controller
         return back()->with(['message' => __($status)]);
     }
 
-    public function show($token) {
+    public function show($token)
+    {
         return view('passwordreset.passwordform', ['token' => $token]);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
@@ -40,7 +44,7 @@ class ForgottenPasswordController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password)
+                    'password' => Hash::make($password),
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();

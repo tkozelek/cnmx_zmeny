@@ -13,8 +13,6 @@ return [
     |
     */
 
-
-
     'accepted' => ':attribute je správny.',
     'accepted_if' => ':attribute je správny, ak :other je :value.',
     'active_url' => ':attribute nie je platná URL adresa.',
@@ -165,7 +163,7 @@ return [
         'name' => 'Meno',
         'lastname' => 'Priezvisko',
         'popis' => 'Popis',
-        'text' => 'Popis'
+        'text' => 'Popis',
     ],
 
 ];
