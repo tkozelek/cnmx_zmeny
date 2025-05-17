@@ -25,8 +25,8 @@
                         </div>
                         <!-- Modal body -->
                         <div class="px-4 pb-4">
-                            <form class="space-y-4" action="{{ url('/dovolenka/save') }}" method="post">
-                                <input type="hidden" name="form_token" value="{{ session()->get('form_token') }}">
+                            <form class="space-y-4" action="{{url('/dovolenka/save')}}" method="post">
+								<input type="hidden" name="form_token" value="{{ session()->get('form_token') }}">
                                 @csrf
                                 @include('partials._datepicker')
                                 <div>
@@ -137,6 +137,7 @@
                             <x-table-cell-header>Koniec</x-table-cell-header>
                             <x-table-cell-header>Vytvorené</x-table-cell-header>
                             <x-table-cell-header>Dôvod</x-table-cell-header>
+							<x-table-cell-header>Akcie</x-table-cell-header>
                         </tr>
                     </thead>
                     <tbody>
@@ -147,11 +148,20 @@
                             <x-table-cell>{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m.Y') }}</x-table-cell>
                             <x-table-cell>{{ App\Helpers::getDateFromAttribute($absence->created_at, 'd.m.Y H:i:s') }}</x-table-cell>
                             <x-table-cell> {{ $absence->popis }}</x-table-cell>
+							<x-table-cell class="!py-2 !px-6">
+                                        <form action="{{ route('holiday.destroy', $absence->id) }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="py-2 px-3 bg-red-400 hover:bg-red-600 text-black font-bold rounded" style="margin: 0;">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </x-table-cell>
                         </x-table-row>
                     @endforeach
                     </tbody>
                 </table>
-                {{ $inactive->onEachSide(3)->links() }}
+				{{ $inactive->links() }}
             </div>
         @endif
     </div>

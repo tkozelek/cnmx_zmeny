@@ -7,13 +7,13 @@
                         Nastavenia
                     </h1>
                     <br>
-                    <a href="{{url('/dovolenka')}}" class="my-2">
+                    <a href="{{ route('holiday.index') }}" class="my-2">
                         <div class="w-full text-white bg-slate-900 hover:bg-slate-950 rounded-xl py-4 font-bold tracking-widest uppercase text-center">
                             dovolenka
                         </div>
                     </a>
                     <br>
-                    <a href="{{url('/nastavenia/heslo')}}" class="my-2">
+                    <a href="{{ route('settings.password') }}" class="my-2">
                         <div class="w-full text-white bg-slate-900 hover:bg-slate-950 rounded-xl py-4 font-bold tracking-widest uppercase text-center">
                             zmeniť heslo
                         </div>

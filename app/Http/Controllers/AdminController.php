@@ -7,20 +7,22 @@ use App\Models\User;
 
 class AdminController extends Controller
 {
-    public function index () {
+    public function index()
+    {
         $roles = Role::all();
+
         return view('admin.index', [
-            'roles' => $roles
+            'roles' => $roles,
         ]);
     }
 
-    public function edit(User $user) {
+    public function edit(User $user)
+    {
         $roles = Role::all();
+
         return view('admin.edit', [
             'user' => $user,
             'roles' => $roles,
         ]);
     }
-
-
 }

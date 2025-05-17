@@ -9,8 +9,8 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 class DaysExport implements FromCollection, WithHeadings
 {
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
         return Day::all();

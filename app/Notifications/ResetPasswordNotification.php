@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\HtmlString;
@@ -14,6 +13,7 @@ class ResetPasswordNotification extends ResetPassword
     use Queueable;
 
     public $token;
+
     /**
      * Create a new notification instance.
      */
@@ -38,7 +38,6 @@ class ResetPasswordNotification extends ResetPassword
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
-
         return (new MailMessage)
             ->subject('Cine-max zmeny | Žiadosť o zmenu hesla')
             ->greeting('Ahoj!')
@@ -46,7 +45,7 @@ class ResetPasswordNotification extends ResetPassword
             ->action('Resetovať heslo', $url)
             ->line('Tento odkaz ma krátku časovú platnosť.')
             ->line('Ak si si túto žiadosť nevyžiadal, nemusíš nič robiť.')
-            ->salutation(new HtmlString("S pozdravom, <br>".config('app.name')." "));
+            ->salutation(new HtmlString('S pozdravom, <br>'.config('app.name').' '));
     }
 
     /**

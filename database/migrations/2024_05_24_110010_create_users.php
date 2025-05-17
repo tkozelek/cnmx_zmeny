@@ -45,13 +45,12 @@ return new class extends Migration
                 'lastname' => 'Kozelek',
                 'email' => 'owner@example.invalid',
                 'password' => '***REMOVED***',
-                'remember_token' => NULL,
+                'remember_token' => null,
                 'created_at' => '2024-05-24 13:09:53',
                 'updated_at' => '2024-05-24 13:09:53',
-                'id_role' => 3
-            ]
+                'id_role' => 3,
+            ],
         ]);
-
 
     }
 

@@ -3,14 +3,11 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Holiday extends Model
 {
-    use HasFactory;
-
-    protected $table = "user_holidays";
+    protected $table = 'user_holidays';
 
     protected $dates = ['date_from', 'date_to', 'date_canceled'];
 
@@ -21,10 +18,16 @@ class Holiday extends Model
     ];
 
     protected $fillable = [
-        'date_from', 'date_to', 'popis'
+        'date_from', 'date_to', 'popis',
     ];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class, 'id_user');
+    }
+
+    public function getDate($date)
+    {
+        return Carbon::parse($date)->format('d.m.Y');
     }
 }

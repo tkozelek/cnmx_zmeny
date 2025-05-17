@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-
 class LocalizationService
 {
-    public function mapEngToSvk($days) {
+    public function mapEngToSvk($days)
+    {
         $dayTranslations = [
             'Monday' => 'Pondelok',
             'Tuesday' => 'Utorok',
@@ -13,13 +13,14 @@ class LocalizationService
             'Thursday' => 'Štvrtok',
             'Friday' => 'Piatok',
             'Saturday' => 'Sobota',
-            'Sunday' => 'Nedeľa'
+            'Sunday' => 'Nedeľa',
         ];
 
         return $days->map(function ($day) use ($dayTranslations) {
             $englishDay = $day->named_day;
             $slovakDay = $dayTranslations[$englishDay] ?? $englishDay;
             $day->named_day = $slovakDay;
+
             return $day;
         });
     }

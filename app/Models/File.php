@@ -13,11 +13,11 @@ class File extends Model
     protected $table = 'file_storage';
 
     protected $fillable = [
-        'filename', 'size', 'mime_type', 'id_user', 'is_shown'
+        'filename', 'size', 'mime_type', 'id_user', 'is_shown',
     ];
 
     protected $attributes = [
-        'is_shown' => 0
+        'is_shown' => 0,
     ];
 
     public function getCreatedAtAttribute($date)

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use Illuminate\Http\Request;
 use App\Models\File;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class FileService
@@ -32,14 +32,16 @@ class FileService
         return $fileModel;
     }
 
-    public function deleteFile(File $file) {
-        if (!Storage::disk('public')->exists($file->path)) {
+    public function deleteFile(File $file)
+    {
+        if (! Storage::disk('public')->exists($file->path)) {
             return false;
         }
 
         // Delete the file and the model
         Storage::disk('public')->delete($file->path);
         $file->delete();
+
         return true;
     }
 }

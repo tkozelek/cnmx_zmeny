@@ -1,4 +1,5 @@
 <?php
+
 return [
     'roles' => [
         'brigadnik' => 2,
@@ -7,10 +8,10 @@ return [
         'neovereny' => 1,
     ],
     'calendar' => [
-         'generate_weeks' => 4,
+        'generate_weeks' => 4,
     ],
     'db' => [
         'string' => 50,
         'integer' => 10,
-    ]
+    ],
 ];

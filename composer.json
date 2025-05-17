@@ -5,7 +5,7 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.1",
+        "php": "^8.4",
         "barryvdh/laravel-ide-helper": "^3.0",
         "consoletvs/charts": "6.*",
         "enyo/dropzone": "^5.9",

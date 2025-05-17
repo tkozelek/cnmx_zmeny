@@ -8,9 +8,9 @@ use Carbon\Carbon;
 
 class WeekService
 {
-
-    public function generateWeek() { //	date_from	date_to	locked	next_week_id	prev_week_id
-        $day = Carbon::now()->modify("next thursday");
+    public function generateWeek() //	date_from	date_to	locked	next_week_id	prev_week_id
+    {
+        $day = Carbon::now()->modify('next thursday');
 
         $week = new Week();
         $week->date_from = $day;
@@ -23,10 +23,12 @@ class WeekService
             $new_day->id_week = $week->id;
             $new_day->save();
         }
+
         return $week;
     }
 
-    public function checkAndGenerateWeeks($num_of_weeks) {
+    public function checkAndGenerateWeeks($num_of_weeks)
+    {
         $currentWeek = $this->getCurrentWeek(); // aktualny
         $date_to = $currentWeek->date_to;
         for ($i = 0; $i < $num_of_weeks; $i++) { // 4 dopredu
@@ -34,6 +36,7 @@ class WeekService
             if ($currentWeek->next_week_id) {
                 $currentWeek = Week::find($currentWeek->next_week_id);
                 $date_to = $currentWeek->date_to;
+
                 continue;
             }
 
@@ -58,40 +61,43 @@ class WeekService
         }
     }
 
-    public function getActiveWeek() {
+    public function getActiveWeek()
+    {
         $currentDay = Carbon::now()->addWeek()->format('Y-m-d');
         $week = Week::where('date_from', '>=', $currentDay)
             ->where('locked', 0)
             ->first();
 
-        if ($week)
+        if ($week) {
             return $week;
+        }
 
         $weekModel = Week::oldest('id')->first();
 
-
-        if ($weekModel)
+        if ($weekModel) {
             return $weekModel;
+        }
 
         return $this->generateWeek();
     }
 
-    public function getCurrentWeek() {
+    public function getCurrentWeek()
+    {
         $currentDay = Carbon::now()->addWeek()->format('Y-m-d');
         $week = Week::where('date_from', '<=', $currentDay)
             ->where('date_to', '>=', $currentDay)
             ->first();
 
-        if ($week)
+        if ($week) {
             return $week;
+        }
 
         $weekModel = Week::oldest('id')->first();
 
-
-        if ($weekModel)
+        if ($weekModel) {
             return $weekModel;
+        }
 
         return $this->generateWeek();
     }
-
 }
