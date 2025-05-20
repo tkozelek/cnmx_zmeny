@@ -1,28 +1,31 @@
 <div class="flex items-center justify-center my-2 mb-4 ">
 
     @if($week->locked)
-        <a class="bg-red-500 hover:bg-orange-900 text-white font-bold p-2 px-3 rounded" href="{{ route('admin.calendar.lock', ['week' => $week->id]) }}">
-            <i class="fa-solid fa-unlock"></i> Odomkni
+        <a class="bg-amber-600 hover:bg-amber-700 text-white font-bold p-2 px-3 rounded-md transition-colors duration-150" href="{{ route('admin.calendar.lock', ['week' => $week->id]) }}">
+            <i class="fa-solid fa-unlock"></i>
+            <span class="ml-1 font-medium">Odomkni</span>
         </a>
     @else
-        <a class="bg-red-500 hover:bg-orange-900 text-white font-bold p-2 px-3 rounded" href="{{ route('admin.calendar.lock', ['week' => $week->id]) }}">
-            <i class="fa-solid fa-unlock"></i> Zamkni
+        <a class="bg-red-600 hover:bg-red-800 text-white font-bold p-2 px-3 rounded-md transition-colors duration-150" href="{{ route('admin.calendar.lock', ['week' => $week->id]) }}">
+            <i class="fa-solid fa-unlock"></i>
+            <span class="ml-1 font-medium">Zamkni</span>
         </a>
     @endif
 
-
-    <a href="{{ route('admin.calendar.export', ['week' => $week->id]) }}" class="bg-green-800 hover:bg-green-900 text-white mx-5 font-bold p-2 rounded" type="submit">
-        <i class="fa-solid fa-download"></i> Excel
+    <a href="{{ route('admin.calendar.export', ['week' => $week->id]) }}" class="bg-green-600 hover:bg-green-700 text-white mx-5 font-bold p-2 rounded-md transition-colors duration-150" type="submit">
+        <i class="fa-solid fa-download"></i>
+        <span class="ml-1 font-medium">Excel</span>
     </a>
 
     <div class="mt-2 mb-2 float-right">
-        <button data-modal-target="default-modal" data-modal-toggle="default-modal" class="bg-blue-700 hover:bg-blue-900 text-white font-bold px-3 p-2 rounded" type="button">
-            <i class="fa-solid fa-file"></i> Súbory
+        <button data-modal-target="default-modal" data-modal-toggle="default-modal" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 p-2 rounded-md transition-colors duration-150" type="button">
+            <i class="fa-solid fa-folder-open"></i>
+            <span class="ml-1 font-medium">Súbory</span>
         </button>
 
         <div>
             <div id="default-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-                <div class="relative p-4 max-w-4xl w-full max-h-full">
+                <div class="relative p-4 max-w-6xl w-full max-h-full">
                     <!-- Modal content -->
                     <div class="relative rounded-lg shadow bg-gray-700">
                         <!-- Modal header -->

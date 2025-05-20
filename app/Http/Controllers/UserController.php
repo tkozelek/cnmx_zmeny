@@ -55,7 +55,7 @@ class UserController extends Controller
         $user = auth()->user();
 
         if (! Hash::check($request->get('current_password'), $user->password)) {
-            return back()->with('message', 'Zle aktuálne heslo.');
+            return back()->with('error', 'Zle aktuálne heslo.');
         }
 
         $user->password = Hash::make($formFields['new_password']);
@@ -93,7 +93,7 @@ class UserController extends Controller
             return redirect('/')->with('message', 'Úspešné prihlásený.');
         }
 
-        return back()->with(['message' => 'Nesprávne údajé.'])->onlyInput('email');
+        return back()->with(['error' => 'Nesprávne údajé.'])->onlyInput('email');
     }
 
     public function update(Request $request, User $user)
@@ -135,7 +135,7 @@ class UserController extends Controller
         }
 
         if ($status != Password::RESET_LINK_SENT || $error == 10) {
-            return back()->with(['message' => 'Nastala chyba, kontaktujte administratora.']);
+            return back()->with(['error' => 'Nastala chyba, kontaktujte administratora.']);
         }
 
         return back()->with(['message' => 'Pouzivatel uspesne vytvoreny']);

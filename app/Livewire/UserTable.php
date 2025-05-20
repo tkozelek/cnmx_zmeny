@@ -35,7 +35,7 @@ class UserTable extends Component
             $query->search('lastname', $this->search);
         }
 
-        $users = $query->with('role')->orderBy($this->sortField, $this->sortDirection)->simplePaginate(1);
+        $users = $query->with('role')->orderBy($this->sortField, $this->sortDirection)->paginate(1);
 
         return view('livewire.user-table', [
             'users' => $users,

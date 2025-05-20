@@ -88,13 +88,15 @@ class CalendarController extends Controller
         if ($existingUser) {
             $day->users()->detach($user->id);
             $message = 'User removed from day';
+            $status = 2;
         } else {
             $popis = $request->input('popis');
             $day->users()->attach($user->id, ['popis' => $popis]);
             $message = 'User added to day';
+            $status = 1;
         }
 
-        return response()->json(['message' => $message, 'users' => $day->users()->get()]);
+        return response()->json(['message' => $message, 'users' => $day->users()->get(), 'status' => $status]);
     }
 
     public function destroy(Day $day, User $user)
@@ -102,7 +104,7 @@ class CalendarController extends Controller
         if ($user->days()->detach($day->id)) {
             return back()->with(['message' => 'Použivateľ bol vymazaný z daného dňa.']);
         } else {
-            return back()->with(['message' => 'Nastala chyba, použivateľ nebol vymazaný.']);
+            return back()->with(['error' => 'Chyba, použivateľ nebol vymazaný.']);
         }
     }
 
