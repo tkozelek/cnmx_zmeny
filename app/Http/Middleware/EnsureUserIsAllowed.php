@@ -16,8 +16,9 @@ class EnsureUserIsAllowed
     public function handle(Request $request, Closure $next): Response
     {
         if (! auth()->check()) {
-            return redirect('/prihlasenie')->with(['message' => 'Musis sa prihlasit.']);
+            return redirect('/prihlasenie')->with(['error' => 'Musis sa prihlasit.']);
         }
+
         if ($request->user()->hasRole(config('constants.roles.admin')) || $request->user()->hasRole(config('constants.roles.brigadnik'))) {
             return $next($request);
         }
@@ -25,15 +26,15 @@ class EnsureUserIsAllowed
         if ($request->user()->hasRole(config('constants.roles.zablokovany'))) {
             $this->logout($request);
 
-            return redirect('/prihlasenie')->with(['message' => 'Účet je zablokovaný.']);
+            return redirect('/prihlasenie')->with(['error' => 'Účet je zablokovaný.']);
         }
         if ($request->user()->hasRole(config('constants.roles.neovereny'))) {
             $this->logout($request);
 
-            return redirect('/prihlasenie')->with(['message' => 'Ešte si nebol/a overený.']);
+            return redirect('/prihlasenie')->with(['error' => 'Ešte si nebol/a overený. Viac info v sekcií pomoc.']);
         }
 
-        return abort(403, 'Vstup zakazany. Musis byt potvrdeny.');
+        abort(403, 'Vstup zakazany. Musis byt potvrdeny.');
     }
 
     private function logout(Request $request)

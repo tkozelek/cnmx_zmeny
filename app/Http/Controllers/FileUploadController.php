@@ -5,7 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\File;
 use App\Services\FileService;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Exception;
+use Spatie\Browsershot\Browsershot;
+use PhpOffice\PhpSpreadsheet\Writer\Html as HtmlWriter;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
+use PhpOffice\PhpSpreadsheet\Reader\Xls as XlsReader;
 
 class FileUploadController extends Controller
 {
@@ -23,15 +30,20 @@ class FileUploadController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:pdf,xlsx|max:2048',
-            'id_week' => 'required|integer',  // Ensure id_week is also validated
+        $validated = $request->validate([
+            'file' => 'required|file|mimes:pdf,xlsx,xls|max:2048',
+            'id_week' => 'required|integer',
         ]);
 
-        $this->fileService->uploadFile($request);
+        $fileModel = $this->fileService->uploadFile($validated['file'], $request->id_week);
+        $file = $request->file('file');
+        $ext = $file->getClientOriginalExtension();
 
-        // Return a success response
-        return response()->json(['success' => 'Súbor úspešné nahraný.']);
+        if ($ext === 'xlsx' || $ext === 'xls') {
+            $this->fileService->createScreenshot($ext, $fileModel->path, $request->id_week, basename($file->getClientOriginalName(), '.'.$ext));
+        }
+
+        return response()->json(['success' => 'Súbor úspešné nahraný.', 'status' => 200]);
     }
 
     /**
@@ -58,9 +70,13 @@ class FileUploadController extends Controller
     public function destroy(File $file)
     {
         if ($this->fileService->deleteFile($file)) {
-            return response()->json(['success' => true, 'message' => 'File deleted successfully']);
+            return response()->json([
+                'success' => true,
+                'message' => 'File deleted successfully',
+                'status' => 200
+            ]);
         } else {
-            return response()->json(['success' => false, 'message' => 'File was not found']);
+            return response()->json(['success' => false, 'error' => 'File was not found', 'status' => 404]);
         }
 
     }

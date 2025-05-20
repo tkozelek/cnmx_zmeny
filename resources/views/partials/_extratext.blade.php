@@ -5,6 +5,9 @@
         </label>
     </div>
     <div class="md:w-1/5">
-        <input class="bg-gray-200 border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-gray-900" id="extra_popis" type="text" placeholder="od 15">
+        <input class="bg-gray-800 border border-slate-700 text-slate-100 placeholder-slate-400 text-sm rounded-md
+                   py-3 px-3 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm
+                   w-full"
+               id="extra_popis" type="text" placeholder="Napr. od 15:00">
     </div>
 </div>

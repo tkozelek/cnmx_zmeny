@@ -37,7 +37,7 @@ class BugReportController extends Controller
         $file = null;
 
         if ($request->file('file')) {
-            $file = $this->fileUploadService->uploadFile($request);
+            $file = $this->fileUploadService->uploadFile($form->file('file'), null);
         }
 
         Bug::create([

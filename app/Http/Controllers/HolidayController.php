@@ -104,6 +104,6 @@ class HolidayController extends Controller
         return Holiday::with('user')->where('date_to', '<', Carbon::now()->format('Y-m-d'))
             ->orWhereNotNull('date_canceled')
             ->orderBy('date_to', 'desc')
-            ->simplePaginate(15);
+            ->paginate(15);
     }
 }

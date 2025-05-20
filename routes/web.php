@@ -26,8 +26,9 @@ use Illuminate\Support\Facades\Route;
 // Register form
 Route::get('/registracia', [UserController::class, 'create'])->name('register')->middleware('guest');
 Route::get('/prihlasenie', [UserController::class, 'login'])->name('login')->middleware('guest');
-Route::post('/registracia', [UserController::class, 'store'])->name('register.store');
-Route::post('/prihlasenie', [UserController::class, 'authenticate'])->name('login.auth');
+
+Route::post('/registracia', [UserController::class, 'store'])->name('register.store')->middleware(['throttle:6,1']);
+Route::post('/prihlasenie', [UserController::class, 'authenticate'])->name('login.auth')->middleware(['throttle:6,1']);
 
 Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
 
