@@ -17,8 +17,5 @@ class SearchServiceProvider extends ServiceProvider
     /**
      * Bootstrap Services.
      */
-    public function boot()
-    {
-
-    }
+    public function boot() {}
 }

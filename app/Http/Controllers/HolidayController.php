@@ -3,12 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Holiday;
+use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Str;
 
 class HolidayController extends Controller
 {
+
+    private HolidayService $holidayService;
+
+    public function __construct(HolidayService $holidayService) {
+        $this->holidayService = $holidayService;
+    }
+
     public function index()
     {
         $absences = auth()->user()->holidays()->with('user')->orderBy('date_to', 'desc')->get();
@@ -18,8 +26,8 @@ class HolidayController extends Controller
         session()->put('form_token', Str::random(40));
 
         if (auth()->user()->hasRole(3)) {
-            $active = $this->getAllActive();
-            $inactive = $this->getAllInactive();
+            $active = $this->holidayService->getAllActive();
+            $inactive = $this->holidayService->getAllInactive();
         }
 
         return view('holiday.index', [
@@ -89,21 +97,5 @@ class HolidayController extends Controller
             'date_from.required' => 'Začiatok je potrebný.',
             'date_to.required' => 'Koniec je potrebný.',
         ];
-    }
-
-    private function getAllActive()
-    {
-        return Holiday::with('user')->where('date_to', '>=', Carbon::now()->format('Y-m-d'))
-            ->whereNull('date_canceled')
-            ->orderBy('date_to', 'desc')
-            ->get();
-    }
-
-    private function getAllInactive()
-    {
-        return Holiday::with('user')->where('date_to', '<', Carbon::now()->format('Y-m-d'))
-            ->orWhereNotNull('date_canceled')
-            ->orderBy('date_to', 'desc')
-            ->paginate(15);
     }
 }

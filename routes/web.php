@@ -23,6 +23,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/welcome', function () {
+    return view('welcome.welcome');
+})->name('welcome.index');
+
 // Register form
 Route::get('/registracia', [UserController::class, 'create'])->name('register')->middleware('guest');
 Route::get('/prihlasenie', [UserController::class, 'login'])->name('login')->middleware('guest');

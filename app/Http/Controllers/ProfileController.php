@@ -3,11 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
+    private HolidayService $holidayService;
+
+    public function __construct(HolidayService $holidayService) {
+        $this->holidayService = $holidayService;
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -17,6 +24,8 @@ class ProfileController extends Controller
             'user' => $user,
             'daysCount' => $this->getCountOfDaysInTime($user),
             'arr' => $userChartArray,
+            'activeAbsences' => $this->holidayService->getAllActive(),
+            'inactiveAbsences' => $this->holidayService->getAllInactive(),
         ]);
     }
 
@@ -33,6 +42,8 @@ class ProfileController extends Controller
             'user' => $user,
             'daysCount' => $this->getCountOfDaysInTime($user, $date),
             'arr' => $userChartArray,
+            'activeAbsences' => $this->holidayService->getAllActive(),
+            'inactiveAbsences' => $this->holidayService->getAllInactive(),
         ]);
     }
 

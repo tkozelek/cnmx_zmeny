@@ -1,6 +1,5 @@
 @props(['text'])
-
-<p class="mt-1 text-lg tracking-wide">
-    <strong>{{ $text }}:</strong>
-    {{ $slot }}
-</p>
+<div class="flex justify-between items-center">
+    <span class="text-gray-400">{{ $text }}:</span>
+    <span class="font-semibold text-white text-right">{{ $slot }}</span>
+</div>
