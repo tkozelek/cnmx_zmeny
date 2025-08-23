@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\File;
-use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Exception;
@@ -26,11 +24,12 @@ class FileService
         return $this->createAndSaveTheFileModel($fileName, $filePath, $week, 0);
     }
 
-    public function createScreenshot($extension, $filepath, $week, $filename): void {
+    public function createScreenshot($extension, $filepath, $week, $filename): void
+    {
         if ($extension === 'xlsx') {
-            $reader = new XlsxReader();
+            $reader = new XlsxReader;
         } elseif ($extension === 'xls') {
-            $reader = new XlsReader();
+            $reader = new XlsReader;
         }
         $spreadsheet = $reader->load(Storage::disk('public')->path($filepath));
 
@@ -43,14 +42,14 @@ class FileService
         } catch (Exception $e) {
 
         }
-        $page->removeColumnByIndex($columnIndex+1, 7);
+        $page->removeColumnByIndex($columnIndex + 1, 7);
 
         $writer = new HtmlWriter($spreadsheet);
         $writer->setSheetIndex(0);
         $htmlContent = $writer->generateHtmlAll();
 
-        $imageName = $filename . '.png';
-        $imagePath = 'excel_screenshots/' . $imageName;
+        $imageName = $filename.'.png';
+        $imagePath = 'excel_screenshots/'.$imageName;
 
         Storage::disk('public')->makeDirectory('excel_screenshots');
         $fullImagePath = Storage::disk('public')->path($imagePath);
@@ -81,15 +80,11 @@ class FileService
     }
 
     /**
-     * @param string $fileName
-     * @param mixed $filePath
-     * @param $file
-     * @param $week
-     * @return File
+     * @param  $file
      */
     public function createAndSaveTheFileModel(string $fileName, mixed $filePath, $week, $visible): File
     {
-        $fileModel = new File();
+        $fileModel = new File;
         $fileModel->filename = $fileName;
         $fileModel->path = $filePath;
         $fileModel->size = Storage::disk('public')->size($filePath);
@@ -98,6 +93,7 @@ class FileService
         $fileModel->id_week = $week;
         $fileModel->is_shown = $visible;
         $fileModel->save();
+
         return $fileModel;
     }
 }

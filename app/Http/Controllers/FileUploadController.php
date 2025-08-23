@@ -5,14 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\File;
 use App\Services\FileService;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use PhpOffice\PhpSpreadsheet\Exception;
-use Spatie\Browsershot\Browsershot;
-use PhpOffice\PhpSpreadsheet\Writer\Html as HtmlWriter;
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
-use PhpOffice\PhpSpreadsheet\Reader\Xls as XlsReader;
 
 class FileUploadController extends Controller
 {
@@ -73,7 +66,7 @@ class FileUploadController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'File deleted successfully',
-                'status' => 200
+                'status' => 200,
             ]);
         } else {
             return response()->json(['success' => false, 'error' => 'File was not found', 'status' => 404]);

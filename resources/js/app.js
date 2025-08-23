@@ -1,6 +1,11 @@
 import 'flowbite';
+import 'flowbite/dist/datepicker.js';
 import DateRangePicker from 'flowbite-datepicker/DateRangePicker';
+import {Datepicker} from "flowbite-datepicker";
+import sk from "flowbite-datepicker/locales/sk";
+import Sortable from "sortablejs";
 import {Chart, registerables} from "chart.js";
+
 
 $(document).ready(function() {
     function ajaxRequest(url, method, data, successCallback, errorCallback) {
@@ -19,7 +24,6 @@ $(document).ready(function() {
 
     let addButton = $('.add-user-btn');
     // Click event handler for adding a user
-    // call the ajax function
     addButton.click(function() {
         let clickedButton = $(this);
         let day = clickedButton.data('day');
@@ -29,34 +33,33 @@ $(document).ready(function() {
                 return;
             }
 
-            if (response['status'] === 2) {
+            if (clickedButton.hasClass('bg-green-300')) {
                 clickedButton.removeClass('bg-green-300 hover:bg-green-600').addClass('bg-red-300 hover:bg-red-400').text('ZAPISAŤ');
-                showToast("Deň odpísaný.", "error");
             } else {
                 clickedButton.removeClass('bg-red-300 hover:bg-red-400').addClass('bg-green-300 hover:bg-green-600').text('ODPISAŤ');
-                showToast("Deň zapísaný.", "success");
             }
 
             let usersContainer = $('#c-' + day).find('.users-container');
             usersContainer.empty(); // Clear existing users
-            response['users'].forEach(function (user) {
-                let isBlocked = user.id_role === 4;
-
-                let userDiv = $('<div>').addClass('bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md text-md rows px-1 flex items-center');
-
-                if (isBlocked) {
-                    userDiv.addClass('line-through justify-center');
-                }  else {
-                    userDiv.addClass('justify-center');
+            response['users'].forEach(function(user) {
+                let userRow = '';
+                let popis;
+                if (user.pivot.popis)
+                    popis = user.lastname + ' ' + user.name[0] + '. <span style="font-size: smaller;">(' + user.pivot.popis + ')</span>'
+                else
+                    popis = user.lastname + ' ' + user.name[0] + '.';
+                if (!$('#names_checkbox').is(':checked')) {
+                    userRow = $('<div class="bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md rows" style="display: none;">')
+                        .html(popis);
+                } else {
+                    if (user.id_role === 4)
+                        userRow = $('<div class="bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md rows line-through">')
+                            .html(popis);
+                    else
+                        userRow = $('<div class="bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md rows">')
+                            .html(popis);
                 }
-
-                let popisHtml = user.pivot.popis ? `<span class="text-slate-400/80 italic text-sm ml-1">(${user.pivot.popis})</span>` : '';
-                let userNameHtml = `${user.lastname} ${user.name[0]}.`;
-
-                let nameWrapper = $('<span class="truncate max-w-[calc(100%-20px)]">').html(userNameHtml + popisHtml);
-                userDiv.append(nameWrapper);
-
-                usersContainer.append(userDiv);
+                usersContainer.append(userRow);
             });
         }, function(xhr, status, error) {
             console.log("error");
@@ -65,11 +68,6 @@ $(document).ready(function() {
     });
 });
 
-function showToast(message, type = 'success', icon = '') {
-    window.dispatchEvent(new CustomEvent('toast', {
-        detail: { message, type, icon }
-    }));
-}
 
 $(document).ready(function() {
     $('#names_checkbox').change(function() {
@@ -77,6 +75,7 @@ $(document).ready(function() {
     });
 });
 
+Datepicker.locales.sk = sk.sk;
 
 let options = {
     language: "sk",
@@ -107,9 +106,7 @@ $(document).ready(function() {
             type: 'DELETE',
             success: function(response) {
                 // Refresh or update file list after successful deletion
-                if (response['status'] === 200) {
-                    showToast("Súbor zmazaný.", "warning");
-                }
+                console.log(response.message);
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);

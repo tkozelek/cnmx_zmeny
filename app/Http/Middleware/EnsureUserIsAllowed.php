@@ -16,7 +16,7 @@ class EnsureUserIsAllowed
     public function handle(Request $request, Closure $next): Response
     {
         if (! auth()->check()) {
-            return redirect('/prihlasenie')->with(['error' => 'Musis sa prihlasit.']);
+            return redirect('/welcome');
         }
 
         if ($request->user()->hasRole(config('constants.roles.admin')) || $request->user()->hasRole(config('constants.roles.brigadnik'))) {

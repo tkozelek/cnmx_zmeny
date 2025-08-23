@@ -12,13 +12,13 @@ class WeekService
     {
         $day = Carbon::now()->modify('next thursday');
 
-        $week = new Week();
+        $week = new Week;
         $week->date_from = $day;
         $week->date_to = $day->copy()->addWeek()->addDays(-1);
         $week->save();
 
         for ($i = 0; $i < 7; $i++) { // id	text	date	id_week
-            $new_day = new Day();
+            $new_day = new Day;
             $new_day->date = $day->copy()->addDays($i);
             $new_day->id_week = $week->id;
             $new_day->save();
@@ -40,7 +40,7 @@ class WeekService
                 continue;
             }
 
-            $newWeek = new Week();
+            $newWeek = new Week;
             $newWeek->date_from = $date_to->copy()->addDay();
             $newWeek->date_to = $date_to->copy()->addWeek();
             $newWeek->locked = 0;
@@ -51,7 +51,7 @@ class WeekService
             $currentWeek->save();
 
             for ($j = 0; $j < 7; $j++) { // 7 dni v tyzdni
-                $day = new Day();
+                $day = new Day;
                 $day->date = $newWeek->date_from->copy()->addDays($j);
                 $day->id_week = $newWeek->id;
                 $day->save();
