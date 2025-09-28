@@ -101,7 +101,8 @@ Route::middleware(['allowed'])->group(function () {
 
 Route::middleware(['guest'])->prefix('/zabudnute-heslo')->group(function () {
     Route::get('/', [ForgottenPasswordController::class, 'index'])->name('password.index');
-    Route::post('/send', [ForgottenPasswordController::class, 'send'])->name('password.send');
+    Route::post('/send', [ForgottenPasswordController::class, 'send'])->name('password.send')->middleware(['throttle:6,1']);
+
     Route::get('/{token}', [ForgottenPasswordController::class, 'show'])->name('password.reset');
     Route::post('/store', [ForgottenPasswordController::class, 'store'])->name('password.store');
 });

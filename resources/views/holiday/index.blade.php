@@ -2,7 +2,7 @@
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
 
         <div class="flex justify-end mb-2">
-            <button data-modal-target="default-modal" data-modal-toggle="default-modal"
+            <button data-modal-target="add-absence-modal" data-modal-toggle="add-absence-modal"
                     class="inline-flex items-center px-5 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500 transition-colors duration-150"
                     type="button">
                 <i class="fa-solid fa-plus mr-2 mt-1.5 h-5 w-5" aria-hidden="true"></i> Pridať absenciu

@@ -1,3 +1,5 @@
+<link rel="preload" as="image" href="{{ asset('images/cinemax_landing_page_upscaled.jpg') }}" fetchpriority="high">
+
 <section class="hero-section h-screen flex items-center justify-center text-center pb-28" style="background-image: url('{{ asset('images/cinemax_landing_page_upscaled.jpg') }}')">
     <div class="container mx-auto px-4">
         <h2 class="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-4">

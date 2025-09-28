@@ -9,8 +9,7 @@ use Carbon\Carbon;
 class WeekService
 {
     public function generateWeek() //	date_from	date_to	locked	next_week_id	prev_week_id
-    {
-        $day = Carbon::now()->modify('next thursday');
+    {$day = Carbon::now()->modify('next thursday');
 
         $week = new Week;
         $week->date_from = $day;
@@ -64,12 +63,20 @@ class WeekService
     public function getActiveWeek()
     {
         $currentDay = Carbon::now()->addWeek()->format('Y-m-d');
-        $week = Week::where('date_from', '>=', $currentDay)
+        $week = Week::where('date_from', '<=', $currentDay)
             ->where('locked', 0)
             ->first();
 
         if ($week) {
             return $week;
+        }
+
+        $weekif = Week::orderBy('locked', 'asc')
+            ->orderBy('date_from', 'asc')
+            ->first();
+
+        if ($weekif) {
+            return $weekif;
         }
 
         $weekModel = Week::oldest('id')->first();
@@ -83,7 +90,7 @@ class WeekService
 
     public function getCurrentWeek()
     {
-        $currentDay = Carbon::now()->addWeek()->format('Y-m-d');
+        $currentDay = Carbon::now()->format('Y-m-d');
         $week = Week::where('date_from', '<=', $currentDay)
             ->where('date_to', '>=', $currentDay)
             ->first();

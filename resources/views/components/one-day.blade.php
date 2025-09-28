@@ -27,7 +27,7 @@
                     @endphp
 
                     <div @class([
-                        'bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md text-lg rows px-1 flex items-center',
+                        'bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md text-md rows px-1 flex items-center',
                         'line-through' => $isBlocked,
                         'justify-between group' => $isAdminView && !$isBlocked,
                         'justify-center' => !$isAdminView || $isBlocked,
@@ -46,9 +46,9 @@
                         </span>
 
                         @if($isAdminView && !$isBlocked)
-                            <form action="{{ route('admin.calendar.userdestroy', ['day' => $day->id, 'user' => $user->id]) }}" method="POST" class="ml-1 shrink-0">
+                            <form onsubmit='return confirm("Určite chcete zmazať používateľa {{$user}} zo dňa {{$day->date->format('d.m.Y')}}?")' action="{{ route('admin.calendar.userdestroy', ['day' => $day->id, 'user' => $user->id]) }}" method="POST" class="ml-1 shrink-0">
                                 @csrf
-                                <button type="submit" class="text-red-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity duration-150 focus:opacity-100" title="Odstrániť {{ $user }} z dňa">
+                                <button type="submit" class="text-red-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity duration-150 focus:opacity-100" title="Odstrániť {{ $user }} z dňa {{$day->date->format('d.m.Y')}}">
                                     <i class="fa-solid fa-times fa-fw"></i>
                                 </button>
                             </form>

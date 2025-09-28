@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FileUploadController extends Controller
 {
-    protected $fileService;
+    protected FileService $fileService;
 
     public function __construct(FileService $fileService)
     {
@@ -24,7 +24,7 @@ class FileUploadController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'file' => 'required|file|mimes:pdf,xlsx,xls|max:2048',
+            'file' => 'required|file|mimes:pdf,xlsx,xls,jpg,jpeg,png,gif|max:2048',
             'id_week' => 'required|integer',
         ]);
 
@@ -32,9 +32,9 @@ class FileUploadController extends Controller
         $file = $request->file('file');
         $ext = $file->getClientOriginalExtension();
 
-        if ($ext === 'xlsx' || $ext === 'xls') {
-            $this->fileService->createScreenshot($ext, $fileModel->path, $request->id_week, basename($file->getClientOriginalName(), '.'.$ext));
-        }
+        // if ($ext === 'xlsx' || $ext === 'xls') {
+        // $this->fileService->createScreenshot($ext, $fileModel->path, $request->id_week, basename($file->getClientOriginalName(), '.'.$ext));
+        // }
 
         return response()->json(['success' => 'Súbor úspešné nahraný.', 'status' => 200]);
     }

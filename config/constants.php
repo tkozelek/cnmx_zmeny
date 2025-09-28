@@ -8,7 +8,7 @@ return [
         'neovereny' => 1,
     ],
     'calendar' => [
-        'generate_weeks' => 4,
+        'generate_weeks' => 5,
     ],
     'db' => [
         'string' => 50,

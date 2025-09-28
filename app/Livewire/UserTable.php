@@ -32,10 +32,10 @@ class UserTable extends Component
             $query->where('id_role', $this->selectedRole);
         }
         if ($this->search != '') {
-            $query->search('lastname', $this->search);
+            $query->whereAny(['name', 'lastname', 'email'], 'LIKE', '%'.$this->search.'%');
         }
 
-        $users = $query->with('role')->orderBy($this->sortField, $this->sortDirection)->paginate(1);
+        $users = $query->with('role')->orderBy($this->sortField, $this->sortDirection)->paginate(10);
 
         return view('livewire.user-table', [
             'users' => $users,
@@ -55,9 +55,6 @@ class UserTable extends Component
 
     public function accept(User $user)
     {
-        if (! auth()->user()->hasRole(config('constants.roles.admin'))) {
-            return;
-        }
         $user->id_role = config('constants.roles.brigadnik');
         $user->save();
 
@@ -66,9 +63,6 @@ class UserTable extends Component
 
     public function deny(User $user)
     {
-        if (! auth()->user()->hasRole(config('constants.roles.admin'))) {
-            return;
-        }
         $user->id_role = config('constants.roles.zablokovany');
         $user->save();
     }

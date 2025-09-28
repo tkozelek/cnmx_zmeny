@@ -1,8 +1,8 @@
 <x-layout>
-    <div class="xl:container mx-auto mt-5" x-data="{ tab: 'stats' }">
-        <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
+    <div class="xl:container mx-auto mt-5 mb-5 " x-data="{ tab: 'stats' }" x-init="window.location.href.indexOf('page') > -1 ? tab = 'absences' : tab = 'stats'">
+        <div class="grid grid-cols-1 md:grid-cols-10 lg:grid-cols-10 gap-6">
 
-            <div class="col-span-1 p-6 bg-gray-800 rounded-xl shadow-lg">
+            <div class="col-span-1 md:col-span-3 lg:col-span-3 p-6 bg-gray-800 rounded-xl shadow-lg">
                 <div class="flex flex-col items-center md:items-start">
                     <h2 class="text-2xl font-bold tracking-wider text-white">Používateľ</h2>
                     <hr class="w-full border-t border-gray-600 my-4">
@@ -18,7 +18,7 @@
                 </div>
             </div>
 
-            <div class="col-span-1 md:col-span-3 lg:col-span-4">
+            <div class="col-span-1 md:col-span-7 lg:col-span-7">
                 <div class="mb-4 border-b border-gray-600">
                     <nav class="flex -mb-px space-x-6">
                         <button @click="tab = 'stats'" :class="{ 'border-blue-500 text-blue-500': tab === 'stats', 'border-transparent text-gray-400 hover:text-white hover:border-gray-500': tab !== 'stats' }" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg focus:outline-none">
@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="bg-gray-800 rounded-xl shadow-lg p-6">
-                    <section x-show="tab === 'stats'">
+                    <section x-show="tab === 'stats'" x-transition>
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
                             <div>
                                 <h3 class="text-2xl font-semibold text-white">Frekvencia zápisov</h3>
@@ -50,7 +50,7 @@
                         </div>
                     </section>
 
-                    <section x-show="tab === 'absences'">
+                    <section x-show="tab === 'absences'" x-transition>
                         <h3 class="text-2xl font-semibold text-white mb-4">Aktívne absencie</h3>
                         <div class="space-y-3">
                             @forelse ($activeAbsences as $absence)
@@ -84,6 +84,11 @@
                             @empty
                                 <p class="text-gray-400">Žiadne predošlé absencie.</p>
                             @endforelse
+                            @if ($inactiveAbsences->hasPages())
+                                    <div class="p-6 border-t border-slate-700 bg-slate-800">
+                                        {{ $inactiveAbsences->links('vendor.pagination.tailwind') }}
+                                    </div>
+                            @endif
                         </div>
                     </section>
                 </div>
@@ -92,12 +97,11 @@
     </div>
 
     <script>
-        // Pass chart data from your controller
         var chartData = @json($arr);
 
-        // Submit form on select change
         document.getElementById('date').addEventListener('change', function() {
             document.getElementById('dateForm').submit();
         });
+
     </script>
 </x-layout>

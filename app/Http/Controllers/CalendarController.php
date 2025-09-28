@@ -64,23 +64,24 @@ class CalendarController extends Controller
 
     public function addUser(Request $request)
     {
+
         $user = auth()->user();
         $dayId = $request->input('day');
 
         if ($user->id_role == config('constants.roles.zablokovany')) {
-            return response()->json(['message' => 'Uživateľ je zablokovaný', 'error' => 10], 400);
+            return response()->json(['error' => 'User is locked', 'error' => 10], 400);
         }
 
         $day = Day::with('week', 'users')->find($dayId);
 
         if (! $day) {
-            return response()->json(['message' => 'Deň nebol nájdený'], 404);
+            return response()->json(['error' => 'Day not found'], 404);
         }
 
         $week = $day->week;
 
         if ($week->locked) {
-            return response()->json(['message' => 'Týždeň je uzamknutý', 'error' => 10], 400);
+            return response()->json(['error' => 'Week is locked', 'error' => 10], 400);
         }
 
         $existingUser = $day->users->contains($user->id);
@@ -104,7 +105,7 @@ class CalendarController extends Controller
         if ($user->days()->detach($day->id)) {
             return back()->with(['message' => 'Použivateľ bol vymazaný z daného dňa.']);
         } else {
-            return back()->with(['error' => 'Chyba, použivateľ nebol vymazaný.']);
+            return back()->with(['error' => 'Nastala chyba, použivateľ nebol vymazaný.']);
         }
     }
 
@@ -119,14 +120,17 @@ class CalendarController extends Controller
         $userDayCount = null;
         $absences = null;
         $files = null;
+        $file = null;
         if (auth()->user()->hasRole(config('constants.roles.admin'))) {
             $userDayCount = User::select('users.id as id_user', 'users.lastname as lastname', 'users.name as name', DB::raw('COUNT(user_days.id_user) as count'), 'days.id_week')
                 ->leftJoin('user_days', 'users.id', '=', 'user_days.id_user')
                 ->leftJoin('days', 'user_days.id_day', '=', 'days.id')
                 ->where('days.id_week', $week->id)
+                ->orderBy('count', 'desc')
                 ->groupBy('users.id', 'users.lastname', 'users.name', 'days.id_week')
                 ->get();
             $absences = Holiday::where('date_to', '>=', $week->date_from)
+                ->where('date_from', '<=', $week->date_to)
                 ->where('date_canceled', null)
                 ->get();
             $files = File::where('id_week', $week->id)->get();
@@ -142,6 +146,7 @@ class CalendarController extends Controller
             'userCount' => $userDayCount ?: null,
             'absences' => $absences ?: null,
             'files' => $files ?: null,
+            'file' => $file,
             'title' => 'ZAPISOVANIE',
         ]);
     }

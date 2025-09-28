@@ -16,6 +16,28 @@ body {
 }
 
 .hero-section {
+    background-image: url("../css/images/cinemax_landing_page_upscaled_1600.webp");
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        background-image: url("../css/images/cinemax_landing_page_upscaled_720.webp");
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        background-image: url("../css/images/cinemax_landing_page_upscaled_720.webp");
+        background-attachment: scroll; /* disable parallax */
+        background-position: center;
+    }
+}
+
+[data-accordion-target][aria-expanded="true"] {
+    @apply bg-slate-900/50;
+}
+
+.hero-section {
     background-attachment: fixed;
     background-position: center;
     background-repeat: no-repeat;

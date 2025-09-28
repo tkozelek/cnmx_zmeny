@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Services\HolidayService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class ProfileController extends Controller
 {
     private HolidayService $holidayService;
 
-    public function __construct(HolidayService $holidayService) {
+    public function __construct(HolidayService $holidayService)
+    {
         $this->holidayService = $holidayService;
     }
 
@@ -24,8 +25,8 @@ class ProfileController extends Controller
             'user' => $user,
             'daysCount' => $this->getCountOfDaysInTime($user),
             'arr' => $userChartArray,
-            'activeAbsences' => $this->holidayService->getAllActive(),
-            'inactiveAbsences' => $this->holidayService->getAllInactive(),
+            'activeAbsences' => $this->holidayService->getAllActive($user),
+            'inactiveAbsences' => $this->holidayService->getAllInactive($user),
         ]);
     }
 
@@ -36,52 +37,47 @@ class ProfileController extends Controller
             $date = $this->transformDate($request->input('date'));
         }
 
-        $userChartArray = $this->getUserDayCountForEachDay($user, $date);
+        $userChartData = $this->getUserDayStatistics($user, $date);
 
         return view('profile.index', [
             'user' => $user,
-            'daysCount' => $this->getCountOfDaysInTime($user, $date),
-            'arr' => $userChartArray,
-            'activeAbsences' => $this->holidayService->getAllActive(),
-            'inactiveAbsences' => $this->holidayService->getAllInactive(),
+            'daysCount' => array_sum($userChartData),
+            'arr' => $userChartData,
+            'activeAbsences' => $this->holidayService->getAllActive($user),
+            'inactiveAbsences' => $this->holidayService->getAllInactive($user),
         ]);
     }
 
-    public function getUserDayCountForEachDay(User $user, $date = null)
+    private function getUserDayStatistics(User $user, ?\Carbon\Carbon $startDate): array
     {
-        $results = DB::table('users')
-            ->join('user_days', 'users.id', '=', 'user_days.id_user')
-            ->join('days', 'user_days.id_day', '=', 'days.id')
-            ->select(
-                'users.id',
-                DB::raw('CASE WHEN DAYOFWEEK(days.date) = 1 THEN 7 ELSE DAYOFWEEK(days.date) - 1 END as den'),
-                DB::raw('COUNT(days.date) as day_count')
-            )
-            ->where('users.id', $user->id)
+        $cacheKey = "user:{$user->id}:day_stats:".($startDate?->toDateString() ?? 'all');
 
-            ->groupBy('users.id', 'den')
-            ->orderBy('den');
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($user, $startDate) {
+            $dayCounts = $user->days()
+                ->when($startDate, fn ($query, $date) => $query->where('date', '>=', $date))
+                ->selectRaw('WEEKDAY(date) as day_of_week, COUNT(*) as count')
+                ->groupBy('day_of_week')
+                ->orderBy('day_of_week')
+                ->pluck('count', 'day_of_week');
 
-        if ($date) {
-            $results = $results->whereDate('date', '>=', $date->toDateString());
-        }
-        $results = $results->get();
+            $chartArray = array_fill(0, 7, 0);
+            foreach ($dayCounts as $dayOfWeek => $count) {
+                $chartArray[$dayOfWeek] = $count;
+            }
 
-        $arr = [0, 0, 0, 0, 0, 0, 0];
-        foreach ($results as $result) {
-            $arr[$result->den - 1] = $result->day_count;
-        }
-
-        return $arr;
+            return $chartArray;
+        });
     }
 
     public function getCountOfDaysInTime(User $user, $date = null)
     {
-        if ($date) {
-            return $user->days()->whereDate('date', '>=', $date->toDateString())->count();
-        }
+        $cacheKey = "user:{$user->id}:days_count:".($date?->toDateString() ?? 'all');
 
-        return $user->days()->count();
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($user, $date) {
+            return $date
+                ? $user->days()->whereDate('date', '>=', $date->toDateString())->count()
+                : $user->days()->count();
+        });
     }
 
     private function transformDate($dateString)
