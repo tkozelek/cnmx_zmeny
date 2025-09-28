@@ -26,8 +26,8 @@ class ViewServiceProvider extends ServiceProvider
     public function boot()
     {
         // Use a view composer to pass the new user count to the layout view
-        View::composer('components.layout', function ($view) {
-            $userController = app(UserController::class);
+        View::composer('components.layout_old', function ($view) {
+            $userController = new UserController;
             $newUserCount = $userController->getNewUserCount();
             $view->with('newUserCount', $newUserCount);
         });

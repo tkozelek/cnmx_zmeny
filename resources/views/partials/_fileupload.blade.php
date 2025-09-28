@@ -50,6 +50,35 @@
                                     <span class="ml-2 hidden sm:inline">Otvoriť</span>
                                 </button>
 
+                                <!-- Modal -->
+                                <div
+                                    id="imageModal"
+                                    tabindex="-1"
+                                    aria-hidden="true"
+                                    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
+                                >
+                                    <div class="relative w-full max-w-2xl max-h-full">
+                                        <!-- Modal content -->
+                                        <div class="relative bg-transparent rounded-lg shadow dark:bg-gray-700">
+                                            <!-- Modal header -->
+                                            <div class="flex justify-between rounded-t-lg dark:border-gray-600">
+                                                <button
+                                                    type="button"
+                                                    class="text-gray-400 bg-transparent rounded-lg text-sm p-3 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
+                                                    data-modal-hide="imageModal"
+                                                >
+                                                    <i class="fa fa-x"></i>
+                                                    <span class="sr-only">Close modal</span>
+                                                </button>
+                                            </div>
+                                            <!-- Modal body -->
+                                            <div class="flex justify-center">
+                                                <img id="modalImage" src="" alt="Preview" class="max-w-full rounded-lg" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             @endif
                             <a href="{{ route('files.download', ['file' => $file->id]) }}" class="flex items-center justify-center p-2 bg-green-600 hover:bg-green-500 rounded-md transition-colors duration-150" title="Stiahnuť">
                                 <i class="fa-solid fa-download"></i>
@@ -80,34 +109,7 @@
         @endif
     </div>
 </div>
-<!-- Modal -->
-<div
-    id="imageModal"
-    tabindex="-1"
-    aria-hidden="true"
-    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
->
-    <div class="relative w-full max-w-2xl max-h-full">
-        <!-- Modal content -->
-        <div class="relative bg-transparent rounded-lg shadow dark:bg-gray-700">
-            <!-- Modal header -->
-            <div class="flex justify-between rounded-t-lg dark:border-gray-600">
-                <button
-                    type="button"
-                    class="text-gray-400 bg-transparent rounded-lg text-sm p-3 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white"
-                    data-modal-hide="imageModal"
-                >
-                    <i class="fa fa-x"></i>
-                    <span class="sr-only">Close modal</span>
-                </button>
-            </div>
-            <!-- Modal body -->
-            <div class="flex justify-center">
-                <img id="modalImage" src="" alt="Preview" class="max-w-full rounded-lg" />
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <script>
     document.querySelectorAll('.open-image-modal').forEach(button => {

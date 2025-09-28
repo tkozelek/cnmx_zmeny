@@ -49,7 +49,7 @@
                     <form class="flex" action="{{ route('admin.users.destroy', ['user' => $user->id]) }}" method="POST">
                         @method('DELETE')
                         @csrf
-                        <button type="submit" class="w-full text-white bg-red-900 hover:bg-red-950 rounded-xl py-2 font-bold tracking-widest uppercase">zmazať</button>
+                        <button type="submit" class="w-full text-white bg-red-900 hover:bg-red-950 rounded-xl py-2 font-bold tracking-widest uppercase" onclick="return confirm('Určite chceš zmazať tento účet?');">zmazať</button>
                     </form>
                 </div>
             </div>

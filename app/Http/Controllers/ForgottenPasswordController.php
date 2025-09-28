@@ -24,12 +24,17 @@ class ForgottenPasswordController extends Controller
             $request->only('email')
         );
 
-        return back()->with(['message' => __($status)]);
+        return $status == Password::RESET_LINK_SENT
+        ? back()->with(['status' => __($status)])
+        : back()->with(['error' => __($status)]);
     }
 
-    public function show($token)
+    public function show($token, Request $request)
     {
-        return view('passwordreset.passwordform', ['token' => $token]);
+        return view('passwordreset.passwordform', [
+            'token' => $token,
+            'email' => $request->email ?? null,
+        ]);
     }
 
     public function store(Request $request)

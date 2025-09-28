@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRegistrationRequest;
 use App\Models\User;
-use App\Services\FileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -13,16 +12,6 @@ use Str;
 
 class UserController extends Controller
 {
-    protected $fileService;
-
-    /**
-     * Create a new controller instance.
-     */
-    public function __construct(FileService $fileService)
-    {
-        $this->fileService = $fileService;
-    }
-
     public function create()
     {
         return view('users.register');
@@ -55,7 +44,7 @@ class UserController extends Controller
         $user = auth()->user();
 
         if (! Hash::check($request->get('current_password'), $user->password)) {
-            return back()->with('error', 'Zle aktuálne heslo.');
+            return back()->with('message', 'Zle aktuálne heslo.');
         }
 
         $user->password = Hash::make($formFields['new_password']);

@@ -11,7 +11,7 @@
                         <input type="hidden" name="token" value="{{ $token }}">
                         <div>
                             <label for="email" class="block mb-2 text-sm font-medium  text-white">E-mailová adresa</label>
-                            <input type="text" value="{{ old('email') }}" name="email" id="email" placeholder="E-mailová adresa" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" >
+                            <input type="text" value="{{ $email ? $email : (old('email') ? old('email') : '') }}" name="email" id="email" placeholder="E-mailová adresa" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" >
                             @error('email')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
@@ -24,8 +24,8 @@
                             @enderror
                         </div>
                         <div>
-                            <label for="password" class="block mb-2 text-sm font-medium  text-white">Nové heslo znova</label>
-                            <input type="password" name="password_confirmation" id="password" placeholder="Zopakuj nové heslo" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" >
+                            <label for="password_confirmation" class="block mb-2 text-sm font-medium  text-white">Nové heslo znova</label>
+                            <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Zopakuj nové heslo" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" >
                             @error('password_confirmation')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror

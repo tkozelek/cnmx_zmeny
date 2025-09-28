@@ -23,7 +23,7 @@ class UserButton extends Component
     {
         // Handle adding or removing user logic here
         // You can emit an event to parent component to update users list
-        $this->dispatch('addUser');
+        $this->emit('addUser');
     }
 
     public function render()
