@@ -18,10 +18,10 @@ $(document).ready(function() {
     }
 
     let addButton = $('.add-user-btn');
-    // Click event handler for adding a user
-    // call the ajax function
+
     addButton.click(function() {
         let clickedButton = $(this);
+
         let day = clickedButton.data('day');
         let popis = $('#extra_popis').val();
         ajaxRequest(addUserUrl, 'POST', { day: day, popis: popis }, function(response) {
@@ -36,13 +36,14 @@ $(document).ready(function() {
                 clickedButton.removeClass('bg-red-300 hover:bg-red-400').addClass('bg-green-300 hover:bg-green-600').text('ODPISAŤ');
                 showToast("Deň zapísaný.", "success");
             }
+            toggleDateStatus(clickedButton);
 
             let usersContainer = $('#c-' + day).find('.users-container');
             usersContainer.empty(); // Clear existing users
             response['users'].forEach(function (user) {
                 let isBlocked = user.id_role === 4;
 
-                let userDiv = $('<div>').addClass('bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md text-lg rows px-1 flex items-center');
+                let userDiv = $('<div>').addClass('bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md text-md rows px-1 flex items-center');
 
                 if (isBlocked) {
                     userDiv.addClass('line-through justify-center');
@@ -58,12 +59,21 @@ $(document).ready(function() {
 
                 usersContainer.append(userDiv);
             });
-        }, function(xhr, status, error) {
-            console.log("error");
-            console.error(xhr.responseText);
+        }, function(response) {
+            showToast("Nemáš prístup.");
+            console.log(response.json());
         });
     });
 });
+
+function toggleDateStatus(dayButton) {
+    let status = $(dayButton).data('status');
+
+    let newStatus = status === 0 ? 1 : 0;
+
+    dayButton.data('status', newStatus);
+    dayButton.attr('data-status', newStatus);
+}
 
 function showToast(message, type = 'success', icon = '') {
     window.dispatchEvent(new CustomEvent('toast', {
@@ -77,7 +87,6 @@ $(document).ready(function() {
     });
 });
 
-
 let options = {
     language: "sk",
     weekStart: "1",
@@ -90,7 +99,7 @@ let options = {
 };
 
 
-let dateRangePickerEl = document.getElementById('daterangepicker'); 
+let dateRangePickerEl = document.getElementById('daterangepicker');
 if (dateRangePickerEl)
     new DateRangePicker(dateRangePickerEl, options);
 
@@ -106,7 +115,7 @@ $(document).ready(function() {
             },
             type: 'DELETE',
             success: function(response) {
-                
+
                 if (response['status'] === 200) {
                     showToast("Súbor zmazaný.", "warning");
                 }

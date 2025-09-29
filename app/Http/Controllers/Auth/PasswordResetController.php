@@ -1,34 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Str;
 
-class ForgottenPasswordController extends Controller
+class PasswordResetController extends Controller
 {
-    public function index()
-    {
-        return view('passwordreset.index');
-    }
-
-    public function send(Request $request)
-    {
-        $request->validate(['email' => 'required|email']);
-
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
-
-        return $status == Password::RESET_LINK_SENT
-        ? back()->with(['status' => __($status)])
-        : back()->with(['error' => __($status)]);
-    }
-
     public function show($token, Request $request)
     {
         return view('passwordreset.passwordform', [
