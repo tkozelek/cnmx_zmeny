@@ -85,7 +85,7 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->id_role === config('constants.role.admin');
+        return $this->id_role == config('constants.roles.admin');
     }
 
     public function getCreatedAtAttribute($date)

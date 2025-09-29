@@ -5,9 +5,9 @@
     @if($locked)
         <x-day-button :id="$day->id" class="bg-gray-300" disabled>ZAMKNUTÝ</x-day-button>
     @elseif(isset($day->users) && App\Helpers::findIdInArray(auth()->user()->id, $day->users))
-        <x-day-button :id="$day->id" class="bg-green-300 hover:bg-green-600">ODPISAŤ</x-day-button>
+        <x-day-button :id="$day->id" selected="1" class="bg-green-300 hover:bg-green-600">ODPISAŤ</x-day-button>
     @else
-        <x-day-button :id="$day->id" class="bg-red-300 hover:bg-red-400">ZAPISAŤ</x-day-button>
+        <x-day-button :id="$day->id" selected="0" class="bg-red-300 hover:bg-red-400">ZAPISAŤ</x-day-button>
     @endif
 
     <div class="bg-gray-800 text-white py-1 rounded-t-sm shadow-md tracking-wide">

@@ -12,28 +12,28 @@
                             <label for="subject" class="block mb-2 text-sm font-medium text-white">Predmet</label>
                             <input type="text" value="{{ old('subject') }}" name="subject" id="subject" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Predmet hlásenia">
                             @error('subject')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
                             <label for="where" class="block mb-2 text-sm font-medium text-white">Kde sa to stalo</label>
                             <input type="text" value="{{ old('where') }}" name="where" id="where" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Kde chyba nastala">
                             @error('where')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
                             <label for="description" class="block mb-2 text-sm font-medium text-white">Popis chyby</label>
                             <textarea name="description" id="description" rows="4" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Popíšte chybu"></textarea>
                             @error('description')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
                             <label for="file" class="block mb-2 text-sm font-medium text-white">Snímka obrazovky</label>
-                            <input accept=".jpg, .jpeg, .png, .bmp" type="file" name="file" id="file" class="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <input accept=".jpg, .jpeg, .png, .bmp" type="file" name="file" id="file" class="block bg-gray-700 border-gray-600 rounded-lg w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                             @error('file')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <button type="submit" class="w-full text-white bg-slate-900 hover:bg-slate-950 rounded-xl py-4 font-bold tracking-widest uppercase">Nahlásiť</button>
@@ -44,7 +44,7 @@
         @if(count($bugs) > 0 && auth()->user()->hasRole(config('constants.roles.admin')))
             <div class="my-10 container mx-auto">
                 <div class="text-white font-bold tracking-wider text-xl uppercase">Nahlásené chyby</div>
-                <div class="overflow-x-auto"> <!-- Added wrapper for horizontal scroll -->
+                <div class="overflow-x-auto">
                     <table class="table-auto w-full text-sm text-left rtl:text-right text-gray-300 text-gray-400">
                         <thead class="text-xs uppercase bg-gray-600 text-gray-200">
                         <tr>

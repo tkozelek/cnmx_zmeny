@@ -10,11 +10,8 @@ use Str;
 
 class HolidayController extends Controller
 {
-
-    private HolidayService $holidayService;
-
-    public function __construct(HolidayService $holidayService) {
-        $this->holidayService = $holidayService;
+    public function __construct(private readonly HolidayService $holidayService)
+    {
     }
 
     public function index()
@@ -69,7 +66,8 @@ class HolidayController extends Controller
         if ($holiday->id_user != auth()->user()->id && ! auth()->user()->hasRole(config('constants.roles.admin'))) {
             abort(401, 'Nemáš prístup');
         }
-        if (now() <= $holiday->date_to->addWeek() && ! auth()->user()->hasRole(config('constants.roles.admin'))) {
+        if ((now() <= $holiday->date_to->addWeek() || now() <= $holiday->date_canceled->addWeek())
+            && ! auth()->user()->hasRole(config('constants.roles.admin'))) {
             abort(403, 'Zakázané.');
         }
 

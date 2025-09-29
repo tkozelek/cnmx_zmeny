@@ -1,30 +1,42 @@
-<nav class="hidden flex-grow items-center pb-4 md:pb-0 md:flex md:justify-end md:flex-row">
+<nav class="hidden w-full flex-grow items-center pb-4 md:container md:pb-0 md:flex md:justify-end md:flex-row">
     @auth
         @if(auth()->user()->hasRole(3))
-            <a class="relative px-4 py-2 mt-2 text-sm font-semibold rounded-lg hover:bg-gray-700 md:mt-0 transition-colors duration-200" href="{{route('admin.users.index')}}">
+            <x-nav-link
+                class="relative"
+                icon='<i class="fa-solid fa-user"></i>'
+                route="admin.users.index"
+            >
                 Používatelia
                 @if(isset($newUserCount) && $newUserCount > 0)
-                    <span class="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 items-center justify-center text-xs text-white">
-                                    {{ $newUserCount }}
-                                </span>
-                            </span>
+                    <span class="absolute top-1 right-1 -mt-1 -mr-1 flex h-4 w-4">
+                        <span class="animate-ping absolute inline-flex h-4 w-4 text-xs font-bold bg-red-500 border-2 border-gray-900 rounded-full"></span>
+                        <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 items-center justify-center text-xs text-white">
+                            {{ $newUserCount }}
+                        </span>
+                    </span>
                 @endif
-            </a>
+            </x-nav-link>
         @endif
-        <a class="px-4 py-2 mt-2 text-sm font-semibold rounded-lg hover:bg-gray-700 md:mt-0 md:ml-2 transition-colors duration-200" href="{{route('holiday.index')}}">Absencia</a>
+        <x-nav-link
+            icon='<i class="fa fa-calendar"></i>'
+            route="holiday.index"
+        >
+            Absencie
+        </x-nav-link>
     @endauth
-
-    <a class="{{ Route::is('help') ? 'bg-blue-600' : '' }} px-4 py-2 mt-2 text-sm font-semibold rounded-lg hover:bg-gray-700 md:mt-0 md:ml-2 transition-colors duration-200 flex items-center" href="{{route('help')}}">
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <x-nav-link
+        icon='<i class="fa-solid fa-circle-question"></i>'
+        route="help"
+    >
         Pomoc
-    </a>
+    </x-nav-link>
     @auth
-        <a class="{{ Route::is('bugreport.index') ? 'bg-blue-600' : '' }} px-4 py-2 mt-2 text-sm font-semibold rounded-lg hover:bg-gray-700 md:mt-0 md:ml-2 transition-colors duration-200 flex items-center" href="{{route('bugreport.index')}}">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <x-nav-link
+            icon='<i class="fa-solid fa-bug"></i>'
+            route="bugreport.index"
+        >
             Nahlásiť chybu
-        </a>
+        </x-nav-link>
     @endauth
 
     <div class="hidden md:block w-px h-6 bg-gray-600 mx-4"></div>

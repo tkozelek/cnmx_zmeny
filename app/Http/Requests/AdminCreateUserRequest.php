@@ -5,14 +5,14 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UserRegistrationRequest extends FormRequest
+class AdminCreateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return auth()->check() && auth()->user()->isAdmin();
     }
 
     /**
@@ -26,12 +26,7 @@ class UserRegistrationRequest extends FormRequest
             'name' => ['required'],
             'lastname' => ['required'],
             'email' => ['required', 'email', Rule::unique('users', 'email')],
-            'password' => 'required|confirmed|min:5',
+            'id_role' => 'required',
         ];
-    }
-
-    public function messages()
-    {
-        return config('constants.messages');
     }
 }

@@ -1,3 +1,7 @@
+@php
+    $activeClass = 'bg-blue-700';
+@endphp
+
 <div x-show="open"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
@@ -11,29 +15,66 @@
     <nav class="flex w-full flex-col items-center space-y-3 p-8 text-center">
         @auth
             @if(auth()->user()->hasRole(3))
-                <a class="relative w-full rounded-lg py-3 text-xl font-semibold transition-colors duration-200 hover:bg-gray-800" href="{{route('admin.users.index')}}">
+                <x-nav-link
+                    class="relative"
+                    route="admin.users.index"
+                    :is-mobile="true"
+                    icon='<i class="fa-solid fa-users"></i>'
+                >
                     Používatelia
                     @if(isset($newUserCount) && $newUserCount > 0)
-                        <span class="absolute top-1/2 right-1/4 -translate-y-1/2 flex h-5 w-5">
-                            <span class="relative inline-flex items-center justify-center rounded-full h-5 w-5 bg-red-500 text-xs text-white">
+                        <span class="animate-ping absolute inline-flex w-6 h-6 text-xs font-bold bg-red-500 border-2 border-gray-900 rounded-full -top-2"></span>
+                        <div class="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 rounded-full -top-2 border-gray-900">
+                            <span>
                                 {{ $newUserCount }}
                             </span>
-                        </span>
+                        </div>
                     @endif
-                </a>
+                </x-nav-link>
             @endif
-            <a class="w-full rounded-lg py-3 text-xl font-semibold transition-colors duration-200 hover:bg-gray-800" href="{{ route('holiday.index') }}">Absencia</a>
+            <x-nav-link
+                route="holiday.index"
+                :is-mobile="true"
+                icon='<i class="fa-solid fa-calendar-days"></i>'
+            >
+                Absencia
+            </x-nav-link>
         @endauth
 
-        <a class="{{ Route::is('help') ? 'bg-blue-600' : '' }} flex w-full items-center justify-center rounded-lg py-3 text-xl font-semibold transition-colors duration-200 hover:bg-gray-800" href="{{ route('help') }}">Pomoc</a>
+        <x-nav-link
+            route="help"
+            :is-mobile="true"
+            icon='<i class="fa-solid fa-circle-question"></i>'
+        >
+            Nahlásiť chybu
+        </x-nav-link>
 
         @auth
-            <a class="flex w-full items-center justify-center rounded-lg py-3 text-xl font-semibold transition-colors duration-200 hover:bg-gray-800" href="{{ route('bugreport.index') }}">Nahlásiť chybu</a>
-            <div class="my-2 w-1/2 border-t border-gray-700"></div>
-            <a class="w-full rounded-lg py-3 text-xl font-semibold transition-colors duration-200 hover:bg-gray-800" href="{{route('settings.password')}}">Zmena hesla</a>
-            <a class="w-full rounded-lg py-3 text-xl font-semibold text-red-400 transition-colors duration-200 hover:bg-red-500 hover:text-white" href="{{ url('/logout') }}">Odhlásiť</a>
+            <x-nav-link
+                route="bugreport.index"
+                :is-mobile="true"
+                icon='<i class="fa-solid fa-bug"></i>'
+            >
+                Nahlásiť chybu
+            </x-nav-link>
+            <x-divider/>
+            <x-nav-link
+                route="changePassword"
+                :is-mobile="true"
+                icon='<i class="fa-solid fa-key"></i>'
+            >
+                Zmena hesla
+            </x-nav-link>
+            <x-nav-link
+                class="!text-red-400 hover:!bg-red-500 hover:!text-white"
+                route="logout"
+                :is-mobile="true"
+                icon='<i class="fa-solid fa-right-from-bracket"></i>'
+            >
+                Odhlásenie
+            </x-nav-link>
         @else
-            <div class="my-2 w-1/2 border-t border-gray-700"></div>
+            <x-divider/>
             <a class="{{ Route::is('login') ? 'bg-blue-600' : '' }} w-full rounded-lg py-3 text-xl font-semibold transition-colors duration-200 hover:bg-gray-800" href="{{ route('login') }}">Prihlásenie</a>
             <a class="{{ Route::is('register') ? 'bg-blue-600' : '' }} mt-2 w-full rounded-lg py-3 text-xl font-semibold text-white transition-colors duration-200 hover:bg-gray-800" href="{{ route('register') }}">Registrácia</a>
         @endauth
