@@ -44,7 +44,7 @@ return new class extends Migration
                 'name' => 'Tomáš',
                 'lastname' => 'Kozelek',
                 'email' => 'tommyside@centrum.sk',
-                'password' => '$2y$10$.FQSZD7o9iHQDaP8VVmkHejs2PiWH1wixRGIjMVP19AQOHnIcxaA.',
+                'password' => '$2a$10$xGRwu3trDMamCNdCinNTfuF66CPFW.NvqFmboWVp8e.J7i1/Mqkvm',
                 'remember_token' => null,
                 'created_at' => '2024-05-24 13:09:53',
                 'updated_at' => '2024-05-24 13:09:53',

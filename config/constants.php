@@ -29,5 +29,5 @@ return [
         'new_password.min' => 'Heslo je moc kratke. Musi mat aspon 5 znakov.',
         'current_password' => 'Aktuálne heslo je potrebné.',
         'new_password.confirmed' => 'Hesla sa nezhoduju.',
-    ]
+    ],
 ];

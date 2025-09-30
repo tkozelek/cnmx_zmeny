@@ -9,15 +9,6 @@ use App\Models\User;
 
 class AdminUserEditController extends Controller
 {
-    public function update(AdminUserEditRequest $request, User $user)
-    {
-        $formFields = $request->validated();
-
-        $user->update($formFields);
-
-        return redirect('/admin/pouzivatelia')->with(['message' => 'Uspesne zmenene.', 'edit' => 'yes']);
-    }
-
     public function edit(User $user)
     {
         $roles = Role::all();
@@ -26,5 +17,14 @@ class AdminUserEditController extends Controller
             'user' => $user,
             'roles' => $roles,
         ]);
+    }
+
+    public function update(AdminUserEditRequest $request, User $user)
+    {
+        $formFields = $request->validated();
+
+        $user->update($formFields);
+
+        return redirect('/admin/pouzivatelia')->with(['message' => 'Uspesne zmenene.', 'edit' => 'yes']);
     }
 }

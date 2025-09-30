@@ -107,6 +107,8 @@ $(document).ready(function() {
     $('.delete-file').click(function() {
         let token = $('meta[name="csrf-token"]').attr('content');
         var fileId = $(this).data('file-id');
+        var element = $('[div-file-id="' + fileId + '"]');
+        console.log(element);
 
         $.ajax({
             url: '/upload/' + fileId + '/destroy',
@@ -115,9 +117,9 @@ $(document).ready(function() {
             },
             type: 'DELETE',
             success: function(response) {
-
                 if (response['status'] === 200) {
                     showToast("Súbor zmazaný.", "warning");
+                    element.remove();
                 }
             },
             error: function(xhr, status, error) {
@@ -128,25 +130,21 @@ $(document).ready(function() {
     });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const togglePassword = document.getElementById('togglePassword');
+function togglePasswordVisibility(inputId) {
+    const passwordInput = document.getElementById(inputId);
+    const icon = document.getElementById(inputId + 'Icon');
 
-    if (togglePassword) {
-        togglePassword.addEventListener('click', function() {
-            const passwordInput = document.getElementById('password');
-            const eyeIcon = document.getElementById('eyeIcon');
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            if (type === 'password') {
-                eyeIcon.classList.remove('fa-eye-slash');
-                eyeIcon.classList.add('fa-eye');
-            } else {
-                eyeIcon.classList.remove('fa-eye');
-                eyeIcon.classList.add('fa-eye-slash');
-            }
-        });
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
     }
-});
+}
+window.togglePasswordVisibility = togglePasswordVisibility;
 
 document.addEventListener('DOMContentLoaded', function() {
     Chart.register(...registerables);
@@ -192,5 +190,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    const element = document.getElementById('my-dropzone');
+
+    if (element) {
+        const myDropzone = new Dropzone("#my-dropzone", {
+            url: fileUpload,
+            paramName: "file",
+            maxFilesize: 2,
+        });
+
+        myDropzone.on('queuecomplete', function () {
+            showToast('Nahrávanie dokončené.')
+            setTimeout(function () {
+                window.location.search += '&show=files';
+            }, 1000);
+        });
+    }
 });
+
+
+
 

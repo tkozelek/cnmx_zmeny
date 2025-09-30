@@ -2,9 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Mail\UserAllowedToLogin;
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
+use App\Notifications\UserAllowedToLogin;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -58,7 +57,8 @@ class UserTable extends Component
         $user->id_role = config('constants.roles.brigadnik');
         $user->save();
 
-        Mail::to($user->email)->queue(new UserAllowedToLogin($user));
+        $user->notify(new UserAllowedToLogin($user));
+        $this->dispatch('toast', message: 'Používateľ overený.');
     }
 
     public function deny(User $user)

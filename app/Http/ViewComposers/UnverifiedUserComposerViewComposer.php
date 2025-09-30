@@ -9,11 +9,11 @@ class UnverifiedUserComposerViewComposer
 {
     public function compose(View $view)
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return;
         }
         $user = auth()->user();
-        if (!$user->hasRole(config('constants.roles.admin'))) {
+        if (! $user->hasRole(config('constants.roles.admin'))) {
             return;
         }
         $newUserCount = User::where('id_role', config('constants.roles.neovereny'))->count();

@@ -10,6 +10,7 @@ class AdminUserEditRequest extends FormRequest
     public function rules(): array
     {
         $userId = $this->route('user')->id ?? null;
+
         return [
             'name' => ['required'],
             'lastname' => ['required'],
@@ -23,7 +24,8 @@ class AdminUserEditRequest extends FormRequest
         return auth()->check() && auth()->user()->isAdmin();
     }
 
-    public function messages(): array {
+    public function messages(): array
+    {
         return config('constants.messages');
     }
 }

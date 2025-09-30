@@ -16,7 +16,7 @@ class DayUserController extends Controller
 
         $popis = $request->input('popis');
         $toggleResult = $day->users()->toggle([
-            auth()->id() => ['popis' => $popis]
+            auth()->id() => ['popis' => $popis],
         ]);
 
         if (! empty($toggleResult['attached'])) {
@@ -30,7 +30,7 @@ class DayUserController extends Controller
         return response()->json([
             'message' => $message,
             'users' => $day->fresh('users')->users,
-            'status' => $status
+            'status' => $status,
         ]);
     }
 
