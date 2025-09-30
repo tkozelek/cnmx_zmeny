@@ -20,10 +20,13 @@ class FileService
     public function deleteFile(File $file): bool
     {
         if (! Storage::disk('public')->exists($file->path)) {
+            if ($file) {
+                $file->delete();
+            }
+
             return false;
         }
 
-        // Delete the file and the model
         Storage::disk('public')->delete($file->path);
         $file->delete();
 

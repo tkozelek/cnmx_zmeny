@@ -1,6 +1,6 @@
 <nav class="hidden w-full flex-grow items-center pb-4 md:container md:pb-0 md:flex md:justify-end md:flex-row">
     @auth
-        @if(auth()->user()->hasRole(3))
+        @if(auth()->user()->isAdmin())
             <x-nav-link
                 class="relative"
                 icon='<i class="fa-solid fa-user"></i>'

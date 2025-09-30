@@ -6,13 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AdminCreateUserRequest;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Notifications\AddUserResetPassword;
+use App\Services\FileService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\Rule;
+use Str;
 
 class AdminUserController extends Controller
 {
+    public function __construct(private readonly FileService $fileService) {}
+
     public function index()
     {
         $roles = Role::all();
@@ -32,16 +35,29 @@ class AdminUserController extends Controller
 
         $user = User::create($formFields);
         try {
-            $status = Password::broker('add_user')->sendResetLink(['email' => $formFields['email']]);
+            $token = Password::broker('add_user')->createToken($user);
+            $user->notify(new AddUserResetPassword($token));
         } catch (\Exception $e) {
             $user->delete();
-            return back()->with(['error' => 'Nastala chyba, kontaktujte administrátora.']);
-        }
 
-        if ($status != Password::RESET_LINK_SENT) {
             return back()->with(['error' => 'Nastala chyba, kontaktujte administrátora.']);
         }
 
         return back()->with(['message' => 'Pouzivatel uspesne vytvoreny']);
+    }
+
+    public function destroy(User $user)
+    {
+        $files = $user->files();
+
+        foreach ($files as $file) {
+            $this->fileService->deleteFile($file);
+        }
+        $user->days()->detach();
+        $user->holidays()->delete();
+
+        $user->delete();
+
+        return to_route('admin.users.index')->with(['message' => 'Účet zmazaný.']);
     }
 }

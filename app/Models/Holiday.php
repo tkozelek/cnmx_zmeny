@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Traits\Loggable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class Holiday extends Model
 {
@@ -17,14 +17,14 @@ class Holiday extends Model
     protected $casts = [
         'date_from' => 'date',
         'date_to' => 'date',
-        'date_canceled' => 'date',
+        'date_canceled' => 'datetime:d.m.Y H:i:s',
     ];
 
     protected $fillable = [
         'date_from', 'date_to', 'popis',
     ];
 
-    public function scopeForWeek(Builder $query, Week $week) : Builder
+    public function scopeForWeek(Builder $query, Week $week): Builder
     {
         return $query
             ->where('date_from', $week->date_from)

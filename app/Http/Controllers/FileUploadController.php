@@ -24,19 +24,18 @@ class FileUploadController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'file' => 'required|file|mimes:pdf,xlsx,xls,jpg,jpeg,png,gif|max:2048',
+            'file' => 'required|file|mimes:pdf,xlsx,xls,jpg,jpeg,png,gif,webp|max:2048',
             'id_week' => 'required|integer',
         ]);
 
-        $fileModel = $this->fileService->uploadFile($validated['file'], $request->id_week);
-        $file = $request->file('file');
-        $ext = $file->getClientOriginalExtension();
+        $this->fileService->uploadFile($validated['file'], $request->id_week);
+        $request->file('file');
 
         // if ($ext === 'xlsx' || $ext === 'xls') {
         // $this->fileService->createScreenshot($ext, $fileModel->path, $request->id_week, basename($file->getClientOriginalName(), '.'.$ext));
         // }
 
-        return response()->json(['success' => 'Súbor úspešné nahraný.', 'status' => 200]);
+        return response()->json('success');
     }
 
     /**
@@ -69,7 +68,7 @@ class FileUploadController extends Controller
                 'status' => 200,
             ]);
         } else {
-            return response()->json(['success' => false, 'error' => 'File was not found', 'status' => 404]);
+            return response()->json(['success' => false, 'error' => 'File was not found', 'status' => 404], 404);
         }
 
     }

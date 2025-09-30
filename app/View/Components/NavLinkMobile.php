@@ -7,10 +7,7 @@ use Illuminate\View\Component;
 
 class NavLinkMobile extends Component
 {
-
-    public function __construct(public string $route, public bool $isMobile = false)
-    {
-    }
+    public function __construct(public string $route, public bool $isMobile = false) {}
 
     public function render(): View
     {

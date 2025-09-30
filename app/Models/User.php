@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\AddUserResetPassword;
 use App\Notifications\ResetPasswordNotification;
 use App\Traits\Loggable;
 use Carbon\Carbon;
@@ -10,6 +11,7 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Password;
 
 class User extends Authenticatable
 {
@@ -110,6 +112,10 @@ class User extends Authenticatable
 
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new ResetPasswordNotification($token));
+        if (Password::getDefaultDriver() === 'add_user') {
+            $this->notify(new AddUserResetPassword($token));
+        } else {
+            $this->notify(new ResetPasswordNotification($token));
+        }
     }
 }

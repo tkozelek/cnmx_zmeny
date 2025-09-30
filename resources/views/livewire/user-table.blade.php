@@ -1,5 +1,5 @@
 <div>
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
+    <div class="md:container mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div class="bg-gray-800 shadow-xl rounded-lg overflow-hidden">
 
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 bg-gray-700/50 border-b border-gray-700">

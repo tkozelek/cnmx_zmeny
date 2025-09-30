@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminUserEditController;
 use App\Http\Controllers\Auth\LoginController;
@@ -57,11 +56,11 @@ Route::middleware(['role:3'])->prefix('admin')->group(function () {
 
     Route::get('/{user}', [AdminUserEditController::class, 'edit'])->name('admin.users.edit');
     Route::put('/{user}', [AdminUserEditController::class, 'update'])->name('admin.users.update');
-    Route::delete('/{user}/destroy', [UserController::class, 'destroy'])->name('admin.users.destroy');
+    Route::delete('/{user}/destroy', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
 
     Route::get('/{week}/lock', [CalendarController::class, 'lock'])->name('admin.calendar.lock');
     Route::get('/{week}/export', [CalendarController::class, 'export'])->name('admin.calendar.export');
-    Route::post('/{day}/{user}/destroy', [CalendarController::class, 'destroy'])->name('admin.calendar.userdestroy');
+    Route::post('/{day}/{user}/destroy', [DayUserController::class, 'destroy'])->name('admin.calendar.userdestroy');
 
 });
 

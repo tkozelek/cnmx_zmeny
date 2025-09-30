@@ -2,7 +2,7 @@
     $activeClass = 'bg-blue-700';
 @endphp
 
-<div x-show="open"
+<div x-show="openn"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"
@@ -10,11 +10,11 @@
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
      class="fixed inset-0 z-40 flex h-screen w-screen items-center justify-center bg-slate-900/95 backdrop-blur-sm md:hidden"
-     @click.away="open = false"
+     @click.away="openn = false"
      style="display: none;">
     <nav class="flex w-full flex-col items-center space-y-3 p-8 text-center">
         @auth
-            @if(auth()->user()->hasRole(3))
+            @if(auth()->user()->isAdmin())
                 <x-nav-link
                     class="relative"
                     route="admin.users.index"
@@ -59,7 +59,7 @@
             </x-nav-link>
             <x-divider/>
             <x-nav-link
-                route="changePassword"
+                route="settings.password"
                 :is-mobile="true"
                 icon='<i class="fa-solid fa-key"></i>'
             >

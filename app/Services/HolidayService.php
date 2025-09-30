@@ -26,7 +26,7 @@ class HolidayService
                 $query->where('id_user', $user->id);
             })
             ->where(function ($query) {
-                $query->where('date_to', '<', Carbon::now()->format('Y-m-d'))
+                $query->where('date_to', '<', Carbon::now())
                     ->orWhereNotNull('date_canceled');
             })
             ->orderBy('date_to', 'desc')

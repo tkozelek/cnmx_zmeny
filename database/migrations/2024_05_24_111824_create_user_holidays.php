@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('popis', 255)->nullable();
             $table->dateTime('date_from');
             $table->dateTime('date_to');
-            $table->date('date_canceled')->nullable();
+            $table->dateTime('date_canceled')->nullable();
             $table->timestamps();
             $table->mediumInteger('id_user')->unsigned();
 

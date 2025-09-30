@@ -21,7 +21,7 @@
             addToast('{{ session('message') }}', 'success', '{{ session('icon', 'fa fa-check') }}');
         @elseif(session('error'))
             addToast('{{ session('error') }}', 'error', '{{ session('icon', 'fa fa-x') }}');
-        @elseif(session('info'))
+        @elseif(session('info') || session('status'))
             addToast('{{ session('status') }}', 'info', '{{ session('icon', 'fa fa-info') }}');
         @elseif(session('warning'))
             addToast('{{ session('warning') }}', 'warning', '{{ session('icon', 'fa fa-exclamation-triangle') }}');

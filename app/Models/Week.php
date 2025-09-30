@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Loggable;
 use Illuminate\Database\Eloquent\Model;
 
 class Week extends Model
 {
+    use Loggable;
+
     protected $attributes = [
         'locked' => 0,
     ];
