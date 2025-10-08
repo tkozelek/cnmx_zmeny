@@ -3,45 +3,51 @@
 namespace App\Services;
 
 use App\Models\File;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class FileService
 {
-    public function uploadFile(Request $request)
+    public function uploadFile($file, $week, $folder = 'uploads'): File
     {
-        $file = $request->file('file');
-        $fileName = $file->getClientOriginalName();
-        $filePath = $file->storeAs('uploads', $fileName, 'public');
-
-        // Gather file details
-        $fileSize = $file->getSize();
-        $fileMimeType = $file->getMimeType();
+        Storage::disk('public')->makeDirectory($folder);
+        $fileName = now()->format('YmdHis').'_'.$file->getClientOriginalName();
+        $filePath = $file->storeAs($folder, $fileName, 'public');
 
         // Create and save the File model
-        $fileModel = new File();
-        $fileModel->filename = $fileName;
-        $fileModel->path = $filePath;
-        $fileModel->size = $fileSize;
-        $fileModel->mime_type = $fileMimeType;
-        $fileModel->id_user = auth()->id();
-        $fileModel->id_week = $request->id_week;
-        $fileModel->is_shown = 1;
-        $fileModel->save();
-
-        return $fileModel;
+        return $this->createAndSaveTheFileModel($fileName, $filePath, $week, 1);
     }
 
-    public function deleteFile(File $file)
+    public function deleteFile(File $file): bool
     {
         if (! Storage::disk('public')->exists($file->path)) {
+            if ($file) {
+                $file->delete();
+            }
+
             return false;
         }
 
-        // Delete the file and the model
         Storage::disk('public')->delete($file->path);
         $file->delete();
 
         return true;
+    }
+
+    /**
+     * @param  $file
+     */
+    public function createAndSaveTheFileModel(string $fileName, mixed $filePath, $week, $visible): File
+    {
+        $fileModel = new File;
+        $fileModel->filename = $fileName;
+        $fileModel->path = $filePath;
+        $fileModel->size = Storage::disk('public')->size($filePath);
+        $fileModel->mime_type = Storage::disk('public')->mimeType($filePath);
+        $fileModel->id_user = auth()->id();
+        $fileModel->id_week = $week;
+        $fileModel->is_shown = $visible;
+        $fileModel->save();
+
+        return $fileModel;
     }
 }

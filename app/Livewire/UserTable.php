@@ -2,9 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Mail\UserAllowedToLogin;
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
+use App\Notifications\UserAllowedToLogin;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -32,10 +31,10 @@ class UserTable extends Component
             $query->where('id_role', $this->selectedRole);
         }
         if ($this->search != '') {
-            $query->search('lastname', $this->search);
+            $query->whereAny(['name', 'lastname', 'email'], 'LIKE', '%'.$this->search.'%');
         }
 
-        $users = $query->with('role')->orderBy($this->sortField, $this->sortDirection)->simplePaginate(1);
+        $users = $query->with('role')->orderBy($this->sortField, $this->sortDirection)->paginate(10);
 
         return view('livewire.user-table', [
             'users' => $users,
@@ -55,20 +54,15 @@ class UserTable extends Component
 
     public function accept(User $user)
     {
-        if (! auth()->user()->hasRole(config('constants.roles.admin'))) {
-            return;
-        }
         $user->id_role = config('constants.roles.brigadnik');
         $user->save();
 
-        Mail::to($user->email)->queue(new UserAllowedToLogin($user));
+        $user->notify(new UserAllowedToLogin($user));
+        $this->dispatch('toast', message: 'Používateľ overený.');
     }
 
     public function deny(User $user)
     {
-        if (! auth()->user()->hasRole(config('constants.roles.admin'))) {
-            return;
-        }
         $user->id_role = config('constants.roles.zablokovany');
         $user->save();
     }

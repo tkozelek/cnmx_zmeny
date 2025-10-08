@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FileUploadController extends Controller
 {
-    protected $fileService;
+    protected FileService $fileService;
 
     public function __construct(FileService $fileService)
     {
@@ -23,15 +23,19 @@ class FileUploadController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:pdf,xlsx|max:2048',
-            'id_week' => 'required|integer',  // Ensure id_week is also validated
+        $validated = $request->validate([
+            'file' => 'required|file|mimes:pdf,xlsx,xls,jpg,jpeg,png,gif,webp|max:2048',
+            'id_week' => 'required|integer',
         ]);
 
-        $this->fileService->uploadFile($request);
+        $this->fileService->uploadFile($validated['file'], $request->id_week);
+        $request->file('file');
 
-        // Return a success response
-        return response()->json(['success' => 'Súbor úspešné nahraný.']);
+        // if ($ext === 'xlsx' || $ext === 'xls') {
+        // $this->fileService->createScreenshot($ext, $fileModel->path, $request->id_week, basename($file->getClientOriginalName(), '.'.$ext));
+        // }
+
+        return response()->json('success');
     }
 
     /**
@@ -58,9 +62,13 @@ class FileUploadController extends Controller
     public function destroy(File $file)
     {
         if ($this->fileService->deleteFile($file)) {
-            return response()->json(['success' => true, 'message' => 'File deleted successfully']);
+            return response()->json([
+                'success' => true,
+                'message' => 'File deleted successfully',
+                'status' => 200,
+            ]);
         } else {
-            return response()->json(['success' => false, 'message' => 'File was not found']);
+            return response()->json(['success' => false, 'error' => 'File was not found', 'status' => 404], 404);
         }
 
     }
