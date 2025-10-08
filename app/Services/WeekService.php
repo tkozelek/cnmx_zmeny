@@ -9,7 +9,8 @@ use Carbon\Carbon;
 class WeekService
 {
     public function generateWeek() //	date_from	date_to	locked	next_week_id	prev_week_id
-    {$day = Carbon::now()->modify('next thursday');
+    {
+        $day = Carbon::now()->modify('next thursday');
 
         $week = new Week;
         $week->date_from = $day;
