@@ -10,7 +10,7 @@ use App\Notifications\AddUserResetPassword;
 use App\Services\FileService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Str;
+use Illuminate\Support\Str;
 
 class AdminUserController extends Controller
 {

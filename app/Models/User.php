@@ -11,7 +11,7 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Password;
+use Illuminate\Support\Facades\Password;
 
 class User extends Authenticatable
 {
