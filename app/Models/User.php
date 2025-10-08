@@ -3,17 +3,19 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\AddUserResetPassword;
 use App\Notifications\ResetPasswordNotification;
+use App\Traits\Loggable;
 use Carbon\Carbon;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Password;
 
 class User extends Authenticatable
 {
-    use CanResetPassword, HasApiTokens, HasFactory, Notifiable;
+    use CanResetPassword, HasFactory, Loggable, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -43,6 +45,10 @@ class User extends Authenticatable
         'remember_token',
         'id_role',
         'email',
+        'id',
+        'created_at',
+        'updated_at',
+        'last_login_at',
     ];
 
     /**
@@ -81,7 +87,7 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->id_role === config('constants.role.admin');
+        return $this->id_role == config('constants.roles.admin');
     }
 
     public function getCreatedAtAttribute($date)
@@ -106,6 +112,10 @@ class User extends Authenticatable
 
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new ResetPasswordNotification($token));
+        if (Password::getDefaultDriver() === 'add_user') {
+            $this->notify(new AddUserResetPassword($token));
+        } else {
+            $this->notify(new ResetPasswordNotification($token));
+        }
     }
 }

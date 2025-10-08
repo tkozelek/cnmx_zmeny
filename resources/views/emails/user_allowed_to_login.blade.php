@@ -1,24 +1,22 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Bol si overený!</title>
+    <title>Účet overený</title>
 </head>
 <body>
-    #Ahoj {{$user->name}}!
+<h1>Ahoj {{ $user->name }},</h1>
+<p>Tvoj účet bol overený! Teraz sa môžeš prihlásiť do aplikácie.</p>
 
-    S radosťou vás informujeme, že sa teraz môžete prihlásiť do svojho účtu.
+<a href="{{ route('login') }}" style="
+        display: inline-block;
+        padding: 10px 20px;
+        color: white;
+        background-color: #1a73e8;
+        text-decoration: none;
+        border-radius: 5px;
+    ">Prihlás sa</a>
 
-
-    <x-button :url="route('login')" :color="'primary'">
-        Prihlásenie
-    </x-button>
-
-    S pozdravom,
-    Tím {{ config('app.name') }}
+<p>S pozdravom,<br>{{ config('app.name') }}</p>
 </body>
 </html>
-

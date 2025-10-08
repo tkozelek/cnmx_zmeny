@@ -29,4 +29,9 @@ class UserRegistrationRequest extends FormRequest
             'password' => 'required|confirmed|min:5',
         ];
     }
+
+    public function messages()
+    {
+        return config('constants.messages');
+    }
 }

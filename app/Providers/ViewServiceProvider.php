@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Http\Controllers\UserController;
+use App\Http\ViewComposers\UnverifiedUserComposerViewComposer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,10 +26,6 @@ class ViewServiceProvider extends ServiceProvider
     public function boot()
     {
         // Use a view composer to pass the new user count to the layout view
-        View::composer('components.layout', function ($view) {
-            $userController = app(UserController::class);
-            $newUserCount = $userController->getNewUserCount();
-            $view->with('newUserCount', $newUserCount);
-        });
+        View::composer('layouts.layout', UnverifiedUserComposerViewComposer::class);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\Day;
 use App\Models\User;
 use App\Models\Week;
 use Carbon\Carbon;
@@ -105,16 +106,23 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
             ->leftJoin('user_days', 'users.id', '=', 'user_days.id_user')
             ->leftJoin('days', 'user_days.id_day', '=', 'days.id')
             ->where('days.id_week', $this->week->id)
+            ->orderBy('count', 'desc')
             ->groupBy('users.id', 'users.lastname', 'users.name', 'days.id_week')
             ->get();
+
+        $maxCountForWeek = Day::withCount('users')
+            ->where('id_week', $this->week->id)
+            ->orderBy('users_count', 'desc')
+            ->first()
+            ->users_count + 1;
 
         return [
             BeforeSheet::class => function (BeforeSheet $event) {
                 $event->sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
             },
-            AfterSheet::class => function (AfterSheet $event) use ($additionalData) {
+            AfterSheet::class => function (AfterSheet $event) use ($additionalData, $maxCountForWeek) {
                 $event->sheet->getDelegate()->getDefaultRowDimension()->setRowHeight(-1);
-                $event->sheet->getStyle('A2:G18')->getBorders()->getAllBorders()->setBorderStyle('thin');
+                $event->sheet->getStyle('A2:G'.$maxCountForWeek ?? '2')->getBorders()->getAllBorders()->setBorderStyle('thin');
                 $event->sheet->getDelegate()->getPageSetup()->setFitToWidth(1);
                 $event->sheet->getDelegate()->getPageSetup()->setFitToHeight(0);
                 $event->sheet->setTitle('Zapísané dni');

@@ -3,8 +3,6 @@
 namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
-use App\Models\roles;
-use App\Policies\rolesPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -16,7 +14,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         //
-        roles::class => rolesPolicy::class,
     ];
 
     /**
