@@ -6,7 +6,7 @@ use App\Http\Requests\HolidayStoreRequest;
 use App\Models\Holiday;
 use App\Services\HolidayService;
 use Carbon\Carbon;
-use Str;
+use Illuminate\Support\Str;
 
 class HolidayController extends Controller
 {
