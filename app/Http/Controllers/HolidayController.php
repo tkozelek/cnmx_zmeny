@@ -6,6 +6,7 @@ use App\Http\Requests\HolidayStoreRequest;
 use App\Models\Holiday;
 use App\Services\HolidayService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Str;
 
 class HolidayController extends Controller
@@ -14,14 +15,20 @@ class HolidayController extends Controller
 
     public function index()
     {
-        $absences = auth()->user()->holidays()->with('user')->orderBy('date_to', 'desc')->get();
+        $absences = auth()->user()
+            ->holidays()
+            ->orderBy('date_to', 'desc')
+            ->get();
+
         $active = null;
         $inactive = null;
 
         session()->put('form_token', Str::random(40));
 
         if (auth()->user()->hasRole(3)) {
-            $active = $this->holidayService->getAllActive();
+            $active = Cache::remember('active', 60 * 15, function () {
+                $this->holidayService->getAllActive();
+            });
             $inactive = $this->holidayService->getAllInactive();
         }
 

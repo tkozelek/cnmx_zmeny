@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Notifications\AddUserResetPassword;
 use App\Services\FileService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Str;
@@ -18,7 +19,9 @@ class AdminUserController extends Controller
 
     public function index()
     {
-        $roles = Role::all();
+        $roles = Cache::rememberForever('role_list', function () {
+            return Role::all();
+        });
 
         return view('admin.index', [
             'roles' => $roles,

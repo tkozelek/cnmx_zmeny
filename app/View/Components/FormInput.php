@@ -21,6 +21,15 @@ class FormInput extends Component
 
     public ?string $icon = null;
 
+    /*
+     * @param string $name
+     * @param string|null $id
+     * @param string|null $label
+     * @param string|null $placeholder
+     * @param string|null $value
+     * @param string|null $icon
+     * @param string|null $type
+     */
     public function __construct(string $name, ?string $id, ?string $label, ?string $placeholder, ?string $value, ?string $icon, ?string $type = 'text')
     {
         $this->type = $type;
