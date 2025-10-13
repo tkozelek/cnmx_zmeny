@@ -24,6 +24,9 @@ $(document).ready(function() {
 
         let day = clickedButton.data('day');
         let popis = $('#extra_popis').val();
+
+        const addUserUrl = window.appRoutes.addUserUrl;
+
         ajaxRequest(addUserUrl, 'POST', { day: day, popis: popis }, function(response) {
             if (response['error'] === 10) {
                 return;

@@ -19,8 +19,11 @@
     <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
 
     <script>
-        let addUserUrl = "{{ route('calendar.toggleUser') }}";
-        let fileUpload = "{{ route('files.store') }}";
+        window.appRoutes = {
+            addUserUrl: "{{ route('calendar.toggleUser') }}",
+            fileUpload: "{{ route('files.store') }}",
+            saveShifts: "{{ route('hours.store') }}"
+        };
     </script>
 </body>
 </html>

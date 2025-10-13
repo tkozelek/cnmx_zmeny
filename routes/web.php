@@ -13,6 +13,7 @@ use App\Http\Controllers\DayUserController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\HoursController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
@@ -111,4 +112,9 @@ Route::middleware(['guest'])->prefix('/zabudnute-heslo')->group(function () {
 
     Route::get('/{token}', [PasswordResetController::class, 'show'])->name('password.reset');
     Route::post('/store', [PasswordResetController::class, 'store'])->name('password.store');
+});
+
+Route::middleware('allowed')->prefix('hours')->controller(HoursController::class)->group(function () {
+    Route::get('/', 'index')->name('hours.index');
+    Route::post('/', 'store')->name('hours.store');
 });

@@ -49,6 +49,9 @@
             </button>
             <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="z-50 absolute right-0 w-full mt-2 origin-top-right rounded-md shadow-lg md:w-48" style="display: none;">
                 <div class="px-2 py-2 rounded-md shadow bg-gray-800">
+                    <a class="block px-4 py-2 text-sm font-semibold bg-transparent rounded-lg hover:bg-gray-700 text-gray-200" href="{{ route('hours.index') }}">
+                        Evidencia hodín
+                    </a>
                     <a class="block px-4 py-2 text-sm font-semibold bg-transparent rounded-lg hover:bg-gray-700 text-gray-200" href="{{route('settings.password')}}">
                         Zmena hesla
                     </a>
