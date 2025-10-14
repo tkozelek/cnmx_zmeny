@@ -18,8 +18,10 @@ class HoursController extends Controller
         ]);
     }
 
-    public function show(User $user) {
+    public function show(User $user)
+    {
         $workData = $this->getData($user);
+
         return view('hours.index', [
             'workdata' => $workData,
             'user' => $user,
@@ -27,25 +29,29 @@ class HoursController extends Controller
         ]);
     }
 
-    private function getData(User $user) {
+    private function getData(User $user)
+    {
         return $user->shifts()->get();
     }
 
-    private function getUsers() {
-        if (auth()->user()->isAdmin())
-        {
+    private function getUsers()
+    {
+        if (auth()->user()->isAdmin()) {
             return User::withCount('shifts')->get();
         }
+
         return null;
     }
 
-    public function store(StoreShiftRequest $request) {
+    public function store(StoreShiftRequest $request)
+    {
         $validated = $request->validated();
 
         $user = auth()->user();
 
-        if (!$validated['workData']) {
+        if (! $validated['workData']) {
             $status = $user->shifts()->whereMonth('date', $validated['month'])->delete();
+
             return response()->json(['status' => $status, 'message' => 'deleted']);
         }
 
@@ -54,6 +60,7 @@ class HoursController extends Controller
         $workData = array_map(function ($item) use ($user) {
             $item['user_id'] = $user->id;
             $item['break'] = $item['break'] ?? 0;
+
             return $item;
         }, $validated['workData']);
 

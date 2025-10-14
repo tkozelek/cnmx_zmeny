@@ -7,7 +7,7 @@ use App\Models\Holiday;
 use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Str;
+use Illuminate\Support\Str;
 
 class HolidayController extends Controller
 {

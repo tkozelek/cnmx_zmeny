@@ -6,7 +6,7 @@ use App\Models\File;
 use App\Models\Holiday;
 use App\Models\User;
 use App\Models\Week;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class WeekDataService
 {
