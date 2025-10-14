@@ -30,7 +30,7 @@ class StoreShiftRequest extends FormRequest
             'workData.*.date' => 'required|date',
             'workData.*.start' => 'required|date_format:H:i',
             'workData.*.end' => 'required|date_format:H:i',
-            'workData.*.break' => 'nullable|integer',
+            'workData.*.break' => 'nullable|decimal:0,2',
         ];
     }
 

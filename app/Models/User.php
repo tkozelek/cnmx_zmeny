@@ -84,6 +84,10 @@ class User extends Authenticatable
         return $this->hasMany(Shift::class);
     }
 
+    public function rates() {
+        return $this->hasOne(Rate::class);
+    }
+
     public function hasRole($i): bool
     {
         return $this->id_role == $i;

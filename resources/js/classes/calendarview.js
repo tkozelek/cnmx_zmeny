@@ -40,6 +40,7 @@ export default class CalendarView {
         this.prevDayBtn = document.getElementById("prevDayBtn");
         this.nextDayBtn = document.getElementById("nextDayBtn");
         this.saveMonthBtn = document.getElementById("saveMonthButton");
+        this.saveRatesBtn = document.getElementById('rates_button');
 
         // same user
         this.sameUser = document.getElementById('same_user');
@@ -165,7 +166,7 @@ export default class CalendarView {
         this.weekdayRateInput.value = rates.weekday || "";
         this.saturdayRateInput.value = rates.saturday || "";
         this.sundayRateInput.value = rates.sunday || "";
-        this.breakTimeDefaultInput.value = rates.breakTime || "";
+        this.breakTimeDefaultInput.value = rates.break || "";
     }
 
     openModal(dateKey, entry, rates) {
@@ -184,14 +185,14 @@ export default class CalendarView {
         if (entry) {
             this.startTimeInput.value = entry.start || "";
             this.endTimeInput.value = entry.end || "";
-            this.breakToggleInput.checked = entry.breakTime || entry.breakTime !== 0;
-            this.breakTimeInput.value = entry.breakTime || rates.breakTime || "";
+            this.breakToggleInput.checked = entry.break || entry.break !== 0;
+            this.breakTimeInput.value = entry.break || rates.break || "";
             this.deleteTimeBtn.classList.remove("hidden");
         } else {
             this.startTimeInput.value = "";
             this.endTimeInput.value = "";
             this.breakToggleInput.checked = false;
-            this.breakTimeInput.value = rates.breakTime || "";
+            this.breakTimeInput.value = rates.break || "";
             this.deleteTimeBtn.classList.add("hidden");
         }
 
@@ -243,6 +244,10 @@ export default class CalendarView {
         this.saveMonthBtn.addEventListener("click", handler);
     }
 
+    bindSaveRatesButton(handler) {
+        this.saveRatesBtn.addEventListener("click", handler);
+    }
+
     showSaveButton() {
         if (parseInt(this.sameUser.value) === 1)
             this.saveMonthBtn.classList.remove("hidden");
@@ -250,6 +255,15 @@ export default class CalendarView {
 
     hideSaveButton() {
         this.saveMonthBtn.classList.add("hidden");
+    }
+
+    showRatesButton() {
+        if (parseInt(this.sameUser.value) === 1)
+            this.saveRatesBtn.classList.remove("hidden");
+    }
+
+    hideRatesButton() {
+        this.saveRatesBtn.classList.add("hidden");
     }
 }
 

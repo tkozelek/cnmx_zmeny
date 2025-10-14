@@ -10,10 +10,13 @@ class HoursController extends Controller
 {
     public function index()
     {
-        $workData = $this->getData(auth()->user());
+        $user = auth()->user();
+        $workData = $this->getData($user);
+        $rates = $user->rates()->first();
 
         return view('hours.index', [
             'workdata' => $workData,
+            'rates' => $rates,
             'users' => $this->getUsers() ?? null,
         ]);
     }
@@ -21,9 +24,11 @@ class HoursController extends Controller
     public function show(User $user)
     {
         $workData = $this->getData($user);
+        $rates = $user->rates()->first();
 
         return view('hours.index', [
             'workdata' => $workData,
+            'rates' => $rates,
             'user' => $user,
             'users' => $this->getUsers() ?? null,
         ]);
@@ -54,6 +59,13 @@ class HoursController extends Controller
 
             return response()->json(['status' => $status, 'message' => 'deleted']);
         }
+
+        $dates = collect($validated['workData'])->pluck('date');
+
+        $user->shifts()
+            ->whereMonth('date', $validated['month'])
+            ->whereNotIn('date', $dates)
+            ->delete();
 
         unset($validated['month'], $validated['year']);
 

@@ -64,6 +64,12 @@
 
     <script>
         window.workdata = @json($workdata);
+        window.rates = @json($rates);
+
+        window.hoursRoutes = {
+            saveShifts: "{{ route('hours.store') }}",
+            saveRates: "{{ route('rates.store') }}"
+        }
     </script>
 
 
