@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedMediumInteger('user_id');
             $table->time('start');
             $table->time('end');
-            $table->integer('break')->nullable();
+            $table->decimal('break', 5, 2)->nullable();
 
             $table->unique(['date', 'user_id']);
 

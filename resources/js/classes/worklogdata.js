@@ -62,8 +62,12 @@ export default class WorkLogData {
         }
     }
 
-    clear() {
+    clearWorkData() {
         this.workData = [];
+        localStorage.removeItem('workData');
+
+        this.rates = [];
+        localStorage.removeItem('rates');
     }
 
     // RATES

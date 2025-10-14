@@ -1,5 +1,5 @@
-<section class="mb-8 bg-gray-800 p-6 rounded-xl shadow-md">
-    <h2 class="text-xl font-semibold mb-2 text-gray-300">Hodinové Sadzby (€/hod)</h2>
+<section class="mb-8 bg-gray-800 p-6 !pb-4 rounded-xl shadow-md">
+    <h2 class="text-xl font-semibold mb-2 text-gray-300">Hodinové sadzby (€/hod)</h2>
     <div class="flex flex-wrap justify-center items-center gap-6">
         <div class="grow">
             <x-form-input
@@ -38,4 +38,10 @@
             />
         </div>
     </div>
-</section><?php
+
+    <div class="flex justify-between items-center">
+        <div></div>
+        <button id="rates_button" class="hidden bg-blue-500 rounded-lg py-2 px-4 text-lg font-bold mt-3 tracking-wider uppercase">Uložiť</button>
+    </div>
+
+</section>

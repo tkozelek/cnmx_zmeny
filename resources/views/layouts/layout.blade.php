@@ -21,8 +21,7 @@
     <script>
         window.appRoutes = {
             addUserUrl: "{{ route('calendar.toggleUser') }}",
-            fileUpload: "{{ route('files.store') }}",
-            saveShifts: "{{ route('hours.store') }}"
+            fileUpload: "{{ route('files.store') }}"
         };
     </script>
 </body>

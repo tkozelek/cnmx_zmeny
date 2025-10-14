@@ -24,6 +24,7 @@ class WorkLogApp {
         this.view.bindRateChange(this.handleRateChange.bind(this));
         this.view.bindAutoBreakToggle(this.handleAutoBreakToggle.bind(this));
         this.view.bindSaveButton(this.handleSaveData.bind(this));
+        this.view.bindSaveRatesButton(this.handleSaveRates.bind(this));
     }
 
     updateView() {
@@ -46,47 +47,89 @@ class WorkLogApp {
             this.showToast('Uložiť môžeš iba svoje hodiny.', 'error');
             throw new Error(`Nemožno uložiť cudzie hodiny.`);
         }
-
         e.preventDefault();
-        let month = this.currentDate.getMonth() + 1;
-        let year = this.currentDate.getFullYear();
 
-        const workDataForMonth = this.data.getAllEntries(month, year);
+        const originalText = "Uložiť mesiac";
+        this.view.saveMonthBtn.textContent = 'Ukladám...';
+        this.view.saveMonthBtn.disabled = true;
 
-        const saveShifts = window.appRoutes.saveShifts;
+        try {
+            let month = this.currentDate.getMonth() + 1;
+            let year = this.currentDate.getFullYear();
 
-        const response = await this.sendFetch(saveShifts, workDataForMonth, month, year);
+            const workDataForMonth = this.data.getAllEntries(month, year);
+            const saveShifts = window.hoursRoutes.saveShifts;
 
-        if (!response.ok) {
-            this.showToast('Nastala chyba pri aktualizácií.', 'error');
-            throw new Error(`Response status: ${response.status}`);
+            const data = {
+                workData: workDataForMonth,
+                month,
+                year,
+            };
+
+            const result = await this.sendFetch(saveShifts, data);
+
+            if (result.message === 'deleted') this.showToast('Mesiac zmazaný.');
+            if (result.message === 'updated') this.showToast('Mesiac aktualizovaný.');
+        } catch (error) {
+            console.error(error);
+        } finally {
+            this.view.saveMonthBtn.textContent = originalText;
+            this.view.saveMonthBtn.disabled = false;
+            this.view.hideSaveButton();
         }
-        const result = await response.json();
-
-        if (result.message === 'deleted') {
-            this.showToast('Mesiac zmazaný.');
-        }
-
-        if (result.message === 'updated') {
-            this.showToast('Mesiac aktualizovaný.');
-        }
-        this.view.hideSaveButton();
     }
 
-    async sendFetch(url, workDataForMonth, month, year) {
+    async handleSaveRates(e) {
+        if (parseInt(this.view.sameUser.value) !== 1) {
+            this.showToast('Uložiť môžeš iba svoje hodiny.', 'error');
+            throw new Error(`Nemožno uložiť cudzie hodiny.`);
+        }
+        e.preventDefault();
+
+        const originalText = "Uložiť";
+        this.view.saveRatesBtn.textContent = 'Ukladám...';
+        this.view.saveRatesBtn.disabled = true;
+
+        try {
+            const saveRates = window.hoursRoutes.saveRates;
+            const data = {
+                weekday: this.view.weekdayRateInput.value,
+                saturday: this.view.saturdayRateInput.value,
+                sunday: this.view.sundayRateInput.value,
+                break: this.view.breakTimeDefaultInput.value
+            };
+
+            const result = await this.sendFetch(saveRates, data);
+
+            if (result.message === "rates_updated") this.showToast('Hodinové sadzby upravené.');
+        } catch (error) {
+            console.log(error);
+        } finally {
+            this.view.saveRatesBtn.textContent = "Uložené..";
+            setTimeout(() => {
+                this.view.saveRatesBtn.textContent = originalText;
+                this.view.saveRatesBtn.disabled = false;
+                this.view.hideRatesButton();
+            }, 1500);
+        }
+    }
+
+    async sendFetch(url, data) {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        return await fetch(url, {
+        const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 'X-CSRF-TOKEN': csrfToken
             },
-            body: JSON.stringify({
-                workData: workDataForMonth,
-                month: month,
-                year: year,
-            }),
+            body: JSON.stringify(data),
         });
+
+        if (!response.ok) {
+            this.showToast('Nastala chyba pri aktualizácií.', 'error');
+            throw new Error(`Response status: ${response.status}`);
+        }
+        return await response.json();
     }
 
     handleChangeMonth(direction) {
@@ -144,8 +187,9 @@ class WorkLogApp {
             weekday: parseFloat(this.view.weekdayRateInput.value) || 0,
             saturday: parseFloat(this.view.saturdayRateInput.value) || 0,
             sunday: parseFloat(this.view.sundayRateInput.value) || 0,
-            breakTime: parseFloat(this.view.breakTimeDefaultInput.value) || 0,
+            break: parseFloat(this.view.breakTimeDefaultInput.value) || 0,
         };
+        this.view.showRatesButton();
         this.data.updateRates(newRates);
         this.updateView();
     }
@@ -218,10 +262,17 @@ class WorkLogApp {
     }
 
     checkForData() {
-        this.data.clear();
+        if (parseInt(this.view.sameUser.value) !== 1) {
+            this.data.clearWorkData();
+        }
+
+        if (window.rates && window.rates.length !== 0) {
+            const rates = window.rates;
+            this.data.updateRates(rates);
+        }
+
         if (window.workdata && window.workdata.length !== 0) {
             const workdata = window.workdata;
-            console.log(workdata);
             workdata.forEach((entry) => {
                 const date = entry['date'];
                 this.data.updateEntry(date, entry);
