@@ -19,7 +19,7 @@ class Shift extends Model
     ];
 
     protected $attributes = [
-        'break' => 0
+        'break' => 0,
     ];
 
     protected $casts = [
@@ -28,6 +28,4 @@ class Shift extends Model
         'end' => 'datetime:H:i',
         'break' => 'integer',
     ];
-
-
 }

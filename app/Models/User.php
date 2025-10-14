@@ -79,7 +79,8 @@ class User extends Authenticatable
         return $this->hasMany(File::class, 'id_user');
     }
 
-    public function shifts() {
+    public function shifts()
+    {
         return $this->hasMany(Shift::class);
     }
 
