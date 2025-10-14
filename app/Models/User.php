@@ -45,7 +45,6 @@ class User extends Authenticatable
         'remember_token',
         'id_role',
         'email',
-        'id',
         'created_at',
         'updated_at',
         'last_login_at',
@@ -78,6 +77,10 @@ class User extends Authenticatable
     public function files()
     {
         return $this->hasMany(File::class, 'id_user');
+    }
+
+    public function shifts() {
+        return $this->hasMany(Shift::class);
     }
 
     public function hasRole($i): bool

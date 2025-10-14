@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('shifts', function (Blueprint $table) {
             $table->mediumIncrements('id');
-            $table->date('date')->index();
+            $table->date('date');
             $table->unsignedMediumInteger('user_id');
             $table->time('start');
             $table->time('end');
             $table->integer('break')->nullable();
+
+            $table->unique(['date', 'user_id']);
 
             $table->foreign('user_id')
                 ->references('id')

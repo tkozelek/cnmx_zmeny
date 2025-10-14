@@ -18,10 +18,16 @@ class Shift extends Model
         'break',
     ];
 
+    protected $attributes = [
+        'break' => 0
+    ];
+
     protected $casts = [
         'date' => 'date:Y-m-d',
         'start' => 'datetime:H:i',
         'end' => 'datetime:H:i',
         'break' => 'integer',
     ];
+
+
 }

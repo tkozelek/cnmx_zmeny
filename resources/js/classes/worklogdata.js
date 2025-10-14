@@ -62,6 +62,10 @@ export default class WorkLogData {
         }
     }
 
+    clear() {
+        this.workData = [];
+    }
+
     // RATES
     getRates() {
         return this.rates;
