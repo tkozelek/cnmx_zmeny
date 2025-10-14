@@ -10,6 +10,7 @@ class WorkLogApp {
     }
 
     initialize() {
+        this.checkForData();
         this.bindEvents();
         this.view.updateRateInputs(this.data.getRates());
         this.updateView();
@@ -41,40 +42,51 @@ class WorkLogApp {
     // --- EVENT HANDLERS ---
 
     async handleSaveData(e) {
+        if (parseInt(this.view.sameUser.value) !== 1) {
+            this.showToast('Uložiť môžeš iba svoje hodiny.', 'error');
+            throw new Error(`Nemožno uložiť cudzie hodiny.`);
+        }
+
         e.preventDefault();
         let month = this.currentDate.getMonth() + 1;
         let year = this.currentDate.getFullYear();
 
         const workDataForMonth = this.data.getAllEntries(month, year);
-        console.log(workDataForMonth);
 
         const saveShifts = window.appRoutes.saveShifts;
 
-        try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const response = await this.sendFetch(saveShifts, workDataForMonth, month, year);
 
-            const response = await fetch(saveShifts, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                body: JSON.stringify({
-                    workData: workDataForMonth,
-                    month: month,
-                    year: year,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const result = response.json();
-            console.log(result);
-        } catch (e) {
-            console.error(e.message);
+        if (!response.ok) {
+            this.showToast('Nastala chyba pri aktualizácií.', 'error');
+            throw new Error(`Response status: ${response.status}`);
         }
+        const result = await response.json();
+
+        if (result.message === 'deleted') {
+            this.showToast('Mesiac zmazaný.');
+        }
+
+        if (result.message === 'updated') {
+            this.showToast('Mesiac aktualizovaný.');
+        }
+        this.view.hideSaveButton();
+    }
+
+    async sendFetch(url, workDataForMonth, month, year) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        return await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                workData: workDataForMonth,
+                month: month,
+                year: year,
+            }),
+        });
     }
 
     handleChangeMonth(direction) {
@@ -99,9 +111,10 @@ class WorkLogApp {
     handleSaveTime(shouldCloseModal = true) {
         if (!this.selectedDateKey) return;
         const dataToSave = {
+            date: this.selectedDateKey,
             start: this.view.startTimeInput.value,
             end: this.view.endTimeInput.value,
-            breakTime: this.view.breakToggleInput.checked ? this.view.breakTimeInput.value : 0,
+            break: this.view.breakToggleInput.checked ? this.view.breakTimeInput.value : 0,
         };
         this.data.updateEntry(this.selectedDateKey, dataToSave);
         this.updateView();
@@ -196,6 +209,24 @@ class WorkLogApp {
         }
         summary.totalEarnings = summary.weekdayEarnings + summary.saturdayEarnings + summary.sundayEarnings;
         return summary;
+    }
+
+    showToast(message, type = 'success', icon = '') {
+        window.dispatchEvent(new CustomEvent('toast', {
+            detail: { message, type, icon }
+        }));
+    }
+
+    checkForData() {
+        this.data.clear();
+        if (window.workdata && window.workdata.length !== 0) {
+            const workdata = window.workdata;
+            console.log(workdata);
+            workdata.forEach((entry) => {
+                const date = entry['date'];
+                this.data.updateEntry(date, entry);
+            });
+        }
     }
 }
 

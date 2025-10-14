@@ -116,5 +116,6 @@ Route::middleware(['guest'])->prefix('/zabudnute-heslo')->group(function () {
 
 Route::middleware('allowed')->prefix('hours')->controller(HoursController::class)->group(function () {
     Route::get('/', 'index')->name('hours.index');
+    Route::get('/{user}', 'show')->name('hours.show')->middleware(['role:3']);
     Route::post('/', 'store')->name('hours.store');
 });

@@ -41,6 +41,9 @@ export default class CalendarView {
         this.nextDayBtn = document.getElementById("nextDayBtn");
         this.saveMonthBtn = document.getElementById("saveMonthButton");
 
+        // same user
+        this.sameUser = document.getElementById('same_user');
+
         this.MONTH_NAMES = [
             "Január",
             "Február",
@@ -99,8 +102,8 @@ export default class CalendarView {
                 const hours = calculateHours(entry.start, entry.end);
                 hoursInfo.textContent = `${hours.toFixed(2)} hod`;
                 dayCell.classList.add("bg-blue-900/50");
-                if (entry.breakTime && entry.breakTime !== 0) {
-                    breakInfo.textContent = `-${entry.breakTime}min`;
+                if (entry.break && entry.break !== 0) {
+                    breakInfo.textContent = `-${entry.break}min`;
                 }
             }
 
@@ -241,7 +244,12 @@ export default class CalendarView {
     }
 
     showSaveButton() {
-        this.saveMonthBtn.classList.remove("hidden");
+        if (parseInt(this.sameUser.value) === 1)
+            this.saveMonthBtn.classList.remove("hidden");
+    }
+
+    hideSaveButton() {
+        this.saveMonthBtn.classList.add("hidden");
     }
 }
 

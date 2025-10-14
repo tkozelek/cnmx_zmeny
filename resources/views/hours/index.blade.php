@@ -1,9 +1,27 @@
 <x-layout>
+    @isset($users)
+
+    @endisset
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
 
-        <div class="flex justify-center items-center relative mb-6">
-            <h1 class="text-3xl sm:text-4xl font-bold text-center text-white">Sledovanie dochádzky a mzdy</h1>
-        </div>
+        <h1 class="text-3xl sm:text-4xl font-bold mb-3 text-center text-white">Sledovanie dochádzky a mzdy</h1>
+
+        @isset($user)
+            <h3 class="text-xl font-bold my-2 text-center text-white">{{ $user }}</h3>
+        @endisset
+        @isset($users)
+            <div class="mb-5 w-full flex justify-center items-center">
+                <x-selector
+                    name="selectedUser"
+                    label="Používatelia"
+                    :items="$users"
+                    item-text="lastname"
+                    :redirect="route('hours.index')"
+                />
+            </div>
+
+        @endisset
+        <input type="hidden" id="same_user" name="same_user" value="{{ !isset($user) || $user->id === auth()->id() }}">
 
         @include('hours.partials._rate')
 
@@ -36,12 +54,18 @@
 
         @include('hours.partials._summary')
 
-        <form action="">
+        <form action="{{ route('hours.store') }}" method="POST" id="saveForm">
             @csrf
             <button id="saveMonthButton" class="hidden fixed z-20 px-4 py-2 rounded-lg font-bold bg-blue-600 bottom-5 right-5 ">Uložiť mesiac</button>
         </form>
 
         @include('hours.partials._modal')
+
+
+    <script>
+        window.workdata = @json($workdata);
+    </script>
+
 
     @vite(['resources/js/classes/main.js'])
 </x-layout>
