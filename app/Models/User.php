@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\AddUserResetPassword;
 use App\Notifications\ResetPasswordNotification;
 use App\Traits\Loggable;
