@@ -3,6 +3,7 @@
 namespace App\Http\ViewComposers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class UnverifiedUserComposerViewComposer
@@ -16,7 +17,10 @@ class UnverifiedUserComposerViewComposer
         if (! $user->hasRole(config('constants.roles.admin'))) {
             return;
         }
-        $newUserCount = User::where('id_role', config('constants.roles.neovereny'))->count();
+
+        $newUserCount = Cache::remember('new_unverified', 15 * 60, function () {
+            return User::where('id_role', config('constants.roles.neovereny'))->count();
+        });
         $view->with('newUserCount', $newUserCount);
     }
 }
