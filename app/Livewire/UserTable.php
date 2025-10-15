@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\User;
 use App\Notifications\UserAllowedToLogin;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -57,6 +58,8 @@ class UserTable extends Component
         $user->id_role = config('constants.roles.brigadnik');
         $user->save();
 
+        Cache::forget('new_unverified');
+
         $user->notify(new UserAllowedToLogin($user));
         $this->dispatch('toast', message: 'Používateľ overený.');
     }
@@ -65,5 +68,7 @@ class UserTable extends Component
     {
         $user->id_role = config('constants.roles.zablokovany');
         $user->save();
+
+        Cache::forget('new_unverified');
     }
 }
