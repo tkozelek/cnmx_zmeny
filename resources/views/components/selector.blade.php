@@ -5,8 +5,16 @@
     'placeholder' => 'Vyhľadaj...',
     'itemValue' => 'id',
     'itemText' => 'name',
-    'redirect' => ''
+    'redirect' => '',
+    'width' => 'full'
 ])
+
+@php
+$width = [
+    'full' => 'w-full',
+    '1/3' => 'w-1/3',
+][$width];
+@endphp
 
 <div x-data="searchableSelect({
         items: {{ Js::from($items) }},
@@ -16,7 +24,7 @@
         redirect: '{{ $redirect }}'
     })"
      x-init="init()"
-     class="relative"
+     class="relative {{ $width }}"
 >
     <label for="{{ $name }}_search" class="block mb-2 text-sm font-medium text-white">{{ $label }}</label>
 
@@ -32,7 +40,7 @@
             @keydown.arrow-up.prevent="focusPrev()"
             @keydown.enter.prevent="selectFocused(); open = false;"
             placeholder="{{ $placeholder }}"
-            class="border sm:text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+            class="border sm:text-sm rounded-lg block w-full p-2.5 bg-gray-800 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
             autocomplete="off"
         >
         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">

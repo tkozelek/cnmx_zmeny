@@ -2,7 +2,7 @@
 
 @php
     $bg = $color == 'blue' ? 'bg-blue-900/40' : 'bg-green-900/40';
-    $text = $color == 'blue' ? 'text-blue-400' : 'text-green-500';
+    $text = $color == 'blue' ? 'text-blue-300' : 'text-green-300';
 @endphp
 
 <div {{ $attributes->merge(['class' => ' p-4 rounded-lg '.$bg]) }}>

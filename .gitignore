@@ -17,3 +17,20 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# IDE
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+.idea/
+.vscode/
+
+# prikazy
+.bash_history
+.viminfo
+
+# Test config
+phpunit.xml
+
+# useless
+satisfiable
