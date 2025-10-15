@@ -35,7 +35,7 @@
         </div>
     </div>
     <!-- LIVEWIRE -->
-    <div>
+    <div wire:ignore>
         <livewire:user-table :roles="$roles"/>
     </div>
 

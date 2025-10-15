@@ -32,7 +32,7 @@ class FormInput extends Component
      */
     public function __construct(string $name, ?string $id, ?string $label, ?string $placeholder, ?string $value, ?string $icon, ?string $type = 'text')
     {
-        $this->type = $type;
+        $this->type = $type ?? 'text';
         $this->name = $name;
         $this->id = $id;
         $this->label = $label;
