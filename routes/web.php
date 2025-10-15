@@ -86,9 +86,9 @@ Route::middleware(['allowed'])->group(function () {
 
     Route::prefix('/dovolenka')->controller(HolidayController::class)->group(function () {
         Route::get('/', 'index')->name('holiday.index');
-        Route::post('/save', 'store')->name('holiday.store');
-        Route::patch('/{holiday}/end', 'end')->name('holiday.end');
-        Route::delete('/{holiday}/destroy', 'destroy')->name('holiday.destroy');
+        Route::post('/', 'store')->name('holiday.store');
+        Route::patch('/{holiday}', 'end')->name('holiday.end');
+        Route::delete('/{holiday}', 'destroy')->name('holiday.destroy');
     });
 
     Route::prefix('/users')->controller(UserController::class)->group(function () {
