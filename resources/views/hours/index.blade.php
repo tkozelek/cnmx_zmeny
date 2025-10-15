@@ -10,13 +10,14 @@
             <h3 class="text-xl font-bold my-2 text-center text-white">{{ $user }}</h3>
         @endisset
         @isset($users)
-            <div class="mb-5 w-full flex justify-center items-center">
+            <div class="mb-5 flex justify-center">
                 <x-selector
                     name="selectedUser"
                     label="Používatelia"
                     :items="$users"
                     item-text="lastname"
                     :redirect="route('hours.index')"
+                    width="1/3"
                 />
             </div>
 
