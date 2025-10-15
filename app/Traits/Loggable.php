@@ -47,5 +47,23 @@ trait Loggable
                 'attributes' => $attributes,
             ]);
         });
+
+        static::creating(function ($model) {
+            $user = Auth::user();
+
+            if ($user && ($user->id != $model->id || $user->id != $model->id_user)) {
+                return;
+            }
+
+            $attributes = $model->getAttributes();
+            unset($attributes['updated_at'], $attributes['password'], $attributes['remember_token']);
+
+            Log::warning('Používateľ "'.($user ?? 'Neznámy').'" vytvoril model "'.get_class($model).'" (ID: '.$model->id.').', [
+                'user_id' => $user?->id,
+                'model' => get_class($model),
+                'target_id' => $model->id,
+                'attributes' => $attributes,
+            ]);
+        });
     }
 }
