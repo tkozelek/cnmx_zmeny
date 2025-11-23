@@ -7,5 +7,8 @@
 
 <div {{ $attributes->merge(['class' => ' p-4 rounded-lg '.$bg]) }}>
     <p class="text-md {{ $text }}">{{ $slot }}</p>
-    <p id="{{ $id }}" class="text-2xl font-bold {{ $text }}">0.00</p>
+    <div class="text-2xl font-bold {{ $text }}">
+        <span id="{{ $id }}">0.00</span>
+        <span class="text-base text-blue-300" id="{{ $id.'-add' }}"></span>
+    </div>
 </div>

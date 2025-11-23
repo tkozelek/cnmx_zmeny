@@ -196,6 +196,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const element = document.getElementById('my-dropzone');
 
+    let fileUpload = window.appRoutes.fileUpload;
+
     if (element) {
         const myDropzone = new Dropzone("#my-dropzone", {
             url: fileUpload,

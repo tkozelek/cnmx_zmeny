@@ -21,8 +21,6 @@ class PasswordRequestController extends Controller
             $request->only('email')
         );
 
-
-
         return $status == Password::RESET_LINK_SENT
             ? back()->with(['message' => __($status)])
             : back()->with(['error' => __($status)]);

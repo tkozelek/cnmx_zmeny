@@ -10,10 +10,10 @@
 ])
 
 @php
-$width = [
-    'full' => 'w-full',
-    '1/3' => 'w-1/3',
-][$width];
+    $width = [
+        'full' => 'sm:w-full',
+        '1/3' => 'sm:w-1/3',
+    ][$width];
 @endphp
 
 <div x-data="searchableSelect({
@@ -24,7 +24,7 @@ $width = [
         redirect: '{{ $redirect }}'
     })"
      x-init="init()"
-     class="relative {{ $width }}"
+     class="relative {{ $width }} md:w-1/2 w-full"
 >
     <label for="{{ $name }}_search" class="block mb-2 text-sm font-medium text-white">{{ $label }}</label>
 

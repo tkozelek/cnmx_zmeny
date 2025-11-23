@@ -1,6 +1,6 @@
-<div class="mt-8 bg-gray-800 p-6 rounded-xl shadow-md">
+<div class="mt-8 bg-gray-800 p-2 sm:p-6 rounded-xl shadow-md">
     <h2 class="text-xl font-semibold mb-4 text-gray-300">Mesačný Súhrn</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-center">
         <x-summary_card
             color="blue"
             id="totalHours"
@@ -12,7 +12,7 @@
         </x-summary_card>
     </div>
 
-    <div class="flex flex-grow items-center justify-center gap-5 mt-5 text-center">
+    <div class="flex flex-grow items-center justify-center gap-2.5 mt-5 text-center">
         <x-summary_card color="blue" id="totalHoursWeekday" class="w-full">
             V týždni
         </x-summary_card>
@@ -24,7 +24,7 @@
         </x-summary_card>
     </div>
 
-    <div class="flex flex-grow items-center justify-center gap-5 mt-5 text-center">
+    <div class="flex flex-grow items-center justify-center gap-2.5 mt-5 text-center">
         <x-summary_card color="green" id="totalEarningsWeekday" class="w-full">
             V týždni
         </x-summary_card>
@@ -36,7 +36,7 @@
         </x-summary_card>
     </div>
 
-    <div class="flex flex-grow items-center justify-center gap-5 mt-5 text-center">
+    <div class="flex flex-grow items-center justify-center gap-2.5 mt-5 text-center">
         <x-summary_card color="blue" id="breakHours" class="w-full">
             Prestávky
         </x-summary_card>

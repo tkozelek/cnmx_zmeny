@@ -49,6 +49,7 @@ Route::get('/logout', [UserController::class, 'logout'])->middleware(['auth'])->
 Route::middleware(['allowed'])->controller(CalendarController::class)->group(function () {
     Route::get('/', 'index')->name('calendar.index');
     Route::get('/week/{week}', 'show')->name('calendar.show');
+    Route::post('/adduser', 'addUser')->name('calendar.adduser');
 });
 
 // Admin stuff
@@ -101,8 +102,6 @@ Route::middleware(['allowed'])->group(function () {
         Route::post('/', 'store')->name('bugreport.store');
         Route::get('/{bug}/destroy', 'destroy')->name('bugreport.destroy');
     });
-
-    Route::post('/calendar/toggleUser', [DayUserController::class, 'toggleUser'])->name('calendar.toggleUser');
 
     Route::get('/upload/{file}/download', [FileUploadController::class, 'download'])->name('files.download');
 });

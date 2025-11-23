@@ -83,7 +83,8 @@ class User extends Authenticatable
         return $this->hasMany(Shift::class);
     }
 
-    public function rates() {
+    public function rates()
+    {
         return $this->hasOne(Rate::class);
     }
 

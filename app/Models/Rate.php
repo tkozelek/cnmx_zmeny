@@ -12,14 +12,14 @@ class Rate extends Model
         'weekday',
         'saturday',
         'sunday',
-        'break' => 0
+        'break' => 0,
     ];
 
     protected $hidden = [
         'user_id',
         'created_at',
         'updated_at',
-        'id'
+        'id',
     ];
 
     public function user(): BelongsTo

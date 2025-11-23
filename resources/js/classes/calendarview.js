@@ -19,6 +19,7 @@ export default class CalendarView {
 
         // Summary elements
         this.totalHoursEl = document.getElementById("totalHours");
+        this.totalHoursAddEl = document.getElementById("totalHours-add");
         this.totalEarningsEl = document.getElementById("totalEarnings");
         this.totalHoursWeekdayEl = document.getElementById("totalHoursWeekday");
         this.totalHoursSaturdayEl = document.getElementById("totalHoursSaturday");
@@ -85,7 +86,7 @@ export default class CalendarView {
             const dayCell = document.createElement("div");
 
             dayCell.className =
-                "relative p-2 h-24 border border-gray-500 rounded-lg cursor-pointer hover:bg-gray-700/50 transition-colors flex flex-col justify-start items-center";
+                "relative p-0.5 sm:p-2 h-24 border border-gray-500 rounded-lg cursor-pointer hover:bg-gray-700/50 transition-colors flex flex-col justify-start items-center";
             dayCell.dataset.dateKey = dateKey;
 
             dayCell.innerHTML = `<div class="font-bold">${day}</div>`;
@@ -104,7 +105,8 @@ export default class CalendarView {
                 hoursInfo.textContent = `${hours.toFixed(2)} hod`;
                 dayCell.classList.add("bg-blue-900/50");
                 if (entry.break && entry.break !== 0) {
-                    breakInfo.textContent = `-${entry.break}min`;
+                    const brk = Number.parseFloat(entry.break);
+                    breakInfo.textContent = `-${brk.toFixed(1)} min`;
                 }
             }
 
@@ -135,10 +137,18 @@ export default class CalendarView {
     }
 
     updateSummary(summary) {
-        this.totalHoursEl.textContent = summary.totalHours.toFixed(2);
+        const brk = (summary.totalBreak / 60);
+        const hours = summary.totalHours + brk;
+
+        const addtionalText = `(${hours.toFixed(1)} - ${brk} hod)`;
+
+        this.totalHoursEl.textContent = `${summary.totalHours.toFixed(2)} hod`;
+        this.totalHoursAddEl.textContent = `${addtionalText}`;
+
         this.breakHoursEl.textContent = `${(summary.totalBreak / 60).toFixed(
             2
         )} hod`;
+
         this.totalEarningsEl.textContent = `${summary.totalEarnings.toFixed(2)} €`;
 
         this.totalHoursWeekdayEl.textContent = `${summary.weekdayHours.toFixed(
