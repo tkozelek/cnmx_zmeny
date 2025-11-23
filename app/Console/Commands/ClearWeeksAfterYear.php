@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Week;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class ClearWeeksAfterYear extends Command
 {
@@ -26,7 +27,11 @@ class ClearWeeksAfterYear extends Command
      */
     public function handle()
     {
-        $count = Week::whereDate('date_to', '<', now()->subYear())->delete();
-        $this->info($count.' of weeks older than one year have been deleted.');
+        $count = Week::whereDate('date_to', '<', now()->subYears(1)->subMonths(6))->delete();
+        $this->info(now()->format('Y-m-d H:i:s').' '.$count.' of weeks older than one year have been deleted.');
+
+        Log::info($count.' of weeks older than one year have been deleted.');
+
+        return parent::SUCCESS;
     }
 }

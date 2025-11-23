@@ -2,7 +2,7 @@
     @isset($users)
 
     @endisset
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="container mx-auto p-2 sm:p-6 lg:p-8">
 
         <h1 class="text-3xl sm:text-4xl font-bold mb-3 text-center text-white">Sledovanie dochádzky a mzdy</h1>
 
@@ -26,7 +26,7 @@
 
         @include('hours.partials._rate')
 
-        <div class="bg-gray-800 rounded-xl shadow-md p-6">
+        <div class="bg-gray-800 rounded-xl shadow-md p-2 sm:p-4 lg:p-6 mb-6">
             <div class="flex items-center justify-between mb-6">
                 <button id="prevMonth"
                         class="p-2 rounded-full hover:bg-gray-700 transition-colors">
@@ -49,7 +49,7 @@
                  class="grid grid-cols-7 gap-2 text-center font-semibold text-gray-400 text-sm mb-2">
             </div>
 
-            <div id="calendar-grid" class="grid grid-cols-7 gap-2">
+            <div id="calendar-grid" class="grid grid-cols-7 gap-0.5 sm:gap-2">
             </div>
         </div>
 

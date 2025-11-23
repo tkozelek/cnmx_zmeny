@@ -231,7 +231,7 @@ class WorkLogApp {
         for (const dateKey in workData) {
             const entry = workData[dateKey];
 
-            const breakT = entry.breakTime ? parseFloat(entry.breakTime) || 0 : 0;
+            const breakT = entry.break ? parseFloat(entry.break) || 0 : 0;
             const hours = this.calculateHours(entry.start, entry.end, breakT);
 
             summary.totalHours += hours;
