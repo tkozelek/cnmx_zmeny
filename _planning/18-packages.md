@@ -107,16 +107,6 @@ php artisan shield:generate --all
 
 ---
 
-### `tomatophp/filament-tenancy`
-~57 stars · [github](https://github.com/tomatophp/filament-tenancy)
-
-Specific bridge between `stancl/tenancy ^3.8` and Filament. Provides tenant creation/management from the central panel, tenant impersonation (log into a cinema's panel as their admin), and middleware helpers that correctly initialize tenancy inside Filament's request lifecycle.
-
-```
-composer require tomatophp/filament-tenancy
-```
-
----
 
 ### `pxlrbt/filament-excel`
 Filament Core Team member · [github](https://github.com/pxlrbt/filament-excel)
@@ -474,7 +464,6 @@ composer require driftingly/rector-laravel --dev
 ```
 filament/spatie-laravel-settings-plugin
 bezhansalleh/filament-shield
-tomatophp/filament-tenancy
 spatie/laravel-settings
 spatie/laravel-data
 laravel/horizon

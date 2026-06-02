@@ -70,10 +70,10 @@
 
 ## Key Decisions Summary
 
-1. **Keep Stancl Tenancy v3** — it is already installed and partially configured; implement it properly instead of switching.
+1. **Single database, Spatie teams** — one DB, every cinema is a `teams` row, `team_id` on all models, Filament native `->tenant()` for panel scoping. No Stancl Tenancy.
 2. **Replace custom role integers with Spatie teams** — roles become `admin`, `manager`, `employee`; one Spatie Team per tenant.
 3. **Filament for all admin work** — user management, position setup, plan builder, reports, week locking.
 4. **Livewire for employee-facing UI** — calendar view, unavailability marking, hours view.
-5. **Positions are tenant-scoped** — each cinema defines its own position names and typical slots.
+5. **Positions are team-scoped** — each cinema defines its own position names and typical slots.
 6. **Work plan = generated, not free-form** — admin builds a template of position+time slots, assigns users to slots.
-7. **Unavailability is forward-only** — users cannot mark a past day; a configurable `advance_hours` setting controls how early they must submit.
+7. **Absence is forward-only** — users cannot mark a past day; a configurable `advance_hours` setting controls how early they must submit.

@@ -7,7 +7,7 @@ metadata:
   originSessionId: acc11c85-ddb3-4b6c-b692-d7b47f339774
 ---
 
-Tomáš Kozelek (tomas.kozelek@mironet.cz) is a developer working on a cinema shift scheduling application. He is comfortable with Laravel, Livewire, and the broader PHP ecosystem — he speaks the language fluently and doesn't need basics explained.
+Tomáš Kozelek — personal email: tommyside@centrum.sk, work email: tomas.kozelek@mironet.cz. Developer working on a cinema shift scheduling application. He is comfortable with Laravel, Livewire, and the broader PHP ecosystem — he speaks the language fluently and doesn't need basics explained.
 
 He communicates casually and directly ("broski", "plz", "thx"), and appreciates the same energy back. Responses should be concise and practical, not over-formal.
 

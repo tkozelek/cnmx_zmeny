@@ -1,70 +1,77 @@
 # 02 — Database Schema
 
-All tables live inside the **tenant database** unless marked `[CENTRAL]`. Each tenant gets an isolated database (`tenant_{uuid}`) via Stancl Tenancy. Central tables live in the main application database.
+All tables live in a **single shared database**. Each cinema is a row in the `teams` table. Tenant-scoped models carry a `team_id` foreign key and use a `BelongsToTeam` global scope for automatic data isolation. No Stancl Tenancy — Filament v3's native `->tenant()` handles panel-level scoping.
 
 ---
 
-## Central Database (shared infrastructure)
+## `teams`
 
-### `[CENTRAL] tenants`
 ```sql
-id               uuid        PK (Stancl UUID generator)
-name             string(120)  -- "Kino Lumière"
-slug             string(60)   UNIQUE  -- used as DB prefix / subdomain
-data             json         -- Stancl reserved payload
-created_at       timestamp
-updated_at       timestamp
+id            bigint      PK
+name          string(120)             -- "Kino Lumière"
+slug          string(60)  UNIQUE      -- subdomain identifier
+is_active     boolean     DEFAULT true
+created_at    timestamp
+updated_at    timestamp
 ```
-
-### `[CENTRAL] domains`
-```sql
-id               bigint      PK
-domain           string(255) UNIQUE
-tenant_id        uuid        FK tenants.id CASCADE DELETE
-```
-
-### `[CENTRAL] users` (central super-admins only, optional)
-Keep a minimal central user table for platform-level administration if needed. Ordinary cinema users live in the tenant DB.
 
 ---
 
-## Tenant Database (per cinema)
+## `team_user` (pivot)
 
-### `tenant_settings`
-One row per tenant (seeded on tenant creation). Stores all configurable behaviour.
+```sql
+team_id   bigint  FK teams.id CASCADE DELETE
+user_id   bigint  FK users.id CASCADE DELETE
+PRIMARY KEY (team_id, user_id)
+```
+
+---
+
+## `team_settings`
+One row per team. Stores all per-cinema configurable behaviour.
 
 ```sql
 id                       bigint      PK
+team_id                  bigint      UNIQUE FK teams.id CASCADE DELETE
 week_offset              tinyint     -- 0=Mon, 3=Thu (default), day the work week starts
 week_lookahead           tinyint     -- how many weeks ahead to show (default 5)
-unavailability_hours     smallint    -- hours before a day that a user must submit unavailability (default 48)
-allow_self_registration  boolean     -- can users register themselves (default false)
+absence_hours            smallint    -- hours before a day that submission is still allowed (default 48)
+absence_max_multi_days   tinyint     -- max length of a multi-day absence block (default 30, 0=unlimited)
+absence_reminder_enabled boolean     DEFAULT true
+allow_self_registration  boolean     DEFAULT false
+marketplace_enabled      boolean     DEFAULT true
+marketplace_auto_approve boolean     DEFAULT false
 timezone                 string(50)  -- "Europe/Bratislava"
 locale                   string(10)  -- "sk"
 created_at               timestamp
 updated_at               timestamp
 ```
 
-> **Why a separate table instead of JSON on tenant?** Typed columns, easy Filament form binding, easy migrations when new settings are added.
+> Backed by `spatie/laravel-settings` so the class is typed PHP — see doc 04/18 for details.
 
 ---
 
 ### `users`
 ```sql
-id               bigint      PK
-name             string(100)
-lastname         string(100)
-email            string(180) UNIQUE
-email_verified_at timestamp  nullable
-password         string
-remember_token   string(100) nullable
-last_login_at    timestamp   nullable
-is_active        boolean     DEFAULT true
-created_at       timestamp
-updated_at       timestamp
+id                bigint      PK
+team_id           bigint      FK teams.id CASCADE DELETE
+current_team_id   bigint      nullable FK teams.id SET NULL
+name              string(100)
+lastname          string(100)
+email             string(180)
+email_verified_at timestamp   nullable
+password          string
+remember_token    string(100) nullable
+ical_token        string(64)  nullable UNIQUE
+last_login_at     timestamp   nullable
+is_active         boolean     DEFAULT true
+created_at        timestamp
+updated_at        timestamp
+
+UNIQUE (team_id, email)   -- email unique per team, not globally
 ```
 
-> Roles are handled entirely by Spatie Permission — no `id_role` column.
+> `team_id` = which team this user account belongs to. `current_team_id` = the active team for users who belong to multiple teams. Roles handled entirely by Spatie Permission — no `id_role` column.
 
 ---
 
@@ -73,13 +80,18 @@ Named work roles that the cinema defines (e.g. Uvádzač, Bufet, Pokladňa, Ved�
 
 ```sql
 id               bigint      PK
+team_id          bigint      FK teams.id CASCADE DELETE
 name             string(80)              -- "Uvádzač"
 color            string(7)  nullable     -- "#3b82f6" — for UI colour coding
 is_manager       boolean    DEFAULT false -- marks the position as the mandatory manager slot
+tier             tinyint    DEFAULT 1    -- skill level within the group
+tier_group       tinyint    DEFAULT 1    -- 1=floor, 2=box office, 3=management, 0=standalone
 sort_order       smallint   DEFAULT 0
 is_active        boolean    DEFAULT true
 created_at       timestamp
 updated_at       timestamp
+
+INDEX (team_id)
 ```
 
 ---
@@ -87,6 +99,7 @@ updated_at       timestamp
 ### `weeks`
 ```sql
 id               bigint      PK
+team_id          bigint      FK teams.id CASCADE DELETE
 date_from        date        -- Thursday (or whatever week_offset is)
 date_to          date        -- following Wednesday
 locked           boolean     DEFAULT false
@@ -95,7 +108,7 @@ locked_by        bigint      nullable FK users.id SET NULL
 created_at       timestamp
 updated_at       timestamp
 
-INDEX (date_from)
+INDEX (team_id, date_from)
 ```
 
 ---
@@ -152,22 +165,29 @@ INDEX (user_id)
 
 ---
 
-### `unavailabilities`
-User declares they cannot work a specific day.
+### `absences`
+Replaces `unavailabilities`. Covers single-day, multi-day, and recurring — see doc 15.
 
 ```sql
-id               bigint      PK
-user_id          bigint      FK users.id CASCADE DELETE
-date             date
-reason           string(255) nullable
-submitted_at     timestamp               -- set to now() on creation; used for deadline auditing
-admin_override   boolean     DEFAULT false -- admin can add/edit past the deadline
-overridden_by    bigint      nullable FK users.id SET NULL
-created_at       timestamp
-updated_at       timestamp
+id              bigint      PK
+team_id         bigint      FK teams.id CASCADE DELETE
+user_id         bigint      FK users.id CASCADE DELETE
+type            enum        'single', 'multi', 'recurring'
+date            date        nullable
+date_from       date        nullable
+date_to         date        nullable
+day_of_week     tinyint     nullable
+recurring_from  date        nullable
+recurring_until date        nullable
+reason          string(500) nullable
+submitted_at    timestamp
+admin_override  boolean     DEFAULT false
+overridden_by   bigint      nullable FK users.id SET NULL
+created_at      timestamp
+updated_at      timestamp
 
 UNIQUE (user_id, date)
-INDEX (user_id, date)
+INDEX  (team_id, user_id)
 ```
 
 ---
@@ -176,20 +196,21 @@ INDEX (user_id, date)
 Actual recorded hours after the shift is worked (post-facto).
 
 ```sql
-id               bigint      PK
-user_id          bigint      FK users.id CASCADE DELETE
-plan_assignment_id bigint    nullable FK plan_assignments.id SET NULL
-date             date
-position_id      bigint      nullable FK positions.id SET NULL
-start            time
-end              time
-break_minutes    smallint    DEFAULT 0
-notes            string(255) nullable
-created_at       timestamp
-updated_at       timestamp
+id                 bigint      PK
+team_id            bigint      FK teams.id CASCADE DELETE
+user_id            bigint      FK users.id CASCADE DELETE
+plan_assignment_id bigint      nullable FK plan_assignments.id SET NULL
+date               date
+position_id        bigint      nullable FK positions.id SET NULL
+start              time
+end                time
+break_minutes      smallint    DEFAULT 0
+notes              string(255) nullable
+created_at         timestamp
+updated_at         timestamp
 
 UNIQUE (user_id, date, start)
-INDEX (user_id, date)
+INDEX  (team_id, user_id, date)
 ```
 
 ---
@@ -199,13 +220,16 @@ Hourly pay rates per user — used for payroll report calculations.
 
 ```sql
 id               bigint      PK
-user_id          bigint      UNIQUE FK users.id CASCADE DELETE
+team_id          bigint      FK teams.id CASCADE DELETE
+user_id          bigint      FK users.id CASCADE DELETE
 weekday          decimal(8,2)
 saturday         decimal(8,2)
 sunday           decimal(8,2)
 break_deduction  decimal(8,2) DEFAULT 0
 created_at       timestamp
 updated_at       timestamp
+
+UNIQUE (team_id, user_id)
 ```
 
 ---
@@ -215,6 +239,7 @@ Replaces the old `file_storage` table. Week-scoped files uploaded by admin (rost
 
 ```sql
 id               bigint      PK
+team_id          bigint      FK teams.id CASCADE DELETE
 week_id          bigint      nullable FK weeks.id SET NULL
 user_id          bigint      nullable FK users.id SET NULL  -- uploader
 disk             string(50)  DEFAULT 'local'
@@ -226,6 +251,8 @@ size             bigint
 is_public        boolean     DEFAULT false
 created_at       timestamp
 updated_at       timestamp
+
+INDEX (team_id)
 ```
 
 > Alternative: use **Spatie Media Library** and attach media to Week models directly. Recommended if media management gets complex.
@@ -266,26 +293,24 @@ Auto-created by `spatie/laravel-permission` with teams mode enabled:
 ## Schema Diagram (simplified)
 
 ```
-tenants (central)
-  └── tenant_settings
-  └── users ──────────────────────────────────┐
-        └── rates                             │
-        └── unavailabilities                  │
-        └── shifts ── plan_assignments ◄──── plan_slots ── days ── weeks
-                        └── positions ◄────────────────────────────────┘
+teams
+  └── team_settings
+  └── users (team_id) ─────────────────────────────┐
+        └── rates (team_id)                        │
+        └── absences (team_id)                     │
+        └── shifts (team_id) ── plan_assignments ◄── plan_slots ── days ── weeks (team_id)
+                                                          └── positions (team_id)
 ```
 
 ---
 
 ## Migration Notes
 
-- Use `Schema::create()` migrations, never raw SQL.
+- All migrations in `database/migrations/` — single migration set, one database.
 - All FKs use `constrained()` helper with explicit `onDelete()`.
-- Add database-level `UNIQUE` constraints in addition to application-level validation.
-- Tenant migrations live in `database/migrations/tenant/` — Stancl runs them on tenant creation.
-- Central migrations live in `database/migrations/` as usual.
-- Seed positions with sensible defaults (Uvádzač, Bufet, Pokladňa, Vedúci) in `TenantSeeder`.
-- `tenant_settings` is seeded with 1 row immediately on tenant creation via `JobPipeline`.
+- `team_id` indexed on every top-level tenant table.
+- Seed positions with sensible defaults (Uvádzač, Bufet, Pokladňa, Vedúci) in `TeamSeeder`.
+- `team_settings` row created automatically when a `Team` is created via model observer.
 
 ---
 
@@ -293,10 +318,13 @@ tenants (central)
 
 | Old | New | Reason |
 |---|---|---|
-| `roles` table | Spatie `roles` table | Proper RBAC |
-| `id_role` on users | Spatie model_has_roles | Decoupled roles |
+| `tenants` / `domains` (Stancl) | `teams` + `team_user` pivot | Single DB, no separate databases |
+| `roles` table (integer IDs) | Spatie `roles` table | Proper RBAC |
+| `id_role` on users | Spatie `model_has_roles` | Decoupled roles |
 | `user_days` pivot | `plan_slots` + `plan_assignments` | Support positions, times, required counts |
+| `user_holidays` | `absences` | Unified single/multi/recurring model |
 | `bugs` table | Removed | Out of scope |
-| `file_storage` | `media` | Cleaner, optional Spatie Media Library |
+| `file_storage` | `media` | Cleaner, with team_id scoping |
 | `mediumInt` PKs | `bigint` PKs | Standard Laravel `id()` |
 | `weeks.next_week_id / prev_week_id` | Removed — derive from `date_from` ordering | Redundant self-references |
+| `tenant_settings` (Stancl) | `team_settings` backed by `spatie/laravel-settings` | Typed, cached, single-DB |
