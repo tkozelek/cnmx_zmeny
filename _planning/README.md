@@ -44,6 +44,7 @@
 | [09-security.md](09-security.md) | Security, data integrity, rate limiting, audit log |
 | [10-reports.md](10-reports.md) | Reports, exports (PDF / Excel), scheduled summaries |
 | [11-implementation-order.md](11-implementation-order.md) | Phased implementation roadmap |
+| [12-shift-marketplace.md](12-shift-marketplace.md) | Shift marketplace — replacement requests, offers, email blasts, admin approval |
 
 ---
 
