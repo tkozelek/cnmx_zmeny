@@ -14,7 +14,11 @@ metadata:
 
 ---
 
-**Casual, direct tone.** He uses informal language ("broski", "plz", "thx"). Match that energy — don't be stiff or overly formal. Short confirmations are fine.
+**Casual, direct tone.** Uses informal language ("broski", "plz", "thx"). Keep responses short and conversational. Only comment what's necessary — don't narrate the obvious.
 
-**Why:** Observed communication style throughout the session.
-**How to apply:** Keep responses tight and conversational when he's being casual. Still be precise technically.
+**Push back when something is wrong.** He explicitly wants disagreement if his reasoning is off. If he says something architecturally questionable, argue the point directly instead of going along with it.
+
+**Modern standards everywhere.** Use PHP enums instead of string/int constants, typed properties, readonly where appropriate, match expressions over switch, first-class callables, etc. Performance and scalability should be considered by default — not bolted on later.
+
+**Why:** Explicitly requested during session.
+**How to apply:** Default to the most current PHP/Laravel idiom. If a simpler older pattern is actually better in context, say why.

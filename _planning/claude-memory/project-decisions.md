@@ -9,7 +9,7 @@ metadata:
 
 Decisions made during the 2026-06-02 planning session — these should be treated as settled unless Tomáš explicitly revisits them.
 
-**Tenancy:** Keep Stancl Tenancy v3, database-per-tenant. Subdomain routing (`cinemaname.app.com`). Do not switch to path-based or shared-DB tenancy.
+**Tenancy:** Single database. Each cinema is a row in `teams`. All tenant models carry `team_id` + a `BelongsToTeam` global scope. Filament v3 native `->tenant(Team::class)` handles panel scoping. No Stancl Tenancy. No `tomatophp/filament-tenancy`.
 
 **RBAC:** Spatie Permission v6 teams mode. Three roles: `admin`, `manager`, `employee`. Blocked users → `is_active = false` flag, not a role. Unverified self-registered users → no role assigned until admin approves.
 

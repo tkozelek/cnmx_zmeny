@@ -1,184 +1,310 @@
 # 03 — Multi-Tenancy
 
-## Strategy: Database-per-Tenant (Stancl Tenancy v3)
+## Strategy: Single Database + Spatie Teams
 
-Keep the existing `stancl/tenancy` package (v3). Each cinema gets its own MySQL/PostgreSQL database. This provides the strongest data isolation guarantee — a bug in application code cannot accidentally leak one cinema's data to another, even if a query is constructed incorrectly.
+All cinemas share one database. Each cinema is a **Spatie Team** (`teams` table). Every tenant-scoped model carries a `team_id` foreign key. Filament v3's built-in tenancy system handles panel-level scoping automatically.
 
----
+This replaces the original Stancl Tenancy database-per-tenant plan. For this app's scale it is the right call — no DB provisioning jobs, no bootstrapper middleware stack, no per-tenant migrations, vastly simpler infrastructure.
 
-## Tenancy Package Configuration
-
-### Identification
-
-Use **subdomain-based** identification. Each cinema gets `cinemaname.app.com`.
-
-```php
-// config/tenancy.php
-'tenant_finder' => Stancl\Tenancy\TenantFinders\DomainTenantFinder::class,
-
-'identification_middleware' => [
-    Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
-    Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
-],
-```
-
-Central domains (admin panel, marketing site) are defined in `config/tenancy.php`:
-```php
-'central_domains' => [
-    'app.com',        // central: platform admin
-    'www.app.com',
-    'localhost',
-    '127.0.0.1',
-],
-```
-
-Alternative: path-based (`app.com/kino-lumiere/`) — simpler SSL setup (single cert), but Stancl's subdomain approach is cleaner. **Recommend subdomain.**
+**Drop:** `stancl/tenancy` entirely.  
+**Use:** Spatie Permission teams mode + Filament's native `->tenant()` + a `BelongsToTeam` trait for model scoping.
 
 ---
 
-## Tenant Lifecycle
+## Teams Table
 
-### Creation Flow
-
-1. Platform admin creates a new tenant via the **central Filament panel**.
-2. A `TenantCreated` event fires.
-3. Stancl `JobPipeline` runs in order:
-   - `CreateDatabase` — provisions `tenant_{slug}` database
-   - `MigrateDatabase` — runs all migrations in `database/migrations/tenant/`
-   - `SeedDatabase` — runs `TenantSeeder` (seeds `tenant_settings`, default `positions`, default Spatie roles/permissions)
-   - `CreateTenantAdmin` — creates the first admin user and sends invite email
-4. DNS entry (manual step) points `slug.app.com` to the server.
-
-```php
-// app/Providers/TenancyServiceProvider.php
-Events::listen(TenantCreated::class, JobPipeline::make([
-    Jobs\CreateDatabase::class,
-    Jobs\MigrateDatabase::class,
-    Jobs\SeedDatabase::class,
-    Jobs\CreateTenantAdmin::class,
-])->send(fn (TenantCreated $event) => $event->tenant)->toListener());
+```sql
+teams
+  id            bigint      PK
+  name          string(120)             -- "Kino Lumière"
+  slug          string(60)  UNIQUE      -- subdomain / URL identifier
+  is_active     boolean     DEFAULT true
+  created_at    timestamp
+  updated_at    timestamp
 ```
 
-### Deletion / Suspension
-- Soft-delete tenant (set `is_active = false` on central tenant record).
-- Full delete: run `DeleteDatabase` job + remove domain record.
-- **Never auto-delete** — require explicit confirmation via a Filament action with typed confirmation.
+The `Team` model is the tenant. It is also the Spatie Permission team.
 
 ---
 
-## Route Structure
+## What Gets a `team_id`
 
-### Central Routes (`routes/web.php`)
-- `/` — marketing / login to central admin
-- `/platform/*` — central Filament panel (super-admin only)
-- Password reset with central broker
+Every table that holds cinema-specific data gets `team_id bigint FK teams.id CASCADE DELETE`:
 
-### Tenant Routes (`routes/tenant.php`)
-All cinema-facing routes. Wrapped in `InitializeTenancyByDomain` + `PreventAccessFromCentralDomains`:
+| Table | team_id? |
+|---|---|
+| `users` | ✓ |
+| `tenant_settings` | ✓ (one row per team) |
+| `positions` | ✓ |
+| `weeks` | ✓ |
+| `days` | via `week_id` → no direct column needed |
+| `plan_slots` | via `day_id` → no direct column needed |
+| `plan_assignments` | via `plan_slot_id` → no direct column needed |
+| `absences` | ✓ |
+| `shifts` | ✓ |
+| `rates` | ✓ |
+| `media` | ✓ |
+| `marketplace_listings` | via `plan_assignment_id` → no direct column needed |
+| `activity_log` | ✓ (add `team_id` via custom tap) |
+| Spatie `model_has_roles` | ✓ (teams mode adds this automatically) |
 
-```php
-// routes/tenant.php
-Route::middleware([
-    'web',
-    InitializeTenancyByDomain::class,
-    PreventAccessFromCentralDomains::class,
-])->group(function () {
-
-    Route::get('/', [CalendarController::class, 'index'])->name('home');
-
-    // Auth
-    Route::get('/login',    [LoginController::class, 'index'])->name('login');
-    Route::post('/login',   [LoginController::class, 'authenticate'])->middleware('throttle:6,1');
-    Route::post('/logout',  [LoginController::class, 'logout'])->name('logout');
-
-    // ... all scheduling routes
-
-    // Filament tenant admin panel is also served under the tenant domain
-    // Filament panel registered with tenant middleware (see filament.md)
-});
-```
-
-### Filament Panel Routing
-The **tenant admin Filament panel** lives at `/admin` under the tenant domain: `cinemaname.app.com/admin`.
-The **central Filament panel** lives at `app.com/platform`.
+Days, plan_slots, plan_assignments and marketplace_listings are reachable through their parent FK chain, so they don't need a direct `team_id` — querying always goes through a `whereHas` or eager load that is already scoped.
 
 ---
 
-## Bootstrappers
+## BelongsToTeam Trait
 
-The bootstrappers define what gets "switched" when a tenant request comes in.
+A shared trait that auto-scopes all queries and auto-fills `team_id` on creation:
 
 ```php
-'bootstrappers' => [
-    Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,  // switch DB connection
-    Stancl\Tenancy\Bootstrappers\CacheTagsBootstrapper::class,         // prefix cache keys
-    Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class, // suffix storage paths
-    Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,      // re-init tenancy in queued jobs
-],
+// app/Traits/BelongsToTeam.php
+
+trait BelongsToTeam
+{
+    public static function bootBelongsToTeam(): void
+    {
+        // Auto-fill team_id on new records
+        static::creating(function (Model $model) {
+            if (! $model->team_id && auth()->check()) {
+                $model->team_id = auth()->user()->current_team_id;
+            }
+        });
+    }
+
+    public static function bootedBelongsToTeam(): void
+    {
+        // Global scope: always filter to current team
+        static::addGlobalScope('team', function (Builder $query) {
+            if (auth()->check() && auth()->user()->current_team_id) {
+                $query->where(
+                    (new static)->getTable() . '.team_id',
+                    auth()->user()->current_team_id
+                );
+            }
+        });
+    }
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
+}
+```
+
+Apply to: `User`, `TenantSettings`, `Position`, `Week`, `Absence`, `Shift`, `Rate`, `Media`.
+
+> The global scope means you never write `->where('team_id', ...)` manually anywhere — it is always injected. Artisan commands and queue jobs that need to bypass this (e.g. a cross-tenant report) call `Model::withoutGlobalScope('team')` explicitly.
+
+---
+
+## User ↔ Team Relationship
+
+A user can belong to multiple teams (a person could manage two cinemas). The active team is tracked on the user:
+
+```sql
+-- Add to users table:
+current_team_id   bigint  nullable FK teams.id SET NULL
+```
+
+```sql
+-- Pivot: team_user
+team_id   bigint  FK teams.id CASCADE DELETE
+user_id   bigint  FK users.id CASCADE DELETE
+PRIMARY KEY (team_id, user_id)
+```
+
+```php
+// User model
+public function teams(): BelongsToMany
+{
+    return $this->belongsToMany(Team::class)->withTimestamps();
+}
+
+public function currentTeam(): BelongsTo
+{
+    return $this->belongsTo(Team::class, 'current_team_id');
+}
+
+public function switchTeam(Team $team): void
+{
+    abort_unless($this->teams->contains($team), 403);
+    $this->update(['current_team_id' => $team->id]);
+    app(\Spatie\Permission\PermissionRegistrar::class)
+        ->setPermissionsTeamId($team->id);
+}
 ```
 
 ---
 
-## Tenant Settings
+## Spatie Permission Team Scoping
 
-Tenant-specific configuration lives in `tenant_settings` (one row, seeded on creation). The `TenantSettings` model is loaded into a singleton on bootstrap:
+After every login and every team switch, set the active team ID for permission lookups:
 
 ```php
-// App\Http\Middleware or AppServiceProvider
-app()->singleton(TenantSettings::class, fn () => TenantSettings::first());
+// app/Http/Middleware/SetActiveTeam.php
+
+public function handle(Request $request, Closure $next): Response
+{
+    if ($user = $request->user()) {
+        $teamId = $user->current_team_id;
+        app(\Spatie\Permission\PermissionRegistrar::class)
+            ->setPermissionsTeamId($teamId);
+    }
+    return $next($request);
+}
 ```
 
-This avoids repeated DB hits for settings on every request. Cache it with `remember()` for the duration of the request.
+Register in the `web` middleware group (after `Authenticate`).
 
-Settings exposed:
-- `week_offset` — day number (0=Mon…6=Sun) the work week starts on
-- `week_lookahead` — how many future weeks to generate/show
-- `unavailability_hours` — hours before a day that submission is still allowed
-- `allow_self_registration` — boolean
-- `timezone`, `locale`
+Also call in:
+- `LoginController::authenticate()` after successful login
+- `User::switchTeam()` 
+- Queued jobs: restore in the job constructor from a stored `$teamId` property
+
+---
+
+## Filament v3 Native Tenancy
+
+Filament v3 ships first-class multi-tenancy that maps perfectly onto this model.
+
+```php
+// app/Providers/Filament/AdminPanelProvider.php
+
+return $panel
+    ->tenant(Team::class, slugAttribute: 'slug')
+    ->tenantRoutePrefix('') // cinemaname.app.com/admin — no extra prefix
+    ->tenantMiddleware([SetActiveTeam::class], isPersistent: true)
+    ->tenantRegistration(RegisterTeamPage::class)  // optional: self-service cinema signup
+```
+
+What Filament's tenant() does automatically:
+- Adds the team slug to every admin URL: `/admin/{team:slug}/weeks`
+- Injects a team switcher in the sidebar (if user belongs to multiple teams)
+- Runs `SetActiveTeam` middleware on every panel request
+- Scopes all Resource queries through the team (via `getTenantOwnershipRelationshipName()` on models)
+
+Each Resource declares its team relationship:
+```php
+// app/Filament/Resources/WeekResource.php
+public static function getEloquentQuery(): Builder
+{
+    return parent::getEloquentQuery(); // BelongsToTeam global scope handles it
+}
+```
+
+Or use Filament's built-in `HasTenant` on the model:
+```php
+// Week model
+use Filament\Models\Contracts\HasTenant;
+
+class Week extends Model implements HasTenant
+{
+    public function getTenants(Panel $panel): Collection
+    {
+        return $this->team ? collect([$this->team]) : collect();
+    }
+}
+```
+
+---
+
+## URL Structure
+
+With subdomain routing (one subdomain per cinema):
+
+```
+app.com/platform          → Central Filament panel (super-admins)
+kino-lumiere.app.com/admin → Cinema admin panel (auto-scoped to that team)
+kino-lumiere.app.com/      → Employee-facing Livewire app
+```
+
+Subdomain → team resolution: a small middleware reads the subdomain, finds the matching `teams.slug`, sets `current_team_id` on the authenticated user for that request:
+
+```php
+// app/Http/Middleware/ResolveTeamFromSubdomain.php
+
+public function handle(Request $request, Closure $next): Response
+{
+    $host = $request->getHost();
+    $central = config('app.central_domain'); // "app.com"
+
+    if ($host !== $central && str_ends_with($host, '.' . $central)) {
+        $slug = str_replace('.' . $central, '', $host);
+        $team = Team::where('slug', $slug)->where('is_active', true)->firstOrFail();
+
+        if ($user = $request->user()) {
+            abort_unless($user->teams->contains($team), 403);
+            if ($user->current_team_id !== $team->id) {
+                $user->switchTeam($team);
+            }
+        }
+
+        // Store on request so guests (iCal feed, public pages) can also use it
+        $request->attributes->set('current_team', $team);
+    }
+
+    return $next($request);
+}
+```
 
 ---
 
 ## Data Isolation Checklist
 
-- [ ] All application models that belong to a tenant are in the tenant DB — no `tenant_id` column needed on each row.
-- [ ] The `User` model has no `tenant_id` — it lives in the tenant DB which is the isolation boundary.
-- [ ] Filament tenant panel uses `InitializeTenancyByDomain` middleware — can never see another tenant's data.
-- [ ] Queue jobs that run in tenant context use `QueueTenancyBootstrapper` — they re-initialize tenancy when dequeued.
-- [ ] Scheduled commands that touch tenant data iterate over all tenants explicitly using `Tenant::all()->each(fn ($t) => tenancy()->initialize($t))`.
-- [ ] File uploads go to `storage/app/tenant_{id}/` (FilesystemTenancyBootstrapper suffixes the disk).
-- [ ] Cache keys are automatically prefixed by `CacheTagsBootstrapper`.
-- [ ] No raw SQL queries that could cross-contaminate — use Eloquent exclusively.
+- [ ] `BelongsToTeam` trait applied to all top-level tenant models
+- [ ] Global scope tested: authenticated user can never read another team's rows — write a test that creates two teams, authenticates as team A user, asserts team B rows are invisible
+- [ ] Filament panel URLs include team slug — wrong-team URL returns 403
+- [ ] `SetActiveTeam` middleware fires on every web request after auth
+- [ ] Queue jobs store `team_id` and restore it in `handle()` — never rely on auth() inside a queued job
+- [ ] Artisan commands that iterate teams call `withoutGlobalScope('team')` and then manually scope per team
+- [ ] Soft deletes do not leak: `Model::onlyTrashed()` in admin also respects global scope
+- [ ] Activity log entries tagged with `team_id` (custom `tap` on `LogsActivity`)
+- [ ] iCal feed: token lookup scoped — `User::withoutGlobalScope('team')->where('ical_token', $token)` (needed because the user has no session/team set yet at feed time)
 
 ---
 
-## Central Super-Admin Panel
+## Central / Platform Admin
 
-Runs outside any tenant context on `app.com/platform`.
+Runs outside any team context. A separate Filament panel at `app.com/platform`:
 
-Capabilities:
-- Create / suspend / delete tenants
-- View all tenants and their basic stats (user count, last activity)
-- Impersonate a tenant (use `stancl/tenancy`'s `Tenancy::initialize()` + session-based impersonation flag)
-- Global health dashboard (Laravel Pulse)
+```php
+// PlatformPanelProvider
+return $panel
+    ->id('platform')
+    ->path('platform')
+    // No ->tenant() — this panel sees all teams
+    ->authGuard('web')
+    ->resources([TeamResource::class, CentralUserResource::class])
+```
 
-Access: Only users in the central `users` table with a `super_admin` role.
+`TeamResource` provides full CRUD for teams — create, suspend (`is_active = false`), delete.
+
+Central super-admins are users in the shared `users` table with `current_team_id = null` and a `super_admin` role (global, not team-scoped).
 
 ---
 
 ## Local Development
 
-For local dev, use `localhost` subdomains in `/etc/hosts`:
+No `/etc/hosts` tricks needed. Just run with a single domain and switch teams via the Filament team switcher in the sidebar:
 
 ```
-127.0.0.1  app.test
-127.0.0.1  kino-lumiere.app.test
-127.0.0.1  kino-palace.app.test
+localhost/admin/{team-slug}/weeks
 ```
 
-Or use Laravel Sail with a wildcard proxy. Add `.env` variable:
-```
-TENANCY_TEST_DOMAIN=app.test
-```
+Or configure two subdomains via Valet/Herd for closer-to-production testing.
 
-The `TenancySeeder` creates one test tenant automatically when running `php artisan db:seed`.
+---
+
+## What Was Removed vs the Original Plan
+
+| Removed | Replaced with |
+|---|---|
+| `stancl/tenancy` package | Filament native `->tenant()` + `BelongsToTeam` trait |
+| Separate tenant databases | Single DB, `team_id` columns |
+| Stancl bootstrappers (DB, Cache, Queue, Filesystem) | Standard Laravel, no bootstrapping needed |
+| `TenancyServiceProvider` | Removed |
+| `tenant.php` route file | All routes in `web.php`, scoped by subdomain middleware |
+| Per-tenant DB migrations | Single migration set for everyone |
+| `CreateDatabase` / `MigrateDatabase` jobs | Team creation is just `Team::create([...])` |
+| `tomatophp/filament-tenancy` package | Not needed — Filament handles it natively |
+| `tenant_{id}` database naming | Not applicable |
