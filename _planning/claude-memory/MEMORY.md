@@ -1,6 +1,6 @@
 # Memory Index
 
-- [user-profile.md](user-profile.md) — Who Tomáš is, how he works, communication style
-- [project-overview.md](project-overview.md) — What cnmx_zmeny is and the rewrite goals
-- [project-decisions.md](project-decisions.md) — Key architectural decisions made during planning
-- [feedback-style.md](feedback-style.md) — Preferences and working style feedback
+- [user_profile.md](user_profile.md) — Who Tomáš is, expertise, how to talk to him
+- [project_cinema_scheduler.md](project_cinema_scheduler.md) — cnmx_zmeny app overview and rewrite goals
+- [project_cinema_decisions.md](project_cinema_decisions.md) — Locked architectural decisions for the rewrite
+- [feedback_style.md](feedback_style.md) — How to behave: tone, commits, pushback, code standards
