@@ -45,6 +45,11 @@
 | [10-reports.md](10-reports.md) | Reports, exports (PDF / Excel), scheduled summaries |
 | [11-implementation-order.md](11-implementation-order.md) | Phased implementation roadmap |
 | [12-shift-marketplace.md](12-shift-marketplace.md) | Shift marketplace — replacement requests, offers, email blasts, admin approval |
+| [13-ical-feed.md](13-ical-feed.md) | iCal subscription feed — private per-user URL for Google/Apple/Outlook Calendar sync |
+| [14-position-skills.md](14-position-skills.md) | Position skill tiers & training hierarchy (Zaucovaný → Uvádzač → Bufet) |
+| [15-absence-system.md](15-absence-system.md) | Unified absence system — single-day, multi-day, recurring; replaces doc 08 |
+| [16-analytics.md](16-analytics.md) | Analytics dashboard — hours, position coverage, absence patterns, marketplace stats |
+| [17-logging.md](17-logging.md) | Logging system — audit log, application log, security log, production destinations |
 
 ---
 
