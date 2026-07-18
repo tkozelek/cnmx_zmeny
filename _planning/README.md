@@ -51,6 +51,7 @@
 | [16-analytics.md](16-analytics.md) | Analytics dashboard — hours, position coverage, absence patterns, marketplace stats |
 | [17-logging.md](17-logging.md) | Logging system — audit log, application log, security log, production destinations |
 | [18-packages.md](18-packages.md) | Recommended packages — Filament plugins, DnD, Spatie, Livewire UI, DX tooling |
+| [19-design-system.md](19-design-system.md) | Design system — color, type, spacing, and UI patterns shared by Filament + Livewire |
 
 ---
 
