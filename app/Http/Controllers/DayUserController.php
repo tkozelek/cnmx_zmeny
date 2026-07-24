@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Day;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 
 class DayUserController extends Controller
 {
-    public function toggleUser(Request $request)
+    public function toggleUser(Request $request): JsonResponse
     {
         $dayId = $request->get('day');
         $day = Day::with(['users', 'week'])->find($dayId);
@@ -27,10 +29,14 @@ class DayUserController extends Controller
             $status = 2;
         }
 
+        $html = Blade::render('<x-day-user-list :day="$day"/>', [
+            'day' => $day->fresh('users'),
+        ]);
+
         return response()->json([
             'message' => $message,
-            'users' => $day->fresh('users')->users,
             'status' => $status,
+            'html' => $html,
         ]);
     }
 

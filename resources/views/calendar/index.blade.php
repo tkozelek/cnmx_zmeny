@@ -20,58 +20,31 @@
             @if(isset($userCount) && count($userCount) != 0)
                 <div class="mt-10 md:mt-12 mb-8">
                     <h3 class="text-lg sm:text-xl font-semibold text-slate-100 mb-4">Prehľad počtu zapísaných</h3>
-                    <div class="bg-slate-800 shadow-xl rounded-lg overflow-hidden max-w-md mx-auto sm:mx-0">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left text-slate-300">
-                                <thead class="text-xs text-slate-200 uppercase bg-slate-700/60">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3 font-medium">Meno</th>
-                                    <th scope="col" class="px-4 py-3 font-medium text-center">Počet</th>
-                                </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-700">
+                    <x-table :headers="['Meno', 'Počet']" class="mx-auto max-w-md sm:mx-0">
                                 @foreach($userCount as $user)
-                                    <tr class="hover:bg-slate-700/40 transition-colors duration-150">
-                                        <td class="px-4 py-3 font-medium text-slate-100">{{ $user }}</td>
-                                        <td class="px-4 py-3 text-center">{{ $user->count }}</td>
-                                    </tr>
+                                    <x-table-row>
+                                        <x-table-cell class="font-medium text-slate-100">{{ $user }}</x-table-cell>
+                                        <x-table-cell class="text-center">{{ $user->count }}</x-table-cell>
+                                    </x-table-row>
                                 @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    </x-table>
                 </div>
             @endif
 
             @if(isset($absences) && count($absences) != 0)
                 <div class="mt-10 md:mt-12 mb-8">
                     <h3 class="text-lg sm:text-xl font-semibold text-slate-100 mb-4">Absencie v aktuálnom týždni</h3>
-                    <div class="bg-slate-800 shadow-xl rounded-lg overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left text-slate-300">
-                                <thead class="text-xs text-slate-200 uppercase bg-slate-700/60">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 font-medium">Meno</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">Začiatok</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">Koniec</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">Vytvorené</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">Dôvod</th>
-                                </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-700">
+                    <x-table :headers="['Meno', 'Začiatok', 'Koniec', 'Vytvorené', 'Dôvod']">
                                 @foreach($absences as $absence)
-                                    <tr class="hover:bg-slate-700/40 transition-colors duration-150">
-                                        <td class="px-6 py-3 font-medium text-slate-100">{{ $absence->user }}</td>
-                                        <td class="px-6 py-3 whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_from, 'd.m') }}</td>
-                                        <td class="px-6 py-3 whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m') }}</td>
-                                        <td class="px-6 py-3 whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->created_at, 'd.m H:i') }}</td>
-                                        <td class="px-6 py-3">{{ $absence->popis }}</td>
-                                    </tr>
+                                    <x-table-row>
+                                        <x-table-cell class="font-medium text-slate-100">{{ $absence->user }}</x-table-cell>
+                                        <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_from, 'd.m') }}</x-table-cell>
+                                        <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m') }}</x-table-cell>
+                                        <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->created_at, 'd.m H:i') }}</x-table-cell>
+                                        <x-table-cell>{{ $absence->popis }}</x-table-cell>
+                                    </x-table-row>
                                 @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    </x-table>
                 </div>
             @endif
         </section>

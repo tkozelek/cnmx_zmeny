@@ -33,35 +33,20 @@ $(document).ready(function() {
             }
 
             if (response['status'] === 2) {
-                clickedButton.removeClass('bg-green-300 hover:bg-green-600').addClass('bg-red-300 hover:bg-red-400').text('ZAPISAŤ');
+                clickedButton.removeClass('bg-emerald-400 hover:bg-emerald-500').addClass('bg-rose-400 hover:bg-rose-500').text('ZAPISAŤ');
                 showToast("Deň odpísaný.", "error");
             } else {
-                clickedButton.removeClass('bg-red-300 hover:bg-red-400').addClass('bg-green-300 hover:bg-green-600').text('ODPISAŤ');
+                clickedButton.removeClass('bg-rose-400 hover:bg-rose-500').addClass('bg-emerald-400 hover:bg-emerald-500').text('ODPISAŤ');
                 showToast("Deň zapísaný.", "success");
             }
             toggleDateStatus(clickedButton);
 
-            let usersContainer = $('#c-' + day).find('.users-container');
-            usersContainer.empty(); // Clear existing users
-            response['users'].forEach(function (user) {
-                let isBlocked = user.id_role === 4;
+            let dayCard = $('#c-' + day);
+            dayCard.find('.users-container').replaceWith(response['html']);
 
-                let userDiv = $('<div>').addClass('bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md text-md rows px-1 flex items-center');
-
-                if (isBlocked) {
-                    userDiv.addClass('line-through justify-center');
-                }  else {
-                    userDiv.addClass('justify-center');
-                }
-
-                let popisHtml = user.pivot.popis ? `<span class="text-slate-400/80 italic text-sm ml-1">(${user.pivot.popis})</span>` : '';
-                let userNameHtml = `${user.lastname} ${user.name[0]}.`;
-
-                let nameWrapper = $('<span class="truncate max-w-[calc(100%-20px)]">').html(userNameHtml + popisHtml);
-                userDiv.append(nameWrapper);
-
-                usersContainer.append(userDiv);
-            });
+            if (!$('#names_checkbox').prop('checked')) {
+                dayCard.find('.rows').hide();
+            }
         }, function(response) {
             showToast("Nemáš prístup.");
             console.log(response.json());
