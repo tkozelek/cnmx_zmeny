@@ -58,7 +58,7 @@
                             <x-table-cell-header>Akcia</x-table-cell-header>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-gray-700">
                         @foreach($bugs as $bug)
                             <x-table-row>
                                 <x-table-cell>{{ $bug->id }}</x-table-cell>

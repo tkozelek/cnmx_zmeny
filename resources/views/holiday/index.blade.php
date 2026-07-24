@@ -55,23 +55,12 @@
         @if(isset($absences) && count($absences) > 0)
             <section class="mb-6">
                 <h2 class="text-2xl font-semibold text-slate-100 mb-2 tracking-tight">Tvoje absencie</h2>
-                <div class="bg-slate-800 shadow-xl rounded-lg overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-slate-300">
-                            <thead class="text-xs text-slate-200 uppercase bg-slate-700/50">
-                            <tr>
-                                <x-table-cell-header class="">Začiatok</x-table-cell-header>
-                                <x-table-cell-header class="">Koniec</x-table-cell-header>
-                                <x-table-cell-header class="">Dôvod</x-table-cell-header>
-                                <x-table-cell-header class=" text-center">Akcie</x-table-cell-header>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-700">
+                <x-table :headers="['Začiatok', 'Koniec', 'Dôvod', 'Akcie']">
                             @foreach($absences as $absence)
-                                <tr class="hover:bg-slate-700/30 transition-colors duration-150">
-                                    <x-table-cell class=" whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_from, 'd.m.Y') }}</x-table-cell>
-                                    <x-table-cell class=" whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m.Y') }}</x-table-cell>
-                                    <x-table-cell class=" max-w-xs truncate" title="{{ $absence->popis }}"> {{ $absence->popis }}</x-table-cell>
+                                <x-table-row>
+                                    <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_from, 'd.m.Y') }}</x-table-cell>
+                                    <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m.Y') }}</x-table-cell>
+                                    <x-table-cell class="max-w-xs truncate" title="{{ $absence->popis }}">{{ $absence->popis }}</x-table-cell>
                                     <x-table-cell class="!py-2 text-center">
                                         @if(!$absence->date_canceled && $absence->date_to >= \Carbon\Carbon::now()->format('Y-m-d'))
                                             <form action="{{ route('holiday.end', $absence->id) }}" method="POST" class="inline-block">
@@ -95,12 +84,9 @@
                                             <span class="text-xs italic text-slate-500">Neaktívne</span>
                                         @endif
                                     </x-table-cell>
-                                </tr>
+                                </x-table-row>
                             @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                </x-table>
             </section>
         @endif
 
@@ -109,32 +95,17 @@
                 <h2 class="text-2xl font-semibold text-slate-100 mb-2 mt-5 tracking-tight">
                     <span class="text-green-500">Aktívne</span> absencie všetkých zamestnancov
                 </h2>
-                <div class="bg-slate-800 shadow-xl rounded-lg overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-slate-300">
-                            <thead class="text-xs text-slate-200 uppercase bg-slate-700/50">
-                            <tr>
-                                <x-table-cell-header class="">Meno</x-table-cell-header>
-                                <x-table-cell-header class="">Začiatok</x-table-cell-header>
-                                <x-table-cell-header class="">Koniec</x-table-cell-header>
-                                <x-table-cell-header class="">Vytvorené</x-table-cell-header>
-                                <x-table-cell-header class="">Dôvod</x-table-cell-header>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-700">
+                <x-table :headers="['Meno', 'Začiatok', 'Koniec', 'Vytvorené', 'Dôvod']">
                             @foreach($active as $absence)
-                                <tr class="hover:bg-slate-700/30 transition-colors duration-150">
-                                    <x-table-cell class=" whitespace-nowrap font-medium text-slate-100">{{ $absence->user }}</x-table-cell>
-                                    <x-table-cell class=" whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_from, 'd.m.Y') }}</x-table-cell>
-                                    <x-table-cell class=" whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m.Y') }}</x-table-cell>
-                                    <x-table-cell class=" whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->created_at, 'd.m.Y H:i:s') }}</x-table-cell>
-                                    <x-table-cell class=" max-w-xs truncate" title="{{ $absence->popis }}"> {{ $absence->popis }}</x-table-cell>
-                                </tr>
+                                <x-table-row>
+                                    <x-table-cell class="whitespace-nowrap font-medium text-slate-100">{{ $absence->user }}</x-table-cell>
+                                    <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_from, 'd.m.Y') }}</x-table-cell>
+                                    <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m.Y') }}</x-table-cell>
+                                    <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->created_at, 'd.m.Y H:i:s') }}</x-table-cell>
+                                    <x-table-cell class="max-w-xs truncate" title="{{ $absence->popis }}">{{ $absence->popis }}</x-table-cell>
+                                </x-table-row>
                             @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                </x-table>
             </section>
         @endif
 
@@ -143,27 +114,14 @@
                 <h2 class="text-2xl font-semibold text-slate-100 mb-2 mt-5 tracking-tight">
                     <span class="text-red-500">Vypršané</span> absencie všetkých zamestnancov
                 </h2>
-                <div class="bg-slate-800 shadow-xl rounded-lg overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-slate-300">
-                            <thead class="text-xs text-slate-200 uppercase bg-slate-700/50">
-                            <tr>
-                                <x-table-cell-header class="">Meno</x-table-cell-header>
-                                <x-table-cell-header class="">Začiatok</x-table-cell-header>
-                                <x-table-cell-header class="">Koniec</x-table-cell-header>
-                                <x-table-cell-header class="">Vytvorené</x-table-cell-header>
-                                <x-table-cell-header class="">Dôvod</x-table-cell-header>
-                                <x-table-cell-header class=" text-center">Akcie</x-table-cell-header>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-700">
+                <x-table :headers="['Meno', 'Začiatok', 'Koniec', 'Vytvorené', 'Dôvod', 'Akcie']">
                             @foreach($inactive as $absence)
-                                <tr class="hover:bg-slate-700/30 transition-colors duration-150">
+                                <x-table-row>
                                     <x-table-cell class="whitespace-nowrap font-medium text-slate-100">{{ $absence->user }}</x-table-cell>
-                                    <x-table-cell class=" whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_from, 'd.m.Y') }}</x-table-cell>
-                                    <x-table-cell class=" whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m.Y') }}</x-table-cell>
-                                    <x-table-cell class=" whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->created_at, 'd.m.Y H:i:s') }}</x-table-cell>
-                                    <x-table-cell class=" max-w-xs truncate" title="{{ $absence->popis }}"> {{ $absence->popis }}</x-table-cell>
+                                    <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_from, 'd.m.Y') }}</x-table-cell>
+                                    <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m.Y') }}</x-table-cell>
+                                    <x-table-cell class="whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->created_at, 'd.m.Y H:i:s') }}</x-table-cell>
+                                    <x-table-cell class="max-w-xs truncate" title="{{ $absence->popis }}">{{ $absence->popis }}</x-table-cell>
                                     <x-table-cell class="!py-3 text-center">
                                         <form action="{{ route('holiday.destroy', $absence->id) }}" method="POST" class="inline-block">
                                             @csrf
@@ -174,38 +132,31 @@
                                             </button>
                                         </form>
                                     </x-table-cell>
-                                </tr>
+                                </x-table-row>
                             @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+
                     @if ($inactive->hasPages())
-                        <div class="p-6 border-t border-slate-700 bg-slate-800">
+                        <x-slot:footer>
                             {{ $inactive->links('vendor.pagination.tailwind') }}
-                        </div>
+                        </x-slot:footer>
                     @endif
-                </div>
+                </x-table>
             </section>
         @endif
 
-        @if((!isset($absences) || count($absences) == 0))
-            <div class="text-center py-12 bg-slate-800 rounded-lg shadow-xl">
-                <svg class="mx-auto h-12 w-12 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 class="mt-2 text-lg font-medium text-slate-300">Žiadne absencie</h3>
-                <p class="mt-1 text-sm text-slate-400">
-                    Momentálne tu nie sú žiadne záznamy o absenciách.
-                </p>
-                <div class="mt-6">
+        @if(!isset($absences) || $absences->isEmpty())
+            <x-empty-state message="Žiadne absencie" icon="fa-calendar-xmark" class="border-none bg-slate-800 py-12 shadow-xl">
+                Momentálne tu nie sú žiadne záznamy o absenciách.
+
+                <x-slot:action>
                     <button data-modal-target="add-absence-modal" data-modal-toggle="add-absence-modal"
-                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-indigo-500 transition-colors duration-150"
+                            class="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800"
                             type="button">
-                        <i class="fa-solid fa-plus -ml-1 mr-2 h-5 w-5" aria-hidden="true"></i>
+                        <i class="fa-solid fa-plus mr-2" aria-hidden="true"></i>
                         Pridať prvú absenciu
                     </button>
-                </div>
-            </div>
+                </x-slot:action>
+            </x-empty-state>
         @endif
     </div>
 </x-layout>

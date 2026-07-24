@@ -52,7 +52,7 @@
                     </thead>
                     <tbody wire:loading.class="opacity-50 transition-opacity duration-300" class="divide-y divide-gray-700">
                     @forelse($users as $user)
-                        <x-table-row class="hover:bg-gray-700/50 transition-colors duration-150">
+                        <x-table-row>
                             <x-table-cell-header class="px-6 py-4 font-semibold whitespace-nowrap text-white">
                                 <a href="{{ route('profile.show', ['user' => $user->id]) }}" class="hover:text-blue-400 transition-colors">{{ $user->lastname.' '.$user->name }}</a>
                             </x-table-cell-header>
@@ -86,16 +86,14 @@
                         </x-table-row>
                     @empty
                         <x-table-row>
-                            <x-table-cell colspan="5" class="text-center py-12">
-                                <div class="flex flex-col items-center text-gray-500">
-                                    <i class="fa-solid fa-users-slash text-4xl mb-3"></i>
-                                    <span class="text-lg">Nenašli sa žiadni používatelia.</span>
-                                    @if(empty($search) && $selectedRole == 0)
-                                        <span class="text-sm">Skúste zmeniť filtre alebo pridať nových používateľov.</span>
+                            <x-table-cell colspan="5" class="!p-0">
+                                <x-empty-state message="Nenašli sa žiadni používatelia." icon="fa-users-slash" class="rounded-none border-none bg-transparent py-12">
+                                    @if(blank($search) && $selectedRole == 0)
+                                        Skúste zmeniť filtre alebo pridať nových používateľov.
                                     @else
-                                        <span class="text-sm">Skúste upraviť kritériá vyhľadávania alebo filtrovania.</span>
+                                        Skúste upraviť kritériá vyhľadávania alebo filtrovania.
                                     @endif
-                                </div>
+                                </x-empty-state>
                             </x-table-cell>
                         </x-table-row>
                     @endforelse
