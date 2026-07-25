@@ -20,7 +20,17 @@ return new class extends Migration
             $table->id();
             $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->unsignedBigInteger('position_id');
+            /**
+             * Nullable: employees sign up for a *day*, not for a position. The signup UI is a
+             * single button, so nothing picks a position at that moment — an admin fills it in
+             * afterwards when building the plan.
+             *
+             * The composite FK below still guarantees that a position, once set, belongs to the
+             * same team. It simply is not enforced while the column is NULL, which is what
+             * "not decided yet" should mean.
+             */
+            $table->unsignedBigInteger('position_id')->nullable();
+
             $table->date('date');
 
             /**
@@ -41,9 +51,19 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            // One person may work two different positions on one day, but not the
-            // same position twice.
-            $table->unique(['user_id', 'date', 'position_id']);
+            /**
+             * One signup per person per day.
+             *
+             * This was `(user_id, date, position_id)`, which allowed the same person on two
+             * different positions in one day. That only made sense while signup chose a
+             * position; with a single button it does not, and a nullable `position_id` in a
+             * unique index gives no protection at all — MySQL treats NULLs as distinct, so a
+             * double-clicked button would insert two rows.
+             *
+             * If per-position assignment comes back with the Filament plan builder, this is the
+             * index to widen.
+             */
+            $table->unique(['user_id', 'date']);
 
             // Serves the main screen: one team's week. Equality on team_id, range on date.
             $table->index(['team_id', 'date']);

@@ -1,10 +1,10 @@
-<div class="w-full text-gray-200 bg-slate-900 shadow-md py-1">
+<div class="sticky top-0 z-50 w-full border-b border-neutral-800/80 bg-neutral-900/90 backdrop-blur-md shadow-sm py-1.5">
     <div x-data="{ openn: false }" @keydown.escape.window="openn = false"
-         class="flex flex-col container px-4 mx-auto md:items-center md:justify-between md:flex-row">
-        <!-- Logo and burger -->
-        <div class="p-2 flex flex-row items-center justify-between z-50">
+         class="container mx-auto px-4 md:px-6 lg:px-8 flex flex-col md:flex-row md:items-center md:justify-between">
+        <!-- Logo and burger button -->
+        <div class="flex flex-row items-center justify-between py-1 z-50">
             <x-application-logo/>
-            <button class="md:hidden rounded-lg focus:outline-none focus:shadow-outline" @click="openn = !openn"
+            <button class="md:hidden p-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 focus:outline-none" @click="openn = !openn"
                     aria-label="Toggle menu">
                 <svg fill="currentColor" viewBox="0 0 20 20" class="w-6 h-6">
                     <path x-show="!openn" fill-rule="evenodd"
@@ -17,10 +17,10 @@
             </button>
         </div>
 
-        <!-- Mobile -->
+        <!-- Mobile Drawer -->
         @include('layouts.partials._mobile')
 
-        <!-- Desktop -->
+        <!-- Desktop Navbar -->
         @include('layouts.partials._desktop')
     </div>
 </div>

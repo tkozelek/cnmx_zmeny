@@ -1,21 +1,21 @@
-@php
-    $mobile = 'w-full rounded-lg py-3 text-xl font-semibold transition-colors duration-200 hover:bg-gray-800 flex justify-center';
-    $desktop = 'px-4 py-2 mt-2 text-sm font-semibold rounded-lg hover:bg-gray-700 md:mt-0 md:ml-2 transition-colors duration-200 flex items-center';
-    $classes = $isMobile ? $mobile : $desktop;
-    $classes = $classes.($activeClass && request()->routeIs($route) ? ' '.$activeClass : '');
+@props(['route', 'icon' => null, 'isMobile' => false, 'activeClass' => 'bg-neutral-800 text-white'])
 
+@php
+    $isActive = request()->routeIs($route);
 @endphp
 
-<a {{ $attributes->merge([
-        'class' => $classes
-    ]) }}
-   href="{{ route($route) }}">
-
+<a
+    href="{{ route($route) }}"
+    @class([
+        'transition-colors duration-150 flex items-center font-semibold',
+        'w-full rounded-xl py-3 px-4 text-lg justify-center gap-3 text-neutral-200 hover:bg-neutral-800' => $isMobile,
+        'px-4 py-2 text-base rounded-xl text-neutral-300 hover:bg-neutral-800 hover:text-white gap-2.5' => ! $isMobile,
+        $activeClass => $isActive,
+    ])
+>
     @if($icon)
-        <div class="mr-2">
-            {!! $icon !!}
-        </div>
+        <span class="opacity-80">{!! $icon !!}</span>
     @endif
 
-    <span class="">{{ $slot }}</span>
+    <span>{{ $slot }}</span>
 </a>

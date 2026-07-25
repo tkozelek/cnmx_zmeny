@@ -2,117 +2,150 @@
 
 namespace App\Models;
 
+use App\Enums\Role as RoleEnum;
 use App\Notifications\AddUserResetPassword;
 use App\Notifications\ResetPasswordNotification;
 use App\Traits\Loggable;
-use Carbon\Carbon;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Password;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
+use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * A person. Deliberately *not* team-scoped: one account can belong to several cinemas and
+ * hold a different role in each, which is why `BelongsToTeam` is not used here and why
+ * `email` is globally unique. Membership lives in `team_user`.
+ *
+ * The legacy `id_role` column is gone. Its two non-permission values became attributes:
+ * blocked -> `is_active = false`, unverified -> `team_user.approved_at IS NULL`.
+ */
 class User extends Authenticatable
 {
-    use CanResetPassword, HasFactory, Loggable, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $attributes = [
-        'id_role' => 1,
-    ];
+    use CanResetPassword, HasFactory, HasRoles, Loggable, Notifiable;
 
     protected $fillable = [
         'name',
         'lastname',
-        'username',
         'email',
         'password',
-        'id_role',
+        'current_team_id',
+        'is_active',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
      * @var array<int, string>
      */
     protected $hidden = [
         'password',
         'remember_token',
-        'id_role',
-        'email',
-        'created_at',
-        'updated_at',
-        'last_login_at',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'password' => 'hashed',
-    ];
-
-    public function days()
+    protected function casts(): array
     {
-        return $this->belongsToMany(Day::class, 'user_days', 'id_user', 'id_day');
+        return [
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+            'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
+        ];
     }
 
-    public function holidays()
+    /** Every membership, approved or not. */
+    public function teams(): BelongsToMany
     {
-        return $this->hasMany(Holiday::class, 'id_user');
+        return $this->belongsToMany(Team::class)
+            ->withPivot('approved_at')
+            ->withTimestamps();
     }
 
-    public function role()
+    /** The team this user is currently acting in. */
+    public function currentTeam(): BelongsTo
     {
-        return $this->belongsTo(Role::class, 'id_role');
+        return $this->belongsTo(Team::class, 'current_team_id');
     }
 
-    public function files()
+    public function assignments(): HasMany
     {
-        return $this->hasMany(File::class, 'id_user');
+        return $this->hasMany(Assignment::class);
     }
 
-    public function shifts()
+    public function absences(): HasMany
+    {
+        return $this->hasMany(Absence::class);
+    }
+
+    public function shifts(): HasMany
     {
         return $this->hasMany(Shift::class);
     }
 
-    public function rates() {
+    /** One rate row per team, and a user acts in one team at a time. */
+    public function rate(): HasOne
+    {
         return $this->hasOne(Rate::class);
     }
 
-    public function hasRole($i): bool
+    public function media(): HasMany
     {
-        return $this->id_role == $i;
+        return $this->hasMany(Media::class);
     }
 
-    public function isAdmin(): bool
+    public function isApprovedIn(Team $team): bool
     {
-        return $this->id_role == config('constants.roles.admin');
+        return $this->teams()
+            ->wherePivotNotNull('approved_at')
+            ->whereKey($team->getKey())
+            ->exists();
     }
 
-    public function getCreatedAtAttribute($date)
+    /**
+     * Point the user at another of their teams. Refuses teams they are not approved in,
+     * so a forged team id on the switch route cannot cross the tenant boundary.
+     */
+    public function switchTeam(Team $team): bool
     {
-        return Carbon::parse($date)->format('d.m.Y H:i:s');
+        if (! $this->isApprovedIn($team)) {
+            return false;
+        }
+
+        $this->forceFill(['current_team_id' => $team->getKey()])->save();
+
+        return true;
     }
 
-    public function getUpdatedAtAttribute($date)
+    /**
+     * Check whether the user has a specific permission in a given cinema team (or current active team).
+     */
+    public function hasPermissionInTeam(string $permission, ?Team $team = null): bool
     {
-        return Carbon::parse($date)->format('d.m.Y H:i:s');
+        $team = $team ?? $this->currentTeam;
+
+        if (! $team || ! $this->isApprovedIn($team)) {
+            return false;
+        }
+
+        setPermissionsTeamId($team->id);
+
+        if ($this->hasAnyRole([RoleEnum::Admin->value, RoleEnum::Manager->value])) {
+            return true;
+        }
+
+        try {
+            return $this->hasPermissionTo($permission);
+        } catch (PermissionDoesNotExist) {
+            return false;
+        }
     }
 
-    public function getDate($date)
-    {
-        return Carbon::parse($date)->format('d.m.Y H:i:s');
-    }
-
-    public function __toString()
+    /** Views print users directly: "Kozelek T." */
+    public function __toString(): string
     {
         return $this->lastname.' '.mb_substr($this->name, 0, 1).'.';
     }

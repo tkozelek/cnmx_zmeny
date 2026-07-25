@@ -9,6 +9,7 @@ metadata:
 
 - **No Co-Authored-By lines in commits, ever.**
 - **Short answers.** Only add code comments when the *why* is non-obvious. Never narrate what the code does.
+- **Do not write useless comments.** Never add obvious, redundant, or conversational code comments. Only write comments when explicitly requested by the user or strictly necessary for non-obvious business logic.
 - **Push back hard** when reasoning is wrong or a proposed approach is bad — don't go along with it to be polite.
 - **Modern PHP only.** No old-style arrays-as-flags, no pre-8.1 patterns. Default to: enums, readonly, match, typed properties, first-class callables, named arguments where they add clarity.
 - **Correct mistakes immediately and directly**, without softening.

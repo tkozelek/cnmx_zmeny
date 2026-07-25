@@ -1,11 +1,11 @@
 <button
-    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 p-2 rounded-md transition-colors duration-150"
+    class="inline-flex min-h-10 items-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-medium text-neutral-300 ring-1 ring-inset ring-neutral-800 transition hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500"
     type="button"
     x-data=""
     x-on:click.prevent="$dispatch('open-modal', 'files-modal')"
 >
     <i class="fa-solid fa-folder-open"></i>
-    <span class="ml-1 font-medium">Súbory</span>
+    Súbory
 </button>
 
 <x-modal
@@ -14,12 +14,12 @@
     maxWidth="6xl"
     focusable
 >
-    <div class="rounded-lg shadow bg-gray-700">
-        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-600">
-            <h3 class="text-xl font-semibold text-white">
+    <div class="rounded-lg shadow bg-neutral-900 border border-neutral-800">
+        <div class="flex items-center justify-between p-4 md:p-5 border-b border-neutral-800">
+            <h3 class="text-xl font-semibold text-neutral-100">
                 Súbory
             </h3>
-            <button type="button" class="end-2.5 text-gray-400 bg-transparent rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center hover:bg-gray-600 hover:text-white"
+            <button type="button" class="end-2.5 text-neutral-400 bg-transparent rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center hover:bg-neutral-800 hover:text-white"
                     x-on:click="$dispatch('close')"
             >
                 <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">

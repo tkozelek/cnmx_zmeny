@@ -43,6 +43,12 @@ return new class extends Migration
             // Payroll: one user's hours over a date range.
             $table->index(['team_id', 'user_id', 'starts_at']);
 
+            // Admin statistics: the whole team's hours over a date range. Needed as a
+            // separate index — in the composite above, `user_id` is unbound for these
+            // queries and sitting in the middle it stops `starts_at` being usable as a
+            // range bound, so MySQL would scan every shift for the team.
+            $table->index(['team_id', 'starts_at']);
+
             $table->foreign(['team_id', 'position_id'])
                 ->references(['team_id', 'id'])
                 ->on('positions')

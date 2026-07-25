@@ -82,32 +82,7 @@
                 </div>
             </div>
 
-            <h2 id="accordion-modern-heading-5">
-                <button type="button" class="group flex items-center justify-between w-full p-6 font-semibold rtl:text-right text-slate-100 hover:bg-slate-800/60 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors duration-300" data-accordion-target="#accordion-modern-body-5" aria-expanded="false" aria-controls="accordion-modern-body-5">
-                    <span class="flex items-center gap-3 text-lg">
-                        <i class="fa-solid fa-wrench w-5 text-center text-indigo-400"></i>
-                        Nahlásenie chyby
-                    </span>
-                    <svg data-accordion-icon class="w-4 h-4 shrink-0 transition-transform duration-300 rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
-                    </svg>
-                </button>
-            </h2>
-            <div id="accordion-modern-body-5" class="hidden" aria-labelledby="accordion-modern-heading-5">
-                <div class="p-6 md:p-8 text-slate-300 leading-relaxed">
-                    <p class="mb-5">Ak narazíte na chybu, kliknite na váš profil a následne na "Nahlásiť chybu". Objaví sa formulár, kde je potrebné vyplniť nasledujúce údaje:</p>
-                    <ul class="list-disc list-inside mb-6 space-y-2">
-                        <li><strong class="font-semibold text-slate-200">Predmet</strong>: Uveďte krátky a výstižný predmet chyby.</li>
-                        <li><strong class="font-semibold text-slate-200">Kde sa to stalo</strong>: Špecifikujte časť stránky, kde sa chyba objavila.</li>
-                        <li><strong class="font-semibold text-slate-200">Popis chyby</strong>: Popíšte, ako chyba nastala, čo ste robili, keď sa objavila.</li>
-                        <li><strong class="font-semibold text-slate-200">Priložte obrázok chyby (voliteľné)</strong>: Môžete priložiť snímku obrazovky.</li>
-                    </ul>
-                    <p class="mb-5">Po vyplnení formulára kliknite na tlačidlo "Odoslať".</p>
-                    <p>Ďakujeme za vašu spoluprácu pri zlepšovaní našej platformy!</p>
-                </div>
-            </div>
-
-            @if(auth()->user() && auth()->user()->hasRole(config('constants.roles.admin')))
+            @if(auth()->user() && auth()->user()->hasRole('admin'))
                 <h2 id="accordion-modern-heading-4">
                     <button type="button" class="group flex items-center justify-between w-full p-6 font-semibold rtl:text-right text-slate-100 hover:bg-slate-800/60 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors duration-300" data-accordion-target="#accordion-modern-body-4" aria-expanded="false" aria-controls="accordion-modern-body-4">
                         <span class="flex items-center gap-3 text-lg">
