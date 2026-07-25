@@ -55,9 +55,9 @@
 
         @include('hours.partials._summary')
 
-        <form action="{{ route('hours.store') }}" method="POST" id="saveForm">
+        <form action="{{ route('shifts.store') }}" method="POST" id="saveForm">
             @csrf
-            <button id="saveMonthButton" class="hidden fixed z-20 px-4 py-2 rounded-lg font-bold bg-blue-600 bottom-5 right-5 ">Uložiť mesiac</button>
+            <button id="saveMonthButton" class="hidden fixed z-20 px-4 py-2 rounded-lg font-bold bg-indigo-600 hover:bg-indigo-700 text-white bottom-5 right-5 transition-colors">Uložiť mesiac</button>
         </form>
 
         @include('hours.partials._modal')
@@ -68,7 +68,7 @@
         window.rates = @json($rates);
 
         window.hoursRoutes = {
-            saveShifts: "{{ route('hours.store') }}",
+            saveShifts: "{{ route('shifts.store') }}",
             saveRates: "{{ route('rates.store') }}"
         }
     </script>

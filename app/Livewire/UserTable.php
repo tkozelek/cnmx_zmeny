@@ -2,73 +2,104 @@
 
 namespace App\Livewire;
 
+use App\Enums\Role;
+use App\Models\Team;
 use App\Models\User;
 use App\Notifications\UserAllowedToLogin;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * The admin user table: search, sort, approve or block a membership.
+ *
+ * Scoped to the current cinema — `team_user` is what makes somebody a member, and the role
+ * filter runs through Spatie, whose `model_has_roles.team_id` scopes the answer to the same
+ * team.
+ */
 class UserTable extends Component
 {
     use WithPagination;
 
-    public $roles;
+    public string $selectedRole = '';
 
-    public $selectedRole = 0;
+    public string $search = '';
 
-    public $search = '';
+    public string $sortField = 'lastname';
 
-    public $sortField = 'lastname';
+    public string $sortDirection = 'asc';
 
-    public $sortDirection = 'asc';
-
-    public $querystring = ['sortField', 'sortDirection'];
+    /** @var array<int, string> */
+    protected $queryString = ['sortField', 'sortDirection', 'search'];
 
     public function render()
     {
-        $query = User::query();
-
-        if ($this->selectedRole != 0) {
-            $query->where('id_role', $this->selectedRole);
-        }
-        if ($this->search != '') {
-            $query->whereAny(['name', 'lastname', 'email'], 'LIKE', '%'.$this->search.'%');
-        }
-
-        $users = $query->with('role')->orderBy($this->sortField, $this->sortDirection)->paginate(10);
-
         return view('livewire.user-table', [
-            'users' => $users,
+            'users' => $this->users(),
+            'roles' => Role::cases(),
         ]);
     }
 
-    public function sortBy($field)
+    public function sortBy(string $field): void
     {
-        if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortDirection = 'asc';
-        }
+        $this->sortDirection = $this->sortField === $field && $this->sortDirection === 'asc'
+            ? 'desc'
+            : 'asc';
 
         $this->sortField = $field;
     }
 
-    public function accept(User $user)
+    /** Approve a pending membership and tell them they may log in. */
+    public function accept(User $user): void
     {
-        $user->id_role = config('constants.roles.brigadnik');
-        $user->save();
-
-        Cache::forget('new_unverified');
+        $this->team()->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
 
         $user->notify(new UserAllowedToLogin($user));
         $this->dispatch('toast', message: 'Používateľ overený.');
     }
 
-    public function deny(User $user)
+    /**
+     * Refuse someone. Deactivates the account rather than deleting it — payroll rows are
+     * RESTRICT, and `is_active = false` is what the legacy "blocked" role meant.
+     */
+    public function deny(User $user): void
     {
-        $user->id_role = config('constants.roles.zablokovany');
-        $user->save();
+        $user->update(['is_active' => false]);
 
-        Cache::forget('new_unverified');
+        $this->dispatch('toast', message: 'Používateľ zablokovaný.');
+    }
+
+    /**
+     * @return Paginator<int, User>
+     */
+    private function users(): Paginator
+    {
+        return $this->team()->users()
+            ->with('roles')
+            ->when($this->selectedRole !== '', fn (Builder $query) => $query->role($this->selectedRole))
+            ->when($this->search !== '', fn (Builder $query) => $query->whereAny(
+                ['name', 'lastname', 'email'],
+                'LIKE',
+                '%'.$this->search.'%',
+            ))
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate(10);
+    }
+
+    private function team(): Team
+    {
+        return app(Team::class);
+    }
+
+    /** Resetting the page on a new search stops "page 4 of 1 result" landing on nothing. */
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSelectedRole(): void
+    {
+        $this->resetPage();
     }
 }

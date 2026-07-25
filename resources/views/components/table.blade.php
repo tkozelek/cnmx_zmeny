@@ -1,11 +1,10 @@
-{{-- `:headers` for plain labels, the `head` slot when header cells need markup. --}}
 @props(['headers' => []])
 
-<div {{ $attributes->merge(['class' => 'overflow-hidden rounded-lg bg-slate-800 shadow-xl']) }}>
+<div {{ $attributes->merge(['class' => 'overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900 shadow-sm']) }}>
     <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-slate-300">
+        <table class="w-full text-left text-sm text-neutral-300">
             @if(isset($head) || filled($headers))
-                <thead class="bg-slate-700/50 text-xs uppercase text-slate-200">
+                <thead class="border-b border-neutral-800 bg-neutral-900/60 text-xs font-medium uppercase tracking-wide text-neutral-400">
                     <tr>
                         @isset($head)
                             {{ $head }}
@@ -18,14 +17,14 @@
                 </thead>
             @endif
 
-            <tbody class="divide-y divide-slate-700">
+            <tbody class="divide-y divide-neutral-800">
                 {{ $slot }}
             </tbody>
         </table>
     </div>
 
     @isset($footer)
-        <div class="border-t border-slate-700 bg-slate-800 p-5">
+        <div class="border-t border-neutral-800 px-4 py-3">
             {{ $footer }}
         </div>
     @endisset

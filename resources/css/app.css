@@ -17,31 +17,22 @@ body {
 
 .hero-section {
     background-image: url("../css/images/cinemax_landing_page_upscaled_1600.webp");
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 @media (max-width: 768px) {
     .hero-section {
         background-image: url("../css/images/cinemax_landing_page_upscaled_720.webp");
-    }
-}
-
-@media (max-width: 768px) {
-    .hero-section {
-        background-image: url("../css/images/cinemax_landing_page_upscaled_720.webp");
-        background-attachment: scroll; /* disable parallax */
+        background-attachment: scroll;
         background-position: center;
     }
 }
 
 [data-accordion-target][aria-expanded="true"] {
     @apply bg-slate-900/50;
-}
-
-.hero-section {
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
 }
 
 .gradient-text {
@@ -69,4 +60,137 @@ body {
 .cta-button:hover {
     transform: scale(1.05);
     box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+}
+
+.hide-names .rows {
+    display: none;
+}
+
+/* Custom Flatpickr Neutral Dark Styling */
+.flatpickr-calendar {
+    @apply bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl text-neutral-200 !important;
+    width: 334px !important;
+    min-width: 334px !important;
+    padding: 12px !important;
+    margin-top: 14px !important;
+    max-width: calc(100vw - 1rem) !important;
+    box-sizing: border-box !important;
+}
+
+.flatpickr-innerContainer {
+    width: 308px !important;
+    margin: 0 auto !important;
+}
+
+.flatpickr-rContainer,
+.flatpickr-days,
+.dayContainer,
+.flatpickr-weekdays {
+    width: 308px !important;
+    min-width: 308px !important;
+    max-width: 308px !important;
+}
+
+.flatpickr-calendar.arrowTop:before,
+.flatpickr-calendar.arrowTop:after {
+    border-bottom-color: #171717 !important;
+}
+
+.flatpickr-calendar.arrowBottom:before,
+.flatpickr-calendar.arrowBottom:after {
+    border-top-color: #171717 !important;
+}
+
+/* Header Month & Navigation Arrow Styling */
+.flatpickr-months {
+    @apply flex items-center justify-between mb-3 px-1 bg-transparent border-b border-neutral-800 pb-2 relative !important;
+    width: 308px !important;
+    margin: 0 auto !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    @apply bg-transparent text-neutral-100 font-bold fill-neutral-100 h-10 flex items-center justify-center !important;
+}
+
+.flatpickr-current-month {
+    @apply font-bold text-base text-neutral-100 flex items-center gap-1.5 justify-center p-0 !important;
+}
+
+.flatpickr-current-month .cur-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    @apply font-bold text-base text-neutral-100 bg-neutral-900 border-none outline-none cursor-pointer hover:text-white !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+    @apply bg-neutral-900 text-neutral-200 !important;
+}
+
+.flatpickr-current-month input.cur-year {
+    @apply font-bold text-base text-neutral-100 bg-transparent border-none outline-none shadow-none focus:outline-none !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp:after {
+    border-bottom-color: #a3a3a3 !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown:after {
+    border-top-color: #a3a3a3 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    @apply text-neutral-400 fill-neutral-400 hover:text-white transition-colors p-0 rounded-lg hover:bg-neutral-800 flex items-center justify-center h-8 w-8 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month svg,
+.flatpickr-months .flatpickr-next-month svg {
+    @apply fill-neutral-400 hover:fill-white transition-colors m-auto h-4 w-4 !important;
+}
+
+/* Weekday Row Styling */
+.flatpickr-weekdays {
+    @apply bg-transparent mb-2 flex items-center justify-between w-full !important;
+}
+
+span.flatpickr-weekday {
+    @apply bg-transparent text-neutral-500 font-bold text-[0.75rem] uppercase tracking-normal text-center p-0 m-0 overflow-visible max-w-none !important;
+    width: 44px !important;
+}
+
+/* Days Grid Styling */
+.flatpickr-day {
+    @apply text-neutral-200 font-medium rounded-xl transition-colors hover:bg-neutral-800 hover:text-white border-transparent !important;
+    max-width: 44px !important;
+    height: 40px !important;
+    line-height: 40px !important;
+}
+
+/* Previous & Next Month Days - Soft Neutral & Hoverable */
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+    @apply text-neutral-500 font-medium transition-colors cursor-pointer !important;
+}
+
+.flatpickr-day.prevMonthDay:hover,
+.flatpickr-day.nextMonthDay:hover {
+    @apply bg-neutral-800 text-neutral-200 border-transparent !important;
+}
+
+.flatpickr-day.today {
+    @apply border-2 border-neutral-500 text-neutral-100 font-bold bg-neutral-800/80 !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    @apply bg-neutral-100 text-neutral-900 font-bold shadow-md hover:bg-white border-transparent !important;
+}
+
+.flatpickr-day.inRange {
+    @apply bg-neutral-800 text-neutral-100 border-transparent shadow-none !important;
+}
+
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.flatpickr-disabled:hover {
+    @apply text-neutral-700 opacity-25 cursor-not-allowed !important;
 }

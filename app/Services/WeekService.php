@@ -2,110 +2,97 @@
 
 namespace App\Services;
 
-use App\Models\Day;
-use App\Models\Week;
-use Carbon\Carbon;
+use App\Models\Team;
+use App\Models\WeekLock;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
+use Carbon\Exceptions\InvalidFormatException;
+use Illuminate\Support\Collection;
 
 class WeekService
 {
-    public function generateWeek() //	date_from	date_to	locked	next_week_id	prev_week_id
+    public function start(Team $team, CarbonInterface $date): CarbonImmutable
     {
-        $day = Carbon::now()->modify('next thursday');
+        $day = CarbonImmutable::parse($date)->startOfDay();
+        $weekStart = $day->startOfWeek(CarbonInterface::MONDAY)->addDays($team->weekStartDay());
 
-        $week = new Week;
-        $week->date_from = $day;
-        $week->date_to = $day->copy()->addWeek()->addDays(-1);
-        $week->save();
-
-        for ($i = 0; $i < 7; $i++) { // id	text	date	id_week
-            $new_day = new Day;
-            $new_day->date = $day->copy()->addDays($i);
-            $new_day->id_week = $week->id;
-            $new_day->save();
-        }
-
-        return $week;
+        return $weekStart->gt($day) ? $weekStart->subWeek() : $weekStart;
     }
 
-    public function checkAndGenerateWeeks($num_of_weeks)
+    public function end(CarbonImmutable $weekStart): CarbonImmutable
     {
-        $currentWeek = $this->getCurrentWeek(); // aktualny
-        $date_to = $currentWeek->date_to;
-        for ($i = 0; $i < $num_of_weeks; $i++) { // 4 dopredu
+        return $weekStart->addDays(6);
+    }
 
-            if ($currentWeek->next_week_id) {
-                $currentWeek = Week::find($currentWeek->next_week_id);
-                $date_to = $currentWeek->date_to;
+    /**
+     * @return Collection<int, CarbonImmutable>
+     */
+    public function days(CarbonImmutable $weekStart): Collection
+    {
+        return collect(range(0, 6))->map(fn (int $offset): CarbonImmutable => $weekStart->addDays($offset));
+    }
 
-                continue;
+    /**
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    public function range(CarbonImmutable $weekStart): array
+    {
+        return [$weekStart, $this->end($weekStart)];
+    }
+
+    public function next(CarbonImmutable $weekStart): CarbonImmutable
+    {
+        return $weekStart->addWeek();
+    }
+
+    public function previous(CarbonImmutable $weekStart): CarbonImmutable
+    {
+        return $weekStart->subWeek();
+    }
+
+    public function alignFromRequest(Team $team, ?string $date): CarbonImmutable
+    {
+        if (! $date) {
+            return $this->defaultUnlockedWeek($team);
+        }
+
+        try {
+            $parsed = CarbonImmutable::parse($date);
+        } catch (InvalidFormatException) {
+            return $this->defaultUnlockedWeek($team);
+        }
+
+        return $this->clampForward($team, $this->start($team, $parsed));
+    }
+
+    public function defaultUnlockedWeek(Team $team): CarbonImmutable
+    {
+        $currentWeek = $this->start($team, CarbonImmutable::now());
+        $maxWeek = $currentWeek->addWeeks($team->weekLookahead());
+
+        $lockedWeekStarts = WeekLock::withoutGlobalScope('team')
+            ->where('team_id', $team->id)
+            ->whereBetween('week_start', [$currentWeek->toDateString(), $maxWeek->toDateString()])
+            ->pluck('week_start')
+            ->map(fn ($ws) => $ws instanceof CarbonInterface ? $ws->toDateString() : (string) $ws)
+            ->toArray();
+
+        $cursor = $currentWeek;
+
+        while ($cursor->lte($maxWeek)) {
+            if (! in_array($cursor->toDateString(), $lockedWeekStarts, true)) {
+                return $cursor;
             }
-
-            $newWeek = new Week;
-            $newWeek->date_from = $date_to->copy()->addDay();
-            $newWeek->date_to = $date_to->copy()->addWeek();
-            $newWeek->locked = 0;
-            $newWeek->prev_week_id = $currentWeek->id;
-            $newWeek->save();
-
-            $currentWeek->next_week_id = $newWeek->id;
-            $currentWeek->save();
-
-            for ($j = 0; $j < 7; $j++) { // 7 dni v tyzdni
-                $day = new Day;
-                $day->date = $newWeek->date_from->copy()->addDays($j);
-                $day->id_week = $newWeek->id;
-                $day->save();
-            }
-            $currentWeek = $newWeek;
-            $date_to = $newWeek->date_to;
+            $cursor = $cursor->addWeek();
         }
+
+        return $currentWeek;
     }
 
-    public function getActiveWeek()
+    public function clampForward(Team $team, CarbonImmutable $weekStart): CarbonImmutable
     {
-        $currentDay = Carbon::now()->addWeek()->format('Y-m-d');
-        $week = Week::where('date_from', '<=', $currentDay)
-            ->where('locked', 0)
-            ->first();
+        $last = $this->start($team, CarbonImmutable::now())->addWeeks($team->weekLookahead());
 
-        if ($week) {
-            return $week;
-        }
-
-        $weekif = Week::orderBy('locked', 'asc')
-            ->orderBy('date_from', 'asc')
-            ->first();
-
-        if ($weekif) {
-            return $weekif;
-        }
-
-        $weekModel = Week::oldest('id')->first();
-
-        if ($weekModel) {
-            return $weekModel;
-        }
-
-        return $this->generateWeek();
-    }
-
-    public function getCurrentWeek()
-    {
-        $currentDay = Carbon::now()->format('Y-m-d');
-        $week = Week::where('date_from', '<=', $currentDay)
-            ->where('date_to', '>=', $currentDay)
-            ->first();
-
-        if ($week) {
-            return $week;
-        }
-
-        $weekModel = Week::oldest('id')->first();
-
-        if ($weekModel) {
-            return $weekModel;
-        }
-
-        return $this->generateWeek();
+        return $weekStart->gt($last) ? $last : $weekStart;
     }
 }

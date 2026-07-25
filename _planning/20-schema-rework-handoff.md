@@ -1,6 +1,6 @@
 # 20 — Schema Rework: Handoff
 
-> **Status:** migrations written and verified against a throwaway MySQL 8 schema. Application code is **not** updated — that is the next agent's job. The app is broken until it is.
+> **Status:** migrations written, legacy migrations deleted, and `migrate:fresh` run successfully against the development database. Application code is **not** updated — that is the next agent's job. The app is broken until it is.
 >
 > This document is authoritative where it conflicts with `02-database.md`, `03-multitenancy.md`, `07-work-planning.md`, `08-unavailability.md` and `15-absence-system.md`. Those docs describe an *earlier* target. Divergences are listed below with reasons — do not "fix" them back.
 

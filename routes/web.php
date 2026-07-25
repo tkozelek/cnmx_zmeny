@@ -1,124 +1,136 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\Admin\AdminUserEditController;
+use App\Http\Controllers\Absence\AbsenceController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\PasswordRequestController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\UserController;
-use App\Http\Controllers\BugReportController;
-use App\Http\Controllers\CalendarController;
-use App\Http\Controllers\DayUserController;
-use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\Calendar\AssignmentController;
+use App\Http\Controllers\Calendar\CalendarController;
+use App\Http\Controllers\Calendar\ScheduleExportController;
+use App\Http\Controllers\Calendar\WeekLockController;
 use App\Http\Controllers\HelpController;
-use App\Http\Controllers\HolidayController;
-use App\Http\Controllers\HoursController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RateController;
-use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\Hours\HoursController;
+use App\Http\Controllers\Hours\RateController;
+use App\Http\Controllers\Hours\ShiftController;
+use App\Http\Controllers\Media\MediaController;
+use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\Settings\PasswordController;
+use App\Http\Controllers\Settings\SettingsController;
+use App\Http\Controllers\Team\TeamSwitchController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Public
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
 
-Route::get('/welcome', function () {
-    return view('welcome.welcome');
-})->name('welcome.index');
-
-// Register form
-Route::get('/registracia', [RegisterController::class, 'index'])->name('register')->middleware('guest');
-Route::get('/prihlasenie', [LoginController::class, 'index'])->name('login')->middleware('guest');
-
-Route::post('/registracia', [RegisterController::class, 'store'])->name('register.store')->middleware(['throttle:6,1']);
-Route::post('/prihlasenie', [LoginController::class, 'authenticate'])->name('login.auth')->middleware(['throttle:6,1']);
-
+Route::view('/welcome', 'welcome.welcome')->name('welcome.index');
 Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
 
-Route::get('/logout', [UserController::class, 'logout'])->middleware(['auth'])->name('logout');
+Route::middleware('guest')->group(function () {
+    Route::get('/prihlasenie', [LoginController::class, 'index'])->name('login');
+    Route::post('/prihlasenie', [LoginController::class, 'authenticate'])
+        ->name('login.auth')
+        ->middleware('throttle:6,1');
 
-// Display weeks -> Auth
-Route::middleware(['allowed'])->controller(CalendarController::class)->group(function () {
-    Route::get('/', 'index')->name('calendar.index');
-    Route::get('/week/{week}', 'show')->name('calendar.show');
+    Route::get('/registracia', [RegisterController::class, 'index'])->name('register');
+    Route::post('/registracia', [RegisterController::class, 'store'])
+        ->name('register.store')
+        ->middleware('throttle:6,1');
+
+    Route::prefix('/zabudnute-heslo')->group(function () {
+        Route::get('/', [PasswordRequestController::class, 'index'])->name('password.index');
+        Route::post('/', [PasswordRequestController::class, 'send'])
+            ->name('password.send')
+            ->middleware('throttle:6,1');
+
+        Route::get('/{token}', [PasswordResetController::class, 'show'])->name('password.reset');
+        Route::post('/store', [PasswordResetController::class, 'store'])->name('password.store');
+    });
 });
 
-// Admin stuff
-Route::middleware(['role:3'])->prefix('admin')->group(function () {
-    Route::get('/pouzivatelia', [AdminUserController::class, 'index'])->name('admin.users.index');
-    Route::post('/pouzivatelia', [AdminUserController::class, 'store'])->name('admin.pouzivatelia.add');
+Route::post('/odhlasenie', LogoutController::class)->middleware('auth')->name('logout');
 
-    Route::get('/{user}', [AdminUserEditController::class, 'edit'])->name('admin.users.edit');
-    Route::put('/{user}', [AdminUserEditController::class, 'update'])->name('admin.users.update');
-    Route::delete('/{user}/destroy', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+/*
+|--------------------------------------------------------------------------
+| Inside a cinema
+|--------------------------------------------------------------------------
+| `tenant` = authenticated + active + a current team established. Everything below
+| queries team-owned tables, and BelongsToTeam scopes off what SetCurrentTeam puts in the
+| registrar, so nothing here may sit outside that group.
+*/
 
-    Route::get('/{week}/lock', [CalendarController::class, 'lock'])->name('admin.calendar.lock');
-    Route::get('/{week}/export', [CalendarController::class, 'export'])->name('admin.calendar.export');
-    Route::post('/{day}/{user}/destroy', [DayUserController::class, 'destroy'])->name('admin.calendar.userdestroy');
+Route::middleware('tenant')->group(function () {
+    // A week is identified by any date inside it — never a week id, there is no weeks table.
+    Route::get('/', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/week/{date}', [CalendarController::class, 'show'])->name('calendar.show');
 
-});
+    Route::post('/zapis', [AssignmentController::class, 'store'])->name('assignments.store');
+    Route::delete('/zapis/{assignment}', [AssignmentController::class, 'destroy'])->name('assignments.destroy');
 
-Route::prefix('/profil')->controller(ProfileController::class)->middleware('role:3')->group(function () {
-    Route::get('/', 'index')->name('profile.index');
-    Route::get('/{user}', 'show')->name('profile.show');
-});
-
-Route::middleware(['role:3'])->name('files.')->group(function () {
-    Route::post('/uploads', [FileUploadController::class, 'store'])->name('store');
-    Route::delete('/upload/{file}/destroy', [FileUploadController::class, 'destroy'])->name('destroy');
-    Route::get('/upload/{file}/download', [FileUploadController::class, 'download'])->name('download');
-    Route::get('/upload/{file}/show', [FileUploadController::class, 'show'])->name('show');
-});
-
-Route::middleware(['allowed'])->group(function () {
-    Route::prefix('/nastavenia')->controller(SettingsController::class)->group(function () {
-        Route::get('/', 'index')->name('settings.index');
-        Route::get('/heslo', 'editPassword')->name('settings.password');
+    Route::prefix('/dovolenka')->controller(AbsenceController::class)->group(function () {
+        Route::get('/', 'index')->name('absences.index');
+        Route::post('/', 'store')->name('absences.store');
+        Route::patch('/{absence}', 'end')->name('absences.end');
+        Route::delete('/{absence}', 'destroy')->name('absences.destroy');
     });
 
-    Route::prefix('/dovolenka')->controller(HolidayController::class)->group(function () {
-        Route::get('/', 'index')->name('holiday.index');
-        Route::post('/', 'store')->name('holiday.store');
-        Route::patch('/{holiday}', 'end')->name('holiday.end');
-        Route::delete('/{holiday}', 'destroy')->name('holiday.destroy');
+    Route::prefix('/nastavenia')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('settings.index');
+        Route::get('/heslo', [PasswordController::class, 'edit'])->name('settings.password.edit');
+        Route::put('/heslo', [PasswordController::class, 'update'])
+            ->name('settings.password.update')
+            ->middleware('throttle:6,1');
     });
 
-    Route::prefix('/users')->controller(UserController::class)->group(function () {
-        Route::get('/change-password', 'changePassword')->name('changePassword');
-        Route::post('/change-password', 'changePasswordSave')->name('postChangePassword');
+    Route::post('/kino/{team}', TeamSwitchController::class)->name('teams.switch');
+
+    Route::prefix('/hodiny')->group(function () {
+        Route::get('/', [HoursController::class, 'index'])->name('hours.index');
+
+        Route::get('/api/shifts', [ShiftController::class, 'index'])->name('shifts.index');
+        Route::post('/api/shifts', [ShiftController::class, 'store'])
+            ->name('shifts.store')
+            ->middleware('throttle:20,1');
+
+        // Last, so "api" is not swallowed by the {user} wildcard.
+        Route::get('/{user}', [HoursController::class, 'show'])->name('hours.show')->middleware('role:admin');
     });
 
-    Route::prefix('/nahlasenie-chyby')->controller(BugReportController::class)->group(function () {
-        Route::get('/', 'index')->name('bugreport.index');
-        Route::post('/', 'store')->name('bugreport.store');
-        Route::get('/{bug}/destroy', 'destroy')->name('bugreport.destroy');
+    Route::post('/hodiny-sadzby', RateController::class)->name('rates.store')->middleware('throttle:6,1');
+
+    Route::get('/subor/{media}/download', [MediaController::class, 'download'])->name('media.download');
+
+    /*
+    |----------------------------------------------------------------------
+    | Admin
+    |----------------------------------------------------------------------
+    */
+    Route::middleware('role:admin')->group(function () {
+        Route::prefix('/admin/pouzivatelia')->name('admin.users.')->group(function () {
+            Route::get('/', [UserController::class, 'index'])->name('index');
+            Route::post('/', [UserController::class, 'store'])->name('store');
+            Route::get('/{user}', [UserController::class, 'edit'])->name('edit');
+            Route::put('/{user}', [UserController::class, 'update'])->name('update');
+            Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::post('/week/{date}/lock', [WeekLockController::class, 'store'])->name('weeks.lock');
+        Route::delete('/week/{date}/lock', [WeekLockController::class, 'destroy'])->name('weeks.unlock');
+        Route::get('/week/{date}/export', ScheduleExportController::class)->name('schedule.export');
+
+        Route::prefix('/profil')->controller(ProfileController::class)->group(function () {
+            Route::get('/', 'index')->name('profile.index');
+            Route::get('/{user}', 'show')->name('profile.show');
+        });
+
+        Route::post('/subory', [MediaController::class, 'store'])->name('media.store');
+        Route::delete('/subor/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
+        Route::patch('/subor/{media}/visibility', [MediaController::class, 'toggleVisibility'])
+            ->name('media.visibility');
     });
-
-    Route::post('/calendar/toggleUser', [DayUserController::class, 'toggleUser'])->name('calendar.toggleUser');
-
-    Route::get('/upload/{file}/download', [FileUploadController::class, 'download'])->name('files.download');
 });
-
-Route::middleware(['guest'])->prefix('/zabudnute-heslo')->group(function () {
-    Route::get('/', [PasswordRequestController::class, 'index'])->name('password.index');
-    Route::post('/', [PasswordRequestController::class, 'send'])->name('password.send')->middleware(['throttle:6,1']);
-
-    Route::get('/{token}', [PasswordResetController::class, 'show'])->name('password.reset');
-    Route::post('/store', [PasswordResetController::class, 'store'])->name('password.store');
-});
-
-Route::middleware('allowed')->prefix('hours')->controller(HoursController::class)->group(function () {
-    Route::get('/', 'index')->name('hours.index');
-    Route::get('/{user}', 'show')->name('hours.show')->middleware(['role:3']);
-    Route::post('/', 'store')->name('hours.store')->middleware(['throttle:6,1']);
-});
-
-Route::post('/rates', RateController::class)->name('rates.store')->middleware(['allowed', 'throttle:6,1']);

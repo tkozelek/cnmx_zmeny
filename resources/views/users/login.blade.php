@@ -11,6 +11,10 @@
                         <p class="text-gray-400 mt-2">Zadajte svoje údaje pre prihlásenie.</p>
                     </div>
 
+                    @if(session('error'))
+                        <x-alert>{{ session('error') }}</x-alert>
+                    @endif
+
                     <form class="space-y-6" action="{{ route('login.auth') }}" method="POST">
                         @csrf
 

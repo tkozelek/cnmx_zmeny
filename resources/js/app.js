@@ -1,67 +1,11 @@
-import 'flowbite';
-import DateRangePicker from 'flowbite-datepicker/DateRangePicker';
-import {Chart, registerables} from "chart.js";
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.css";
+import "flatpickr/dist/themes/dark.css";
+import { Slovak } from "flatpickr/dist/l10n/sk.js";
+import { Chart, registerables } from "chart.js";
 
-$(document).ready(function() {
-    function ajaxRequest(url, method, data, successCallback, errorCallback) {
-        let token = $('meta[name="csrf-token"]').attr('content');
-        $.ajax({
-            url: url,
-            method: method,
-            headers: {
-                'X-CSRF-TOKEN': token
-            },
-            data: data,
-            success: successCallback,
-            error: errorCallback
-        });
-    }
-
-    let addButton = $('.add-user-btn');
-
-    addButton.click(function() {
-        let clickedButton = $(this);
-
-        let day = clickedButton.data('day');
-        let popis = $('#extra_popis').val();
-
-        const addUserUrl = window.appRoutes.addUserUrl;
-
-        ajaxRequest(addUserUrl, 'POST', { day: day, popis: popis }, function(response) {
-            if (response['error'] === 10) {
-                return;
-            }
-
-            if (response['status'] === 2) {
-                clickedButton.removeClass('bg-emerald-400 hover:bg-emerald-500').addClass('bg-rose-400 hover:bg-rose-500').text('ZAPISAŤ');
-                showToast("Deň odpísaný.", "error");
-            } else {
-                clickedButton.removeClass('bg-rose-400 hover:bg-rose-500').addClass('bg-emerald-400 hover:bg-emerald-500').text('ODPISAŤ');
-                showToast("Deň zapísaný.", "success");
-            }
-            toggleDateStatus(clickedButton);
-
-            let dayCard = $('#c-' + day);
-            dayCard.find('.users-container').replaceWith(response['html']);
-
-            if (!$('#names_checkbox').prop('checked')) {
-                dayCard.find('.rows').hide();
-            }
-        }, function(response) {
-            showToast("Nemáš prístup.");
-            console.log(response.json());
-        });
-    });
-});
-
-function toggleDateStatus(dayButton) {
-    let status = $(dayButton).data('status');
-
-    let newStatus = status === 0 ? 1 : 0;
-
-    dayButton.data('status', newStatus);
-    dayButton.attr('data-status', newStatus);
-}
+flatpickr.localize(Slovak);
+window.flatpickr = flatpickr;
 
 function showToast(message, type = 'success', icon = '') {
     window.dispatchEvent(new CustomEvent('toast', {
@@ -69,53 +13,10 @@ function showToast(message, type = 'success', icon = '') {
     }));
 }
 
-$(document).ready(function() {
-    $('#names_checkbox').change(function() {
-        $(".rows").toggle();
-    });
-});
-
-let options = {
-    language: "sk",
-    weekStart: "1",
-    format: "dd.mm.yyyy",
-    todayHighlight: true,
-    autoclose: true,
-    hideOnClickOutside: true,
-    hideOnSelect: true,
-    orientation: "up",
-};
-
-
-let dateRangePickerEl = document.getElementById('daterangepicker');
-if (dateRangePickerEl)
-    new DateRangePicker(dateRangePickerEl, options);
-
-$(document).ready(function() {
-    $('.delete-file').click(function() {
-        let token = $('meta[name="csrf-token"]').attr('content');
-        var fileId = $(this).data('file-id');
-        var element = $('[div-file-id="' + fileId + '"]');
-        console.log(element);
-
-        $.ajax({
-            url: '/upload/' + fileId + '/destroy',
-            headers: {
-                'X-CSRF-TOKEN': token
-            },
-            type: 'DELETE',
-            success: function(response) {
-                if (response['status'] === 200) {
-                    showToast("Súbor zmazaný.", "warning");
-                    element.remove();
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-
-    });
+document.addEventListener('change', function (event) {
+    if (event.target.id === 'names_checkbox') {
+        document.documentElement.classList.toggle('hide-names', !event.target.checked);
+    }
 });
 
 function togglePasswordVisibility(inputId) {
@@ -183,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (element) {
         const myDropzone = new Dropzone("#my-dropzone", {
-            url: fileUpload,
+            url: window.appRoutes.fileUpload,
             paramName: "file",
             maxFilesize: 2,
         });
@@ -196,7 +97,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-
-
-

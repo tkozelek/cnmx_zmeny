@@ -1,7 +1,7 @@
-<label class="relative inline-flex items-center cursor-pointer">
-    <input type="checkbox" value="" id="names_checkbox" class="sr-only peer" checked>
-    <div class="w-11 h-6 bg-gray-400 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600"></div>
-    <span class="ms-3 text-sm font-medium text-gray-300">Zobraziť mena zamestnancov</span>
+{{-- Flips a `hide-names` class on <html> (see app.css / app.js) rather than hiding each row
+     inline, so a Livewire re-render of a day card cannot lose the setting. --}}
+<label class="inline-flex min-h-11 cursor-pointer select-none items-center gap-3">
+    <input type="checkbox" id="names_checkbox" class="peer sr-only" checked>
+    <span class="relative h-6 w-11 shrink-0 rounded-full bg-slate-700 transition-colors after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-indigo-600 peer-checked:after:translate-x-full peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-400 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-slate-950"></span>
+    <span class="text-sm text-slate-400">Zobraziť mená zamestnancov</span>
 </label>
-
-

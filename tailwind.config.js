@@ -3,12 +3,11 @@ module.exports = {
         "./resources/**/*.blade.php",
         "./resources/**/*.js",
         "./resources/**/*.vue",
-        "./node_modules/flowbite/**/*.js"
+        "./app/**/*.php",
+        "./vendor/rappasoft/laravel-livewire-tables/resources/views/**/*.blade.php",
     ],
     theme: {
         extend: {},
     },
-    plugins: [
-        require('flowbite/plugin')
-    ],
+    plugins: [],
 }
