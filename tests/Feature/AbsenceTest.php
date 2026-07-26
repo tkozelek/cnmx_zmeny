@@ -239,7 +239,6 @@ class AbsenceTest extends TestCase
         $team = $this->tenant();
         $manager = $this->member($team, Role::Manager);
         $employee = $this->member($team);
-        $team->settings->update(['stale_absence_deletion_days' => 0]);
 
         $active = Absence::factory()->create([
             'team_id' => $team->id,
@@ -268,26 +267,29 @@ class AbsenceTest extends TestCase
         $this->assertModelMissing($inactive);
     }
 
-    /** A manager does not bypass the retention period — it applies uniformly, owner or manager. */
-    public function test_a_manager_cannot_bypass_the_retention_period_on_someone_elses_absence(): void
+    /**
+     * A manager/admin deleting someone ELSE's inactive absence bypasses the retention period
+     * entirely — that's the point of the elevated 'absence.manage'/'absence.delete-inactive'
+     * permission. The team's default retention (30 days) would normally block this.
+     */
+    public function test_a_manager_bypasses_the_retention_period_on_someone_elses_absence(): void
     {
         $team = $this->tenant();
         $manager = $this->member($team, Role::Manager);
         $employee = $this->member($team);
-        $team->settings->update(['stale_absence_deletion_days' => 5]);
 
-        $stillWithinRetention = Absence::factory()->create([
+        $recentlyInactive = Absence::factory()->create([
             'team_id' => $team->id,
             'user_id' => $employee->id,
             'date_from' => CarbonImmutable::now()->subDays(4)->toDateString(),
             'date_to' => CarbonImmutable::now()->subDays(2)->toDateString(),
         ]);
-        $this->backdateCreation($stillWithinRetention);
+        $this->backdateCreation($recentlyInactive);
 
         $this->actingAs($manager)
-            ->delete(route('absences.destroy', $stillWithinRetention))
-            ->assertForbidden();
-        $this->assertModelExists($stillWithinRetention);
+            ->delete(route('absences.destroy', $recentlyInactive))
+            ->assertRedirect();
+        $this->assertModelMissing($recentlyInactive);
     }
 
     /**

@@ -36,35 +36,41 @@
         <div class="h-6 w-px bg-neutral-700/80 mx-3 self-center"></div>
 
         <div
-            x-data="{ open: false }"
-            @mouseenter="open = true"
-            @mouseleave="open = false"
-            @click.away="open = false"
+            x-data="{ openProfile: false }"
+            @mouseenter="openProfile = true"
+            @mouseleave="openProfile = false"
+            @click.outside="openProfile = false"
             class="relative py-1"
         >
             <button
                 type="button"
-                @click="open = !open"
+                @click="openProfile = !openProfile"
                 class="flex items-center gap-2.5 px-3 py-1.5 text-base font-semibold text-neutral-200 transition hover:text-white focus:outline-none"
             >
                 <i class="fa-solid fa-user text-sm text-neutral-400"></i>
                 <span>{{ auth()->user()->name }} {{ auth()->user()->lastname }}</span>
-                <i class="fa-solid fa-chevron-down text-xs text-neutral-500 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                <i class="fa-solid fa-chevron-down text-xs text-neutral-500 transition-transform duration-200" :class="{'rotate-180': openProfile}"></i>
             </button>
 
-
-            {{-- Seamless Dropdown Container without gap --}}
+            {{-- Dropdown Container --}}
             <div
-                x-show="open"
+                x-cloak
+                x-show="openProfile"
                 x-transition:enter="transition ease-out duration-150"
                 x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                 x-transition:leave="transition ease-in duration-100"
                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
-                class="absolute right-0 top-full z-50 pt-1 w-56"
+                class="absolute right-0 top-full pt-1 z-50 w-56"
                 style="display: none;"
             >
+
+
+
+
+
+
                 <div class="rounded-xl border border-neutral-800 bg-neutral-900 p-1.5 shadow-2xl">
                     <div class="px-3 py-2 border-b border-neutral-800 mb-1">
                         <p class="text-xs font-medium text-neutral-400">Prihlásený ako</p>

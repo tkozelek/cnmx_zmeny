@@ -1,38 +1,74 @@
-<x-layout>
-    <section class="bg-gray-700">
-        <div class="flex flex-col items-center mt-20 px-6 py-8 mx-auto lg:py-0">
-            <div class="w-full rounded-lg shadow border md:mt-0 sm:max-w-md xl:p-0 bg-gray-800 border-gray-700">
-                <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-                    <h1 class="text-xl font-bold leading-tight tracking-tight  md:text-2xl text-white">
-                        Zmena hesla
-                    </h1>
-                    <form class="space-y-4 md:space-y-6" action="{{url('/users/change-password')}}" method="POST">
-                        @csrf
-                        <div>
-                            <label for="current_password" class="block mb-2 text-sm font-medium  text-white">Staré heslo</label>
-                            <input type="password"  name="current_password" id="current_password" placeholder="Stare heslo" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" >
-                            @error('current_password')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label for="new_password" class="block mb-2 text-sm font-medium text-gray-900 text-white">Nové heslo</label>
-                            <input type="password"  name="new_password" id="new_password" placeholder="Heslo" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" >
-                            @error('new_password')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label for="confirm-new_password_confirmation" class="block mb-2 text-sm font-medium text-white">Nové heslo znova</label>
-                            <input type="password"  name="new_password_confirmation" id="confirm-new_password_confirmation" placeholder="Heslo znova" class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500">
-                            @error('new_password_confirmation')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <button type="submit" class="w-full text-white bg-slate-900 hover:bg-slate-950 rounded-xl py-4 font-bold tracking-widest uppercase">uložiť</button>
-                    </form>
+<x-layout title="ZMENA HESLA">
+    <div class="flex-1 min-h-full w-full py-12 md:py-20 flex items-center justify-center px-4 relative overflow-hidden bg-neutral-950">
+        {{-- Ambient lighting glows --}}
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="w-full max-w-md relative z-10">
+            {{-- Brand Badge / Icon --}}
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-neutral-900 border border-neutral-800 text-sky-400 shadow-xl shadow-black/40 text-2xl mb-4">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h1 class="text-3xl font-black tracking-tight text-white uppercase">Zmena hesla</h1>
+                <p class="text-neutral-400 text-sm mt-2">Zadajte svoje aktuálne a nové heslo pre účet</p>
+            </div>
+
+            {{-- Card container --}}
+            <div class="bg-neutral-900/90 backdrop-blur-md rounded-2xl border border-neutral-800 shadow-2xl shadow-black/60 p-8 space-y-6">
+                @if(session('error'))
+                    <x-alert>{{ session('error') }}</x-alert>
+                @endif
+                @if(session('message'))
+                    <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm font-medium">
+                        {{ session('message') }}
+                    </div>
+                @endif
+
+                <form class="space-y-5" action="{{ route('settings.password.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <x-form-input
+                        type="password"
+                        name="current_password"
+                        label="Staré heslo"
+                        placeholder="Zadajte staré heslo"
+                        icon="fa-lock"
+                        required
+                        autofocus
+                    />
+
+                    <x-form-input
+                        type="password"
+                        name="new_password"
+                        label="Nové heslo"
+                        placeholder="Zadajte nové heslo"
+                        icon="fa-key"
+                        required
+                    />
+
+                    <x-form-input
+                        type="password"
+                        name="new_password_confirmation"
+                        label="Nové heslo znova"
+                        placeholder="Zopakujte nové heslo"
+                        icon="fa-check-double"
+                        required
+                    />
+
+                    <button type="submit" class="w-full py-3.5 px-5 bg-neutral-800 hover:bg-neutral-750 active:bg-neutral-850 text-white font-bold rounded-xl text-sm tracking-widest uppercase border border-neutral-700 hover:border-sky-500/50 shadow-lg shadow-black/40 transition duration-200 flex items-center justify-center gap-2 group">
+                        <span>Uložiť nové heslo</span>
+                        <i class="fa-solid fa-check text-xs text-sky-400 group-hover:scale-110 transition-transform"></i>
+                    </button>
+                </form>
+
+                <div class="pt-4 border-t border-neutral-800 text-center">
+                    <a class="text-xs text-neutral-400 hover:text-slate-300 font-semibold inline-flex items-center gap-1.5 transition duration-150" href="{{ route('welcome.index') }}">
+                        <i class="fa-solid fa-arrow-left text-[10px] text-sky-400"></i> Späť na prehľad
+                    </a>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 </x-layout>

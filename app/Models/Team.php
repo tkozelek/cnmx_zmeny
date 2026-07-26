@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * One cinema. The tenant boundary for everything except User.
@@ -78,27 +79,37 @@ class Team extends Model
         return $this->hasMany(WeekLock::class);
     }
 
+    /**
+     * Cached across requests (see CACHING.md, key `team:{id}:settings`) — read on essentially
+     * every request (week rendering, absence create/delete checks) and changed only via the
+     * team settings page. `TeamSetting`'s own `saved` hook busts this automatically.
+     */
+    public function cachedSettings(): ?TeamSetting
+    {
+        return Cache::remember("team:{$this->id}:settings", now()->addMinutes(10), fn () => $this->settings);
+    }
+
     /** 0 = Monday … 6 = Sunday. */
     public function weekStartDay(): int
     {
-        return $this->settings?->week_start_day ?? TeamSetting::DEFAULT_WEEK_START_DAY;
+        return $this->cachedSettings()?->week_start_day ?? TeamSetting::DEFAULT_WEEK_START_DAY;
     }
 
     /** How many weeks past the current one the calendar may navigate. */
     public function weekLookahead(): int
     {
-        return $this->settings?->week_lookahead ?? TeamSetting::DEFAULT_WEEK_LOOKAHEAD;
+        return $this->cachedSettings()?->week_lookahead ?? TeamSetting::DEFAULT_WEEK_LOOKAHEAD;
     }
 
     /** Days before the first absent day that a submission is still accepted. */
     public function absenceDeadlineDays(): int
     {
-        return $this->settings?->absence_deadline_days ?? TeamSetting::DEFAULT_ABSENCE_DEADLINE_DAYS;
+        return $this->cachedSettings()?->absence_deadline_days ?? TeamSetting::DEFAULT_ABSENCE_DEADLINE_DAYS;
     }
 
     /** Number of days after an inactive absence ends where the owner may still delete it. 0 = no limit. */
     public function staleAbsenceDeletionDays(): int
     {
-        return $this->settings?->stale_absence_deletion_days ?? TeamSetting::DEFAULT_STALE_ABSENCE_DELETION_DAYS;
+        return $this->cachedSettings()?->stale_absence_deletion_days ?? TeamSetting::DEFAULT_STALE_ABSENCE_DELETION_DAYS;
     }
 }

@@ -111,10 +111,25 @@ class User extends Authenticatable
     /** @return Collection<int, Team> */
     public function approvedTeams(): Collection
     {
-        return $this->approvedTeamsCache ??= Cache::rememberForever(
-            "user:{$this->id}:approved-teams",
-            fn () => $this->teams()->wherePivotNotNull('approved_at')->get(),
-        );
+        if ($this->approvedTeamsCache !== null) {
+            return $this->approvedTeamsCache;
+        }
+
+        $cacheKey = "user:{$this->id}:approved-teams";
+
+        // Check if cache key exists, otherwise query and store
+        $teams = Cache::remember($cacheKey, now()->addMinutes(10), fn () => $this->teams()->wherePivotNotNull('approved_at')->get());
+
+        // If team memberships were added/updated in the current request, refresh query if empty
+        if ($teams->isEmpty()) {
+            $fresh = $this->teams()->wherePivotNotNull('approved_at')->get();
+            if ($fresh->isNotEmpty()) {
+                Cache::put($cacheKey, $fresh, now()->addMinutes(10));
+                $teams = $fresh;
+            }
+        }
+
+        return $this->approvedTeamsCache = $teams;
     }
 
     /** Call after any change to this user's team_user.approved_at (accept/deny in the pending queue). */

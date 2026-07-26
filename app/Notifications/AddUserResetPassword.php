@@ -30,14 +30,13 @@ class AddUserResetPassword extends ResetPassword
         ], false));
 
         return (new MailMessage)
-            ->subject('Cine-max zmeny | Bol ti vytvorený účet')
+            ->subject('Cine-max zmeny | Vytvorenie účtu')
             ->greeting('Ahoj!')
-            ->line('Tento e-mail ti prišiel, lebo vedenie prevádzky ti vygenerovalo účet.')
-            ->line('Prosíme ťa, aby si si zmenil heslo čo najskôr. Platnosť e-mailu je 24 hodín.')
-            ->action('Zmeniť heslo', $url)
-            ->line('Tento odkaz ma krátku časovú platnosť. (24 hodín)')
-            ->line('Ak si si túto žiadosť nevyžiadal, nemusíš nič robiť.')
-            ->salutation(new HtmlString('S pozdravom, <br>'.config('app.name').' '));
+            ->line('Vedenie prevádzky ti vytvorilo účet v aplikácii Cine-max zmeny.')
+            ->line('Pre dokončenie registrácie si nastav vlastné heslo kliknutím na tlačidlo nižšie. Platnosť odkazu je 24 hodín.')
+            ->action('Nastaviť heslo', $url)
+            ->line('Ak si tento účet neočakával/a, tento e-mail môžeš ignorovať.')
+            ->salutation(new HtmlString('S pozdravom,<br><strong>'.config('app.name').'</strong>'));
     }
 
     /**
