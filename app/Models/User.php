@@ -7,6 +7,7 @@ use App\Notifications\AddUserResetPassword;
 use App\Notifications\ResetPasswordNotification;
 use App\Traits\Loggable;
 use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Password;
 use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 use Spatie\Permission\Traits\HasRoles;
@@ -97,12 +99,34 @@ class User extends Authenticatable
         return $this->hasMany(Media::class);
     }
 
+    /**
+     * Cached across requests (see CACHING.md, key `user:{id}:approved-teams`) — re-queried
+     * independently by middleware, every permission check, the team switcher (rendered twice,
+     * desktop + mobile nav), and once per row when rendering action columns, and membership
+     * approval changes rarely. Also memoized on the instance so one request never hits the
+     * cache store twice.
+     */
+    private ?Collection $approvedTeamsCache = null;
+
+    /** @return Collection<int, Team> */
+    public function approvedTeams(): Collection
+    {
+        return $this->approvedTeamsCache ??= Cache::rememberForever(
+            "user:{$this->id}:approved-teams",
+            fn () => $this->teams()->wherePivotNotNull('approved_at')->get(),
+        );
+    }
+
+    /** Call after any change to this user's team_user.approved_at (accept/deny in the pending queue). */
+    public function forgetApprovedTeamsCache(): void
+    {
+        Cache::forget("user:{$this->id}:approved-teams");
+        $this->approvedTeamsCache = null;
+    }
+
     public function isApprovedIn(Team $team): bool
     {
-        return $this->teams()
-            ->wherePivotNotNull('approved_at')
-            ->whereKey($team->getKey())
-            ->exists();
+        return $this->approvedTeams()->contains(fn (Team $t) => $t->getKey() === $team->getKey());
     }
 
     /**

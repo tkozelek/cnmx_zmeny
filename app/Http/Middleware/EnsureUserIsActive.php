@@ -26,7 +26,7 @@ class EnsureUserIsActive
             return $this->reject($request, 'Účet je zablokovaný.');
         }
 
-        if (! $user->teams()->wherePivotNotNull('approved_at')->exists()) {
+        if ($user->approvedTeams()->isEmpty()) {
             return $this->reject($request, 'Ešte si nebol/a overený. Počkaj kým ťa administrátor overí.');
         }
 

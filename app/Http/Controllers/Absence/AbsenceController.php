@@ -7,7 +7,6 @@ use App\Http\Requests\Absence\StoreAbsenceRequest;
 use App\Models\Absence;
 use App\Services\AbsenceService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -17,18 +16,9 @@ class AbsenceController extends Controller
 {
     public function __construct(private readonly AbsenceService $absences) {}
 
-    public function index(Request $request): View
+    public function index(): View
     {
-        $user = $request->user();
-        $isAdmin = $user->hasRole('admin');
-
-        return view('holiday.index', [
-            'absences' => $user->absences()->orderByDesc('date_to')->get(),
-
-            // Admins additionally see everyone's, which is what the policy gates.
-            'active' => $isAdmin ? $this->absences->activeFor() : null,
-            'inactive' => $isAdmin ? $this->absences->pastFor() : null,
-        ]);
+        return view('holiday.index');
     }
 
     public function store(StoreAbsenceRequest $request): RedirectResponse

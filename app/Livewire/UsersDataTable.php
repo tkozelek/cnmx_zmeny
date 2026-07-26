@@ -113,7 +113,8 @@ class UsersDataTable extends DataTableComponent
                         return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30">Administrátor</span>';
                     }
 
-                    return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">'.(RoleEnum::tryFrom($roleName)?->label() ?? '—').'</span>';
+                    return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">'.(RoleEnum::tryFrom($roleName)?->label() ?? '-').'</span>';
+
                 })
                 ->html(),
 
@@ -149,6 +150,7 @@ class UsersDataTable extends DataTableComponent
     {
         $team = app(Team::class);
         $team->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
+        $user->forgetApprovedTeamsCache();
 
         $user->notify(new UserAllowedToLogin($user));
         $this->dispatch('toast', message: 'Používateľ overený.');
@@ -158,6 +160,7 @@ class UsersDataTable extends DataTableComponent
     {
         $team = app(Team::class);
         $team->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
+        $user->forgetApprovedTeamsCache();
 
         $user->update(['is_active' => false]);
 

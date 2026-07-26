@@ -29,7 +29,7 @@ class SetCurrentTeam
         // A stale or unset current_team_id falls back to any approved membership, and the
         // choice is persisted so it survives the next request.
         if (! $team || ! $user->isApprovedIn($team)) {
-            $team = $user->teams()->wherePivotNotNull('approved_at')->first();
+            $team = $user->approvedTeams()->first();
 
             if ($team) {
                 $user->forceFill(['current_team_id' => $team->getKey()])->save();

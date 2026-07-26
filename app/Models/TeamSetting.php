@@ -17,13 +17,16 @@ class TeamSetting extends Model
 
     public const DEFAULT_WEEK_LOOKAHEAD = 5;
 
-    public const DEFAULT_ABSENCE_DEADLINE_HOURS = 48;
+    public const DEFAULT_ABSENCE_DEADLINE_DAYS = 2;
+
+    public const DEFAULT_STALE_ABSENCE_DELETION_DAYS = 30;
 
     protected $fillable = [
         'team_id',
         'week_start_day',
         'week_lookahead',
-        'absence_deadline_hours',
+        'absence_deadline_days',
+        'stale_absence_deletion_days',
         'timezone',
         'locale',
     ];
@@ -33,7 +36,8 @@ class TeamSetting extends Model
         return [
             'week_start_day' => 'integer',
             'week_lookahead' => 'integer',
-            'absence_deadline_hours' => 'integer',
+            'absence_deadline_days' => 'integer',
+            'stale_absence_deletion_days' => 'integer',
         ];
     }
 }

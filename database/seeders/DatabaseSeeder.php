@@ -114,7 +114,12 @@ class DatabaseSeeder extends Seeder
             'user.approve',
         ];
 
-        $allPermissions = array_merge($absencePermissions, $userPermissions);
+        $teamPermissions = [
+            'team.view',
+            'team.update',
+        ];
+
+        $allPermissions = array_merge($absencePermissions, $userPermissions, $teamPermissions);
 
         foreach ($allPermissions as $permissionName) {
             Permission::findOrCreate($permissionName, 'web');

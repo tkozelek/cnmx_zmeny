@@ -5,22 +5,27 @@
      x-transition:leave="transition ease-in duration-150"
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
-     class="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center bg-neutral-950/95 backdrop-blur-md md:hidden"
-     @click.away="openn = false"
+     @click="openn = false"
+     class="fixed inset-0 z-[100] flex h-full w-full flex-col items-center justify-center bg-neutral-950/60 backdrop-blur-xl md:hidden overflow-y-auto p-4"
      style="display: none;">
 
-    {{-- Large Close (X) Button in top right --}}
-    <button
-        type="button"
-        @click="openn = false"
-        class="absolute top-5 right-5 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-300 transition hover:bg-neutral-800 hover:text-white focus:outline-none shadow-lg"
-        aria-label="Zavrieť menu"
-        title="Zavrieť menu"
-    >
-        <i class="fa-solid fa-xmark text-2xl"></i>
-    </button>
+    <nav @click.stop class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-2xl bg-neutral-900/90 backdrop-blur-md border border-neutral-700/60 p-6 text-center shadow-2xl my-auto">
 
-    <nav class="flex w-full max-w-sm flex-col items-center space-y-3 p-6 text-center">
+        <!-- Dedicated Close Button -->
+        <button
+            type="button"
+            @click="openn = false"
+            class="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-800/80 text-neutral-400 hover:text-white hover:bg-neutral-750 transition focus:outline-none"
+            aria-label="Zavrieť menu"
+            title="Zavrieť menu"
+        >
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+
+
+
+
+
         @auth
             <div class="w-full mb-2 flex justify-center">
                 <x-team-switcher />
@@ -61,6 +66,18 @@
         @auth
             <div class="my-2 w-full border-t border-neutral-800"></div>
 
+            @can('viewSettings', app(\App\Models\Team::class))
+                <x-nav-link
+                    route="team.settings.edit"
+                    :is-mobile="true"
+                    icon='<i class="fa-solid fa-sliders text-sky-400"></i>'
+                >
+                    Správa kina
+                </x-nav-link>
+            @endcan
+
+
+
             <x-nav-link
                 route="hours.index"
                 :is-mobile="true"
@@ -76,6 +93,7 @@
             >
                 Zmena hesla
             </x-nav-link>
+
 
             <x-logout-button
                 :is-mobile="true"

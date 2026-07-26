@@ -19,6 +19,7 @@ use App\Http\Controllers\Media\MediaController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\SettingsController;
+use App\Http\Controllers\Team\TeamSettingController;
 use App\Http\Controllers\Team\TeamSwitchController;
 use Illuminate\Support\Facades\Route;
 
@@ -133,4 +134,8 @@ Route::middleware('tenant')->group(function () {
         Route::patch('/subor/{media}/visibility', [MediaController::class, 'toggleVisibility'])
             ->name('media.visibility');
     });
+
+    Route::get('/sprava-kina', [TeamSettingController::class, 'edit'])->name('team.settings.edit');
+    Route::put('/sprava-kina', [TeamSettingController::class, 'update'])->name('team.settings.update');
+
 });

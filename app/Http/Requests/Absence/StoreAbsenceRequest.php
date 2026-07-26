@@ -32,26 +32,31 @@ class StoreAbsenceRequest extends FormRequest
 
     /**
      * The submission deadline: an absence must be reported at least
-     * `team_settings.absence_deadline_hours` before the first day it covers.
+     * `team_settings.absence_deadline_days` before the first day it covers.
      * Admins and managers are exempt — they fix things after the fact.
      */
     public function after(): array
     {
         return [
             function (Validator $validator): void {
-                if ($validator->errors()->isNotEmpty() || $this->user()->hasAnyRole(['admin', 'manager'])) {
+                if ($validator->errors()->isNotEmpty() || $this->user()->hasPermissionInTeam('absence.manage')) {
                     return;
                 }
 
                 $team = app(Team::class);
-                $hours = $team->absenceDeadlineHours();
+                $days = $team->absenceDeadlineDays();
                 $from = CarbonImmutable::parse($this->date('date_from'))->startOfDay();
+                $deadline = now()->startOfDay()->addDays($days);
 
-                if ($from->lt(now()->addHours($hours))) {
-                    $days = (int) ceil($hours / 24);
+                if ($from->lt($deadline)) {
+                    $unit = match (true) {
+                        $days === 1 => 'deň',
+                        $days >= 2 && $days <= 4 => 'dni',
+                        default => 'dní',
+                    };
                     $validator->errors()->add(
                         'date_from',
-                        "Absenciu v kine {$team->name} je potrebné nahlásiť minimálne {$hours} hodín ({$days} dní) vopred."
+                        "Absenciu v kine {$team->name} je potrebné nahlásiť minimálne {$days} {$unit} vopred."
                     );
                 }
             },

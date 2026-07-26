@@ -221,6 +221,8 @@ docker compose up -d          # local MySQL/Redis (docker-compose.yml)
 
 Ad-hoc app commands (`app/Console/Commands/`): `ClearAllCaches`, `ClearWeeksAfterYear`.
 
+Application-level cache keys (outside Spatie's own `permission.cache`) are inventoried in `CACHING.md` — check it before adding a new cache key or querying data that might already be cached.
+
 ## Testing philosophy
 
 When adding tests, write only feature tests for **core user-facing flows**, not exhaustive coverage. One happy-path (+ one meaningful failure case where it matters, e.g. a locked week) per flow is enough. Concretely:

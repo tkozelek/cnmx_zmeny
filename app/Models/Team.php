@@ -90,9 +90,15 @@ class Team extends Model
         return $this->settings?->week_lookahead ?? TeamSetting::DEFAULT_WEEK_LOOKAHEAD;
     }
 
-    /** Hours before the first absent day that a submission is still accepted. */
-    public function absenceDeadlineHours(): int
+    /** Days before the first absent day that a submission is still accepted. */
+    public function absenceDeadlineDays(): int
     {
-        return $this->settings?->absence_deadline_hours ?? TeamSetting::DEFAULT_ABSENCE_DEADLINE_HOURS;
+        return $this->settings?->absence_deadline_days ?? TeamSetting::DEFAULT_ABSENCE_DEADLINE_DAYS;
+    }
+
+    /** Number of days after an inactive absence ends where the owner may still delete it. 0 = no limit. */
+    public function staleAbsenceDeletionDays(): int
+    {
+        return $this->settings?->stale_absence_deletion_days ?? TeamSetting::DEFAULT_STALE_ABSENCE_DELETION_DAYS;
     }
 }
