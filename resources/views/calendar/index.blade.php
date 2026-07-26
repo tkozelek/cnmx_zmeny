@@ -4,7 +4,7 @@
 
             {{-- Centered Header & Week Selector --}}
             <header class="flex flex-col items-center justify-center gap-3 text-center">
-                <x-date :week-start="$weekStart" :week-end="$weekEnd" :previous="$previousWeek" :next="$nextWeek" :locked="$locked" />
+                <x-date :week-start="$weekStart" :week-end="$weekEnd" :previous="$previousWeek" :next="$nextWeek" :locked="$locked" :locked-week-starts="$lockedWeekStarts ?? []" />
 
                 {{-- Action Buttons Under Week Selector --}}
                 <div class="flex flex-wrap items-center justify-center gap-3 pt-1">

@@ -28,7 +28,7 @@
         <select name="role" id="roles" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
             @isset($roles)
                 @foreach($roles as $role)
-                    <option value="{{ $role->value }}">{{ $role->label() }}</option>
+                    <option value="{{ $role->value }}" @selected(old('role', \App\Enums\Role::Employee->value) === $role->value)>{{ $role->label() }}</option>
                 @endforeach
             @endisset
         </select>

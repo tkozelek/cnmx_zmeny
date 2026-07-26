@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\AbsenceStatus;
+use App\Enums\Role;
 use App\Livewire\AbsencesDataTable;
 use App\Livewire\UsersDataTable;
 use App\Models\Absence;
@@ -59,5 +60,32 @@ class DataTableTest extends TestCase
             ->assertSee('Deaktivovaná')
             ->assertDontSee('Aktívna')
             ->assertSeeHtml('fa-trash');
+    }
+
+    /**
+     * The admin table passes asManager: true, so an admin deleting their OWN inactive absence
+     * from there skips the retention wait too — unlike "Moje absencie" or the plain
+     * absences.destroy route, which still enforce it even for an admin's own record.
+     */
+    public function test_admin_can_instantly_delete_their_own_inactive_absence_from_the_admin_table(): void
+    {
+        $team = $this->tenant();
+        $admin = $this->member($team, Role::Admin);
+
+        $absence = Absence::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $admin->id,
+            'date_from' => CarbonImmutable::now()->subDays(4)->toDateString(),
+            'date_to' => CarbonImmutable::now()->subDays(2)->toDateString(),
+        ]);
+        $absence->timestamps = false;
+        $absence->forceFill(['created_at' => CarbonImmutable::now()->subDays(20)])->save();
+
+        Livewire::actingAs($admin)
+            ->test(AbsencesDataTable::class)
+            ->call('deleteAbsence', $absence->id)
+            ->assertHasNoErrors();
+
+        $this->assertModelMissing($absence);
     }
 }

@@ -34,12 +34,13 @@ class UserAllowedToLogin extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Cine-max zmeny | Bol si overený')
-            ->greeting('Ahoj '.$this->user->name)
-            ->line('Tvoj účet bol overený! Od tohto momentu sa môžeš prihlásiť do aplikácie.')
-            ->line(new HtmlString('V prípade že potrebuješ viac informácií, neváhaj využiť sekciu <b>POMOC</b> v navigácií.'))
-            ->action('Prihlásiť sa', route('login'))
-            ->salutation(new HtmlString('S pozdravom, <br>'.config('app.name').' '));
+            ->subject('Cine-max zmeny | Účet overený')
+            ->greeting('Ahoj '.$this->user->name.'!')
+            ->line('Tvoj účet bol úspešne overený administrátorom prevádzky.')
+            ->line('Od tohto momentu sa môžeš prihlásiť do aplikácie a zapisovať sa na zmeny.')
+            ->action('Prihlásiť sa do aplikácie', route('login'))
+            ->line(new HtmlString('Ak potrebuješ viac informácií alebo pomoc s aplikáciou, neváhaj využiť sekciu <b>POMOC</b> v navigácii.'))
+            ->salutation(new HtmlString('S pozdravom,<br><strong>'.config('app.name').'</strong>'));
     }
 
     /**

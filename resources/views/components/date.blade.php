@@ -1,4 +1,4 @@
-@props(['weekStart', 'weekEnd', 'previous', 'next' => null, 'locked' => false])
+@props(['weekStart', 'weekEnd', 'previous', 'next' => null, 'locked' => false, 'lockedWeekStarts' => []])
 
 @php
     $navBtnStyle = 'inline-flex h-14 sm:h-16 w-14 sm:w-16 items-center justify-center rounded-xl border-2 border-neutral-800 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-700 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-md shrink-0 leading-none';
@@ -21,13 +21,84 @@
     <div
         x-data="{
             picker: null,
+            lockedDates: @js($lockedWeekStarts),
+            weekStartDay: {{ $currentTeam->weekStartDay() }}, // 3 = Thursday by default
+            getWeekRange(dateStr) {
+                if (!dateStr) return [];
+                const d = new Date(dateStr + 'T00:00:00');
+                // Calculate day offset based on team week_start_day
+                // Flatpickr JS day: 0 = Sun, 1 = Mon ... 4 = Thu
+                // Convert weekStartDay (0=Mon .. 6=Sun) to JS day: (weekStartDay + 1) % 7
+                const jsStartDay = (this.weekStartDay + 1) % 7;
+                let diff = d.getDay() - jsStartDay;
+                if (diff < 0) diff += 7;
+                
+                const start = new Date(d);
+                start.setDate(d.getDate() - diff);
+                
+                const range = [];
+                for (let i = 0; i < 7; i++) {
+                    const curr = new Date(start);
+                    curr.setDate(start.getDate() + i);
+                    // Format Y-m-d
+                    const year = curr.getFullYear();
+                    const month = String(curr.getMonth() + 1).padStart(2, '0');
+                    const day = String(curr.getDate()).padStart(2, '0');
+                    range.push(`${year}-${month}-${day}`);
+                }
+                return range;
+            },
+            currentWeekRange: [],
             init() {
                 if (typeof window.flatpickr !== 'function') return;
+                const self = this;
+                this.currentWeekRange = this.getWeekRange('{{ $weekStart->toDateString() }}');
                 this.picker = window.flatpickr($refs.pickerInput, {
                     dateFormat: 'Y-m-d',
                     defaultDate: '{{ $weekStart->toDateString() }}',
                     position: 'below center',
                     positionElement: $refs.triggerButton,
+                    onDayCreate: (dObj, dStr, fp, dayElem) => {
+                        const dateObj = dayElem.dateObj;
+                        const year = dateObj.getFullYear();
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+                        const dateFormatted = `${year}-${month}-${day}`;
+                        
+                        const weekRange = self.getWeekRange(dateFormatted);
+                        const isLocked = self.lockedDates.includes(weekRange[0]);
+                        
+                        if (isLocked) {
+                            dayElem.classList.add('is-locked-week-day');
+                            dayElem.title = 'Zamknutý týždeň (' + weekRange[0] + ')';
+                        }
+
+                        if (self.currentWeekRange.includes(dateFormatted)) {
+                            dayElem.classList.add('is-active-week-day');
+                            if (dateFormatted === self.currentWeekRange[0]) dayElem.classList.add('is-week-start');
+                            if (dateFormatted === self.currentWeekRange[6]) dayElem.classList.add('is-week-end');
+                        }
+
+                        // Add hover effect for full week block
+                        dayElem.addEventListener('mouseenter', () => {
+                            fp.calendarContainer.querySelectorAll('.flatpickr-day').forEach(el => {
+                                const elDateObj = el.dateObj;
+                                if (!elDateObj) return;
+                                const ey = elDateObj.getFullYear();
+                                const em = String(elDateObj.getMonth() + 1).padStart(2, '0');
+                                const ed = String(elDateObj.getDate()).padStart(2, '0');
+                                const ef = `${ey}-${em}-${ed}`;
+                                if (weekRange.includes(ef)) {
+                                    el.classList.add('week-hover');
+                                }
+                            });
+                        });
+                        dayElem.addEventListener('mouseleave', () => {
+                            fp.calendarContainer.querySelectorAll('.flatpickr-day.week-hover').forEach(el => {
+                                el.classList.remove('week-hover');
+                            });
+                        });
+                    },
                     onChange: (selectedDates, dateStr) => {
                         if (dateStr) window.location.href = '/week/' + dateStr;
                     }

@@ -135,7 +135,7 @@ class AbsencesDataTable extends DataTableComponent
                 ->html(),
 
             Column::make('Akcie', 'id')
-                ->format(fn ($value, $row) => $this->formatActionsColumn($row))
+                ->format(fn ($value, $row) => $this->formatActionsColumn($row, asManager: true))
                 ->html(),
         ];
     }
@@ -153,7 +153,7 @@ class AbsencesDataTable extends DataTableComponent
     public function deleteAbsence(int $id): void
     {
         $absence = Absence::findOrFail($id);
-        $this->authorize('delete', $absence);
+        $this->authorize('delete', [$absence, true]);
 
         $absence->delete();
 

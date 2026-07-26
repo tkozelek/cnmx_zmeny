@@ -9,6 +9,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\WeekLock;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -33,12 +34,18 @@ class CalendarService
             ->get()
             ->groupBy(fn (Assignment $a): string => $a->date->toDateString());
 
+        $lockedWeekStarts = WeekLock::where('team_id', $team->id)
+            ->pluck('week_start')
+            ->map(fn ($ws) => $ws instanceof CarbonInterface ? $ws->toDateString() : (string) $ws)
+            ->toArray();
+
         return [
             'weekStart' => $weekStart,
             'weekEnd' => $to,
             'days' => $this->weeks->days($weekStart),
             'weekAssignments' => $weekAssignments,
             'locked' => WeekLock::locked($team->getKey(), $weekStart),
+            'lockedWeekStarts' => $lockedWeekStarts,
             'media' => $this->media($weekStart, $isAdmin),
             'absences' => $isAdmin ? $this->absences($from, $to) : collect(),
         ];
