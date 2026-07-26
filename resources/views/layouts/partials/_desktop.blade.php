@@ -39,9 +39,11 @@
             x-data="{ open: false }"
             @mouseenter="open = true"
             @mouseleave="open = false"
+            @click.away="open = false"
             class="relative py-1"
         >
             <button
+                type="button"
                 @click="open = !open"
                 class="flex items-center gap-2.5 px-3 py-1.5 text-base font-semibold text-neutral-200 transition hover:text-white focus:outline-none"
             >
@@ -49,6 +51,7 @@
                 <span>{{ auth()->user()->name }} {{ auth()->user()->lastname }}</span>
                 <i class="fa-solid fa-chevron-down text-xs text-neutral-500 transition-transform duration-200" :class="{'rotate-180': open}"></i>
             </button>
+
 
             {{-- Seamless Dropdown Container without gap --}}
             <div
@@ -68,6 +71,18 @@
                         <p class="truncate text-sm font-semibold text-neutral-100">{{ auth()->user()->name }} {{ auth()->user()->lastname }}</p>
                     </div>
 
+                    @can('viewSettings', app(\App\Models\Team::class))
+                        <a
+                            href="{{ route('team.settings.edit') }}"
+                            class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
+                        >
+                            <i class="fa-solid fa-sliders text-xs text-sky-400"></i>
+                            Správa kina
+                        </a>
+                    @endcan
+
+
+
                     <a
                         href="{{ route('hours.index') }}"
                         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
@@ -85,6 +100,7 @@
                     </a>
 
                     <div class="my-1 border-t border-neutral-800"></div>
+
 
                     <x-logout-button icon='<i class="fa-solid fa-right-from-bracket text-xs"></i>'>
                         Odhlásiť sa

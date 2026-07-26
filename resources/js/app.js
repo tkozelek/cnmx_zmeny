@@ -7,6 +7,34 @@ import { Chart, registerables } from "chart.js";
 flatpickr.localize(Slovak);
 window.flatpickr = flatpickr;
 
+function toIsoDate(date) {
+    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+}
+
+document.addEventListener('alpine:init', () => {
+    Alpine.data('absenceRangePicker', (dateFrom, dateTo, openModal = false) => ({
+        openModal,
+        dateFrom,
+        dateTo,
+        initFlatpickr() {
+            if (typeof window.flatpickr !== 'function') return;
+            window.flatpickr(this.$refs.rangeInput, {
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altInputClass: 'w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none cursor-pointer',
+                altFormat: 'j. n. Y',
+                defaultDate: [this.dateFrom, this.dateTo],
+                onChange: (selectedDates) => {
+                    if (!selectedDates.length) return;
+                    this.dateFrom = toIsoDate(selectedDates[0]);
+                    this.dateTo = selectedDates.length === 2 ? toIsoDate(selectedDates[1]) : this.dateFrom;
+                },
+            });
+        },
+    }));
+});
+
 function showToast(message, type = 'success', icon = '') {
     window.dispatchEvent(new CustomEvent('toast', {
         detail: { message, type, icon }

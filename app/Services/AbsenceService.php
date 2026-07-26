@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AbsenceStatus;
 use App\Models\Absence;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\Paginator;
@@ -42,17 +43,22 @@ class AbsenceService
     }
 
     /**
-     * End an absence: shorten it to today if it is already running, delete it if it has
-     * not started yet.
+     * End an absence: shorten it to today if it is already running, or mark status as cancelled
+     * if deactivated in advance so it remains stored in history as inactive/cancelled.
      */
     public function end(Absence $absence): void
     {
         if ($absence->date_from->isFuture()) {
-            $absence->delete();
+            $absence->update([
+                'status' => AbsenceStatus::Cancelled,
+            ]);
 
             return;
         }
 
-        $absence->update(['date_to' => now()->toDateString()]);
+        $absence->update([
+            'date_to' => now()->subDay()->toDateString(),
+            'status' => AbsenceStatus::Cancelled,
+        ]);
     }
 }

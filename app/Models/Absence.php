@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AbsenceStatus;
 use App\Traits\BelongsToTeam;
 use Carbon\CarbonInterface;
 use Database\Factories\AbsenceFactory;
@@ -37,6 +38,7 @@ class Absence extends Model
         'date_to',
         'day_of_week',
         'reason',
+        'status',
     ];
 
     protected function casts(): array
@@ -47,6 +49,7 @@ class Absence extends Model
             'date_from' => 'date:Y-m-d',
             'date_to' => 'date:Y-m-d',
             'day_of_week' => 'integer',
+            'status' => AbsenceStatus::class,
         ];
     }
 
@@ -57,28 +60,38 @@ class Absence extends Model
 
     /**
      * Absences touching the given range.
-     *
-     * Column order matters: it is what makes this hit
-     * `absences_team_id_date_from_date_to_index`. Do not reorder, and do not add
-     * `user_id` to that index — it is unbound here and would break `date_from` as a
-     * range bound.
      */
     public function scopeOverlapping(Builder $query, CarbonInterface $from, CarbonInterface $to): Builder
     {
-        return $query->where('date_from', '<=', $to->toDateString())
+        return $query->where('status', '!=', AbsenceStatus::Cancelled->value)
+            ->where('date_from', '<=', $to->toDateString())
             ->where('date_to', '>=', $from->toDateString());
     }
 
     /** Not over yet. */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('date_to', '>=', now()->toDateString());
+        return $query->where('status', AbsenceStatus::Active->value)
+            ->where('date_to', '>=', now()->toDateString());
     }
 
-    /** Already finished — either it ran out or it was ended early. */
+    /** Already finished — either it ran out or it was ended early / cancelled. */
     public function scopePast(Builder $query): Builder
     {
-        return $query->where('date_to', '<', now()->toDateString());
+        return $query->where(function (Builder $q) {
+            $q->where('date_to', '<', now()->toDateString())
+                ->orWhere('status', AbsenceStatus::Cancelled->value);
+        });
+    }
+
+    /** Not cancelled, and its date range hasn't run out yet. */
+    public function isActive(): bool
+    {
+        if ($this->status === AbsenceStatus::Cancelled) {
+            return false;
+        }
+
+        return $this->date_to->gte(now()->startOfDay());
     }
 
     public function isRecurring(): bool

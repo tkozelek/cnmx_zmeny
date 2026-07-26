@@ -4,14 +4,16 @@ namespace App\Livewire;
 
 use App\Models\Absence;
 use App\Services\AbsenceService;
+use App\Traits\FormatsAbsenceColumns;
 use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
-use Rappasoft\LaravelLivewireTables\Views\Filters\DateFilter;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class MyAbsencesDataTable extends DataTableComponent
 {
+    use FormatsAbsenceColumns;
+
     protected $model = Absence::class;
 
     public function configure(): void
@@ -22,8 +24,14 @@ class MyAbsencesDataTable extends DataTableComponent
             ->setPerPageAccepted([5, 10, 25])
             ->setPerPage(5)
             ->setColumnSelectStatus(false)
-            ->setFilterPillsStatus(true)
-            ->setSearchPlaceholder('Vyhľadať v mojich absenciách...')
+            ->setFilterPillsStatus(false)
+            ->setFilterLayoutSlideDown()
+            // The Stav/Akcie columns read fields (status, team_id, user_id, updated_at, ...) off
+            // $row directly rather than through a registered Column, so the package's column-based
+            // SELECT projection would otherwise drop them — select the whole row instead of
+            // chasing every field the trait happens to touch.
+            ->setAdditionalSelects(['absences.*'])
+            ->setSearchPlaceholder('Vyhľadať v absenciách...')
             ->setEmptyMessage('Nemáš evidované žiadne absencie.');
     }
 
@@ -40,7 +48,7 @@ class MyAbsencesDataTable extends DataTableComponent
                 ->options([
                     '' => 'Všetky absencie',
                     'active' => 'Aktívne',
-                    'past' => 'Vypršané',
+                    'past' => 'Vypršané / Deaktivované',
                 ])
                 ->filter(function (Builder $builder, string $value) {
                     match ($value) {
@@ -48,16 +56,6 @@ class MyAbsencesDataTable extends DataTableComponent
                         'past' => $builder->past(),
                         default => null,
                     };
-                }),
-
-            DateFilter::make('Od dátumu')
-                ->filter(function (Builder $builder, string $value) {
-                    $builder->where('date_to', '>=', $value);
-                }),
-
-            DateFilter::make('Do dátumu')
-                ->filter(function (Builder $builder, string $value) {
-                    $builder->where('date_from', '<=', $value);
                 }),
         ];
     }
@@ -75,37 +73,33 @@ class MyAbsencesDataTable extends DataTableComponent
                 ->format(fn ($value, $row) => '<span class="text-neutral-300">'.($row->isOpenEnded() ? 'Trvalá' : $value?->format('d.m.Y')).'</span>')
                 ->html(),
 
-            Column::make('Dôvod', 'reason')
-                ->searchable()
-                ->format(fn ($value) => '<span class="max-w-xs truncate text-neutral-300">'.e($value ?: '—').'</span>')
+            Column::make('Stav', 'status')
+                ->sortable(function (Builder $query, string $direction) {
+                    $today = now()->toDateString();
+
+                    return $query->orderByRaw(
+                        "CASE 
+                            WHEN status = 'cancelled' THEN 3
+                            WHEN date_to < '{$today}' THEN 2
+                            ELSE 1
+                         END {$direction}"
+                    );
+                })
+                ->format(fn ($value, $row) => $this->formatStatusColumn($row))
                 ->html(),
 
-            Column::make('Stav', 'id')
-                ->format(function ($value, $row) {
-                    $isActive = $row->date_to->gte(now()->startOfDay());
+            Column::make('Dôvod', 'reason')
+                ->searchable()
+                ->format(fn ($value) => '<span class="max-w-xs truncate text-neutral-300">'.e($value ?: '-').'</span>')
+                ->html(),
 
-                    if ($isActive) {
-                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Aktívna</span>';
-                    }
-
-                    return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-neutral-800 text-neutral-400 border border-neutral-700">Vypršaná</span>';
-                })
+            Column::make('Nahlásené', 'created_at')
+                ->sortable()
+                ->format(fn ($value) => '<span class="text-neutral-400 text-xs">'.$value?->format('d.m.Y H:i').'</span>')
                 ->html(),
 
             Column::make('Akcie', 'id')
-                ->format(function ($value, $row) {
-                    $isActive = $row->date_to->gte(now()->startOfDay());
-
-                    $buttons = '';
-
-                    if ($isActive) {
-                        $buttons .= '<button wire:click="endAbsence('.$row->id.')" title="Ukončiť absenciu" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-3.5 py-2 text-xs shadow-sm transition"><i class="fa-solid fa-xmark text-xs"></i> Ukončiť</button>';
-                    }
-
-                    $buttons .= '<button wire:click="deleteAbsence('.$row->id.')" title="Vymazať absenciu" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-trash text-xs"></i></button>';
-
-                    return '<div class="flex items-center justify-start gap-2">'.$buttons.'</div>';
-                })
+                ->format(fn ($value, $row) => $this->formatActionsColumn($row))
                 ->html(),
         ];
     }

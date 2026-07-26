@@ -1,7 +1,7 @@
 @auth
     @php
         $user = auth()->user();
-        $teams = $user->teams()->wherePivotNotNull('approved_at')->get();
+        $teams = $user->approvedTeams();
         $currentTeam = $user->currentTeam ?? $teams->first();
     @endphp
 
@@ -10,6 +10,7 @@
             x-data="{ open: false }"
             @mouseenter="open = true"
             @mouseleave="open = false"
+            @click.away="open = false"
             class="relative py-1"
         >
             <button
@@ -31,9 +32,10 @@
                 x-transition:leave="transition ease-in duration-100"
                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
-                class="absolute left-0 sm:right-0 sm:left-auto top-full z-50 pt-1 w-56"
+                class="absolute left-1/2 -translate-x-1/2 sm:translate-x-0 sm:right-0 sm:left-auto top-full z-[100] pt-1 w-56"
                 style="display: none;"
             >
+
                 <div class="rounded-xl border border-neutral-800 bg-neutral-900 p-1.5 shadow-2xl">
                     <div class="px-3 py-2 border-b border-neutral-800 mb-1">
                         <p class="text-xs font-medium text-neutral-400">Aktívne kino</p>

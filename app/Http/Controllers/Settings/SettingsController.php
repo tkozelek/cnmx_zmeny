@@ -11,7 +11,7 @@ class SettingsController extends Controller
     public function index(Request $request): View
     {
         return view('nastavenia.index', [
-            'teams' => $request->user()->teams()->wherePivotNotNull('approved_at')->get(),
+            'teams' => $request->user()->approvedTeams(),
         ]);
     }
 }

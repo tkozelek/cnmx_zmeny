@@ -41,8 +41,8 @@ class CalendarService
             'locked' => WeekLock::locked($team->getKey(), $weekStart),
             'media' => $this->media($weekStart, $isAdmin),
             'absences' => $isAdmin ? $this->absences($from, $to) : collect(),
-            'signupCounts' => $isAdmin ? $this->signupCounts($from, $to) : collect(),
         ];
+
     }
 
     /**

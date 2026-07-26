@@ -53,29 +53,32 @@
     {{-- Signed-up Entries Container --}}
     <div class="flex flex-col px-3 py-0.5">
         @forelse($this->assignments as $assignment)
-            <div wire:key="assignment-{{ $assignment->id }}" @class([
-                'rows group flex items-center justify-between gap-2 border-b border-neutral-800/60 py-1 text-sm leading-snug last:border-b-0',
-                'font-semibold text-white' => $assignment->user_id === auth()->id(),
-                'text-neutral-500 line-through' => ! $assignment->user->is_active,
-                'text-neutral-200' => $assignment->user->is_active,
-            ])>
-                <div class="flex min-w-0 items-center gap-1.5 text-left truncate">
-                    <span class="min-w-0 truncate font-semibold text-sm text-neutral-200" title="{{ $assignment->user->name }} {{ $assignment->user->lastname }}">
+            <div wire:key="assignment-{{ $assignment->id }}"
+                 title="{{ $assignment->user->lastname }} {{ $assignment->user->name }}@if($assignment->note) ({{ $assignment->note }})@endif"
+                 @class([
+                    'rows group flex items-center justify-between gap-2 border-b border-neutral-800/60 py-1 text-sm leading-snug last:border-b-0 cursor-default',
+                    'font-semibold text-white' => $assignment->user_id === auth()->id(),
+                    'text-neutral-500 line-through' => ! $assignment->user->is_active,
+                    'text-neutral-200' => $assignment->user->is_active,
+                ])>
+                <div class="flex min-w-0 items-center gap-1.5 text-left">
+                    <span class="shrink-0 font-semibold text-sm text-neutral-200">
                         @if($this->canViewUsers)
                             <a href="{{ route('profile.show', $assignment->user) }}"
-                               class="truncate transition hover:text-white"
-                               title="{{ $assignment->user->name }} {{ $assignment->user->lastname }}">{{ $assignment->user->name }} {{ $assignment->user->lastname }}</a>
+                               class="transition hover:text-white">{{ $assignment->user }}</a>
                         @else
-                            <span class="truncate" title="{{ $assignment->user->name }} {{ $assignment->user->lastname }}">{{ $assignment->user->name }} {{ $assignment->user->lastname }}</span>
+                            <span>{{ $assignment->user }}</span>
                         @endif
                     </span>
 
                     @if($assignment->note)
-                        <span class="truncate text-xs font-normal text-neutral-400 shrink-0" title="{{ $assignment->note }}">
+                        <span class="min-w-0 truncate text-xs font-normal text-neutral-400">
                             ({{ $assignment->note }})
                         </span>
                     @endif
                 </div>
+
+
 
                 {{-- Hidden Position Badge --}}
                 <div class="hidden">

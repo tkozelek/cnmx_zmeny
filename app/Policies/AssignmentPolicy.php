@@ -22,6 +22,17 @@ class AssignmentPolicy
     /** Sign up for a date. Admins are not stopped by a lock — they are the ones locking. */
     public function create(User $user, Team $team, CarbonInterface $date): bool
     {
+        // Users cannot sign up for work on dates covered by their reported absences.
+        $hasAbsence = $user->absences()
+            ->where('team_id', $team->id)
+            ->overlapping($date, $date)
+            ->get()
+            ->contains(fn ($absence) => $absence->covers($date));
+
+        if ($hasAbsence) {
+            return false;
+        }
+
         if ($user->hasRole('admin')) {
             return true;
         }
