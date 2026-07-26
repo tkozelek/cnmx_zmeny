@@ -67,12 +67,12 @@ class AbsencesDataTable extends DataTableComponent
 
             DateFilter::make('Od dátumu')
                 ->filter(function (Builder $builder, string $value) {
-                    $builder->whereDate('date_from', '>=', $value);
+                    $builder->where('date_to', '>=', $value);
                 }),
 
             DateFilter::make('Do dátumu')
                 ->filter(function (Builder $builder, string $value) {
-                    $builder->whereDate('date_to', '<=', $value);
+                    $builder->where('date_from', '<=', $value);
                 }),
         ];
     }

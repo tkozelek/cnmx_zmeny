@@ -2,30 +2,13 @@
 
 > Branch: `planning/multi-tenant-rewrite`  
 > Date: 2026-06-02  
-> Status: Planning phase — do NOT implement from this branch, open a fresh feature branch per section.
+> Status: Core rewrite implemented & verified.
 
 ---
 
 ## What This App Does
 
-**CNMX Zmeny** is a shift scheduling system for cinema staff. Workers sign up for available work days. The work week runs Thursday → Wednesday (non-standard offset). Admins manage users, lock weeks once finalized, upload files, and export schedules. The codebase already has a partially-wired Stancl Tenancy v3 skeleton and Spatie Laravel Permission installed but unused.
-
----
-
-## Rewrite Goals
-
-| Goal | Notes |
-|---|---|
-| True multi-tenancy | Each cinema is a fully isolated tenant |
-| Modern admin | Filament v3 panel for all management tasks |
-| Proper RBAC | Spatie Permission with teams (one team = one tenant) |
-| Configurable weeks | Each tenant sets their own week offset, advance-notice rules |
-| Work plan system | Admin builds a shift template per day with named positions and times |
-| Unavailability | Users mark days they cannot work; configurable submission deadline |
-| Week locking | Admin locks a week; locked weeks become read-only |
-| Reports & exports | PDF/Excel for work plans, hours summaries, position coverage |
-| Full DB redesign | Start clean — no legacy mediumInt PKs, no magic role integers |
-| Security-first | Rate limiting, policy gates, audit trail, CSRF, XSS hardening |
+**CNMX Zmeny** is a shift scheduling system for cinema staff. Workers sign up for available work days. The work week runs Thursday → Wednesday (non-standard offset). Admins manage users, lock weeks once finalized, upload files, and export schedules.
 
 ---
 
@@ -52,29 +35,17 @@
 | [17-logging.md](17-logging.md) | Logging system — audit log, application log, security log, production destinations |
 | [18-packages.md](18-packages.md) | Recommended packages — Filament plugins, DnD, Spatie, Livewire UI, DX tooling |
 | [19-design-system.md](19-design-system.md) | Design system — color, type, spacing, and UI patterns shared by Filament + Livewire |
+| [20-schema-rework-handoff.md](20-schema-rework-handoff.md) | Authoritative database schema definition |
+| [21-backend-rewrite-progress.md](21-backend-rewrite-progress.md) | As-built backend, Livewire components, routes, and test status |
+| [22-ui-tables-permissions-handoff.md](22-ui-tables-permissions-handoff.md) | Detailed handoff document for UI DataTables, Spatie dot-notation permissions, team policies, and absence modal |
 
 ---
 
 ## Technology Stack
 
-- **Laravel 12** — framework
+- **Laravel 13** — framework (PHP 8.4)
 - **Livewire 3** — reactive user-facing UI
-- **Filament 3** — admin panel
 - **Spatie Laravel Permission 6** (teams mode) — RBAC
-- **Stancl Tenancy 3** — database-per-tenant isolation (keep existing package)
+- **Tailwind CSS v3** — styling
 - **Maatwebsite Excel 3** — exports
 - **Laravel Pulse** — observability
-- **PostgreSQL or MySQL 8** — database (new schema)
-- **Redis** — cache, queues, rate limiting
-
----
-
-## Key Decisions Summary
-
-1. **Single database, Spatie teams** — one DB, every cinema is a `teams` row, `team_id` on all models, Filament native `->tenant()` for panel scoping. No Stancl Tenancy.
-2. **Replace custom role integers with Spatie teams** — roles become `admin`, `manager`, `employee`; one Spatie Team per tenant.
-3. **Filament for all admin work** — user management, position setup, plan builder, reports, week locking.
-4. **Livewire for employee-facing UI** — calendar view, unavailability marking, hours view.
-5. **Positions are team-scoped** — each cinema defines its own position names and typical slots.
-6. **Work plan = generated, not free-form** — admin builds a template of position+time slots, assigns users to slots.
-7. **Absence is forward-only** — users cannot mark a past day; a configurable `advance_hours` setting controls how early they must submit.

@@ -22,7 +22,6 @@ class UsersDataTable extends DataTableComponent
             ->setTheme('tailwind')
             ->setDefaultSort('lastname', 'asc')
             ->setPerPageAccepted([10, 25, 50, 100])
-            ->setPerPage(10)
             ->setColumnSelectStatus(true)
             ->setFilterPillsStatus(true)
             ->setSearchPlaceholder('Vyhľadať používateľa...')

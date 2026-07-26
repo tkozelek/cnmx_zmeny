@@ -26,30 +26,32 @@ class StoreAbsenceRequest extends FormRequest
             'date_to' => ['required', 'date', 'after_or_equal:date_from'],
             'day_of_week' => ['nullable', 'integer', 'between:0,6'],
             'open_ended' => ['nullable', 'boolean'],
-            'reason' => ['nullable', 'string', 'max:500'],
+            'reason' => ['required', 'string', 'max:500'],
         ];
     }
 
     /**
      * The submission deadline: an absence must be reported at least
-     * `team_settings.absence_deadline_hours` before the first day it covers, so the plan
-     * can still be changed. Admins are exempt — they fix things after the fact.
+     * `team_settings.absence_deadline_hours` before the first day it covers.
+     * Admins and managers are exempt — they fix things after the fact.
      */
     public function after(): array
     {
         return [
             function (Validator $validator): void {
-                if ($validator->errors()->isNotEmpty() || $this->user()->hasRole('admin')) {
+                if ($validator->errors()->isNotEmpty() || $this->user()->hasAnyRole(['admin', 'manager'])) {
                     return;
                 }
 
-                $hours = app(Team::class)->absenceDeadlineHours();
+                $team = app(Team::class);
+                $hours = $team->absenceDeadlineHours();
                 $from = CarbonImmutable::parse($this->date('date_from'))->startOfDay();
 
                 if ($from->lt(now()->addHours($hours))) {
+                    $days = (int) ceil($hours / 24);
                     $validator->errors()->add(
                         'date_from',
-                        "Absenciu treba nahlásiť aspoň {$hours} hodín dopredu. Kontaktuj vedúceho."
+                        "Absenciu v kine {$team->name} je potrebné nahlásiť minimálne {$hours} hodín ({$days} dní) vopred."
                     );
                 }
             },
@@ -76,6 +78,7 @@ class StoreAbsenceRequest extends FormRequest
             'date_from.required' => 'Zadaj odkedy budeš chýbať.',
             'date_to.required' => 'Zadaj dokedy budeš chýbať.',
             'date_to.after_or_equal' => 'Koniec absencie nemôže byť pred jej začiatkom.',
+            'reason.required' => 'Uveď dôvod absencie.',
         ];
     }
 }
