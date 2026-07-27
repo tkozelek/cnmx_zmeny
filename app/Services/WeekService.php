@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Team;
-use App\Models\WeekLock;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\Exceptions\InvalidFormatException;
@@ -50,16 +49,16 @@ class WeekService
         return $weekStart->subWeek();
     }
 
-    public function alignFromRequest(Team $team, ?string $date): CarbonImmutable
+    public function alignFromRequest(Team $team, ?string $date, ?WeekLockPolicy $lockPolicy = null): CarbonImmutable
     {
         if (! $date) {
-            return $this->defaultUnlockedWeek($team);
+            return ($lockPolicy ?? app(WeekLockPolicy::class))->defaultUnlockedWeek($team);
         }
 
         try {
             $parsed = CarbonImmutable::parse($date);
         } catch (InvalidFormatException) {
-            return $this->defaultUnlockedWeek($team);
+            return ($lockPolicy ?? app(WeekLockPolicy::class))->defaultUnlockedWeek($team);
         }
 
         return $this->clampForward($team, $this->start($team, $parsed));
@@ -67,26 +66,7 @@ class WeekService
 
     public function defaultUnlockedWeek(Team $team): CarbonImmutable
     {
-        $currentWeek = $this->start($team, CarbonImmutable::now());
-        $maxWeek = $currentWeek->addWeeks($team->weekLookahead());
-
-        $lockedWeekStarts = WeekLock::withoutGlobalScope('team')
-            ->where('team_id', $team->id)
-            ->whereBetween('week_start', [$currentWeek->toDateString(), $maxWeek->toDateString()])
-            ->pluck('week_start')
-            ->map(fn ($ws) => $ws instanceof CarbonInterface ? $ws->toDateString() : (string) $ws)
-            ->toArray();
-
-        $cursor = $currentWeek;
-
-        while ($cursor->lte($maxWeek)) {
-            if (! in_array($cursor->toDateString(), $lockedWeekStarts, true)) {
-                return $cursor;
-            }
-            $cursor = $cursor->addWeek();
-        }
-
-        return $currentWeek;
+        return app(WeekLockPolicy::class)->defaultUnlockedWeek($team);
     }
 
     public function clampForward(Team $team, CarbonImmutable $weekStart): CarbonImmutable
