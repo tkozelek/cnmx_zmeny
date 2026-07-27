@@ -148,6 +148,8 @@ class UsersDataTable extends DataTableComponent
 
     public function accept(User $user): void
     {
+        $this->authorize('update', $user);
+
         $team = app(Team::class);
         $team->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
         $user->forgetApprovedTeamsCache();
@@ -158,11 +160,13 @@ class UsersDataTable extends DataTableComponent
 
     public function deny(User $user): void
     {
+        $this->authorize('update', $user);
+
         $team = app(Team::class);
         $team->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
-        $user->forgetApprovedTeamsCache();
 
         $user->update(['is_active' => false]);
+        $user->forgetApprovedTeamsCache();
 
         $this->dispatch('toast', message: 'Používateľ zablokovaný.');
     }

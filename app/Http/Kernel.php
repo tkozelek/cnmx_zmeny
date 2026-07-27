@@ -83,6 +83,7 @@ class Kernel extends HttpKernel
             'auth',
             EnsureUserIsActive::class,
             SetCurrentTeam::class,
+            SubstituteBindings::class,
         ],
     ];
 

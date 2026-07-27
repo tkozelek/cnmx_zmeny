@@ -11,7 +11,6 @@ use App\Models\WeekLock;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Assembles everything one week of the calendar needs.
@@ -64,23 +63,6 @@ class CalendarService
                 fn (CarbonImmutable $day): bool => $absence->covers($day)
             ))
             ->values();
-    }
-
-    /**
-     * @return Collection<int, object>
-     */
-    private function signupCounts(CarbonImmutable $from, CarbonImmutable $to): Collection
-    {
-        return Assignment::betweenDates($from, $to)
-            ->join('users', 'users.id', '=', 'assignments.user_id')
-            ->groupBy('users.id', 'users.name', 'users.lastname')
-            ->orderByDesc('count')
-            ->get([
-                'users.id as user_id',
-                'users.name',
-                'users.lastname',
-                DB::raw('COUNT(DISTINCT assignments.date) as count'),
-            ]);
     }
 
     /**

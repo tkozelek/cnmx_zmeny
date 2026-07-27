@@ -63,7 +63,7 @@ return new class extends Migration
              * If per-position assignment comes back with the Filament plan builder, this is the
              * index to widen.
              */
-            $table->unique(['user_id', 'date']);
+            $table->unique(['team_id', 'user_id', 'date']);
 
             // Serves the main screen: one team's week. Equality on team_id, range on date.
             $table->index(['team_id', 'date']);

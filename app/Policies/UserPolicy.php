@@ -39,11 +39,7 @@ class UserPolicy
     {
         $team = app(Team::class);
 
-        if (! $model->isApprovedIn($team)) {
-            return false;
-        }
-
-        return $user->hasPermissionInTeam('user.update', $team);
+        return $user->hasPermissionInTeam('user.update', $team) || $user->hasRole('admin');
     }
 
     public function delete(User $user, User $model): bool

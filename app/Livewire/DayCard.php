@@ -30,18 +30,6 @@ class DayCard extends Component
     {
         $team = app(Team::class);
 
-        $hasAbsence = auth()->user()->absences()
-            ->where('team_id', $team->id)
-            ->overlapping($this->day(), $this->day())
-            ->get()
-            ->contains(fn ($absence) => $absence->covers($this->day()));
-
-        if ($hasAbsence) {
-            $this->dispatch('toast', message: 'V tento deň máš nahlásenú absenciu.', type: 'error');
-
-            return;
-        }
-
         $this->authorize('create', [Assignment::class, $team, $this->day()]);
 
         Assignment::firstOrCreate(

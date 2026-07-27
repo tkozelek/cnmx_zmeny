@@ -20,10 +20,12 @@ class AssignmentPolicy
     public function __construct(private readonly WeekService $weeks) {}
 
     /** Sign up for a date. Admins are not stopped by a lock — they are the ones locking. */
-    public function create(User $user, Team $team, CarbonInterface $date): bool
+    public function create(User $user, Team $team, CarbonInterface $date, ?User $targetUser = null): bool
     {
+        $forUser = $targetUser ?? $user;
+
         // Users cannot sign up for work on dates covered by their reported absences.
-        $hasAbsence = $user->absences()
+        $hasAbsence = $forUser->absences()
             ->where('team_id', $team->id)
             ->overlapping($date, $date)
             ->get()
@@ -43,6 +45,11 @@ class AssignmentPolicy
     /** Remove a row: your own, from an unlocked week. Admins may remove anyone's. */
     public function delete(User $user, Assignment $assignment): bool
     {
+        $team = app(Team::class);
+        if ($assignment->team_id !== $team->id) {
+            return false;
+        }
+
         if ($user->hasRole('admin')) {
             return true;
         }

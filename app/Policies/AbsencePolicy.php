@@ -59,7 +59,9 @@ class AbsencePolicy
      */
     public function end(User $user, Absence $absence): bool
     {
-        return $absence->user_id === $user->id;
+        $team = app(Team::class);
+
+        return $absence->team_id === $team->id && $absence->user_id === $user->id;
     }
 
     /**
