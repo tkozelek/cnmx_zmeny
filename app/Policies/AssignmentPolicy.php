@@ -35,7 +35,7 @@ class AssignmentPolicy
             return false;
         }
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasPermissionInTeam('assignment.create', $team)) {
             return true;
         }
 
@@ -50,7 +50,7 @@ class AssignmentPolicy
             return false;
         }
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasPermissionInTeam('assignment.delete', $team)) {
             return true;
         }
 
@@ -58,10 +58,12 @@ class AssignmentPolicy
             && ! $this->weekLocked($assignment->team, $assignment->date);
     }
 
-    /** Only admins freeze and unfreeze a week. */
+    /** Only authorized roles freeze and unfreeze a week. */
     public function lock(User $user): bool
     {
-        return $user->hasRole('admin');
+        $team = app(Team::class);
+
+        return $user->hasPermissionInTeam('assignment.lock', $team);
     }
 
     private function weekLocked(Team $team, CarbonInterface $date): bool

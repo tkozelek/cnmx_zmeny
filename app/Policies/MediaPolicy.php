@@ -3,13 +3,16 @@
 namespace App\Policies;
 
 use App\Models\Media;
+use App\Models\Team;
 use App\Models\User;
 
 class MediaPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        $team = app(Team::class);
+
+        return $user->hasPermissionInTeam('media.view', $team);
     }
 
     public function download(User $user, Media $media): bool
@@ -19,12 +22,14 @@ class MediaPolicy
             return false;
         }
 
-        return $user->hasRole('admin') || $media->is_visible;
+        return $user->hasPermissionInTeam('media.view', $team) || $media->is_visible;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole('admin');
+        $team = app(Team::class);
+
+        return $user->hasPermissionInTeam('media.create', $team);
     }
 
     public function delete(User $user, Media $media): bool
@@ -34,7 +39,7 @@ class MediaPolicy
             return false;
         }
 
-        return $user->hasRole('admin');
+        return $user->hasPermissionInTeam('media.delete', $team);
     }
 
     public function toggleVisibility(User $user, Media $media): bool
@@ -44,6 +49,6 @@ class MediaPolicy
             return false;
         }
 
-        return $user->hasRole('admin');
+        return $user->hasPermissionInTeam('media.update', $team);
     }
 }
