@@ -148,7 +148,7 @@ class UsersDataTable extends DataTableComponent
 
     public function accept(User $user): void
     {
-        $this->authorize('update', $user);
+        $this->authorize('approve', $user);
 
         $team = app(Team::class);
         $team->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
@@ -160,7 +160,7 @@ class UsersDataTable extends DataTableComponent
 
     public function deny(User $user): void
     {
-        $this->authorize('update', $user);
+        $this->authorize('approve', $user);
 
         $team = app(Team::class);
         $team->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
