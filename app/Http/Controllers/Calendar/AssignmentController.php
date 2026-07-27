@@ -27,7 +27,7 @@ class AssignmentController extends Controller
         $isForSomeoneElse = $request->filled('user_id')
             && (int) $request->input('user_id') !== $request->user()->id;
 
-        if ($isForSomeoneElse && ! $request->user()->hasRole('admin')) {
+        if ($isForSomeoneElse && ! $request->user()->hasPermissionInTeam('assignment.create', $team)) {
             abort(403, 'Zapísať môžeš iba seba.');
         }
 

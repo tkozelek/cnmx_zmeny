@@ -25,7 +25,7 @@ class CalendarService
     public function forWeek(Team $team, CarbonImmutable $weekStart, User $viewer): array
     {
         [$from, $to] = $this->weeks->range($weekStart);
-        $isAdmin = $viewer->hasRole('admin');
+        $canViewAbsences = $viewer->hasPermissionInTeam('absence.view', $team);
 
         // Preload all assignments for the week in 1 query to prevent N+1 queries across the 7 DayCards.
         $weekAssignments = Assignment::with(['user', 'position'])
@@ -45,8 +45,8 @@ class CalendarService
             'weekAssignments' => $weekAssignments,
             'locked' => WeekLock::locked($team->getKey(), $weekStart),
             'lockedWeekStarts' => $lockedWeekStarts,
-            'media' => $this->media($weekStart, $isAdmin),
-            'absences' => $isAdmin ? $this->absences($from, $to) : collect(),
+            'media' => $this->media($weekStart, $canViewAbsences),
+            'absences' => $canViewAbsences ? $this->absences($from, $to) : collect(),
         ];
 
     }

@@ -21,7 +21,7 @@ class PendingMemberCountComposer
     {
         $user = auth()->user();
 
-        if (! $user?->hasRole('admin') || ! app()->bound(Team::class)) {
+        if (! app()->bound(Team::class) || ! $user?->hasPermissionInTeam('user.approve', app(Team::class))) {
             return;
         }
 

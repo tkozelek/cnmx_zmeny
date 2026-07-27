@@ -98,7 +98,9 @@ class DayCard extends Component
     #[Computed]
     public function isAdmin(): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        $team = app(Team::class);
+
+        return auth()->user()?->hasPermissionInTeam('assignment.delete', $team) ?? false;
     }
 
     #[Computed]

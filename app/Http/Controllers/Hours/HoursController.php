@@ -26,13 +26,13 @@ class HoursController extends Controller
 
     private function hoursFor(Request $request, User $user): View
     {
-        $isAdmin = $request->user()->hasRole('admin');
         $team = app(Team::class);
+        $canViewOtherUsers = $request->user()->hasPermissionInTeam('user.view-any', $team);
 
         return view('hours.index', [
             'user' => $user,
             'rates' => $user->rate,
-            'users' => $isAdmin
+            'users' => $canViewOtherUsers
                 ? $team->users()->wherePivotNotNull('approved_at')->withCount('shifts')->orderBy('lastname')->get()
                 : null,
         ]);
