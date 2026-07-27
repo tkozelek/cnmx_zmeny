@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Assignment;
+use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,9 @@ class SignupSummary extends Component
     #[Computed]
     public function signupCounts(): Collection
     {
-        if (! auth()->user()?->hasRole('admin')) {
+        $team = app(Team::class);
+
+        if (! auth()->user()?->hasPermissionInTeam('user.view-any', $team)) {
             return collect();
         }
 

@@ -39,7 +39,7 @@ class UserPolicy
     {
         $team = app(Team::class);
 
-        return $user->hasPermissionInTeam('user.update', $team) || $user->hasRole('admin');
+        return $user->hasPermissionInTeam('user.update', $team);
     }
 
     public function delete(User $user, User $model): bool
@@ -55,6 +55,6 @@ class UserPolicy
     {
         $team = app(Team::class);
 
-        return $user->hasPermissionInTeam('user.approve', $team) || $user->hasRole('admin');
+        return $user->hasPermissionInTeam('user.approve', $team);
     }
 }

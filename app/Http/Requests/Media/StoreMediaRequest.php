@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Media;
 
+use App\Models\Team;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -9,7 +10,9 @@ class StoreMediaRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->hasRole('admin');
+        $team = app(Team::class);
+
+        return $this->user()->hasPermissionInTeam('media.create', $team);
     }
 
     /**

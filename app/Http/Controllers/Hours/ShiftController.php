@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Hours;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Hours\StoreShiftsRequest;
 use App\Models\Shift;
+use App\Models\Team;
 use App\Models\User;
 use App\Services\ShiftService;
 use Illuminate\Http\JsonResponse;
@@ -72,7 +73,8 @@ class ShiftController extends Controller
             return $request->user();
         }
 
-        abort_unless($request->user()->hasRole('admin'), 403);
+        $team = app(Team::class);
+        abort_unless($request->user()->hasPermissionInTeam('user.view-any', $team), 403);
 
         return User::findOrFail($userId);
     }
