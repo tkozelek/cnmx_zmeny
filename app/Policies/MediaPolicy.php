@@ -14,7 +14,12 @@ class MediaPolicy
 
     public function download(User $user, Media $media): bool
     {
-        return $user->hasRole('admin') || $media->is_visible_to_employees;
+        $team = app(Team::class);
+        if ($media->team_id !== $team->id) {
+            return false;
+        }
+
+        return $user->hasRole('admin') || $media->is_visible;
     }
 
     public function create(User $user): bool
@@ -24,11 +29,21 @@ class MediaPolicy
 
     public function delete(User $user, Media $media): bool
     {
+        $team = app(Team::class);
+        if ($media->team_id !== $team->id) {
+            return false;
+        }
+
         return $user->hasRole('admin');
     }
 
     public function toggleVisibility(User $user, Media $media): bool
     {
+        $team = app(Team::class);
+        if ($media->team_id !== $team->id) {
+            return false;
+        }
+
         return $user->hasRole('admin');
     }
 }

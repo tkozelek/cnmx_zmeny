@@ -67,7 +67,7 @@ class StoreAbsenceRequest extends FormRequest
      * An open-ended recurring absence ("every Tuesday, indefinitely") is stored with the
      * FOREVER sentinel rather than a null date_to — see the Absence model for why.
      */
-    protected function passedValidation(): void
+    protected function prepareForValidation(): void
     {
         if ($this->boolean('open_ended') && $this->filled('day_of_week')) {
             $this->merge(['date_to' => Absence::FOREVER]);

@@ -53,7 +53,10 @@ class UserTable extends Component
     /** Approve a pending membership and tell them they may log in. */
     public function accept(User $user): void
     {
+        $this->authorize('update', $user);
+
         $this->team()->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
+        $user->forgetApprovedTeamsCache();
 
         $user->notify(new UserAllowedToLogin($user));
         $this->dispatch('toast', message: 'Používateľ overený.');
@@ -65,7 +68,10 @@ class UserTable extends Component
      */
     public function deny(User $user): void
     {
+        $this->authorize('update', $user);
+
         $user->update(['is_active' => false]);
+        $user->forgetApprovedTeamsCache();
 
         $this->dispatch('toast', message: 'Používateľ zablokovaný.');
     }

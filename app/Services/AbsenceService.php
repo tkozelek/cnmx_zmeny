@@ -56,8 +56,13 @@ class AbsenceService
             return;
         }
 
+        $yesterday = now()->subDay()->startOfDay();
+        $newDateTo = $absence->date_from->gt($yesterday)
+            ? $absence->date_from
+            : $yesterday;
+
         $absence->update([
-            'date_to' => now()->subDay()->toDateString(),
+            'date_to' => $newDateTo->toDateString(),
             'status' => AbsenceStatus::Cancelled,
         ]);
     }

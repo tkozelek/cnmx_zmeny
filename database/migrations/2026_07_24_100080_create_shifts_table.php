@@ -38,7 +38,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Blocks accidental double-entry of the same shift.
-            $table->unique(['user_id', 'starts_at', 'position_id']);
+            $table->unique(['team_id', 'user_id', 'starts_at', 'position_id']);
 
             // Payroll: one user's hours over a date range.
             $table->index(['team_id', 'user_id', 'starts_at']);

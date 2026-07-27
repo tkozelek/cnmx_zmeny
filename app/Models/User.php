@@ -117,19 +117,9 @@ class User extends Authenticatable
 
         $cacheKey = "user:{$this->id}:approved-teams";
 
-        // Check if cache key exists, otherwise query and store
-        $teams = Cache::remember($cacheKey, now()->addMinutes(10), fn () => $this->teams()->wherePivotNotNull('approved_at')->get());
-
-        // If team memberships were added/updated in the current request, refresh query if empty
-        if ($teams->isEmpty()) {
-            $fresh = $this->teams()->wherePivotNotNull('approved_at')->get();
-            if ($fresh->isNotEmpty()) {
-                Cache::put($cacheKey, $fresh, now()->addMinutes(10));
-                $teams = $fresh;
-            }
-        }
-
-        return $this->approvedTeamsCache = $teams;
+        return $this->approvedTeamsCache = Cache::remember($cacheKey, now()->addMinutes(10), function () {
+            return $this->teams()->wherePivotNotNull('approved_at')->get();
+        });
     }
 
     /** Call after any change to this user's team_user.approved_at (accept/deny in the pending queue). */
@@ -170,16 +160,19 @@ class User extends Authenticatable
             return false;
         }
 
+        $originalTeamId = getPermissionsTeamId();
         setPermissionsTeamId($team->id);
 
-        if ($this->hasAnyRole([RoleEnum::Admin->value, RoleEnum::Manager->value])) {
-            return true;
-        }
-
         try {
+            if ($this->hasAnyRole([RoleEnum::Admin->value, RoleEnum::Manager->value])) {
+                return true;
+            }
+
             return $this->hasPermissionTo($permission);
         } catch (PermissionDoesNotExist) {
             return false;
+        } finally {
+            setPermissionsTeamId($originalTeamId);
         }
     }
 

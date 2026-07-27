@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Hours;
 
 use App\Http\Controllers\Controller;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -26,11 +27,14 @@ class HoursController extends Controller
     private function hoursFor(Request $request, User $user): View
     {
         $isAdmin = $request->user()->hasRole('admin');
+        $team = app(Team::class);
 
         return view('hours.index', [
             'user' => $user,
             'rates' => $user->rate,
-            'users' => $isAdmin ? User::withCount('shifts')->orderBy('lastname')->get() : null,
+            'users' => $isAdmin
+                ? $team->users()->wherePivotNotNull('approved_at')->withCount('shifts')->orderBy('lastname')->get()
+                : null,
         ]);
     }
 }
