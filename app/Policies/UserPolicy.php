@@ -53,6 +53,8 @@ class UserPolicy
 
     public function approve(User $user, User $model): bool
     {
-        return $user->hasPermissionInTeam('user.approve');
+        $team = app(Team::class);
+
+        return $user->hasPermissionInTeam('user.approve', $team) || $user->hasRole('admin');
     }
 }
