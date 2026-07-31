@@ -238,5 +238,11 @@ span.flatpickr-weekday {
     @apply rounded-r-xl border-r-2 border-indigo-500 !important;
 }
 
+/* Alpine needs this rule to exist for x-cloak to do anything: without it, every element
+   waiting on x-show flashes into view for the moment before Alpine boots. */
+[x-cloak] {
+    display: none !important;
+}
+
 
 

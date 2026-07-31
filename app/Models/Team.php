@@ -112,4 +112,26 @@ class Team extends Model
     {
         return $this->cachedSettings()?->stale_absence_deletion_days ?? TeamSetting::DEFAULT_STALE_ABSENCE_DELETION_DAYS;
     }
+
+    /**
+     * What one worked day is worth per weekday, Monday-indexed. Feeds FairnessService.
+     *
+     * @return list<float>
+     */
+    public function fairnessDayWeights(): array
+    {
+        $weights = $this->cachedSettings()?->fairness_day_weights;
+
+        // A stored array of the wrong length would silently misprice part of the week, so a
+        // partial row falls back to the default rather than being padded.
+        return is_array($weights) && count($weights) === 7
+            ? array_map('floatval', array_values($weights))
+            : TeamSetting::DEFAULT_FAIRNESS_DAY_WEIGHTS;
+    }
+
+    /** How many weeks of history the fairness ranking counts. */
+    public function fairnessWindowWeeks(): int
+    {
+        return $this->cachedSettings()?->fairness_window_weeks ?? TeamSetting::DEFAULT_FAIRNESS_WINDOW_WEEKS;
+    }
 }
