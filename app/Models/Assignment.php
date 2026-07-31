@@ -27,6 +27,7 @@ class Assignment extends Model
         'team_id',
         'user_id',
         'position_id',
+        'position_slot_id',
         'date',
         'start_time',
         'end_time',
@@ -55,6 +56,18 @@ class Assignment extends Model
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class);
+    }
+
+    /**
+     * Which row of the day's plan this person stands in — null until a manager places them.
+     *
+     * Distinct from `position()` on purpose: a day can offer the same position several times
+     * (bufet 1, bufet 2), so the slot says *which* bufet, while `position_id` says what the work
+     * was and survives the slot being deleted.
+     */
+    public function positionSlot(): BelongsTo
+    {
+        return $this->belongsTo(PositionSlot::class);
     }
 
     /** The admin who assigned this person. Null when they signed themselves up. */

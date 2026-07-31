@@ -20,10 +20,24 @@ class SetCurrentTeam
 {
     /**
      * @param  Closure(Request): (Response)  $next
+     * @param  'optional'|null  $mode  Public routes still render the authenticated navigation,
+     *                                 whose entries are gated on team-scoped permissions. They
+     *                                 pass `optional` to get the team established when there is
+     *                                 one, while staying reachable for guests and for a user who
+     *                                 belongs to no cinema yet.
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, ?string $mode = null): Response
     {
+        $optional = $mode === 'optional';
+
         $user = $request->user();
+
+        if (! $user) {
+            abort_if(! $optional, 403, 'Nepatríš do žiadneho kina.');
+
+            return $next($request);
+        }
+
         $team = $user->currentTeam;
 
         // A stale or unset current_team_id falls back to any approved membership, and the
@@ -36,7 +50,11 @@ class SetCurrentTeam
             }
         }
 
-        abort_if(! $team instanceof Team, 403, 'Nepatríš do žiadneho kina.');
+        if (! $team instanceof Team) {
+            abort_if(! $optional, 403, 'Nepatríš do žiadneho kina.');
+
+            return $next($request);
+        }
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($team->getKey());
 

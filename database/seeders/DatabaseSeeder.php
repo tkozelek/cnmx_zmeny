@@ -119,7 +119,44 @@ class DatabaseSeeder extends Seeder
             'team.update',
         ];
 
-        $allPermissions = array_merge($absencePermissions, $userPermissions, $teamPermissions);
+        /**
+         * These were checked by AssignmentPolicy/MediaPolicy but never seeded — they only
+         * worked because hasPermissionInTeam() bypasses the check entirely for admin and
+         * manager. Seeding them for real means that bypass stops being load-bearing.
+         *
+         * `assignment.create` and `assignment.delete` deliberately stay off the employee role:
+         * both act as lock overrides (see AssignmentPolicy::create), so granting them would let
+         * an employee sign up for a frozen week.
+         */
+        $assignmentPermissions = [
+            'assignment.create',
+            'assignment.delete',
+            'assignment.lock',
+            'assignment.assign-position',
+        ];
+
+        $mediaPermissions = [
+            'media.view',
+            'media.create',
+            'media.update',
+            'media.delete',
+        ];
+
+        $positionPermissions = [
+            'position.view-any',
+            'position.create',
+            'position.update',
+            'position.delete',
+        ];
+
+        $allPermissions = array_merge(
+            $absencePermissions,
+            $userPermissions,
+            $teamPermissions,
+            $assignmentPermissions,
+            $mediaPermissions,
+            $positionPermissions,
+        );
 
         foreach ($allPermissions as $permissionName) {
             Permission::findOrCreate($permissionName, 'web');

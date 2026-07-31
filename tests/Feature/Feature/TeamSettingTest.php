@@ -35,6 +35,8 @@ class TeamSettingTest extends TestCase
                 'week_lookahead' => 6,
                 'absence_deadline_days' => 1,
                 'stale_absence_deletion_days' => 45,
+                'fairness_day_weights' => [1, 1, 1, 1, 1.5, 2, 2],
+                'fairness_window_weeks' => 8,
             ])
             ->assertRedirect()
             ->assertSessionHas('message');
@@ -43,7 +45,12 @@ class TeamSettingTest extends TestCase
         $this->assertDatabaseHas('team_settings', [
             'team_id' => $team->id,
             'stale_absence_deletion_days' => 45,
+            'fairness_window_weeks' => 8,
         ]);
+
+        // Stored as numbers, not the strings a form posts — FairnessService indexes straight
+        // into this array.
+        $this->assertSame([1.0, 1.0, 1.0, 1.0, 1.5, 2.0, 2.0], $team->fresh()->fairnessDayWeights());
     }
 
     public function test_user_with_view_only_permission_sees_disabled_fields(): void
