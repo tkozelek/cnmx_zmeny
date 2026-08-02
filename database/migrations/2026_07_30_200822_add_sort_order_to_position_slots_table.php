@@ -10,8 +10,8 @@ return new class extends Migration
      * Per-day ordering for the rozpis rows.
      *
      * `positions.sort_order` is the cinema-wide default order, so dragging Thursday's rows into a
-     * new order would silently reorder every other day too. A day's layout is its own thing — the
-     * reference schedule lists positions in a different order on Thursday than on Friday — so the
+     * new order would silently reorder every other day too. A day's layout is its own thing - the
+     * reference schedule lists positions in a different order on Thursday than on Friday - so the
      * order belongs on the slot.
      *
      * Existing rows default to 0, which keeps them on the position's default order until somebody

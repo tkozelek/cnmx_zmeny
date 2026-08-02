@@ -31,7 +31,7 @@ class UserController extends Controller
 
     /**
      * Create an account, attach it to this team already approved, and email a
-     * set-your-password link. If the mail fails the whole thing is rolled back — a user who
+     * set-your-password link. If the mail fails the whole thing is rolled back - a user who
      * never gets the link cannot log in and cannot be told why.
      */
     public function store(StoreUserRequest $request, Team $team): RedirectResponse
@@ -82,8 +82,8 @@ class UserController extends Controller
     /**
      * Deactivate, never delete.
      *
-     * `shifts.user_id` and `rates.user_id` are RESTRICT on purpose — payroll history must
-     * survive — so a real delete would fail for anyone who has ever worked. Deactivating
+     * `shifts.user_id` and `rates.user_id` are RESTRICT on purpose - payroll history must
+     * survive - so a real delete would fail for anyone who has ever worked. Deactivating
      * matches what the schema is built for, and `is_active = false` is exactly what the
      * legacy "blocked" role meant.
      */

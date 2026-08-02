@@ -27,7 +27,7 @@ class UserFactory extends Factory
         ];
     }
 
-    /** Blocked — the state the legacy "zablokovany" role stood for. */
+    /** Blocked - the state the legacy "zablokovany" role stood for. */
     public function inactive(): static
     {
         return $this->state(['is_active' => false]);
@@ -47,7 +47,7 @@ class UserFactory extends Factory
             });
     }
 
-    /** Signed up but not yet let in — the legacy "neovereny" role. */
+    /** Signed up but not yet let in - the legacy "neovereny" role. */
     public function pendingIn(Team $team): static
     {
         return $this->afterCreating(function (User $user) use ($team): void {

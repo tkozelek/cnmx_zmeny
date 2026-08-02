@@ -39,7 +39,7 @@ return new class extends Migration
             $table->string('reason', 500)->nullable();
             $table->timestamps();
 
-            // "Who is away in this range for this team" — equality on team_id, then
+            // "Who is away in this range for this team" - equality on team_id, then
             // both range bounds. user_id must NOT sit in the middle here: it is
             // unbound in that query and would break date_from as a range bound.
             $table->index(['team_id', 'date_from', 'date_to']);

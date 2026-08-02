@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
  * this runs the plan is a draft only the manager can see, so half-finished days never reach the
  * people who have to turn up for them.
  *
- * Withdrawing is a plain undo — the plan goes back to draft and the read-only page stops
+ * Withdrawing is a plain undo - the plan goes back to draft and the read-only page stops
  * answering for everyone but the manager. Nothing is deleted, so republishing is one click.
  */
 class RozpisPublishController extends Controller
@@ -34,7 +34,7 @@ class RozpisPublishController extends Controller
 
         return $this->back(
             $lock->week_start->toDateString(),
-            'Rozpis zverejnený — zamestnanci ho už vidia.',
+            'Rozpis zverejnený - zamestnanci ho už vidia.',
             'fa fa-bullhorn',
         );
     }
@@ -56,7 +56,7 @@ class RozpisPublishController extends Controller
      * The week's lock row, which is also what publication hangs off.
      *
      * A missing row means the week was never locked, and an unlocked week has no rozpis to
-     * publish — 404 rather than silently creating a lock as a side effect of publishing.
+     * publish - 404 rather than silently creating a lock as a side effect of publishing.
      */
     private function lockFor(Request $request, Team $team, string $date): WeekLock
     {

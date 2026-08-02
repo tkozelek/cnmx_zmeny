@@ -103,7 +103,7 @@ class AbsenceTest extends TestCase
 
     /**
      * Past the ~15-minute just-made-a-mistake grace period, a still-active absence can no
-     * longer be deleted outright — it must be cancelled (ended) first.
+     * longer be deleted outright - it must be cancelled (ended) first.
      */
     public function test_an_active_absence_past_the_creation_grace_period_cannot_be_deleted_directly(): void
     {
@@ -175,7 +175,7 @@ class AbsenceTest extends TestCase
 
     /**
      * A future-dated absence cancelled today is inactive the moment it's cancelled, not on its
-     * original (still future) date_to — so the retention period must be measured from the
+     * original (still future) date_to - so the retention period must be measured from the
      * cancellation. If it were wrongly measured from the still-far-future date_to, the diff
      * would be ~30 days and this absence would incorrectly already clear a 5-day retention.
      */
@@ -207,7 +207,7 @@ class AbsenceTest extends TestCase
         $this->assertModelExists($absence);
     }
 
-    /** 0 means no waiting — an inactive absence is deletable as soon as it goes inactive. */
+    /** 0 means no waiting - an inactive absence is deletable as soon as it goes inactive. */
     public function test_zero_stale_absence_deletion_days_means_no_limit(): void
     {
         $team = $this->tenant();
@@ -231,7 +231,7 @@ class AbsenceTest extends TestCase
 
     /**
      * A manager/admin (viewer of the all-absences table) can delete any INACTIVE absence
-     * regardless of the retention period, but never an active one directly — they have to
+     * regardless of the retention period, but never an active one directly - they have to
      * end it first, same requirement as the owner.
      */
     public function test_a_manager_can_delete_inactive_but_not_active_absences_of_others(): void
@@ -269,7 +269,7 @@ class AbsenceTest extends TestCase
 
     /**
      * A manager/admin deleting someone ELSE's inactive absence bypasses the retention period
-     * entirely — that's the point of the elevated 'absence.manage'/'absence.delete-inactive'
+     * entirely - that's the point of the elevated 'absence.manage'/'absence.delete-inactive'
      * permission. The team's default retention (30 days) would normally block this.
      */
     public function test_a_manager_bypasses_the_retention_period_on_someone_elses_absence(): void
@@ -294,7 +294,7 @@ class AbsenceTest extends TestCase
 
     /**
      * The bug this test guards: an admin deleting their OWN cancelled absence must not get the
-     * manager "can delete anyone's absence" branch confused with a retention-period bypass —
+     * manager "can delete anyone's absence" branch confused with a retention-period bypass -
      * it's still their own absence, still subject to the same wait as anyone else's.
      */
     public function test_an_admin_cannot_bypass_the_retention_period_on_their_own_absence(): void
@@ -317,7 +317,7 @@ class AbsenceTest extends TestCase
         $this->assertModelExists($absence);
     }
 
-    /** A manager/admin's reach over someone else's absence is delete-when-inactive only — never ending it for them. */
+    /** A manager/admin's reach over someone else's absence is delete-when-inactive only - never ending it for them. */
     public function test_a_manager_cannot_end_someone_elses_active_absence(): void
     {
         $team = $this->tenant();

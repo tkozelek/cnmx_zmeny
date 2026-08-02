@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * A row here means that week is frozen for that team. Unlocking deletes the row.
  *
- * This is all that survives of the legacy `weeks` table — weeks themselves are computed
+ * This is all that survives of the legacy `weeks` table - weeks themselves are computed
  * from team_settings.week_start_day, so there is nothing to pre-generate.
  */
 class WeekLock extends Model
@@ -60,7 +60,7 @@ class WeekLock extends Model
     /**
      * The single lock check, used by both policies and the admin UI.
      *
-     * The team is passed explicitly, so the tenant global scope is dropped — otherwise
+     * The team is passed explicitly, so the tenant global scope is dropped - otherwise
      * asking about another team (console, seeder, tests) would silently answer "no".
      */
     public static function locked(int $teamId, CarbonInterface|string $weekStart): bool
@@ -71,7 +71,7 @@ class WeekLock extends Model
     }
 
     /**
-     * The lock row itself, for the callers that need more than "is it locked" — publishing hangs
+     * The lock row itself, for the callers that need more than "is it locked" - publishing hangs
      * off it. Null when the week was never locked, which is also the answer to "is the rozpis
      * published": there is no rozpis before there is a lock.
      */
@@ -82,7 +82,7 @@ class WeekLock extends Model
             ->first();
     }
 
-    /** Same team-agnostic lookup both statics need — see locked() for why the scope is dropped. */
+    /** Same team-agnostic lookup both statics need - see locked() for why the scope is dropped. */
     public function scopeForTeamWeek(Builder $query, int $teamId, CarbonInterface|string $weekStart): Builder
     {
         return $query->withoutGlobalScope('team')

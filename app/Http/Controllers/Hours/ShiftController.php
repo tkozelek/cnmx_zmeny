@@ -48,7 +48,7 @@ class ShiftController extends Controller
         return response()->json($shifts);
     }
 
-    /** Save a whole month at once — the form is a month grid. */
+    /** Save a whole month at once - the form is a month grid. */
     public function store(StoreShiftsRequest $request): JsonResponse
     {
         $validated = $request->validated();

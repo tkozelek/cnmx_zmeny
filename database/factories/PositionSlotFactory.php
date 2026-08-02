@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class PositionSlotFactory extends Factory
 {
     /**
-     * The team comes from the position, never from a second Team factory — the
+     * The team comes from the position, never from a second Team factory - the
      * (team_id, position_id) composite foreign key correctly rejects a mismatched pair, and
      * that reads as a baffling test failure. Same reasoning as AssignmentFactory::onPosition().
      *

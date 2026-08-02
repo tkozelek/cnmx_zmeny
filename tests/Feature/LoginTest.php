@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Logging in, and — mostly — the messages shown when it does not work. Every rejection has to
+ * Logging in, and - mostly - the messages shown when it does not work. Every rejection has to
  * say something accurate and say it on the login page.
  */
 class LoginTest extends TestCase
@@ -57,7 +57,7 @@ class LoginTest extends TestCase
         $this->from(route('login'))
             ->post(route('login.auth'), ['email' => $user->email, 'password' => 'wrong-password']);
 
-        // Not merely flashed — actually visible when the page comes back.
+        // Not merely flashed - actually visible when the page comes back.
         $this->get(route('login'))
             ->assertOk()
             ->assertSee('Nesprávny email alebo heslo.');

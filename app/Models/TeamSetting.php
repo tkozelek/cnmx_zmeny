@@ -14,7 +14,7 @@ class TeamSetting extends Model
     use BelongsToTeam;
 
     /**
-     * Bust Team::cachedSettings() on every save — whatever wrote the change (the settings
+     * Bust Team::cachedSettings() on every save - whatever wrote the change (the settings
      * page, a seeder, a test), not just the one call site that remembers to invalidate.
      */
     protected static function booted(): void
@@ -22,7 +22,7 @@ class TeamSetting extends Model
         static::saved(fn (self $settings) => Cache::forget("team:{$settings->team_id}:settings"));
     }
 
-    /** Thursday — the legacy hardcoded start of the work week. */
+    /** Thursday - the legacy hardcoded start of the work week. */
     public const int DEFAULT_WEEK_START_DAY = 3;
 
     public const int DEFAULT_WEEK_LOOKAHEAD = 5;
@@ -36,7 +36,7 @@ class TeamSetting extends Model
      *
      * Above 1.0 = hard to fill, so working it earns more credit. Below 1.0 = sought after, so it
      * earns less. Friday is the problem day nobody volunteers for; the weekend is popular, which
-     * is why it sits *below* baseline rather than above it — taking the shifts everybody wants
+     * is why it sits *below* baseline rather than above it - taking the shifts everybody wants
      * moves you up the queue for the next Friday.
      *
      * @var list<float>

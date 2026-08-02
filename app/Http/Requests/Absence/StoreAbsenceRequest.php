@@ -33,7 +33,7 @@ class StoreAbsenceRequest extends FormRequest
     /**
      * The submission deadline: an absence must be reported at least
      * `team_settings.absence_deadline_days` before the first day it covers.
-     * Admins and managers are exempt — they fix things after the fact.
+     * Admins and managers are exempt - they fix things after the fact.
      */
     public function after(): array
     {
@@ -65,7 +65,7 @@ class StoreAbsenceRequest extends FormRequest
 
     /**
      * An open-ended recurring absence ("every Tuesday, indefinitely") is stored with the
-     * FOREVER sentinel rather than a null date_to — see the Absence model for why.
+     * FOREVER sentinel rather than a null date_to - see the Absence model for why.
      */
     protected function prepareForValidation(): void
     {

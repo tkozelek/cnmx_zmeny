@@ -64,7 +64,7 @@
                                  Saves on change, so there is no form and no submit button. --}}
                             <div x-data="slotTimePicker({{ $row['slot']->id }}, @js($row['time']))" class="shrink-0">
                                 <input x-ref="input" type="text" readonly
-                                       placeholder="+ čas" title="Čas nástupu — kliknutím zmeníte"
+                                       placeholder="+ čas" title="Čas nástupu - kliknutím zmeníte"
                                        class="w-[3.75rem] cursor-pointer rounded bg-neutral-800/80 px-1.5 py-0.5 text-center text-[0.7rem] font-semibold tabular-nums text-neutral-300 transition hover:bg-neutral-700 hover:text-white focus:outline-none focus:ring-1 focus:ring-sky-500">
                             </div>
                         @elseif($row['time'])
@@ -144,7 +144,7 @@
                         {{-- AI draft: dashed and muted until the manager accepts it. Nothing is
                              written to `assignments` while it looks like this. --}}
                         <div class="flex items-center justify-between gap-1.5 rounded border border-dashed border-violet-500/50 bg-violet-500/5 px-2 py-1 text-sm">
-                            <span class="min-w-0 truncate text-violet-300/90" title="AI návrh — nie je uložené">
+                            <span class="min-w-0 truncate text-violet-300/90" title="AI návrh - nie je uložené">
                                 <i class="fa-solid fa-wand-magic-sparkles text-[0.6rem] opacity-70"></i>
                                 {{ $row['suggestion']->user }}
                             </span>
@@ -156,11 +156,21 @@
                                 <i class="fa-solid fa-check text-[0.65rem]"></i>
                             </button>
                         </div>
+                    @elseif($this->canBuild && $row['slot']->position->is_manager && $this->leadershipRoster->isNotEmpty())
+                        {{-- The vedúci row picks from who may lead a shift, not from who signed
+                             up: leadership does not write itself into the daily pool. --}}
+                        <select wire:change="placeLeader($event.target.value, {{ $row['slot']->id }})"
+                                class="w-full rounded border border-violet-500/30 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-sky-500 focus:outline-none">
+                            <option value="">- vybrať vedúceho -</option>
+                            @foreach($this->leadershipRoster as $leader)
+                                <option value="{{ $leader->id }}">{{ $leader }}</option>
+                            @endforeach
+                        </select>
                     @elseif($this->canBuild && $this->unassignedPool->isNotEmpty())
                         {{-- Keyboard and touch path to the same server method the drag calls. --}}
                         <select wire:change="place($event.target.value, {{ $row['slot']->id }})"
                                 class="w-full rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-sky-500 focus:outline-none">
-                            <option value="">— priradiť —</option>
+                            <option value="">- priradiť -</option>
                             @foreach($this->unassignedPool as $candidate)
                                 <option value="{{ $candidate->id }}">{{ $candidate->user }}</option>
                             @endforeach
@@ -204,7 +214,7 @@
         </div>
     @endif
 
-    {{-- Add a position to this day. The same position may be added more than once — bufet 1, 2, 3. --}}
+    {{-- Add a position to this day. The same position may be added more than once - bufet 1, 2, 3. --}}
     @if($this->canBuild && $this->availablePositions->isNotEmpty())
         <form wire:submit="addSlot" class="flex items-center gap-1 border-t border-neutral-800/80 px-2.5 py-2">
             <select wire:model="newPositionId"
@@ -255,7 +265,7 @@
 
                     @if($this->isHardToStaff)
                         <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-[0.65rem] font-semibold text-amber-400"
-                              title="Kto je na ťahu — vyššie číslo znamená, že je na rade skôr">
+                              title="Kto je na ťahu - vyššie číslo znamená, že je na rade skôr">
                             {{ number_format($this->statsFor($assignment->user_id)['priorityScore'], 1) }}
                         </span>
                     @endif

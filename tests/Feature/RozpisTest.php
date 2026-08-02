@@ -123,7 +123,7 @@ class RozpisTest extends TestCase
 
     /**
      * The point of slots: a busy Friday needs three people on the bufet, which is three slots of
-     * one position — not three positions called "Bufet", "Bufet 2", "Bufet 3".
+     * one position - not three positions called "Bufet", "Bufet 2", "Bufet 3".
      */
     public function test_one_position_can_be_offered_several_times_in_a_day(): void
     {
@@ -160,7 +160,7 @@ class RozpisTest extends TestCase
     }
 
     /**
-     * A row's time is editable after the fact, and whoever is standing in it moves with it —
+     * A row's time is editable after the fact, and whoever is standing in it moves with it -
      * they took those times from the slot in the first place.
      */
     public function test_editing_a_slot_time_moves_its_occupant_too(): void
@@ -222,7 +222,7 @@ class RozpisTest extends TestCase
         $this->assertDatabaseHas('position_slots', ['id' => $slot->id, 'start_time' => '16:00:00']);
     }
 
-    /** Copying one row to chosen days — "I built Thursday's bufet, put it on Friday too". */
+    /** Copying one row to chosen days - "I built Thursday's bufet, put it on Friday too". */
     public function test_a_single_slot_copies_onto_the_days_the_manager_picks(): void
     {
         $team = $this->tenant();
@@ -276,7 +276,7 @@ class RozpisTest extends TestCase
         $this->assertDatabaseMissing('position_slots', ['date' => $farAway]);
     }
 
-    /** Copy is additive — it must never clobber a day the manager already built. */
+    /** Copy is additive - it must never clobber a day the manager already built. */
     public function test_copying_a_layout_leaves_existing_slots_alone(): void
     {
         $team = $this->tenant();
@@ -318,7 +318,7 @@ class RozpisTest extends TestCase
             ->assertSessionHas('message', 'Najprv zamknite týždeň.');
     }
 
-    /** Renders the page and all seven day components — a Blade typo would otherwise only show in the browser. */
+    /** Renders the page and all seven day components - a Blade typo would otherwise only show in the browser. */
     public function test_the_builder_renders_the_locked_week(): void
     {
         $team = $this->tenant();
@@ -419,7 +419,7 @@ class RozpisTest extends TestCase
     /**
      * Rows render in ascending sort_order.
      *
-     * Asserting the *labels* is not enough — they are numbered by display position, so "Bufet 1,
+     * Asserting the *labels* is not enough - they are numbered by display position, so "Bufet 1,
      * Bufet 2, Bufet 3" comes out right even when the rows are backwards. This pins which slot is
      * actually first, which is what a reversed sort breaks.
      */
@@ -479,7 +479,7 @@ class RozpisTest extends TestCase
     }
 
     /**
-     * The edit history: every change to the week is attributable, and survives its own subject —
+     * The edit history: every change to the week is attributable, and survives its own subject -
      * "who deleted the Thursday bufet" is exactly what the panel exists to answer.
      */
     public function test_changes_to_the_week_are_recorded_with_who_made_them(): void

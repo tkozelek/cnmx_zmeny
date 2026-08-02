@@ -26,13 +26,13 @@
                     @if($publishedAt)
                         <p class="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
                             <i class="fa-solid fa-circle-check text-[0.7rem]"></i>
-                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }} — zamestnanci rozpis vidia,
+                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }} - zamestnanci rozpis vidia,
                             ďalšie úpravy sa prejavia okamžite.
                         </p>
                     @else
                         <p class="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-amber-400">
                             <i class="fa-solid fa-pen-ruler text-[0.7rem]"></i>
-                            Pracovná verzia — zamestnanci ju zatiaľ nevidia.
+                            Pracovná verzia - zamestnanci ju zatiaľ nevidia.
                         </p>
                     @endif
                 </div>
@@ -50,7 +50,7 @@
                             title="Kliknutím vyberte týždeň"
                             class="inline-flex h-11 items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-5 text-base font-bold tracking-wide text-neutral-100 transition hover:border-neutral-700 hover:text-white">
                         <i class="fa-regular fa-calendar text-neutral-400"></i>
-                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}</span>
+                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} - {{ $weekEnd->format('d.m.Y') }}</span>
                         <i class="fa-solid fa-chevron-down text-xs text-neutral-500"></i>
                     </button>
                     <input x-ref="input" type="text" class="sr-only" tabindex="-1" aria-hidden="true">
@@ -74,6 +74,15 @@
                         <i class="fa-solid fa-eye text-xs"></i>
                         Náhľad
                     </a>
+
+                    @if($history->isNotEmpty())
+                        <button type="button" onclick="document.getElementById('rozpis-history').showModal()"
+                                title="Kto čo v tomto týždni zmenil"
+                                class="inline-flex h-11 items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm font-semibold text-neutral-300 transition hover:border-neutral-700 hover:text-white">
+                            <i class="fa-solid fa-clock-rotate-left text-xs"></i>
+                            História
+                        </button>
+                    @endif
 
                     {{-- Week-wide draft. Lives here rather than in a day card because the point of
                          it is the days seeing each other. --}}
@@ -117,12 +126,12 @@
                         <i class="fa-solid fa-chevron-right text-[0.6rem] text-neutral-500 transition-transform group-open:rotate-90"></i>
                         <i class="fa-solid fa-scale-balanced text-[0.7rem] text-sky-400"></i>
                         Odporúčané rozdelenie dní
-                        <span class="font-normal text-neutral-500">— koľko zmien by mal tento týždeň dostať kto</span>
+                        <span class="font-normal text-neutral-500">- koľko zmien by mal tento týždeň dostať kto</span>
                     </summary>
 
                     <div class="overflow-x-auto border-t border-neutral-800/80 px-4 py-3">
                         <p class="mb-2.5 text-[0.7rem] leading-relaxed text-neutral-500">
-                            Vychádza z toho, na koľko dní sa človek zapísal — kto je k dispozícii viac, dostane viac —
+                            Vychádza z toho, na koľko dní sa človek zapísal - kto je k dispozícii viac, dostane viac -
                             a z poradia spravodlivosti, ktoré rozdiel medzi rovnako dostupnými ľuďmi nakloní
                             v prospech toho, kto je viac na ťahu. Nikdy neodporučí viac dní, než na koľko sa zapísal.
                             Je to odporúčanie, nie pravidlo.
@@ -160,46 +169,6 @@
                 </details>
             @endif
 
-            {{-- Edit history for this week. Same collapsed treatment as the workload table: needed
-                 when something looks wrong, in the way the rest of the time. --}}
-            @if($history->isNotEmpty())
-                <details class="group rounded-lg border border-neutral-800 bg-neutral-900">
-                    <summary class="flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-xs font-semibold text-neutral-300 transition hover:text-white">
-                        <i class="fa-solid fa-chevron-right text-[0.6rem] text-neutral-500 transition-transform group-open:rotate-90"></i>
-                        <i class="fa-solid fa-clock-rotate-left text-[0.7rem] text-sky-400"></i>
-                        História zmien
-                        <span class="font-normal text-neutral-500">— kto čo v tomto týždni zmenil</span>
-                    </summary>
-
-                    <div class="max-h-72 overflow-y-auto border-t border-neutral-800/80 px-4 py-3">
-                        <ul class="flex flex-col">
-                            @foreach($history as $entry)
-                                @php
-                                    $what = class_basename($entry->subject_type) === 'Assignment' ? 'zaradenie' : 'pozíciu v dni';
-                                    $verb = ['created' => 'pridal', 'updated' => 'upravil', 'deleted' => 'zmazal'][$entry->event] ?? $entry->event;
-                                @endphp
-
-                                <li @class([
-                                    'flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 px-1.5 py-1.5 text-xs',
-                                    'bg-neutral-950/25' => $loop->index % 2 === 1,
-                                ])>
-                                    <span class="font-semibold text-neutral-200">{{ $entry->causer ?? 'Systém' }}</span>
-                                    <span class="text-neutral-400">{{ $verb }} {{ $what }}</span>
-
-                                    @if($day = data_get($entry->properties, 'date'))
-                                        <span class="text-neutral-500">({{ \Carbon\CarbonImmutable::parse($day)->format('d.m.') }})</span>
-                                    @endif
-
-                                    <span class="ml-auto shrink-0 tabular-nums text-[0.7rem] text-neutral-600">
-                                        {{ $entry->created_at->format('d.m. H:i') }}
-                                    </span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </details>
-            @endif
-
             @if($positions->isEmpty())
                 <x-empty-state message="Kino nemá zatiaľ žiadne aktívne pozície." icon="fa-list-check">
                     Najprv si <a href="{{ route('positions.index') }}" class="font-semibold text-sky-400 hover:underline">definujte pozície</a>, potom sa dá zostaviť rozpis.
@@ -221,4 +190,5 @@
     </div>
 
     @include('rozpis._guide')
+    @include('rozpis._history')
 </x-layout>

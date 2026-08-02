@@ -39,7 +39,7 @@ class UpdateTeamSettingRequest extends FormRequest
     }
 
     /**
-     * Number inputs arrive as strings, and the `array` cast would store them as strings —
+     * Number inputs arrive as strings, and the `array` cast would store them as strings -
      * leaving the JSON column's contents dependent on how the row happened to be written.
      */
     protected function passedValidation(): void

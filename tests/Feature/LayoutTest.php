@@ -37,7 +37,7 @@ class LayoutTest extends TestCase
             ->assertSee('Používatelia');
     }
 
-    /** A guest keeps reading the help page — it documents how to register. */
+    /** A guest keeps reading the help page - it documents how to register. */
     public function test_a_guest_may_still_read_the_help_page(): void
     {
         $this->get(route('help'))

@@ -25,7 +25,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * it and pin it up, so the geometry is the deliverable.
  *
  * "Zoznam" is the same week as one flat row per shift, with a filter on every column. A poster
- * cannot answer "when does Kozelek work this week" — that is what the second sheet is for.
+ * cannot answer "when does Kozelek work this week" - that is what the second sheet is for.
  *
  * Distinct from WeeklyScheduleExport, which exports the *signup* stage: who put their name down,
  * before anyone was placed on a position.
@@ -60,7 +60,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
     private const MAX_BODY_ROWS = self::BAND_HEIGHT - 2;
 
     /**
-     * One palette, so both sheets read as one document. Deliberately light — this gets printed,
+     * One palette, so both sheets read as one document. Deliberately light - this gets printed,
      * often in greyscale, where saturated fills turn into unreadable grey blocks.
      */
     private const INK = 'FF1F3864';
@@ -117,7 +117,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
      */
     public function columnWidths(): array
     {
-        // Taken from the reference file — E is the narrow gutter between the two blocks.
+        // Taken from the reference file - E is the narrow gutter between the two blocks.
         return [
             'A' => 19.7, 'B' => 17.7, 'C' => 14.9, 'D' => 18.7,
             'E' => 4,
@@ -156,7 +156,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
     /**
      * One day block: two header rows, then a row per position with its substitutes alongside.
      *
-     * Position rows are printed whether or not anybody stands in them — an empty "bufet 3" is the
+     * Position rows are printed whether or not anybody stands in them - an empty "bufet 3" is the
      * manager's reminder that the day is short, and the reference sheet shows exactly that.
      *
      * @param  array<int, array<int, string>>  $grid
@@ -195,7 +195,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
             if (isset($rows[$i])) {
                 // An em dash rather than a blank: an unfilled row must read as "nobody yet", not
                 // as a cell somebody forgot to write to.
-                $grid[$row][$column] = $rows[$i]['name'] ?? '—';
+                $grid[$row][$column] = $rows[$i]['name'] ?? '-';
                 $grid[$row][$column + 1] = $rows[$i]['label'];
                 $grid[$row][$column + 2] = $rows[$i]['time'] ?? '';
             }
@@ -203,11 +203,11 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
             $grid[$row][$column + 3] = $substitutes[$i] ?? '';
         }
 
-        // A day taller than its block would overwrite the neighbouring one, so it is truncated —
+        // A day taller than its block would overwrite the neighbouring one, so it is truncated -
         // but never silently. The last row says what is missing, and Zoznam has all of it.
         if ($needed > self::MAX_BODY_ROWS) {
             $grid[$top + 1 + self::MAX_BODY_ROWS][$column] =
-                '+ '.($needed - self::MAX_BODY_ROWS).' ďalších — pozri hárok Zoznam';
+                '+ '.($needed - self::MAX_BODY_ROWS).' ďalších - pozri hárok Zoznam';
         }
     }
 
@@ -256,7 +256,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
             'font' => ['size' => 11],
         ]);
 
-        // The day's headline. Amber when the day still has an empty position — one glance across
+        // The day's headline. Amber when the day still has an empty position - one glance across
         // the printed page then shows which days need work.
         $sheet->getStyle($first.$startRow.':'.$last.$startRow)->applyFromArray([
             'font' => ['bold' => true, 'size' => 12, 'color' => ['argb' => 'FFFFFFFF']],
@@ -311,7 +311,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
         $sheet->getStyle($times.($startRow + 2).':'.$times.$endRow)
             ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-        // Substitutes are context, not the plan — quieter than the rows they sit beside.
+        // Substitutes are context, not the plan - quieter than the rows they sit beside.
         $spares = $this->columnLetter($column + 3);
         $sheet->getStyle($spares.($startRow + 2).':'.$spares.$endRow)->applyFromArray([
             'font' => ['size' => 10, 'italic' => true, 'color' => ['argb' => 'FF7F7F7F']],
@@ -345,7 +345,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
     /**
      * The same week as one row per shift, filterable and sortable.
      *
-     * Appended here rather than as a second export class, matching WeeklyScheduleExport — the
+     * Appended here rather than as a second export class, matching WeeklyScheduleExport - the
      * sheet is a dozen lines of data and needs none of the concern plumbing.
      */
     private function appendListSheet(Worksheet $poster): void
@@ -360,16 +360,16 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
         $row = 2;
 
         foreach ($this->plan as $day) {
-            // The vedúci leads the day here even though the poster keeps them out of the body —
+            // The vedúci leads the day here even though the poster keeps them out of the body -
             // a flat list of every shift is exactly where they should still be findable.
             foreach ([...$day['managerRows'], ...$day['rows']] as $entry) {
                 $this->writeListRow(
                     $sheet, $row++, $day,
-                    $entry['group'] ?? '', $entry['label'], $entry['name'] ?? '—', $entry['time'] ?? '',
+                    $entry['group'] ?? '', $entry['label'], $entry['name'] ?? '-', $entry['time'] ?? '',
                 );
             }
 
-            // Substitutes belong here too — "who else could have covered Friday" is exactly the
+            // Substitutes belong here too - "who else could have covered Friday" is exactly the
             // kind of question the poster cannot answer.
             foreach ($day['substitutes'] as $name) {
                 $this->writeListRow($sheet, $row++, $day, '', 'náhradník', $name, '');
@@ -398,8 +398,8 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
             $sheet->getColumnDimension($column)->setWidth($width);
         }
 
-        // The three things that make it usable: a filter on every column — including Skupina, so
-        // "show me the whole bufet this week" is two clicks — and a header that stays put.
+        // The three things that make it usable: a filter on every column - including Skupina, so
+        // "show me the whole bufet this week" is two clicks - and a header that stays put.
         $sheet->setAutoFilter('A1:F'.$lastRow);
         $sheet->freezePane('A2');
 

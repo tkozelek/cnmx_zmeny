@@ -11,7 +11,7 @@ use Spatie\Permission\PermissionRegistrar;
 /**
  * Scopes a model to the team the request is acting in, and fills `team_id` on create.
  *
- * Goes on every team-owned model, but never on User — users are cross-team by design.
+ * Goes on every team-owned model, but never on User - users are cross-team by design.
  */
 trait BelongsToTeam
 {
@@ -36,8 +36,8 @@ trait BelongsToTeam
     /**
      * The team the current request acts in.
      *
-     * Spatie's registrar already holds this — SetCurrentTeam middleware puts it there
-     * so role checks resolve per team — so it is reused as the single source of truth
+     * Spatie's registrar already holds this - SetCurrentTeam middleware puts it there
+     * so role checks resolve per team - so it is reused as the single source of truth
      * instead of a second, parallel notion of "current team".
      *
      * Null outside a request (console, seeders) unless set explicitly, which leaves

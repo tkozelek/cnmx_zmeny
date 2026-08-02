@@ -15,7 +15,7 @@ use Livewire\Component;
  *
  * Holds no draft state of its own: it makes the call and hands each day its own placements over
  * an event, so the seven RozpisDay components keep owning their suggestions and the existing
- * accept/dismiss flow is reused untouched. Nothing is written here — a suggestion becomes an
+ * accept/dismiss flow is reused untouched. Nothing is written here - a suggestion becomes an
  * assignment only when the manager accepts it, through RozpisDay::place().
  */
 class RozpisWeekAi extends Component
@@ -45,7 +45,7 @@ class RozpisWeekAi extends Component
 
         $this->dispatch(
             'toast',
-            message: 'Návrh na celý týždeň: '.array_sum(array_map('count', $byDate)).' zaradení — potvrďte ich v dňoch.',
+            message: 'Návrh na celý týždeň: '.array_sum(array_map('count', $byDate)).' zaradení - potvrďte ich v dňoch.',
         );
     }
 

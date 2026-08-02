@@ -55,7 +55,7 @@ class Position extends Model
     /**
      * Where this position sorts among its peers: its group's order first, then its own.
      *
-     * Ungrouped positions go after every group rather than jumbling in among them — a cinema
+     * Ungrouped positions go after every group rather than jumbling in among them - a cinema
      * that only files some of its positions still gets a tidy sheet.
      */
     public function groupOrder(): int

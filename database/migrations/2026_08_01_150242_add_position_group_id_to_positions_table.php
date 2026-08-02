@@ -16,7 +16,7 @@ return new class extends Migration
      * `positions` carries elsewhere: MySQL refuses ON DELETE SET NULL when any column in the key
      * is NOT NULL (error 1830), and nulling this pair would mean nulling `team_id`. The team
      * pairing is held instead by PositionList's team-scoped exists rule and PositionGroup's
-     * global team scope — a group is only reachable through the current team to begin with.
+     * global team scope - a group is only reachable through the current team to begin with.
      *
      * Written to survive a re-run: the first attempt at this migration added the column and then
      * failed on the composite constraint, so on that database the column is already here.

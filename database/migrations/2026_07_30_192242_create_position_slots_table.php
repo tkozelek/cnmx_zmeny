@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * "This position is offered on this day at this time" — independent of who, if anyone,
+     * "This position is offered on this day at this time" - independent of who, if anyone,
      * ends up placed in it.
      *
      * A slot is the drop target of the rozpis builder, and what "copy positions from another
@@ -17,7 +17,7 @@ return new class extends Migration
      * who actually works.
      *
      * The 2026-07-24 rework dropped the old `plan_slots`/`plan_templates` machinery in favour
-     * of pure self-signup. This is the minimum that makes a day's layout copyable — no
+     * of pure self-signup. This is the minimum that makes a day's layout copyable - no
      * headcount requirement, no template library.
      */
     public function up(): void
@@ -37,7 +37,7 @@ return new class extends Migration
             $table->time('end_time')->nullable();
             $table->timestamps();
 
-            /** One slot per position per day — the same position twice in a day is a rename, not a slot. */
+            /** One slot per position per day - the same position twice in a day is a rename, not a slot. */
             $table->unique(['team_id', 'date', 'position_id']);
 
             // Serves the builder: one team's week of slots. Equality on team_id, range on date.

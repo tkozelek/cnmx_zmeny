@@ -20,7 +20,7 @@ use Tests\TestCase;
  * The last phase of a week: releasing the finished rozpis, and reading it.
  *
  * The rule worth pinning down is who sees a draft. A half-built plan reaching the staff is worse
- * than no plan, because people act on it — so publication, not existence, is what opens the door.
+ * than no plan, because people act on it - so publication, not existence, is what opens the door.
  */
 class RozpisPublishTest extends TestCase
 {
@@ -53,7 +53,7 @@ class RozpisPublishTest extends TestCase
             ->assertSee((string) $employee);
     }
 
-    /** Until it is published, the plan is the manager's draft — nobody else is shown it. */
+    /** Until it is published, the plan is the manager's draft - nobody else is shown it. */
     public function test_an_unpublished_rozpis_is_not_shown_to_employees(): void
     {
         $team = $this->tenant();
@@ -135,7 +135,7 @@ class RozpisPublishTest extends TestCase
     }
 
     /**
-     * Deliberately not Excel::fake() — faking skips the write, and the write is where the merged
+     * Deliberately not Excel::fake() - faking skips the write, and the write is where the merged
      * title cells, the page break and the per-block styling would blow up. This is the only place
      * a bad PhpSpreadsheet call surfaces.
      */
@@ -160,7 +160,7 @@ class RozpisPublishTest extends TestCase
         );
 
         // Symfony ASCII-folds the plain `filename` ("brigadnikov"), so the accented name only
-        // survives in the RFC 5987 `filename*` — which is the one browsers actually use.
+        // survives in the RFC 5987 `filename*` - which is the one browsers actually use.
         $this->assertStringContainsString(
             "filename*=utf-8''".rawurlencode($filename),
             $response->headers->get('content-disposition'),
@@ -170,7 +170,7 @@ class RozpisPublishTest extends TestCase
         $content = $response->streamedContent();
         $this->assertStringStartsWith('PK', $content);
 
-        // Both sheets, and the flat one actually carrying the week's shifts — the poster alone is
+        // Both sheets, and the flat one actually carrying the week's shifts - the poster alone is
         // no good for looking anything up.
         $path = tempnam(sys_get_temp_dir(), 'rozpis').'.xlsx';
         file_put_contents($path, $content);
@@ -211,7 +211,7 @@ class RozpisPublishTest extends TestCase
     }
 
     /**
-     * The grid the spreadsheet is written from — the part a reader cannot verify by eye, because
+     * The grid the spreadsheet is written from - the part a reader cannot verify by eye, because
      * the day blocks sit at fixed coordinates and a wrong offset silently overwrites a neighbour.
      */
     public function test_the_export_grid_places_each_day_where_the_printed_sheet_expects_it(): void
@@ -243,7 +243,7 @@ class RozpisPublishTest extends TestCase
     }
 
     /**
-     * The vedúci is named once, in the day's heading — not again among the ordinary positions.
+     * The vedúci is named once, in the day's heading - not again among the ordinary positions.
      *
      * They stay a real slot in the builder, so this asserts the *presentation* split rather than
      * the absence of the row: out of `rows`, into `manager`, still present in the flat sheet.

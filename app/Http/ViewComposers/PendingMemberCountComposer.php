@@ -8,7 +8,7 @@ use Illuminate\View\View;
 /**
  * Puts the "N people waiting to be approved" badge count into the layout, for admins.
  *
- * Pending means a `team_user` row with no `approved_at` — the state that used to be the
+ * Pending means a `team_user` row with no `approved_at` - the state that used to be the
  * "neovereny" role.
  *
  * ponytail: not cached. The legacy 15-minute cache key had to be invalidated from three

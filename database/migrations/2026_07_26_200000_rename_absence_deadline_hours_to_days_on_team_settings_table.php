@@ -14,7 +14,7 @@ return new class extends Migration
         });
 
         // Convert existing hour-based values instead of losing them to the column drop.
-        // Plain PHP rather than a SQL CEIL() call — SQLite (used in tests) has no such function.
+        // Plain PHP rather than a SQL CEIL() call - SQLite (used in tests) has no such function.
         foreach (DB::table('team_settings')->select('id', 'absence_deadline_hours')->get() as $row) {
             DB::table('team_settings')->where('id', $row->id)->update([
                 'absence_deadline_days' => (int) ceil($row->absence_deadline_hours / 24),

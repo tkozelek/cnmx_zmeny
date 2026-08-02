@@ -61,8 +61,8 @@ class SetCurrentTeam
         // Loaded once here so views and services do not each re-query the settings row.
         $team->loadMissing('settings');
 
-        // Bound in the container so anything downstream — controllers, form requests,
-        // services — can just type-hint Team and get the tenant, with no extra plumbing.
+        // Bound in the container so anything downstream - controllers, form requests,
+        // services - can just type-hint Team and get the tenant, with no extra plumbing.
         app()->instance(Team::class, $team);
         View::share('currentTeam', $team);
 

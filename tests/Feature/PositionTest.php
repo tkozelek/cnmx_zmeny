@@ -59,7 +59,7 @@ class PositionTest extends TestCase
     }
 
     /**
-     * Deleting a group unfiles its positions rather than taking them with it — the positions are
+     * Deleting a group unfiles its positions rather than taking them with it - the positions are
      * what assignments point at, and a heading is not worth losing history over.
      */
     public function test_deleting_a_group_keeps_its_positions(): void
@@ -80,7 +80,7 @@ class PositionTest extends TestCase
     }
 
     /**
-     * Group order beats a position's own order, and ungrouped positions sort last — this is the
+     * Group order beats a position's own order, and ungrouped positions sort last - this is the
      * ordering the rozpis and the Excel both print, so it is worth pinning here.
      */
     public function test_positions_list_grouped_with_ungrouped_last(): void

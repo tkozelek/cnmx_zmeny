@@ -100,7 +100,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Cached across requests (see CACHING.md, key `user:{id}:approved-teams`) — re-queried
+     * Cached across requests (see CACHING.md, key `user:{id}:approved-teams`) - re-queried
      * independently by middleware, every permission check, the team switcher (rendered twice,
      * desktop + mobile nav), and once per row when rendering action columns, and membership
      * approval changes rarely. Also memoized on the instance so one request never hits the

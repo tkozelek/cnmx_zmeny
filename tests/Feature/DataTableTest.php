@@ -39,7 +39,7 @@ class DataTableTest extends TestCase
     /**
      * The Stav/Akcie columns read status/team_id/user_id straight off $row rather than through
      * a registered Column, so the package's column-based SELECT projection silently drops those
-     * fields unless explicitly re-added — which made every cancelled absence render as "Aktívna"
+     * fields unless explicitly re-added - which made every cancelled absence render as "Aktívna"
      * with no action buttons at all.
      */
     public function test_absences_data_table_shows_cancelled_status_and_delete_action(): void
@@ -64,7 +64,7 @@ class DataTableTest extends TestCase
 
     /**
      * The admin table passes asManager: true, so an admin deleting their OWN inactive absence
-     * from there skips the retention wait too — unlike "Moje absencie" or the plain
+     * from there skips the retention wait too - unlike "Moje absencie" or the plain
      * absences.destroy route, which still enforce it even for an admin's own record.
      */
     public function test_admin_can_instantly_delete_their_own_inactive_absence_from_the_admin_table(): void

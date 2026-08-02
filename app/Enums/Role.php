@@ -11,16 +11,34 @@ namespace App\Enums;
 enum Role: string
 {
     case Admin = 'admin';
+    case HeadManager = 'head-manager';
     case Manager = 'manager';
+    case Supervisor = 'supervisor';
     case Employee = 'employee';
 
     public function label(): string
     {
         return match ($this) {
             self::Admin => 'Administrátor',
-            self::Manager => 'Vedúci',
+            self::HeadManager => 'Hlavný manažér',
+            self::Manager => 'Manažér',
+            self::Supervisor => 'Supervízor',
             self::Employee => 'Brigádnik',
         };
+    }
+
+    /**
+     * Everyone who outranks a brigádnik, most senior first.
+     *
+     * This is who the vedúci slot may be filled from. Deliberately a role question rather than a
+     * signup question: a manažér running Friday night does not write themselves into the pool the
+     * way a brigádnik does - they are simply on.
+     *
+     * @return list<self>
+     */
+    public static function leadership(): array
+    {
+        return [self::Admin, self::HeadManager, self::Manager, self::Supervisor];
     }
 
     /**

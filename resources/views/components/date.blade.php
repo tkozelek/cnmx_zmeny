@@ -118,7 +118,7 @@
             title="Kliknutím otvoríte kalendár"
         >
             <i class="fa-regular fa-calendar text-base sm:text-xl text-neutral-400 shrink-0 leading-none"></i>
-            <span class="min-w-0 truncate tracking-wide leading-none">{{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}</span>
+            <span class="min-w-0 truncate tracking-wide leading-none">{{ $weekStart->format('d.m.') }} - {{ $weekEnd->format('d.m.Y') }}</span>
 
             @if($locked)
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 px-2.5 py-1 text-xs font-semibold text-sky-400 shrink-0">

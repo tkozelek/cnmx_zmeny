@@ -75,7 +75,7 @@ class Kernel extends HttpKernel
         /**
          * Everything behind the login. One group instead of three aliases, because these
          * three always belong together: be logged in, be allowed in, and have a team
-         * established before any query runs — `BelongsToTeam` scopes off what
+         * established before any query runs - `BelongsToTeam` scopes off what
          * `SetCurrentTeam` puts in the registrar, so nothing team-owned may be touched
          * before it has run.
          */

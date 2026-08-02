@@ -21,7 +21,7 @@ use Throwable;
  * Optional draft overlay: asks Gemini to propose a full day's placements, which the manager then
  * accepts one at a time (or ignores).
  *
- * Two things this deliberately is not. It is not auto-fill — nothing here writes to
+ * Two things this deliberately is not. It is not auto-fill - nothing here writes to
  * `assignments`; accepting a suggestion goes through RozpisDay::place() and the same
  * AssignmentPolicy check a manual drag does. And it is not trusted: every field of the reply is
  * re-resolved against a fresh database read before the manager can even see it, because the
@@ -63,7 +63,7 @@ class AiRozpisSuggestionService
     /**
      * Propose placements for one day.
      *
-     * Returns validated, ready-to-apply pairs — or an empty list for every failure mode there
+     * Returns validated, ready-to-apply pairs - or an empty list for every failure mode there
      * is (disabled, nothing to place, network error, malformed reply, safety block, raced data).
      * A shrunken suggestion is always preferable to a partially trusted one.
      *
@@ -92,7 +92,7 @@ class AiRozpisSuggestionService
                 self::MAX_OUTPUT_TOKENS,
             );
         } catch (Throwable $e) {
-            // A billed third-party call that failed is not an application error — the manager
+            // A billed third-party call that failed is not an application error - the manager
             // simply gets no suggestion and carries on placing people by hand.
             Log::warning('AI rozpis suggestion failed.', ['exception' => $e->getMessage()]);
 
@@ -108,7 +108,7 @@ class AiRozpisSuggestionService
      * Worth its own path rather than seven suggest() calls: those cannot see each other, so each
      * one independently hands its day to whoever ranks highest, and the person at the top of the
      * queue collects a shift on every day of the week. One request sees the whole week, so it can
-     * spread the work — and it is given each person's recommended day count
+     * spread the work - and it is given each person's recommended day count
      * (FairnessService::weeklyTargets) to spread it against.
      *
      * Tokens are per person here rather than per signup, because a person spans days. Everything
@@ -133,7 +133,7 @@ class AiRozpisSuggestionService
             return [];
         }
 
-        // One token per person for the whole week — the reply says "this person, this slot", and
+        // One token per person for the whole week - the reply says "this person, this slot", and
         // the slot already carries the date.
         $salt = Str::random(32);
         $tokens = $signups->pluck('user_id')->unique()->mapWithKeys(fn (int $userId): array => [
@@ -196,7 +196,7 @@ class AiRozpisSuggestionService
         $scores = $this->scores($team);
         $targets = $this->fairness->weeklyTargets($signups, $slots->count(), $scores->all());
 
-        // Days somebody has already been placed on by hand count against their target — the model
+        // Days somebody has already been placed on by hand count against their target - the model
         // is filling the remainder of the week, not planning it from scratch.
         $alreadyPlaced = $signups->whereNotNull('position_slot_id')->countBy('user_id');
         $available = $signups->whereNull('position_id')->groupBy(
@@ -278,31 +278,31 @@ class AiRozpisSuggestionService
         accepts or rejects each one, so your job is a solid first draft, not a final decision.
 
         A slot is one row of the plan: one job, one person, on one specific day. The same job often
-        appears several times in a day — a busy Friday may need three people on the bufet, listed
+        appears several times in a day - a busy Friday may need three people on the bufet, listed
         as "Bufet 1", "Bufet 2", "Bufet 3". Those are separate slots needing separate people.
 
         # Input
 
         A single JSON object:
 
-        - `people` — the volunteers for the week, **already sorted strongest claim first**. Never
+        - `people` - the volunteers for the week, **already sorted strongest claim first**. Never
           any names; each has:
-          - `token` — an opaque identifier, the same person across every day of the week.
-          - `priorityScore` — how strong their claim is. Higher is earlier in the queue.
-          - `totalDays` — shifts worked in the recent history window; a rough proxy for experience.
-          - `avgWeight` — the average day weight they have worked. Near `highestDayWeight` means
+          - `token` - an opaque identifier, the same person across every day of the week.
+          - `priorityScore` - how strong their claim is. Higher is earlier in the queue.
+          - `totalDays` - shifts worked in the recent history window; a rough proxy for experience.
+          - `avgWeight` - the average day weight they have worked. Near `highestDayWeight` means
             they routinely take the unpopular days.
-          - `signedUpDays` — how many days this week they made themselves available for.
-          - `recommendedDays` — **how many shifts this person should get this week.** Already
+          - `signedUpDays` - how many days this week they made themselves available for.
+          - `recommendedDays` - **how many shifts this person should get this week.** Already
             balances their availability against their claim. This is your budget per person.
-          - `alreadyPlacedDays` — shifts the manager has already given them by hand this week.
+          - `alreadyPlacedDays` - shifts the manager has already given them by hand this week.
             These count against `recommendedDays`.
-        - `days` — one entry per day that still has open slots, in week order. Each has `date`,
-          `weekday`, `dayWeight` (what one shift that day is worth — high means few volunteer),
+        - `days` - one entry per day that still has open slots, in week order. Each has `date`,
+          `weekday`, `dayWeight` (what one shift that day is worth - high means few volunteer),
           `isHardToStaffDay`, `availableTokens` and `slots` (sorted earliest start first, each with
           `slot_id`, `name`, `code`, `startTime`, `isManagerRole`).
 
-        # Hard rules — a reply that breaks any of these is discarded
+        # Hard rules - a reply that breaks any of these is discarded
 
         1. Use only `token` values from `people` and only `slot_id` values from `days[].slots`,
            copied exactly.
@@ -311,7 +311,7 @@ class AiRozpisSuggestionService
            day they did not sign up for.
         3. Each `slot_id` at most once across the whole reply.
         4. At most one slot per person per day. Across the week a person may and should work
-           several days — but never two slots on the same date.
+           several days - but never two slots on the same date.
         5. Never invent a person, a slot or a day.
         6. More slots than available people on a day: leave the surplus out. Do not pad.
 
@@ -323,11 +323,11 @@ class AiRozpisSuggestionService
         reply**, and add `alreadyPlacedDays` to it. Call that their *load*. Their budget is
         `recommendedDays`.
 
-        - `load < recommendedDays` — **under-loaded. Favour this person.** They are the ones the
+        - `load < recommendedDays` - **under-loaded. Favour this person.** They are the ones the
           week still owes work to. Reach for them first.
-        - `load == recommendedDays` — **done.** They have had their share. Do not give them more
+        - `load == recommendedDays` - **done.** They have had their share. Do not give them more
           while anybody under-loaded is available for that slot.
-        - `load > recommendedDays` — **over-loaded. Penalise this person.** Only place them when a
+        - `load > recommendedDays` - **over-loaded. Penalise this person.** Only place them when a
           slot would otherwise stay empty, and prefer whoever is least far over.
 
         Somebody who already has a lot of shifts this week is *not* a good candidate for the next
@@ -345,11 +345,11 @@ class AiRozpisSuggestionService
         1. Order the days by need: `isHardToStaffDay` first, then descending `dayWeight`. These are
            the shifts nobody volunteers for, so they get the pick of the available people. An easy
            Tuesday can be filled from whoever is left.
-        2. Inside a day, work down `slots` in the given order — earliest start first.
+        2. Inside a day, work down `slots` in the given order - earliest start first.
         3. For each slot, out of the people whose token is in that day's `availableTokens`, who
            have no slot yet on that date, choose:
            a. the lowest load relative to their budget (most under-loaded first);
-           b. break ties on the higher `priorityScore` — that is what the score is for;
+           b. break ties on the higher `priorityScore` - that is what the score is for;
            c. break remaining ties on the lower `avgWeight`, so an unpopular day goes to somebody
               who has not been carrying them.
         4. `isManagerRole` slots want experience: among candidates of similar load, prefer the
@@ -361,7 +361,7 @@ class AiRozpisSuggestionService
            hard-to-staff day. That is what "benefit the ones who need it" means here: the reward is
            being scheduled fairly, not being spared the hard days.
         7. Stop when every slot is filled or no eligible person remains. People left unplaced is a
-           correct outcome — they are the week's náhradníci.
+           correct outcome - they are the week's náhradníci.
 
         # Sanity check before you answer
 
@@ -381,7 +381,7 @@ class AiRozpisSuggestionService
      * Re-resolve a week's reply against a fresh read, same contract as verify().
      *
      * The slot carries the date, so the person is matched to *their* signup on *that* day. One
-     * slot once, one person once per day — a person may legitimately appear on several days.
+     * slot once, one person once per day - a person may legitimately appear on several days.
      *
      * @param  list<array<string, mixed>>  $placements
      * @param  array<string, int>  $tokens  token -> user_id
@@ -472,7 +472,7 @@ class AiRozpisSuggestionService
             ->where('date', $date->toDateString())
             ->get()
             ->reject(fn (PositionSlot $slot): bool => $taken->contains($slot->getKey()))
-            // One closure returning an array — see RozpisService::sortSlots() for why an array of
+            // One closure returning an array - see RozpisService::sortSlots() for why an array of
             // closures silently sorts these backwards.
             ->sortBy(fn (PositionSlot $slot): array => [
                 $slot->start_time ?? '99:99:99',
@@ -600,7 +600,7 @@ class AiRozpisSuggestionService
             ))
             ->generateContent(json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
 
-        // Throws when the reply was blocked or came back without a text part — caught by
+        // Throws when the reply was blocked or came back without a text part - caught by
         // suggest(), which turns it into "no suggestion".
         $decoded = json_decode($response->text(), true);
 
@@ -641,7 +641,7 @@ class AiRozpisSuggestionService
      * The system prompt.
      *
      * Written as a full brief rather than a one-liner because the model is deciding who works
-     * where in a real workplace: it needs the domain, what each number means, and — most of all —
+     * where in a real workplace: it needs the domain, what each number means, and - most of all -
      * which rules are hard. Every hard rule below is also enforced in verify() against a fresh
      * database read; the prompt asks, the code guarantees. The soft preferences are safe to leave
      * unenforced because no answer they influence can be invalid.
@@ -658,7 +658,7 @@ class AiRozpisSuggestionService
         final decision.
 
         A slot is one row of the plan: one job, one person. The same job often appears several
-        times in a day — a busy Friday may need three people on the bufet, listed as "Bufet 1",
+        times in a day - a busy Friday may need three people on the bufet, listed as "Bufet 1",
         "Bufet 2" and "Bufet 3". Those are three separate slots with three separate `slot_id`
         values and they each need their own, different person.
 
@@ -666,27 +666,27 @@ class AiRozpisSuggestionService
 
         A single JSON object:
 
-        - `weekday`, `dayWeight`, `ordinaryDayWeight`, `highestDayWeight`, `isHardToStaffDay` —
+        - `weekday`, `dayWeight`, `ordinaryDayWeight`, `highestDayWeight`, `isHardToStaffDay` -
           `dayWeight` is what one shift on this day is worth to the cinema. A weight at or near
           `highestDayWeight` marks a day almost nobody volunteers for; `ordinaryDayWeight` is a
           routine day. When `isHardToStaffDay` is true, who gets which position matters more,
           because somebody has to be asked to take the unpopular work.
-        - `people` — the volunteers, **already sorted so the person with the strongest claim on
+        - `people` - the volunteers, **already sorted so the person with the strongest claim on
           this day comes first**. Each has:
-          - `token` — an opaque identifier. You will never see names; this is deliberate.
-          - `priorityScore` — how strong their claim is. It already combines how much they work
+          - `token` - an opaque identifier. You will never see names; this is deliberate.
+          - `priorityScore` - how strong their claim is. It already combines how much they work
             overall with how many unpopular days they have taken, so a high score means "this
             person has earned the next good slot, or is next in line to be asked". Higher is
             earlier in the queue.
-          - `totalDays` — shifts worked in the recent history window. A rough proxy for
+          - `totalDays` - shifts worked in the recent history window. A rough proxy for
             experience.
-          - `avgWeight` — the average `dayWeight` of the shifts they have worked. Near
+          - `avgWeight` - the average `dayWeight` of the shifts they have worked. Near
             `highestDayWeight` means they routinely take the unpopular days.
-        - `slots` — the still-unfilled slots, **already sorted earliest start time first**. Each
+        - `slots` - the still-unfilled slots, **already sorted earliest start time first**. Each
           has `slot_id`, `name` (numbered when the day repeats a job), `code`, `startTime` and
           `isManagerRole`.
 
-        # Hard rules — a reply that breaks any of these is discarded
+        # Hard rules - a reply that breaks any of these is discarded
 
         1. Use only `token` values that appear in `people`, copied exactly.
         2. Use only `slot_id` values that appear in `slots`, copied exactly.
@@ -700,14 +700,14 @@ class AiRozpisSuggestionService
         # How to choose
 
         1. Work down `slots` in the order given. For each, take the highest-`priorityScore`
-           person still unplaced. The given order is authoritative — do not re-derive fairness
+           person still unplaced. The given order is authoritative - do not re-derive fairness
            from the raw numbers or second-guess the ranking.
         2. Prefer a person with a high `totalDays` for a slot where `isManagerRole` is true: that
-           row runs the shift and wants someone experienced. This is a preference, not a rule —
+           row runs the shift and wants someone experienced. This is a preference, not a rule -
            never break a hard rule above to satisfy it, and if it conflicts with the queue order,
            prefer the queue.
         3. Once every slot has someone, stop. People left unplaced is a correct outcome.
-        4. If there are more people than slots, every slot must still be filled — do not leave a
+        4. If there are more people than slots, every slot must still be filled - do not leave a
            slot empty because the remaining candidates have low scores. Full coverage wins once
            the people with the strongest claims have been placed.
 
@@ -722,7 +722,7 @@ class AiRozpisSuggestionService
      * Re-resolve every field against a fresh read of the database.
      *
      * The reply is treated as a suggestion about state, never as state. Anything that does not
-     * resolve is dropped, which shrinks the suggestion — there is no partial trust, and nothing
+     * resolve is dropped, which shrinks the suggestion - there is no partial trust, and nothing
      * unverified ever reaches the manager as a clickable "Prijať".
      *
      * @param  list<array<string, mixed>>  $placements
