@@ -22,7 +22,7 @@ use RuntimeException;
 use Tests\TestCase;
 
 /**
- * The AI layer is a draft overlay, and the checking is the feature — so these tests are about
+ * The AI layer is a draft overlay, and the checking is the feature - so these tests are about
  * what leaves the app and what is refused on the way back in, not about suggestion quality.
  *
  * Every request is faked: a test suite must never make a billed API call.
@@ -127,7 +127,7 @@ class AiRozpisSuggestionTest extends TestCase
 
     /**
      * A token is only ever resolved through this request's own map, so a hash built with any
-     * other salt — which is what every other request uses — means nothing here.
+     * other salt - which is what every other request uses - means nothing here.
      */
     public function test_a_token_from_another_request_is_dropped(): void
     {
@@ -204,7 +204,7 @@ class AiRozpisSuggestionTest extends TestCase
         $team = $this->tenant();
         $date = $this->workday($team);
 
-        // Three bufet rows: one position, three slots — exactly the case that used to need
+        // Three bufet rows: one position, three slots - exactly the case that used to need
         // three numbered positions in the catalogue.
         $position = Position::factory()->create(['team_id' => $team->id, 'name' => 'Bufet']);
 
@@ -212,7 +212,7 @@ class AiRozpisSuggestionTest extends TestCase
             fn (): PositionSlot => PositionSlot::factory()->forPosition($position)->on($date)->create()
         )->values();
 
-        // Three people, none of whom has any history — every priorityScore is 0.
+        // Three people, none of whom has any history - every priorityScore is 0.
         $people = collect(range(1, 3))->map(function () use ($team, $date): User {
             $user = $this->member($team);
             $this->signUp($team, $user, $date);
@@ -280,7 +280,7 @@ class AiRozpisSuggestionTest extends TestCase
     }
 
     /**
-     * Asking is itself a manager action on a locked week — the billed call must not even be
+     * Asking is itself a manager action on a locked week - the billed call must not even be
      * attempted by someone who could not act on the answer.
      */
     public function test_asking_for_a_suggestion_is_denied_on_an_unlocked_week(): void
@@ -324,7 +324,7 @@ class AiRozpisSuggestionTest extends TestCase
         Livewire::actingAs($manager)
             ->test(RozpisDay::class, ['date' => $date])
             ->call('suggest')
-            // Still a draft at this point — nothing is written until it is accepted.
+            // Still a draft at this point - nothing is written until it is accepted.
             ->assertSet('suggestions', [['assignment_id' => $assignment->id, 'slot_id' => $slot->id]])
             ->call('acceptSuggestion', $assignment->id)
             ->assertSet('suggestions', []);

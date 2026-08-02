@@ -207,7 +207,7 @@ class PositionList extends Component
         $this->cancelGroupEdit();
         unset($this->groups, $this->positions);
 
-        $this->dispatch('toast', message: 'Skupina zmazaná — pozície ostali zachované.', type: 'error');
+        $this->dispatch('toast', message: 'Skupina zmazaná - pozície ostali zachované.', type: 'error');
     }
 
     /**
@@ -266,7 +266,7 @@ class PositionList extends Component
      * Move one position up (-1) or down (+1).
      *
      * ponytail: re-indexes the whole list on every move instead of swapping two rows. A cinema
-     * has a dozen positions, and seeded rows can share sort_order 0 — where a swap silently
+     * has a dozen positions, and seeded rows can share sort_order 0 - where a swap silently
      * does nothing. Swap just the two neighbours if this list ever grows to hundreds.
      */
     public function move(int $id, int $direction): void
@@ -294,7 +294,7 @@ class PositionList extends Component
     }
 
     /**
-     * Inactive positions stay listed — they are the whole point of "deactivated, not deleted",
+     * Inactive positions stay listed - they are the whole point of "deactivated, not deleted",
      * and they need a way back.
      *
      * @return Collection<int, Position>

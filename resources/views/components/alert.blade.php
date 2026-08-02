@@ -1,4 +1,4 @@
-{{-- An error that stays on the page, for things the user has to act on — a failed login, a
+{{-- An error that stays on the page, for things the user has to act on - a failed login, a
      blocked account. The toast in <x-flash-message> is for confirmations: it sits bottom-right
      and vanishes after three seconds, which is the wrong place and the wrong lifetime for
      "your password was wrong". --}}

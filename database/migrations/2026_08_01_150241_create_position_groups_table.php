@@ -10,7 +10,7 @@ return new class extends Migration
      * How a cinema files its positions: Bufet, Uvádzač, Manažment.
      *
      * A table rather than a string column on `positions`, because the cinema orders these
-     * itself — the printed rozpis lists bufet before uvádzač, and that order has to be editable
+     * itself - the printed rozpis lists bufet before uvádzač, and that order has to be editable
      * without touching every position. A free-text column would also make renaming a group an
      * update of every row that spelled it, and one typo a phantom group.
      *

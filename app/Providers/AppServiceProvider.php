@@ -42,18 +42,18 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Livewire's update endpoint is its own route, so it only re-runs the middleware that has
-     * been declared persistent — auth is on that list by default, our two are not.
+     * been declared persistent - auth is on that list by default, our two are not.
      *
      * Without this, the first page load is scoped to a team but every subsequent Livewire
      * action runs with no team in the registrar: `BelongsToTeam` stops filtering and
-     * `app(Team::class)` builds an empty model. That fails open — a component would read and
-     * write across every cinema — so it has to be registered explicitly.
+     * `app(Team::class)` builds an empty model. That fails open - a component would read and
+     * write across every cinema - so it has to be registered explicitly.
      */
     /**
      * Record which cinema an activity belongs to, and which day of the plan it touched.
      *
      * Copied onto the activity rather than read back off the subject, because the edits most worth
-     * auditing are the deletions — by the time anyone reads the history, that row is gone. The
+     * auditing are the deletions - by the time anyone reads the history, that row is gone. The
      * subject is still in memory here, which is the whole reason this hangs off `creating`.
      *
      * Registered once for every logged model rather than per model: activitylog v5 has no

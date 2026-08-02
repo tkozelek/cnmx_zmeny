@@ -52,7 +52,7 @@ class Team extends Model
     }
 
     /**
-     * Always present — created together with the team, so unsaved defaults never leak.
+     * Always present - created together with the team, so unsaved defaults never leak.
      */
     public function settings(): HasOne
     {
@@ -80,7 +80,7 @@ class Team extends Model
     }
 
     /**
-     * Cached across requests (see CACHING.md, key `team:{id}:settings`) — read on essentially
+     * Cached across requests (see CACHING.md, key `team:{id}:settings`) - read on essentially
      * every request (week rendering, absence create/delete checks) and changed only via the
      * team settings page. `TeamSetting`'s own `saved` hook busts this automatically.
      */

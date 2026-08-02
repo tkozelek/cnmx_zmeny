@@ -27,7 +27,7 @@ class TeamFactory extends Factory
     }
 
     /**
-     * Every team gets its settings row immediately — this is Laravel's own factory hook, so
+     * Every team gets its settings row immediately - this is Laravel's own factory hook, so
      * it runs for every `Team::factory()` with nothing to remember at the call site.
      *
      * It matters because `Team::weekStartDay()` falls back to a default when settings are

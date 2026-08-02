@@ -13,7 +13,7 @@ return new class extends Migration
      * A column on `week_locks` rather than a table of its own, for the same reason the lock is
      * a row and not a flag: a rozpis only exists for a locked week, so there is never a published
      * week without a lock row to hang the timestamp on. Unlocking deletes the row and unpublishes
-     * with it, which is the behaviour we want — a reopened week is no longer final.
+     * with it, which is the behaviour we want - a reopened week is no longer final.
      */
     public function up(): void
     {

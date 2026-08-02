@@ -16,7 +16,7 @@ use Illuminate\View\View;
 /**
  * The manager's step: turning a locked week's signups into an actual shift plan.
  *
- * Gated the opposite way to the calendar — the builder opens only *once the week is locked*,
+ * Gated the opposite way to the calendar - the builder opens only *once the week is locked*,
  * because locking is what closes self-signup. Before that there is nothing stable to assign.
  */
 class RozpisController extends Controller
@@ -31,7 +31,7 @@ class RozpisController extends Controller
         $weekStart = $this->weeks->alignFromRequest($team, $date);
 
         // Checked here rather than through a policy: the two failures need different answers.
-        // Lacking the permission is a 403, but an unlocked week is a "not yet" — the manager
+        // Lacking the permission is a 403, but an unlocked week is a "not yet" - the manager
         // is in the right place and simply has to lock first.
         abort_unless($request->user()->hasPermissionInTeam('assignment.assign-position', $team), 403);
 
@@ -55,7 +55,7 @@ class RozpisController extends Controller
     }
 
     /**
-     * The finished plan, read-only — what an employee opens to find out when they work.
+     * The finished plan, read-only - what an employee opens to find out when they work.
      *
      * Everyone in the cinema may read a published week. Before publication only the manager gets
      * in, and they see a draft banner instead: a half-built rozpis reaching the staff is worse
@@ -121,7 +121,7 @@ class RozpisController extends Controller
             ->route('rozpis.show', ['date' => $weekStart->toDateString()])
             ->with([
                 'message' => $added === 0
-                    ? 'Nepridali sa žiadne pozície — deň ich už má, alebo je zdrojový deň prázdny.'
+                    ? 'Nepridali sa žiadne pozície - deň ich už má, alebo je zdrojový deň prázdny.'
                     : "Skopírovaných pozícií: {$added}.",
                 'icon' => 'fa fa-copy',
             ]);

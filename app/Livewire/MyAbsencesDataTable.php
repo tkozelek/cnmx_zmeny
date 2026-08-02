@@ -28,7 +28,7 @@ class MyAbsencesDataTable extends DataTableComponent
             ->setFilterLayoutSlideDown()
             // The Stav/Akcie columns read fields (status, team_id, user_id, updated_at, ...) off
             // $row directly rather than through a registered Column, so the package's column-based
-            // SELECT projection would otherwise drop them — select the whole row instead of
+            // SELECT projection would otherwise drop them - select the whole row instead of
             // chasing every field the trait happens to touch.
             ->setAdditionalSelects(['absences.*'])
             ->setSearchPlaceholder('Vyhľadať v absenciách...')

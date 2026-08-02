@@ -62,7 +62,7 @@ class Assignment extends Model
     }
 
     /**
-     * Which row of the day's plan this person stands in — null until a manager places them.
+     * Which row of the day's plan this person stands in - null until a manager places them.
      *
      * Distinct from `position()` on purpose: a day can offer the same position several times
      * (bufet 1, bufet 2), so the slot says *which* bufet, while `position_id` says what the work

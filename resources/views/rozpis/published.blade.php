@@ -1,7 +1,7 @@
 <x-layout :title="$title">
     {{-- The finished plan, read-only. Deliberately has no drag handles, no selects and no forms:
          everything here is text, so there is nothing to accidentally change. Mirrors the printed
-         Excel sheet column for column — meno / pozícia / čas nástupu / náhradníci. --}}
+         Excel sheet column for column - meno / pozícia / čas nástupu / náhradníci. --}}
     <div class="w-full px-4 py-6 sm:px-6 2xl:px-10">
         <div class="flex flex-col gap-5">
 
@@ -15,12 +15,12 @@
                     @if($publishedAt)
                         <p class="mt-1 flex items-center gap-1.5 text-xs text-neutral-400">
                             <i class="fa-solid fa-circle-check text-[0.7rem] text-emerald-500"></i>
-                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }}. Toto je konečná verzia — len na čítanie.
+                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }}. Toto je konečná verzia - len na čítanie.
                         </p>
                     @else
                         <p class="mt-1 flex items-center gap-1.5 text-xs text-amber-400">
                             <i class="fa-solid fa-pen-ruler text-[0.7rem]"></i>
-                            Pracovná verzia — zamestnanci ju zatiaľ nevidia.
+                            Pracovná verzia - zamestnanci ju zatiaľ nevidia.
                         </p>
                     @endif
                 </div>
@@ -34,7 +34,7 @@
 
                     <span class="inline-flex h-11 items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-5 text-base font-bold tracking-wide text-neutral-100">
                         <i class="fa-regular fa-calendar text-neutral-400"></i>
-                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}</span>
+                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} - {{ $weekEnd->format('d.m.Y') }}</span>
                     </span>
 
                     <a href="{{ route('rozpis.published', ['date' => $nextWeek->toDateString()]) }}"
@@ -83,7 +83,7 @@
                                     </p>
                                 @endif
 
-                                {{-- Manager slots are not counted — the vedúci is arranged apart
+                                {{-- Manager slots are not counted - the vedúci is arranged apart
                                      from the rest and would otherwise flag every day. --}}
                                 @if($day['unfilled'] > 0)
                                     <p class="mt-1.5 inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-amber-400">

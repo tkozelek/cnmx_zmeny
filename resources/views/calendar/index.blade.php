@@ -85,7 +85,7 @@
                                     {{ $absence->isOpenEnded() ? 'trvalá' : $absence->date_to->format('d.m.') }}
                                 </x-table-cell>
                                 <x-table-cell class="whitespace-nowrap text-neutral-500">{{ $absence->created_at->format('d.m. H:i') }}</x-table-cell>
-                                <x-table-cell class="text-neutral-300">{{ $absence->reason ?: '—' }}</x-table-cell>
+                                <x-table-cell class="text-neutral-300">{{ $absence->reason ?: '-' }}</x-table-cell>
                             </x-table-row>
                         @endforeach
                     </x-table>

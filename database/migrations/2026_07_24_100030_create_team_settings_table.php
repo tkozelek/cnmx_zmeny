@@ -15,7 +15,7 @@ return new class extends Migration
             /**
              * Which weekday the cinema's work week starts on: 0=Mon … 6=Sun.
              * Default 3 (Thursday) matches the legacy hardcoded behaviour, but every
-             * team can now pick its own. Weeks are computed from this — there is no
+             * team can now pick its own. Weeks are computed from this - there is no
              * weeks table.
              *
              * ponytail: treat as immutable once a team has week_locks rows; changing it

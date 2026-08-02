@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * A heading the cinema files its positions under: Bufet, Uvádzač, Manažment.
  *
- * Purely an ordering and presentation device — a group grants nothing and forbids nothing. It
+ * Purely an ordering and presentation device - a group grants nothing and forbids nothing. It
  * decides which rows sit next to each other on the printed rozpis, and under which heading they
  * appear on screen.
  */

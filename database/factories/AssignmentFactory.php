@@ -33,7 +33,7 @@ class AssignmentFactory extends Factory
     /**
      * Attaches a position *and* takes the team from it. Two independent factories would
      * produce two different teams, and the (team_id, position_id) composite foreign key
-     * correctly rejects that pairing — which makes for a confusing test failure.
+     * correctly rejects that pairing - which makes for a confusing test failure.
      */
     public function onPosition(?Position $position = null): static
     {

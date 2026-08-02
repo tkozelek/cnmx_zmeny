@@ -9,7 +9,7 @@ use Spatie\Permission\PermissionRegistrar;
 
 class StoreAssignmentRequest extends FormRequest
 {
-    /** Authorization is the AssignmentPolicy's job — it needs the resolved date. */
+    /** Authorization is the AssignmentPolicy's job - it needs the resolved date. */
     public function authorize(): bool
     {
         return true;

@@ -89,7 +89,7 @@ class FairnessServiceTest extends TestCase
 
         $scores = app(FairnessService::class)->scores($team, CarbonImmutable::parse(self::AS_OF));
 
-        // The same kind of day, so the same avgWeight — only the volume differs.
+        // The same kind of day, so the same avgWeight - only the volume differs.
         $this->assertSame(1.0, $scores[$regular->id]['avgWeight']);
         $this->assertSame(1.0, $scores[$occasional->id]['avgWeight']);
 
@@ -139,7 +139,7 @@ class FairnessServiceTest extends TestCase
     }
 
     /**
-     * Which days get the "neobľúbený" treatment — the ranked pool and the score badge.
+     * Which days get the "neobľúbený" treatment - the ranked pool and the score badge.
      *
      * The threshold is the week's own average, not its cheapest day: pricing the weekend *below*
      * an ordinary weekday (which the defaults do) would otherwise drag the floor down and leave
@@ -150,13 +150,13 @@ class FairnessServiceTest extends TestCase
         $team = $this->tenant();
         $fairness = app(FairnessService::class);
 
-        // Defaults [1, 1, 1, 1, 1.6, 0.8, 0.8] average 1.03 — Friday alone clears it.
+        // Defaults [1, 1, 1, 1, 1.6, 0.8, 0.8] average 1.03 - Friday alone clears it.
         $this->assertTrue($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-07-31')), 'Friday');
         $this->assertFalse($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-08-03')), 'Monday');
         $this->assertFalse($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-08-01')), 'Saturday');
 
         // A cinema that cannot fill its weekend: average 1.36, so Fri/Sat/Sun clear it and the
-        // ordinary weekdays — the whole point of the change — do not.
+        // ordinary weekdays - the whole point of the change - do not.
         $this->setWeights($team, [1, 1, 1, 1, 1.5, 2, 2]);
 
         $this->assertTrue($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-08-01')), 'Saturday');
@@ -173,7 +173,7 @@ class FairnessServiceTest extends TestCase
      * The recommended split: availability decides the shape, the score only tilts it.
      *
      * Both people below are equally available, so a plain proportional split would give them the
-     * same number. The tilt is what separates them — and it is bounded, which the cap test below
+     * same number. The tilt is what separates them - and it is bounded, which the cap test below
      * pins down: no score is worth more days than somebody actually offered.
      */
     public function test_the_recommended_day_count_follows_signups_and_is_tilted_by_the_score(): void
@@ -207,7 +207,7 @@ class FairnessServiceTest extends TestCase
         $this->assertGreaterThan(
             $targets[$settled->id]['target'],
             $targets[$owed->id]['target'],
-            'Equal availability, higher score — this one is recommended more of the week.',
+            'Equal availability, higher score - this one is recommended more of the week.',
         );
 
         // Nobody is ever recommended past their own availability, whatever the score says.

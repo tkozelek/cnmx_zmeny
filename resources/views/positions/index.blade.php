@@ -9,7 +9,7 @@
                         Pozície
                     </h1>
                     <p class="mt-1 text-xs text-neutral-400">
-                        Pracovné pozície tohto kina — z nich sa skladá rozpis zmien.
+                        Pracovné pozície tohto kina - z nich sa skladá rozpis zmien.
                     </p>
                 </div>
             </div>

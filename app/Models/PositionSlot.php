@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * One position offered on one date — the drop target of the rozpis builder.
+ * One position offered on one date - the drop target of the rozpis builder.
  *
  * A day may offer the same position repeatedly: three bufet rows on a Friday are three slots of
  * one Bufet position, not three positions. They are told apart by id and numbered for display by
@@ -58,7 +58,7 @@ class PositionSlot extends Model
 
     /**
      * Times reach this model in two shapes: `H:i` from the time picker, `H:i:s` from a copied
-     * slot or a factory. Normalised on write so the column never holds both — MySQL would coerce
+     * slot or a factory. Normalised on write so the column never holds both - MySQL would coerce
      * silently, but SQLite stores whatever it is given, and an assignment copying the value out
      * would inherit the difference.
      */
@@ -96,7 +96,7 @@ class PositionSlot extends Model
      * "Bufet" alone, "Bufet 2" when the day offers more than one.
      *
      * $ordinal is the slot's 1-based position among that day's slots for the same position, which
-     * only the caller holding the whole day can work out — passing it in beats a query per row.
+     * only the caller holding the whole day can work out - passing it in beats a query per row.
      */
     public function label(?int $ordinal = null, bool $repeated = false): string
     {

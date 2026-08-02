@@ -37,7 +37,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- Alpine ships with Livewire 3, but Livewire only auto-injects its bundle on pages that
-         rendered a component — declared here so every page gets Alpine, not just Livewire ones. --}}
+         rendered a component - declared here so every page gets Alpine, not just Livewire ones. --}}
     @livewireStyles
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 /**
  * The finished rozpis as the printable spreadsheet the cinema pins to the wall.
  *
- * Separate from ScheduleExportController, which exports the signup stage — the two answer
+ * Separate from ScheduleExportController, which exports the signup stage - the two answer
  * different questions ("who is available" vs "who works what").
  */
 class RozpisExportController extends Controller

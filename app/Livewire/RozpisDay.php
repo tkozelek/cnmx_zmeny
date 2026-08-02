@@ -6,6 +6,7 @@ use App\Models\Assignment;
 use App\Models\Position;
 use App\Models\PositionSlot;
 use App\Models\Team;
+use App\Models\User;
 use App\Services\AiRozpisSuggestionService;
 use App\Services\FairnessService;
 use App\Services\RozpisService;
@@ -26,7 +27,7 @@ use Livewire\Component;
  *
  * Mirrors DayCard's structure (locked date prop, computed derived state, preloaded collections
  * released after first use) but writes `position_id`/`start_time` instead of creating rows.
- * Nobody is ever placed who did not sign up for this exact date themselves — the pool is built
+ * Nobody is ever placed who did not sign up for this exact date themselves - the pool is built
  * from real Assignment rows, never invented.
  */
 class RozpisDay extends Component
@@ -50,7 +51,7 @@ class RozpisDay extends Component
 
     /**
      * The AI draft, if one was asked for. Locked because it survives between requests, and a
-     * client-side edit must not be able to smuggle in a placement — though accepting one still
+     * client-side edit must not be able to smuggle in a placement - though accepting one still
      * runs the full policy and slot check, so tampering buys nothing a manual drag would not.
      *
      * @var list<array{assignment_id: int, slot_id: int}>
@@ -73,7 +74,7 @@ class RozpisDay extends Component
      *
      * Keyed on the slot, not the position: a day can offer three bufet rows, and "put them on
      * bufet" would not say which one. One method for both directions because that is what a drag
-     * is — SortableJS reports the list the card landed in, and the pool is a list without a slot.
+     * is - SortableJS reports the list the card landed in, and the pool is a list without a slot.
      */
     public function place(int $assignmentId, ?int $slotId = null): void
     {
@@ -93,7 +94,7 @@ class RozpisDay extends Component
         // Both writes or neither: a slot holds one person by unique index now, so releasing the
         // previous occupant is not a courtesy, it is what makes the second write legal.
         DB::transaction(function () use ($assignment, $slot): void {
-            // Whoever was there is bumped back to the pool rather than silently sharing it —
+            // Whoever was there is bumped back to the pool rather than silently sharing it -
             // the drop is the manager saying "this one instead".
             Assignment::where('position_slot_id', $slot->getKey())
                 ->whereKeyNot($assignment->getKey())
@@ -110,6 +111,56 @@ class RozpisDay extends Component
         $this->refresh();
 
         $this->dispatch('toast', message: "{$assignment->user} → {$this->slotLabels[$slot->getKey()]}");
+    }
+
+    /**
+     * Put a shift leader on a vedúci row, signup or no signup.
+     *
+     * The one deliberate exception to "nobody is placed who did not sign up themselves". That rule
+     * exists so a manager cannot volunteer a brigádnik who never offered the day - it does not fit
+     * leadership, who do not write themselves into the pool at all. So when the chosen person has
+     * no assignment for this date, one is created for them here.
+     *
+     * Both gates still hold: the caller must be allowed to build the rozpis, and the person being
+     * placed must hold `assignment.lead-shift` in this cinema.
+     */
+    public function placeLeader(int $userId, int $slotId): void
+    {
+        $slot = PositionSlot::with('position')->where('date', $this->date)->findOrFail($slotId);
+
+        $this->authorize('create', [PositionSlot::class, $this->dayCarbon]);
+
+        abort_unless($slot->position->is_manager, 422, 'Táto pozícia nie je vedúca zmeny.');
+
+        $leader = $this->leadershipRoster->firstWhere('id', $userId);
+
+        abort_unless($leader !== null, 403);
+
+        $assignment = Assignment::firstOrCreate(
+            ['team_id' => app(Team::class)->getKey(), 'user_id' => $leader->id, 'date' => $this->date],
+        );
+
+        // Straight through the ordinary path, so the slot is freed, the times are copied and the
+        // change is logged exactly as a drag would do it.
+        $this->place($assignment->getKey(), $slot->getKey());
+    }
+
+    /**
+     * Who may take a vedúci row in this cinema, by permission rather than by role name - a cinema
+     * can grant `assignment.lead-shift` to one trusted brigádnik without promoting them.
+     *
+     * @return Collection<int, User>
+     */
+    #[Computed]
+    public function leadershipRoster(): Collection
+    {
+        $team = app(Team::class);
+
+        return $team->users()
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (User $user): bool => $user->hasPermissionInTeam('assignment.lead-shift', $team))
+            ->values();
     }
 
     public function unplace(int $assignmentId): void
@@ -142,7 +193,7 @@ class RozpisDay extends Component
         ]);
 
         // Plain create: adding Bufet to a day that already has one is the point, not a mistake.
-        // Two bufet rows are two slots of one position — that is how a cinema staffs a busy day.
+        // Two bufet rows are two slots of one position - that is how a cinema staffs a busy day.
         PositionSlot::create([
             'date' => $this->date,
             'position_id' => $validated['newPositionId'],
@@ -156,7 +207,7 @@ class RozpisDay extends Component
     }
 
     /**
-     * Change a row's start time after the fact — the schedule moves, the bufet now opens at 17:00.
+     * Change a row's start time after the fact - the schedule moves, the bufet now opens at 17:00.
      *
      * Whoever is standing in the slot moves with it: they took these times *from* the slot when
      * they were placed, so leaving them behind would leave the plan disagreeing with itself.
@@ -170,7 +221,7 @@ class RozpisDay extends Component
         $startTime = $startTime === '' ? null : $startTime;
 
         // The picker only ever emits H:i, so anything else is a crafted request rather than a
-        // user mistake — no field to show an error against, so refuse it outright.
+        // user mistake - no field to show an error against, so refuse it outright.
         abort_unless($startTime === null || preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $startTime) === 1, 422);
 
         DB::transaction(function () use ($slot, $startTime): void {
@@ -184,12 +235,12 @@ class RozpisDay extends Component
         $this->refresh();
 
         $this->dispatch('toast', message: $startTime
-            ? "{$this->slotLabels[$slot->getKey()]} — nástup {$startTime}."
-            : "{$this->slotLabels[$slot->getKey()]} — čas nástupu zmazaný.");
+            ? "{$this->slotLabels[$slot->getKey()]} - nástup {$startTime}."
+            : "{$this->slotLabels[$slot->getKey()]} - čas nástupu zmazaný.");
     }
 
     /**
-     * Copy one slot onto other days — "I built Thursday's bufet, put it on Friday and Saturday
+     * Copy one slot onto other days - "I built Thursday's bufet, put it on Friday and Saturday
      * too".
      *
      * Each target is authorized on its own, because the lock is per week and a target can sit in
@@ -281,7 +332,7 @@ class RozpisDay extends Component
     }
 
     /**
-     * Ask for a draft. Manager-initiated only — this is a billed request per click, never
+     * Ask for a draft. Manager-initiated only - this is a billed request per click, never
      * triggered by rendering or polling.
      */
     public function suggest(): void
@@ -293,7 +344,7 @@ class RozpisDay extends Component
 
         $this->dispatch('toast', ...match (count($this->suggestions)) {
             0 => ['message' => 'AI nenavrhla žiadne zaradenie.', 'type' => 'error'],
-            default => ['message' => 'Návrh pripravený — potvrďte jednotlivé zaradenia.'],
+            default => ['message' => 'Návrh pripravený - potvrďte jednotlivé zaradenia.'],
         });
     }
 
@@ -401,7 +452,7 @@ class RozpisDay extends Component
     /**
      * Everyone who signed up for this day and has no position yet.
      *
-     * Sorted by priorityScore only on a hard-to-staff (Friday/weekend) day — the days somebody
+     * Sorted by priorityScore only on a hard-to-staff (Friday/weekend) day - the days somebody
      * has to be asked to take, so the order matters. A plain weekday keeps DayCard's alphabetical
      * listing, and nothing changes for the common case.
      *
@@ -508,7 +559,7 @@ class RozpisDay extends Component
     /**
      * The days a single slot may be copied onto: this week's other six, ready to render.
      *
-     * Narrower than copySources(), which also offers last week as a *source* — copying a row
+     * Narrower than copySources(), which also offers last week as a *source* - copying a row
      * forward into a week that is already worked would be nonsense.
      *
      * @return list<array{date: string, label: string}>
@@ -540,7 +591,7 @@ class RozpisDay extends Component
     }
 
     /**
-     * The days this one's layout may be copied from — the same list the controller validates
+     * The days this one's layout may be copied from - the same list the controller validates
      * the submitted source against, so the dropdown and the guard cannot drift apart.
      *
      * @return list<array{date: string, label: string}>

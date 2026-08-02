@@ -48,7 +48,7 @@ class TeamSettingTest extends TestCase
             'fairness_window_weeks' => 8,
         ]);
 
-        // Stored as numbers, not the strings a form posts — FairnessService indexes straight
+        // Stored as numbers, not the strings a form posts - FairnessService indexes straight
         // into this array.
         $this->assertSame([1.0, 1.0, 1.0, 1.0, 1.5, 2.0, 2.0], $team->fresh()->fairnessDayWeights());
     }

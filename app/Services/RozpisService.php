@@ -6,6 +6,7 @@ use App\Models\Assignment;
 use App\Models\Position;
 use App\Models\PositionSlot;
 use App\Models\Team;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -50,31 +51,99 @@ class RozpisService
     }
 
     /**
-     * Who changed this week's plan, most recent first.
+     * Who changed this week's plan, most recent first, batched into sittings.
+     *
+     * One row per database write is unreadable: filling a Friday is twenty writes in ninety
+     * seconds, and a list of twenty identical-looking lines hides the one that matters. So the
+     * activities are grouped by who made them and the minute they were made in - one line per
+     * person per minute, with the individual changes spelled out underneath.
      *
      * Filtered on the stamped properties rather than by joining the subject rows, because the
-     * edits most worth auditing are the ones that deleted their own subject — see
+     * edits most worth auditing are the ones that deleted their own subject - see
      * LogsRozpisActivity for why team and date are carried in the activity itself.
      *
-     * @return Collection<int, Activity>
+     * @return list<array{causer: string, at: CarbonImmutable, day: ?string, changes: list<string>}>
      */
     private function history(Team $team, CarbonImmutable $from, CarbonImmutable $to): Collection
     {
-        return Activity::with('causer')
+        $activities = Activity::with('causer')
             ->where('properties->team_id', $team->getKey())
             ->whereBetween('properties->date', [$from->toDateString(), $to->toDateString()])
             ->latest()
-            // A week of dragging runs to hundreds of rows; the panel answers "what changed
+            // A week of dragging runs to hundreds of writes; the panel answers "what changed
             // recently", not "everything that ever happened".
-            ->limit(50)
+            ->limit(200)
             ->get();
+
+        if ($activities->isEmpty()) {
+            return collect();
+        }
+
+        // Names resolved in one query rather than per row - the diffs store ids.
+        $names = User::whereIn('id', $activities->pluck('attribute_changes.attributes.user_id')->filter()->unique())
+            ->pluck('name', 'id');
+
+        return $activities
+            ->groupBy(fn (Activity $activity): string => $activity->causer_id
+                .'|'.$activity->created_at->format('Y-m-d H:i')
+                .'|'.data_get($activity->properties, 'date'))
+            ->map(fn (Collection $batch): array => [
+                'causer' => (string) ($batch->first()->causer ?? 'Systém'),
+                'at' => CarbonImmutable::parse($batch->first()->created_at),
+                'day' => data_get($batch->first()->properties, 'date'),
+                'changes' => $batch->map(fn (Activity $activity): string => $this->describeChange($activity, $names))
+                    ->filter()
+                    ->values()
+                    ->all(),
+            ])
+            ->values();
+    }
+
+    /**
+     * One activity as a sentence a manager can read.
+     *
+     * Built from the event and which columns moved rather than dumping the raw diff: `user_id`
+     * and `position_slot_id` are meaningless as numbers, and "position_slot_id: null → 42" is not
+     * an answer to "what changed".
+     *
+     * @param  Collection<int, string>  $names
+     */
+    private function describeChange(Activity $activity, Collection $names): string
+    {
+        $new = (array) data_get($activity->attribute_changes, 'attributes', []);
+        $old = (array) data_get($activity->attribute_changes, 'old', []);
+        $who = $names[$new['user_id'] ?? $old['user_id'] ?? null] ?? null;
+        $time = fn (?string $value): string => $value ? substr($value, 0, 5) : 'bez času';
+
+        if (class_basename((string) $activity->subject_type) === 'PositionSlot') {
+            return match ($activity->event) {
+                'created' => 'pridal pozíciu do dňa ('.$time($new['start_time'] ?? null).')',
+                'deleted' => 'zmazal pozíciu z dňa',
+                default => array_key_exists('start_time', $new)
+                    ? 'zmenil čas pozície: '.$time($old['start_time'] ?? null).' -> '.$time($new['start_time'] ?? null)
+                    : 'upravil pozíciu v dni',
+            };
+        }
+
+        // An Assignment. Placement is the change worth naming; the rest is bookkeeping.
+        $person = $who ? '"'.$who.'"' : 'zamestnanca';
+
+        return match (true) {
+            $activity->event === 'created' && ($new['position_slot_id'] ?? null) === null => 'zapísal '.$person.' na deň',
+            $activity->event === 'created' => 'zaradil '.$person.' na pozíciu',
+            $activity->event === 'deleted' => 'odstránil '.$person.' zo dňa',
+            array_key_exists('position_slot_id', $new) && ($new['position_slot_id'] ?? null) === null => 'vyradil '.$person.' späť medzi nezaradených',
+            array_key_exists('position_slot_id', $new) => 'zaradil '.$person.' na pozíciu',
+            array_key_exists('start_time', $new) => 'zmenil čas '.$person.': '.$time($old['start_time'] ?? null).' -> '.$time($new['start_time'] ?? null),
+            default => 'upravil zaradenie '.$person,
+        };
     }
 
     /**
      * How many of the week's shifts each person should get, ready to print: one row per volunteer,
      * the people to lean on first at the top.
      *
-     * Read once before assigning rather than watched while dragging — nothing in it moves when a
+     * Read once before assigning rather than watched while dragging - nothing in it moves when a
      * slot is filled, because it is derived from the signups and the history, both of which a
      * locked week has already fixed.
      *
@@ -103,7 +172,7 @@ class RozpisService
     }
 
     /**
-     * The finished week, resolved down to strings — one entry per day, in week order.
+     * The finished week, resolved down to strings - one entry per day, in week order.
      *
      * Shared by the read-only view and the Excel export so the two cannot drift: whatever an
      * employee reads on screen is what comes out of the spreadsheet. Nothing here is editable,
@@ -111,7 +180,7 @@ class RozpisService
      *
      * The vedúci is deliberately not one of the `rows`: the printed sheet names them once, in the
      * day's "manažér:" heading, and listing them again among bufet 1..3 reads as a second person
-     * on shift. They stay a real slot in the builder — somebody has to be assignable to it — and
+     * on shift. They stay a real slot in the builder - somebody has to be assignable to it - and
      * `managerRows` keeps them for the places that want every shift, like the flat Zoznam sheet.
      *
      * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string}>, rows: list<array{label: string, time: ?string, name: ?string}>, substitutes: list<string>, unfilled: int}>
@@ -162,7 +231,7 @@ class RozpisService
                 'managerRows' => $managerRows,
 
                 // Who was in charge, for the day's heading. The first manager slot with somebody
-                // on it — a day normally offers exactly one.
+                // on it - a day normally offers exactly one.
                 'manager' => collect($managerRows)->pluck('name')->filter()->first(),
 
                 // Signed up for the day, never placed. The reference calls these "náhradníci".
@@ -186,7 +255,7 @@ class RozpisService
      *
      * A single closure returning an array, NOT `sortBy([$a, $b, $c])`. Laravel reads a closure
      * inside that array as a two-argument *comparator*, so a one-argument key extractor gets
-     * called as `$fn($a, $b)` and its return value — a plain sort_order — is taken as the
+     * called as `$fn($a, $b)` and its return value - a plain sort_order - is taken as the
      * comparison result. That is always positive, so the rows come out reversed. Returning an
      * array from one closure sorts element by element, which is what was meant.
      *
@@ -214,7 +283,7 @@ class RozpisService
      * having to remember the previous row itself.
      *
      * Rows arrive already grouped by sortSlots(), so this is a single pass comparing neighbours.
-     * The very first row starts a group only when it actually has one — an ungrouped list gets no
+     * The very first row starts a group only when it actually has one - an ungrouped list gets no
      * stray heading.
      *
      * @param  list<array<string, mixed>>  $rows
@@ -265,7 +334,7 @@ class RozpisService
      * already has one, two are added. A position the target already matches in count is left
      * alone, which makes a second click a no-op instead of doubling the day.
      *
-     * Additive by design either way — copying must never quietly overwrite a day the manager has
+     * Additive by design either way - copying must never quietly overwrite a day the manager has
      * already built.
      */
     public function copySlots(CarbonImmutable $from, CarbonImmutable $to): int

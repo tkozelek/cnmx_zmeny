@@ -20,7 +20,7 @@ class DayCardTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Signing up picks no position — that is an admin's job later — so `position_id` is null.
+     * Signing up picks no position - that is an admin's job later - so `position_id` is null.
      */
     public function test_signing_up_creates_an_assignment_for_that_day(): void
     {
@@ -44,7 +44,7 @@ class DayCardTest extends TestCase
 
     /**
      * The shared "Extra info" field lives in the session, so the card picks it up without it
-     * being passed in — that is what lets one typed note apply to every day signed up.
+     * being passed in - that is what lets one typed note apply to every day signed up.
      */
     public function test_signing_up_attaches_the_shared_extra_note(): void
     {
@@ -142,7 +142,7 @@ class DayCardTest extends TestCase
     }
 
     /**
-     * The card renders as locked, but the action is guarded too — a locked week must not be
+     * The card renders as locked, but the action is guarded too - a locked week must not be
      * writable by anyone replaying the Livewire request directly.
      */
     public function test_signing_up_in_a_locked_week_is_refused(): void

@@ -8,7 +8,7 @@ use Livewire\Component;
  * The one "Extra info" field above the week grid.
  *
  * Whatever is typed here is attached to every subsequent signup, and it **stays** until the
- * user clears it — signing up for six days with "od 15:00" means typing it once.
+ * user clears it - signing up for six days with "od 15:00" means typing it once.
  *
  * It lives in the session rather than being passed down as a prop to the seven DayCards. That
  * is what makes it survive week navigation and a page reload, and it means the cards do not

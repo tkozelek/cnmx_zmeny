@@ -19,7 +19,7 @@ class AssignmentPolicy
 {
     public function __construct(private readonly WeekService $weeks) {}
 
-    /** Sign up for a date. Admins are not stopped by a lock — they are the ones locking. */
+    /** Sign up for a date. Admins are not stopped by a lock - they are the ones locking. */
     public function create(User $user, Team $team, CarbonInterface $date, ?User $targetUser = null): bool
     {
         $forUser = $targetUser ?? $user;
@@ -61,7 +61,7 @@ class AssignmentPolicy
     /**
      * Place someone on a position (or take them off it) in the rozpis builder.
      *
-     * Requires the week to be *locked* — the inverse of create()/delete(). Self-signup and
+     * Requires the week to be *locked* - the inverse of create()/delete(). Self-signup and
      * position assignment are two consecutive phases of the same week, and locking is the
      * switch between them: employees stop editing, the manager starts.
      */

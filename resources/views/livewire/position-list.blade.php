@@ -28,7 +28,7 @@
                         <label for="position-group" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">Skupina</label>
                         <select id="position-group" wire:model="groupId"
                                 class="h-[46px] w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm text-white shadow-inner transition hover:border-neutral-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60">
-                            <option value="">— bez skupiny —</option>
+                            <option value="">- bez skupiny -</option>
                             @foreach($this->groups as $group)
                                 <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
@@ -173,7 +173,7 @@
                             {{ $position->group->name }}
                         </span>
                     @else
-                        <span class="text-neutral-600">—</span>
+                        <span class="text-neutral-600">-</span>
                     @endif
                 </x-table-cell>
 
@@ -186,7 +186,7 @@
                     </span>
                 </x-table-cell>
 
-                <x-table-cell class="text-neutral-400">{{ $position->code ?: '—' }}</x-table-cell>
+                <x-table-cell class="text-neutral-400">{{ $position->code ?: '-' }}</x-table-cell>
 
                 <x-table-cell>
                     @if($position->is_manager)
@@ -194,7 +194,7 @@
                             <i class="fa-solid fa-star text-[0.6rem]"></i> Vedúci
                         </span>
                     @else
-                        <span class="text-neutral-600">—</span>
+                        <span class="text-neutral-600">-</span>
                     @endif
                 </x-table-cell>
 

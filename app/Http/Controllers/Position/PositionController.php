@@ -7,7 +7,7 @@ use App\Models\Position;
 use Illuminate\View\View;
 
 /**
- * The position catalogue page. Every write lives in the PositionList Livewire component —
+ * The position catalogue page. Every write lives in the PositionList Livewire component -
  * a second set of controller actions would be a duplicate write path onto the same table,
  * each needing its own authorization.
  */

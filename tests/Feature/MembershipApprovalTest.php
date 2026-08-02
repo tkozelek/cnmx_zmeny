@@ -31,7 +31,7 @@ class MembershipApprovalTest extends TestCase
     }
 
     /**
-     * Denying deactivates rather than deletes — payroll rows are RESTRICT — and clears the
+     * Denying deactivates rather than deletes - payroll rows are RESTRICT - and clears the
      * pending state, otherwise the row keeps showing accept/deny instead of "Zablokovaný".
      */
     public function test_denying_a_member_deactivates_the_account(): void
@@ -50,7 +50,7 @@ class MembershipApprovalTest extends TestCase
     }
 
     /**
-     * No approved membership means no access — the state that used to be the "neovereny"
+     * No approved membership means no access - the state that used to be the "neovereny"
      * role. The user is logged back out, not merely redirected.
      */
     public function test_a_pending_member_cannot_reach_the_calendar(): void
@@ -65,7 +65,7 @@ class MembershipApprovalTest extends TestCase
         $this->assertGuest();
     }
 
-    /** Blocked is `is_active = false` — the state that used to be the "zablokovany" role. */
+    /** Blocked is `is_active = false` - the state that used to be the "zablokovany" role. */
     public function test_a_blocked_member_cannot_reach_the_calendar(): void
     {
         $team = $this->tenant();
