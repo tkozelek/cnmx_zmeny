@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\Role;
 use App\Livewire\PositionList;
 use App\Models\Position;
+use App\Models\PositionGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -36,6 +37,72 @@ class PositionTest extends TestCase
             'code' => 'BUF',
             'is_active' => true,
         ]);
+    }
+
+    public function test_a_manager_creates_a_group_and_files_a_position_under_it(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+
+        $component = Livewire::actingAs($manager)
+            ->test(PositionList::class)
+            ->set('groupName', 'Bufet')
+            ->call('saveGroup')
+            ->assertHasNoErrors();
+
+        $group = PositionGroup::firstOrFail();
+        $this->assertSame($team->id, $group->team_id);
+
+        $component->set('name', 'Bufet 1')->set('groupId', $group->id)->call('save')->assertHasNoErrors();
+
+        $this->assertDatabaseHas('positions', ['name' => 'Bufet 1', 'position_group_id' => $group->id]);
+    }
+
+    /**
+     * Deleting a group unfiles its positions rather than taking them with it — the positions are
+     * what assignments point at, and a heading is not worth losing history over.
+     */
+    public function test_deleting_a_group_keeps_its_positions(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+
+        $group = PositionGroup::factory()->create(['team_id' => $team->id, 'name' => 'Bufet']);
+        $position = Position::factory()->create(['team_id' => $team->id, 'position_group_id' => $group->id]);
+
+        Livewire::actingAs($manager)
+            ->test(PositionList::class)
+            ->call('deleteGroup', $group->id)
+            ->assertDispatched('toast');
+
+        $this->assertDatabaseMissing('position_groups', ['id' => $group->id]);
+        $this->assertDatabaseHas('positions', ['id' => $position->id, 'position_group_id' => null]);
+    }
+
+    /**
+     * Group order beats a position's own order, and ungrouped positions sort last — this is the
+     * ordering the rozpis and the Excel both print, so it is worth pinning here.
+     */
+    public function test_positions_list_grouped_with_ungrouped_last(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+
+        $uvadzac = PositionGroup::factory()->create(['team_id' => $team->id, 'name' => 'Uvádzač', 'sort_order' => 20]);
+        $bufet = PositionGroup::factory()->create(['team_id' => $team->id, 'name' => 'Bufet', 'sort_order' => 10]);
+
+        // Ordered so that a sort ignoring the group would produce the opposite list.
+        Position::factory()->create(['team_id' => $team->id, 'name' => 'Nezaradená', 'sort_order' => 1]);
+        Position::factory()->create(['team_id' => $team->id, 'name' => 'VIP', 'sort_order' => 2, 'position_group_id' => $uvadzac->id]);
+        Position::factory()->create(['team_id' => $team->id, 'name' => 'Bufet 1', 'sort_order' => 3, 'position_group_id' => $bufet->id]);
+
+        $listed = Livewire::actingAs($manager)
+            ->test(PositionList::class)
+            ->get('positions')
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Bufet 1', 'VIP', 'Nezaradená'], $listed);
     }
 
     /** Two cinemas must both be able to have a "Bufet"; one cinema must not have two. */

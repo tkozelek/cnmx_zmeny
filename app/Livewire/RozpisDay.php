@@ -360,19 +360,13 @@ class RozpisDay extends Component
     #[Computed]
     public function slots(): Collection
     {
-        $slots = $this->initialSlots ?? PositionSlot::with('position')
+        $slots = $this->initialSlots ?? PositionSlot::with('position.group')
             ->where('date', $this->date)
             ->get();
 
         $this->initialSlots = null;
 
-        return $slots
-            ->sortBy([
-                fn (PositionSlot $slot): int => $slot->sort_order,
-                fn (PositionSlot $slot): int => $slot->position->sort_order,
-                fn (PositionSlot $slot): string => $slot->position->name,
-            ])
-            ->values();
+        return app(RozpisService::class)->sortSlots($slots);
     }
 
     /**
@@ -429,14 +423,17 @@ class RozpisDay extends Component
     #[Computed]
     public function rows(): array
     {
-        return $this->slots->map(fn (PositionSlot $slot): array => [
-            'slot' => $slot,
-            'label' => $this->slotLabels[$slot->getKey()],
-            // H:i for display and for the picker; the column is a full TIME.
-            'time' => $slot->start_time ? substr((string) $slot->start_time, 0, 5) : null,
-            'occupant' => $this->filledFor($slot->getKey()),
-            'suggestion' => $this->suggestionFor($slot->getKey()),
-        ])->all();
+        return app(RozpisService::class)->markGroupStarts(
+            $this->slots->map(fn (PositionSlot $slot): array => [
+                'slot' => $slot,
+                'label' => $this->slotLabels[$slot->getKey()],
+                'group' => $slot->position->groupName(),
+                // H:i for display and for the picker; the column is a full TIME.
+                'time' => $slot->start_time ? substr((string) $slot->start_time, 0, 5) : null,
+                'occupant' => $this->filledFor($slot->getKey()),
+                'suggestion' => $this->suggestionFor($slot->getKey()),
+            ])->all()
+        );
     }
 
     /** How many of the day's rows have somebody in them. */
@@ -469,24 +466,15 @@ class RozpisDay extends Component
      * "Bufet 2", "Bufet 3" when the day offers several.
      *
      * Numbered by order within the day rather than stored, so deleting bufet 2 renumbers the rest
-     * instead of leaving a gap.
+     * instead of leaving a gap. Delegated so the builder, the read-only view and the export all
+     * number a day's rows the same way.
      *
      * @return array<int, string>
      */
     #[Computed]
     public function slotLabels(): array
     {
-        $totals = $this->slots->countBy('position_id');
-        $seen = [];
-        $labels = [];
-
-        foreach ($this->slots as $slot) {
-            $ordinal = $seen[$slot->position_id] = ($seen[$slot->position_id] ?? 0) + 1;
-
-            $labels[$slot->id] = $slot->label($ordinal, $totals[$slot->position_id] > 1);
-        }
-
-        return $labels;
+        return app(RozpisService::class)->labelSlots($this->slots);
     }
 
     /**

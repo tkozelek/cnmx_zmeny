@@ -47,8 +47,43 @@ class RozpisController extends Controller
                 'title' => 'ROZPIS',
                 'previousWeek' => $this->weeks->previous($weekStart),
                 'nextWeek' => $this->weeks->next($weekStart),
+                'publishedAt' => WeekLock::forWeek($team->getKey(), $weekStart)?->rozpis_published_at,
             ],
         ));
+    }
+
+    /**
+     * The finished plan, read-only — what an employee opens to find out when they work.
+     *
+     * Everyone in the cinema may read a published week. Before publication only the manager gets
+     * in, and they see a draft banner instead: a half-built rozpis reaching the staff is worse
+     * than no rozpis, because people act on it.
+     */
+    public function published(Request $request, Team $team, string $date): View|RedirectResponse
+    {
+        $weekStart = $this->weeks->alignFromRequest($team, $date);
+        $lock = WeekLock::forWeek($team->getKey(), $weekStart);
+        $mayBuild = $request->user()->hasPermissionInTeam('assignment.assign-position', $team);
+
+        if (! $lock?->isRozpisPublished() && ! $mayBuild) {
+            return redirect()
+                ->route('calendar.show', ['date' => $weekStart->toDateString()])
+                ->with([
+                    'message' => 'Rozpis na tento týždeň zatiaľ nie je zverejnený.',
+                    'icon' => 'fa fa-hourglass-half',
+                ]);
+        }
+
+        return view('rozpis.published', [
+            'title' => 'ROZPIS ZMIEN',
+            'weekStart' => $weekStart,
+            'weekEnd' => $this->weeks->end($weekStart),
+            'previousWeek' => $this->weeks->previous($weekStart),
+            'nextWeek' => $this->weeks->next($weekStart),
+            'plan' => $this->rozpis->plan($team, $weekStart),
+            'publishedAt' => $lock?->rozpis_published_at,
+            'canBuild' => $mayBuild,
+        ]);
     }
 
     /**

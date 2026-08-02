@@ -19,6 +19,8 @@ use App\Http\Controllers\Media\MediaController;
 use App\Http\Controllers\Position\PositionController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Rozpis\RozpisController;
+use App\Http\Controllers\Rozpis\RozpisExportController;
+use App\Http\Controllers\Rozpis\RozpisPublishController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Team\TeamSettingController;
@@ -161,5 +163,16 @@ Route::middleware('tenant')->group(function () {
 
     Route::get('/tyzden/{date}/rozpis', [RozpisController::class, 'show'])->name('rozpis.show');
     Route::post('/tyzden/{date}/rozpis/kopirovat', [RozpisController::class, 'copy'])->name('rozpis.copy');
+
+    /*
+    | The published rozpis. Open to every member — the controller decides whether this week is
+    | released yet, because "not published" is a redirect with an explanation, not a 403.
+    */
+    Route::get('/tyzden/{date}/rozpis/zmeny', [RozpisController::class, 'published'])->name('rozpis.published');
+
+    Route::post('/tyzden/{date}/rozpis/zverejnit', [RozpisPublishController::class, 'store'])->name('rozpis.publish');
+    Route::delete('/tyzden/{date}/rozpis/zverejnit', [RozpisPublishController::class, 'destroy'])->name('rozpis.unpublish');
+
+    Route::get('/tyzden/{date}/rozpis/export', RozpisExportController::class)->name('rozpis.export');
 
 });
