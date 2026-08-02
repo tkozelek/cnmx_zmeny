@@ -282,8 +282,8 @@ class RozpisPublishTest extends TestCase
         $this->assertSame((string) $boss, $day['manager']);
         $this->assertSame(['VED'], array_column($day['managerRows'], 'label'));
 
-        // Both slots are staffed, so the day counts as complete.
-        $this->assertTrue($day['complete']);
+        // Both slots are staffed, so nothing is flagged.
+        $this->assertSame(0, $day['unfilled']);
 
         // And the poster body never prints them: only the manažér heading does.
         $grid = (new RozpisExport($team, $weekStart, app(RozpisService::class)))->array();
@@ -291,6 +291,40 @@ class RozpisPublishTest extends TestCase
         $this->assertSame((string) $boss, $grid[2][3], 'The heading names the vedúci.');
         $this->assertSame('Bufet', $grid[4][1], 'The first body row is the bufet, not the vedúci.');
         $this->assertSame('', $grid[5][1], 'Nothing follows it.');
+    }
+
+    /**
+     * An empty ordinary position is a hole in the plan; an empty vedúci slot is not.
+     *
+     * The vedúci is arranged separately and is routinely still blank while the rest of the day is
+     * settled, so counting them would leave every day flagged and the flag would stop meaning
+     * anything.
+     */
+    public function test_unfilled_positions_are_flagged_but_an_empty_manager_slot_is_not(): void
+    {
+        $team = $this->tenant();
+        $weekStart = $this->weekStart($team);
+        $date = $weekStart->toDateString();
+
+        $this->lockWeek($team, $weekStart, published: true);
+
+        foreach ([['Vedúci', true], ['Bufet', false]] as [$name, $isManager]) {
+            $position = Position::factory()->create([
+                'team_id' => $team->id, 'name' => $name, 'code' => null, 'is_manager' => $isManager,
+            ]);
+
+            PositionSlot::factory()->forPosition($position)->on($date)->create(['start_time' => '16:00:00']);
+        }
+
+        $plan = app(RozpisService::class)->plan($team, $weekStart);
+
+        $this->assertSame(1, $plan->first()['unfilled'], 'Only the bufet counts, not the empty vedúci.');
+        $this->assertSame(0, $plan->last()['unfilled'], 'A day with no positions has no holes.');
+
+        $this->actingAs($this->member($team))
+            ->get(route('rozpis.published', ['date' => $date]))
+            ->assertOk()
+            ->assertSee('1x neobsadené');
     }
 
     private function weekStart(Team $team): CarbonImmutable

@@ -13,6 +13,7 @@ use App\Services\WeekService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
 /**
@@ -475,6 +476,40 @@ class RozpisTest extends TestCase
     private function workday(Team $team): string
     {
         return $this->weekStart($team)->addDay()->toDateString();
+    }
+
+    /**
+     * The edit history: every change to the week is attributable, and survives its own subject —
+     * "who deleted the Thursday bufet" is exactly what the panel exists to answer.
+     */
+    public function test_changes_to_the_week_are_recorded_with_who_made_them(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $date = $this->weekStart($team)->toDateString();
+
+        $position = Position::factory()->create(['team_id' => $team->id, 'name' => 'Bufet']);
+
+        $this->actingAs($manager);
+
+        $slot = PositionSlot::factory()->forPosition($position)->on($date)->create();
+        $slot->delete();
+
+        $activities = Activity::where('properties->date', $date)->get();
+
+        $this->assertSame(['created', 'deleted'], $activities->pluck('event')->sort()->values()->all());
+
+        $this->assertSame(
+            [$manager->id, $manager->id],
+            $activities->pluck('causer_id')->all(),
+            'Every edit is attributed to whoever made it.',
+        );
+
+        $this->assertSame(
+            $team->id,
+            (int) data_get($activities->first()->properties, 'team_id'),
+            'Stamped with the cinema, so one team never reads another team\'s history.',
+        );
     }
 
     private function weekStart(Team $team): CarbonImmutable

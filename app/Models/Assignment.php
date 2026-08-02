@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTeam;
+use App\Traits\LogsRozpisActivity;
 use Carbon\CarbonInterface;
 use Database\Factories\AssignmentFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,6 +23,8 @@ class Assignment extends Model
 
     /** @use HasFactory<AssignmentFactory> */
     use HasFactory;
+
+    use LogsRozpisActivity;
 
     protected $fillable = [
         'team_id',

@@ -45,6 +45,8 @@ class RozpisController extends Controller
             $this->rozpis->forWeek($team, $weekStart),
             [
                 'title' => 'ROZPIS',
+                // The help panel prints the cinema's live settings rather than the defaults.
+                'team' => $team,
                 'previousWeek' => $this->weeks->previous($weekStart),
                 'nextWeek' => $this->weeks->next($weekStart),
                 'publishedAt' => WeekLock::forWeek($team->getKey(), $weekStart)?->rozpis_published_at,

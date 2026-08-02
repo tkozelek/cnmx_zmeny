@@ -335,6 +335,20 @@ class RozpisDay extends Component
         $this->suggestions = [];
     }
 
+    /**
+     * RozpisWeekAi drafted the whole week; take this day's share of it.
+     *
+     * A day the model left alone gets an empty list rather than being skipped, so a stale draft
+     * from an earlier single-day run cannot sit beside a fresh week-wide one.
+     *
+     * @param  array<string, list<array{assignment_id: int, slot_id: int}>>  $byDate
+     */
+    #[On('rozpis-week-suggested')]
+    public function weekSuggested(array $byDate): void
+    {
+        $this->suggestions = $byDate[$this->date] ?? [];
+    }
+
     /** The pending suggestion for a slot, resolved to a name for display. */
     public function suggestionFor(int $slotId): ?Assignment
     {

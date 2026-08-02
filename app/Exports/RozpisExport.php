@@ -262,7 +262,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
             'font' => ['bold' => true, 'size' => 12, 'color' => ['argb' => 'FFFFFFFF']],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['argb' => $day['complete'] ? self::INK : self::INK_WARN],
+                'startColor' => ['argb' => $day['unfilled'] === 0 ? self::INK : self::INK_WARN],
             ],
         ]);
 

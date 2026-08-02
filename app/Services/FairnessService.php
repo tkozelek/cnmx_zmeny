@@ -71,6 +71,57 @@ class FairnessService
             });
     }
 
+    /**
+     * How many of the week's shifts each person should be given, keyed by user_id.
+     *
+     * Two inputs, in that order of importance:
+     *
+     * 1. How many days they wrote themselves down for. Somebody available five days is offered
+     *    more work than somebody available one — availability is the thing the manager cannot
+     *    argue with.
+     * 2. Their fairness score, which tilts the split between two equally available people toward
+     *    whoever is more owed a shift.
+     *
+     * The tilt is deliberately bounded to ±25%: the score is a nudge between comparable people,
+     * never a reason to hand somebody four days when they offered two. The target is capped at
+     * their own signups for the same reason, and a target of 0 is a real answer — it means the
+     * week has more volunteers than shifts and this one is not needed.
+     *
+     * Pure arithmetic over collections the caller already loaded, so it costs no queries.
+     *
+     * @param  Collection<int, Assignment>  $weekAssignments  every signup in the week, placed or not
+     * @param  int  $capacity  position slots the week offers
+     * @param  array<int, array{totalDays: int, avgWeight: float, priorityScore: float}>  $scores
+     * @return array<int, array{signups: int, target: int}>
+     */
+    public function weeklyTargets(Collection $weekAssignments, int $capacity, array $scores): array
+    {
+        $signups = $weekAssignments->countBy('user_id');
+
+        if ($signups->isEmpty() || $capacity < 1) {
+            return [];
+        }
+
+        $priorities = $signups->keys()
+            ->mapWithKeys(fn (int $userId): array => [$userId => (float) ($scores[$userId]['priorityScore'] ?? 0.0)]);
+
+        $lowest = $priorities->min();
+        $spread = $priorities->max() - $lowest;
+
+        // 0.75 … 1.25 of a plain proportional share. A week where everybody scores the same has
+        // no spread to read, so everyone keeps their plain share.
+        $shares = $signups->map(fn (int $days, int $userId): float => $days * (
+            $spread > 0 ? 0.75 + 0.5 * (($priorities[$userId] - $lowest) / $spread) : 1.0
+        ));
+
+        $total = $shares->sum();
+
+        return $signups->map(fn (int $days, int $userId): array => [
+            'signups' => $days,
+            'target' => min($days, (int) round($capacity * $shares[$userId] / $total)),
+        ])->all();
+    }
+
     /** What one worked day on this date is worth to the team. */
     public function dayWeight(Team $team, CarbonInterface $date): float
     {
@@ -78,14 +129,22 @@ class FairnessService
     }
 
     /**
-     * A day weighted above the cheapest day of the week — Friday and the weekend by default.
+     * A day weighted above the week's own average — Friday only, with the default weights.
      *
-     * These are the days almost nobody volunteers for, which is exactly why they are worth
-     * ranking the pool for: somebody has to take them. On an ordinary weekday the builder keeps
-     * DayCard's alphabetical order instead.
+     * Measured against the average rather than the cheapest day, because "above the cheapest"
+     * flags almost the whole week the moment one day is priced low: with the defaults
+     * [1, 1, 1, 1, 1.6, 0.8, 0.8] the sought-after weekend sets the floor at 0.8 and Monday
+     * through Friday all come out hard to staff, which tells the manager nothing.
+     *
+     * The average moves with whatever the cinema configures, so the flag keeps meaning "this day
+     * stands out from the rest of your week" instead of needing a hand-tuned threshold. A week of
+     * identical weights flags nothing, which is correct — no day stands out. On an ordinary day
+     * the builder keeps the pool in alphabetical order instead.
      */
     public function isHardToStaffDay(Team $team, CarbonInterface $date): bool
     {
-        return $this->dayWeight($team, $date) > min($team->fairnessDayWeights());
+        $weights = $team->fairnessDayWeights();
+
+        return $this->dayWeight($team, $date) > array_sum($weights) / count($weights);
     }
 }

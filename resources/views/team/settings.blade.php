@@ -158,8 +158,10 @@
                         <p class="text-[11px] text-neutral-500">
                             Koľko „váži“ odpracovaný deň. Vyššia váha = deň, na ktorý sa málokto hlási dobrovoľne
                             (typicky piatok a víkend) — kto ho odpracuje, má to započítané viac.
-                            Dni s vyššou než najnižšou váhou sa v rozpise označia ako neobľúbené a zoznam
-                            nezaradených sa v nich zoradí podľa toho, kto je na ťahu.
+                            Ako neobľúbený sa v rozpise označí deň s váhou <strong>nad priemerom týždňa</strong> —
+                            len v takom dni sa zoznam nezaradených zoradí podľa toho, kto je na ťahu, a pri menách
+                            sa zobrazí poradie spravodlivosti (vyššie číslo = na rade skôr). Ak sú všetky váhy
+                            rovnaké, neoznačí sa žiadny deň.
                         </p>
 
                         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">

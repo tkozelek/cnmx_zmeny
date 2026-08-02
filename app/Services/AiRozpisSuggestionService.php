@@ -35,6 +35,9 @@ class AiRozpisSuggestionService
     /** Enough for a day's worth of placements as JSON; the reply is a short list, not prose. */
     private const int MAX_OUTPUT_TOKENS = 2048;
 
+    /** Seven days of the same list. Generous, because a truncated reply is a dropped day. */
+    private const int WEEK_MAX_OUTPUT_TOKENS = 8192;
+
     /** Long enough that a collision is not a practical concern, short enough to read in a log. */
     private const int TOKEN_LENGTH = 16;
 
@@ -46,7 +49,10 @@ class AiRozpisSuggestionService
      */
     private ?Collection $cachedScores = null;
 
-    public function __construct(private readonly FairnessService $fairness) {}
+    public function __construct(
+        private readonly FairnessService $fairness,
+        private readonly WeekService $weeks,
+    ) {}
 
     /** No key configured, no feature: the button never renders and nothing calls out. */
     public function enabled(): bool
@@ -80,7 +86,11 @@ class AiRozpisSuggestionService
         $tokens = $this->tokenise($pool);
 
         try {
-            $placements = $this->ask($this->payload($team, $date, $tokens, $slots));
+            $placements = $this->ask(
+                $this->payload($team, $date, $tokens, $slots),
+                $this->instructions(),
+                self::MAX_OUTPUT_TOKENS,
+            );
         } catch (Throwable $e) {
             // A billed third-party call that failed is not an application error — the manager
             // simply gets no suggestion and carries on placing people by hand.
@@ -90,6 +100,345 @@ class AiRozpisSuggestionService
         }
 
         return $this->verify($placements, $tokens, $team, $date);
+    }
+
+    /**
+     * Propose placements for all seven days at once, keyed by date.
+     *
+     * Worth its own path rather than seven suggest() calls: those cannot see each other, so each
+     * one independently hands its day to whoever ranks highest, and the person at the top of the
+     * queue collects a shift on every day of the week. One request sees the whole week, so it can
+     * spread the work — and it is given each person's recommended day count
+     * (FairnessService::weeklyTargets) to spread it against.
+     *
+     * Tokens are per person here rather than per signup, because a person spans days. Everything
+     * else holds: no names leave the app, and every pair comes back through the same fresh-read
+     * verification a single day's suggestion does.
+     *
+     * @return array<string, list<array{assignment_id: int, slot_id: int}>>
+     */
+    public function suggestWeek(Team $team, CarbonImmutable $weekStart): array
+    {
+        if (! $this->enabled()) {
+            return [];
+        }
+
+        [$from, $to] = $this->weeks->range($weekStart);
+
+        $signups = Assignment::betweenDates($from, $to)->get();
+        $slots = PositionSlot::with('position')->betweenDates($from, $to)->get();
+        $openSlots = $this->openSlotsIn($signups, $slots);
+
+        if ($signups->whereNull('position_id')->isEmpty() || $openSlots->isEmpty()) {
+            return [];
+        }
+
+        // One token per person for the whole week — the reply says "this person, this slot", and
+        // the slot already carries the date.
+        $salt = Str::random(32);
+        $tokens = $signups->pluck('user_id')->unique()->mapWithKeys(fn (int $userId): array => [
+            substr(hash('sha256', $salt.'|'.$userId), 0, self::TOKEN_LENGTH) => $userId,
+        ])->all();
+
+        try {
+            $placements = $this->ask(
+                $this->weekPayload($team, $weekStart, $tokens, $signups, $slots, $openSlots),
+                $this->weekInstructions(),
+                self::WEEK_MAX_OUTPUT_TOKENS,
+            );
+        } catch (Throwable $e) {
+            Log::warning('AI rozpis week suggestion failed.', ['exception' => $e->getMessage()]);
+
+            return [];
+        }
+
+        return $this->verifyWeek($placements, $tokens, $from, $to);
+    }
+
+    /**
+     * The week's slots nobody occupies.
+     *
+     * @param  Collection<int, Assignment>  $signups
+     * @param  Collection<int, PositionSlot>  $slots
+     * @return Collection<int, PositionSlot>
+     */
+    private function openSlotsIn(Collection $signups, Collection $slots): Collection
+    {
+        $taken = $signups->pluck('position_slot_id')->filter();
+
+        return $slots
+            ->reject(fn (PositionSlot $slot): bool => $taken->contains($slot->getKey()))
+            ->sortBy(fn (PositionSlot $slot): array => [
+                $slot->date->toDateString(),
+                $slot->start_time ?? '99:99:99',
+                $slot->position->sort_order,
+            ])
+            ->values();
+    }
+
+    /**
+     * Everything the model may know about the week: the people once, then the days.
+     *
+     * @param  array<string, int>  $tokens  token -> user_id
+     * @param  Collection<int, Assignment>  $signups
+     * @param  Collection<int, PositionSlot>  $slots
+     * @param  Collection<int, PositionSlot>  $openSlots
+     * @return array<string, mixed>
+     */
+    private function weekPayload(
+        Team $team,
+        CarbonImmutable $weekStart,
+        array $tokens,
+        Collection $signups,
+        Collection $slots,
+        Collection $openSlots,
+    ): array {
+        $scores = $this->scores($team);
+        $targets = $this->fairness->weeklyTargets($signups, $slots->count(), $scores->all());
+
+        // Days somebody has already been placed on by hand count against their target — the model
+        // is filling the remainder of the week, not planning it from scratch.
+        $alreadyPlaced = $signups->whereNotNull('position_slot_id')->countBy('user_id');
+        $available = $signups->whereNull('position_id')->groupBy(
+            fn (Assignment $assignment): string => $assignment->date->toDateString()
+        );
+
+        $people = [];
+
+        foreach ($tokens as $token => $userId) {
+            $stats = $scores[$userId] ?? ['totalDays' => 0, 'avgWeight' => 0.0, 'priorityScore' => 0.0];
+
+            $people[] = [
+                'token' => $token,
+                'priorityScore' => $stats['priorityScore'],
+                'avgWeight' => $stats['avgWeight'],
+                'totalDays' => $stats['totalDays'],
+                'signedUpDays' => $targets[$userId]['signups'] ?? 0,
+                'recommendedDays' => $targets[$userId]['target'] ?? 0,
+                'alreadyPlacedDays' => $alreadyPlaced[$userId] ?? 0,
+            ];
+        }
+
+        // Highest claim first, same as the single-day pool.
+        usort($people, fn (array $a, array $b): int => $b['priorityScore'] <=> $a['priorityScore']);
+
+        $byDate = $openSlots->groupBy(fn (PositionSlot $slot): string => $slot->date->toDateString());
+        $tokenOf = array_flip($tokens);
+
+        $days = $this->weeks->days($weekStart)
+            ->map(function (CarbonImmutable $day) use ($byDate, $available, $tokenOf, $team): ?array {
+                $key = $day->toDateString();
+                $daySlots = $byDate->get($key);
+
+                if (! $daySlots) {
+                    return null;
+                }
+
+                return [
+                    'date' => $key,
+                    'weekday' => $day->format('l'),
+                    'dayWeight' => $this->fairness->dayWeight($team, $day),
+                    'isHardToStaffDay' => $this->fairness->isHardToStaffDay($team, $day),
+                    // Only these people signed up for this day. Nobody else may be placed on it.
+                    'availableTokens' => $available->get($key, collect())
+                        ->map(fn (Assignment $assignment): string => $tokenOf[$assignment->user_id])
+                        ->unique()
+                        ->values()
+                        ->all(),
+                    'slots' => $this->describe($daySlots->values()),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        $weights = $team->fairnessDayWeights();
+
+        return [
+            'ordinaryDayWeight' => min($weights),
+            'highestDayWeight' => max($weights),
+            'people' => $people,
+            'days' => $days,
+        ];
+    }
+
+    /**
+     * The week prompt. Shares the domain briefing with the single-day one and replaces the
+     * choosing rules, because spreading work across seven days is a different problem from
+     * filling one.
+     */
+    private function weekInstructions(): string
+    {
+        return <<<'PROMPT'
+        # Role
+
+        You build the weekly shift plan ("rozpis") for a multiplex cinema. You are given the people
+        who volunteered this week and, for each day, the slots that still need staffing. You pair
+        them up for the whole week at once. A human shift manager reviews every placement and
+        accepts or rejects each one, so your job is a solid first draft, not a final decision.
+
+        A slot is one row of the plan: one job, one person, on one specific day. The same job often
+        appears several times in a day — a busy Friday may need three people on the bufet, listed
+        as "Bufet 1", "Bufet 2", "Bufet 3". Those are separate slots needing separate people.
+
+        # Input
+
+        A single JSON object:
+
+        - `people` — the volunteers for the week, **already sorted strongest claim first**. Never
+          any names; each has:
+          - `token` — an opaque identifier, the same person across every day of the week.
+          - `priorityScore` — how strong their claim is. Higher is earlier in the queue.
+          - `totalDays` — shifts worked in the recent history window; a rough proxy for experience.
+          - `avgWeight` — the average day weight they have worked. Near `highestDayWeight` means
+            they routinely take the unpopular days.
+          - `signedUpDays` — how many days this week they made themselves available for.
+          - `recommendedDays` — **how many shifts this person should get this week.** Already
+            balances their availability against their claim. This is your budget per person.
+          - `alreadyPlacedDays` — shifts the manager has already given them by hand this week.
+            These count against `recommendedDays`.
+        - `days` — one entry per day that still has open slots, in week order. Each has `date`,
+          `weekday`, `dayWeight` (what one shift that day is worth — high means few volunteer),
+          `isHardToStaffDay`, `availableTokens` and `slots` (sorted earliest start first, each with
+          `slot_id`, `name`, `code`, `startTime`, `isManagerRole`).
+
+        # Hard rules — a reply that breaks any of these is discarded
+
+        1. Use only `token` values from `people` and only `slot_id` values from `days[].slots`,
+           copied exactly.
+        2. A person may be placed on a slot **only if their token appears in that day's
+           `availableTokens`**. They volunteered for specific days; nobody may be scheduled on a
+           day they did not sign up for.
+        3. Each `slot_id` at most once across the whole reply.
+        4. At most one slot per person per day. Across the week a person may and should work
+           several days — but never two slots on the same date.
+        5. Never invent a person, a slot or a day.
+        6. More slots than available people on a day: leave the surplus out. Do not pad.
+
+        # The budget: how much each person should work this week
+
+        This is the part that matters most, and the part a day-at-a-time planner gets wrong.
+
+        For every person, keep a running count of the slots you have given them **so far in this
+        reply**, and add `alreadyPlacedDays` to it. Call that their *load*. Their budget is
+        `recommendedDays`.
+
+        - `load < recommendedDays` — **under-loaded. Favour this person.** They are the ones the
+          week still owes work to. Reach for them first.
+        - `load == recommendedDays` — **done.** They have had their share. Do not give them more
+          while anybody under-loaded is available for that slot.
+        - `load > recommendedDays` — **over-loaded. Penalise this person.** Only place them when a
+          slot would otherwise stay empty, and prefer whoever is least far over.
+
+        Somebody who already has a lot of shifts this week is *not* a good candidate for the next
+        one, however high their `priorityScore`. The score decides who is favoured **between people
+        with the same load**, never a reason to pile a fourth day onto someone whose budget is two.
+        Spreading the work across the team is the whole point of planning the week in one pass.
+
+        Work the week in passes rather than filling day one to exhaustion: give everybody their
+        first shift before you give anybody their second, everybody their second before anybody's
+        third, and so on. A plan where three people work five days each and eight people work none
+        is a failure even if every slot is filled.
+
+        # How to choose
+
+        1. Order the days by need: `isHardToStaffDay` first, then descending `dayWeight`. These are
+           the shifts nobody volunteers for, so they get the pick of the available people. An easy
+           Tuesday can be filled from whoever is left.
+        2. Inside a day, work down `slots` in the given order — earliest start first.
+        3. For each slot, out of the people whose token is in that day's `availableTokens`, who
+           have no slot yet on that date, choose:
+           a. the lowest load relative to their budget (most under-loaded first);
+           b. break ties on the higher `priorityScore` — that is what the score is for;
+           c. break remaining ties on the lower `avgWeight`, so an unpopular day goes to somebody
+              who has not been carrying them.
+        4. `isManagerRole` slots want experience: among candidates of similar load, prefer the
+           higher `totalDays`. A preference, never a reason to break a hard rule or to overload.
+        5. Full coverage beats the budget. If a slot has no under-loaded candidate left, fill it
+           with the least over-loaded available person rather than leaving the cinema unstaffed.
+        6. Someone with a high `priorityScore` who has taken few of the unpopular days
+           (`avgWeight` near `ordinaryDayWeight`) is exactly who should be asked to take a
+           hard-to-staff day. That is what "benefit the ones who need it" means here: the reward is
+           being scheduled fairly, not being spared the hard days.
+        7. Stop when every slot is filled or no eligible person remains. People left unplaced is a
+           correct outcome — they are the week's náhradníci.
+
+        # Sanity check before you answer
+
+        Re-read your own list and confirm: no slot twice; nobody twice on one date; nobody on a day
+        their token was not listed as available for; and no one materially over `recommendedDays`
+        while somebody else who was available for that day sits under theirs. Fix any of these
+        before replying.
+
+        # Output
+
+        The JSON object described by the response schema, and nothing else. No commentary, no
+        explanation, no markdown fence.
+        PROMPT;
+    }
+
+    /**
+     * Re-resolve a week's reply against a fresh read, same contract as verify().
+     *
+     * The slot carries the date, so the person is matched to *their* signup on *that* day. One
+     * slot once, one person once per day — a person may legitimately appear on several days.
+     *
+     * @param  list<array<string, mixed>>  $placements
+     * @param  array<string, int>  $tokens  token -> user_id
+     * @return array<string, list<array{assignment_id: int, slot_id: int}>>
+     */
+    private function verifyWeek(array $placements, array $tokens, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $signups = Assignment::betweenDates($from, $to)->get();
+        $slots = PositionSlot::with('position')->betweenDates($from, $to)->get();
+
+        $openSlots = $this->openSlotsIn($signups, $slots)->keyBy('id');
+
+        // The one assignment each person still holds unplaced on each date.
+        $unplaced = $signups->whereNull('position_id')->keyBy(
+            fn (Assignment $assignment): string => $assignment->user_id.'|'.$assignment->date->toDateString()
+        );
+
+        $verified = [];
+        $usedSlots = [];
+        $usedPersonDays = [];
+
+        foreach ($placements as $placement) {
+            $token = $placement['token'] ?? null;
+            $slotId = $placement['slot_id'] ?? null;
+
+            if (! is_string($token) || ! is_int($slotId) || in_array($slotId, $usedSlots, true)) {
+                continue;
+            }
+
+            $userId = $tokens[$token] ?? null;
+            $slot = $openSlots->get($slotId);
+
+            if ($userId === null || ! $slot) {
+                continue;
+            }
+
+            $date = $slot->date->toDateString();
+            $personDay = $userId.'|'.$date;
+
+            // Signed up for this exact date, still unplaced, and not already given a slot earlier
+            // in this same reply.
+            $assignment = $unplaced->get($personDay);
+
+            if (! $assignment || in_array($personDay, $usedPersonDays, true)) {
+                continue;
+            }
+
+            $usedSlots[] = $slotId;
+            $usedPersonDays[] = $personDay;
+
+            $verified[$date][] = [
+                'assignment_id' => (int) $assignment->getKey(),
+                'slot_id' => $slotId,
+            ];
+        }
+
+        return $verified;
     }
 
     /**
@@ -237,12 +586,12 @@ class AiRozpisSuggestionService
      * @param  array<string, mixed>  $payload
      * @return list<array<string, mixed>>
      */
-    private function ask(array $payload): array
+    private function ask(array $payload, string $instructions, int $maxOutputTokens): array
     {
         $response = Gemini::generativeModel(model: config('gemini.model'))
-            ->withSystemInstruction(Content::parse($this->instructions()))
+            ->withSystemInstruction(Content::parse($instructions))
             ->withGenerationConfig(new GenerationConfig(
-                maxOutputTokens: self::MAX_OUTPUT_TOKENS,
+                maxOutputTokens: $maxOutputTokens,
                 // The task is constraint satisfaction over a pre-ranked list. Creativity here
                 // would only mean drifting off the given order.
                 temperature: 0.0,
@@ -258,11 +607,12 @@ class AiRozpisSuggestionService
         return is_array($decoded['placements'] ?? null) ? $decoded['placements'] : [];
     }
 
+    /** Shared by both prompts: a slot_id already says which day it belongs to. */
     private function schema(): Schema
     {
         return new Schema(
             type: DataType::OBJECT,
-            description: 'The placements chosen for this day.',
+            description: 'The chosen placements.',
             properties: [
                 'placements' => new Schema(
                     type: DataType::ARRAY,

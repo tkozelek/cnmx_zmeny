@@ -139,6 +139,99 @@ class FairnessServiceTest extends TestCase
     }
 
     /**
+     * Which days get the "neobľúbený" treatment — the ranked pool and the score badge.
+     *
+     * The threshold is the week's own average, not its cheapest day: pricing the weekend *below*
+     * an ordinary weekday (which the defaults do) would otherwise drag the floor down and leave
+     * Monday through Friday all flagged, which is no signal at all.
+     */
+    public function test_only_days_above_the_week_average_count_as_hard_to_staff(): void
+    {
+        $team = $this->tenant();
+        $fairness = app(FairnessService::class);
+
+        // Defaults [1, 1, 1, 1, 1.6, 0.8, 0.8] average 1.03 — Friday alone clears it.
+        $this->assertTrue($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-07-31')), 'Friday');
+        $this->assertFalse($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-08-03')), 'Monday');
+        $this->assertFalse($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-08-01')), 'Saturday');
+
+        // A cinema that cannot fill its weekend: average 1.36, so Fri/Sat/Sun clear it and the
+        // ordinary weekdays — the whole point of the change — do not.
+        $this->setWeights($team, [1, 1, 1, 1, 1.5, 2, 2]);
+
+        $this->assertTrue($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-08-01')), 'Saturday');
+        $this->assertTrue($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-07-31')), 'Friday');
+        $this->assertFalse($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-08-03')), 'Monday');
+
+        // Nothing stands out, so nothing is flagged.
+        $this->setWeights($team, [1, 1, 1, 1, 1, 1, 1]);
+
+        $this->assertFalse($fairness->isHardToStaffDay($team, CarbonImmutable::parse('2026-08-01')), 'Saturday');
+    }
+
+    /**
+     * The recommended split: availability decides the shape, the score only tilts it.
+     *
+     * Both people below are equally available, so a plain proportional split would give them the
+     * same number. The tilt is what separates them — and it is bounded, which the cap test below
+     * pins down: no score is worth more days than somebody actually offered.
+     */
+    public function test_the_recommended_day_count_follows_signups_and_is_tilted_by_the_score(): void
+    {
+        $team = $this->tenant();
+
+        $owed = $this->member($team);
+        $settled = $this->member($team);
+        $occasional = $this->member($team);
+
+        $signups = collect([
+            [$owed, '2026-08-03'], [$owed, '2026-08-04'],
+            [$settled, '2026-08-03'], [$settled, '2026-08-04'],
+            [$occasional, '2026-08-05'],
+        ])->map(fn (array $signup): Assignment => Assignment::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $signup[0]->id,
+            'position_id' => null,
+            'date' => $signup[1],
+        ]));
+
+        // 4 slots for 5 signups, and $owed outranks $settled on the fairness score.
+        $targets = app(FairnessService::class)->weeklyTargets($signups, 4, [
+            $owed->id => ['totalDays' => 10, 'avgWeight' => 1.0, 'priorityScore' => 20.0],
+            $settled->id => ['totalDays' => 10, 'avgWeight' => 1.6, 'priorityScore' => 4.0],
+        ]);
+
+        $this->assertSame(2, $targets[$owed->id]['signups']);
+        $this->assertSame(2, $targets[$settled->id]['signups']);
+
+        $this->assertGreaterThan(
+            $targets[$settled->id]['target'],
+            $targets[$owed->id]['target'],
+            'Equal availability, higher score — this one is recommended more of the week.',
+        );
+
+        // Nobody is ever recommended past their own availability, whatever the score says.
+        foreach ($targets as $row) {
+            $this->assertLessThanOrEqual($row['signups'], $row['target']);
+        }
+
+        $this->assertSame(1, $targets[$occasional->id]['signups']);
+
+        // No slots to hand out, so no recommendation to make.
+        $this->assertSame([], app(FairnessService::class)->weeklyTargets($signups, 0, []));
+    }
+
+    /**
+     * @param  list<float|int>  $weights
+     */
+    private function setWeights(Team $team, array $weights): void
+    {
+        // Through the model for the same reason widenWindow() explains.
+        $team->settings->update(['fairness_day_weights' => $weights]);
+        $team->unsetRelation('settings');
+    }
+
+    /**
      * @param  list<string>  $dates
      */
     private function worked(User $user, Position $position, array $dates): void

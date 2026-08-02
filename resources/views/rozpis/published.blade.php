@@ -82,6 +82,15 @@
                                         manažér: <span class="font-semibold text-neutral-300">{{ $day['manager'] }}</span>
                                     </p>
                                 @endif
+
+                                {{-- Manager slots are not counted — the vedúci is arranged apart
+                                     from the rest and would otherwise flag every day. --}}
+                                @if($day['unfilled'] > 0)
+                                    <p class="mt-1.5 inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-amber-400">
+                                        <i class="fa-solid fa-triangle-exclamation text-[0.6rem]"></i>
+                                        {{ $day['unfilled'] }}x neobsadené
+                                    </p>
+                                @endif
                             </div>
 
                             {{-- Separators are darker than the card, not lighter: a neutral-800 rule
@@ -99,13 +108,20 @@
                                          card glares, a darker one still cuts the block up seven
                                          times over; a faint tint on every other row separates them
                                          without drawing an edge at all. --}}
+                                    {{-- An unfilled row wins over the striping: a gap in the plan
+                                         is the one thing worth spotting in a column of names. --}}
                                     <div @class([
                                         'flex items-center justify-between gap-2 px-3 py-2',
-                                        'bg-neutral-950/25' => $loop->index % 2 === 1,
+                                        'bg-neutral-950/25' => $loop->index % 2 === 1 && $row['name'] !== null,
+                                        'bg-amber-500/[0.07]' => $row['name'] === null,
                                     ])>
                                         <span class="min-w-0">
-                                            <span class="block truncate text-sm font-semibold text-neutral-100">
-                                                {{ $row['name'] ?? '—' }}
+                                            <span @class([
+                                                'block truncate text-sm font-semibold',
+                                                'text-neutral-100' => $row['name'] !== null,
+                                                'text-amber-400/80 italic' => $row['name'] === null,
+                                            ])>
+                                                {{ $row['name'] ?? 'neobsadené' }}
                                             </span>
                                             <span class="block truncate text-[0.7rem] text-neutral-400">{{ $row['label'] }}</span>
                                         </span>
