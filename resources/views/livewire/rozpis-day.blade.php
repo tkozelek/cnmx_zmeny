@@ -30,6 +30,14 @@
     <div class="flex flex-col gap-2 px-3 py-2.5"
          @if($this->canBuild) x-sortable-order="reorderSlots" @endif>
         @forelse($this->rows as $row)
+            {{-- Group heading. Sits outside the draggable card so SortableJS never picks it up,
+                 and rows sort back into their own group anyway (RozpisService::sortSlots). --}}
+            @if($row['startsGroup'])
+                <p class="mt-1 truncate px-0.5 text-[0.6rem] font-bold uppercase tracking-widest text-neutral-500 first:mt-0">
+                    {{ $row['group'] }}
+                </p>
+            @endif
+
             <div wire:key="slot-{{ $row['slot']->id }}"
                  data-slot-id="{{ $row['slot']->id }}"
                  class="rounded-md border border-neutral-800 bg-neutral-950/40">

@@ -119,13 +119,15 @@ class AiRozpisSuggestionService
             ->whereNotNull('position_slot_id')
             ->pluck('position_slot_id');
 
-        return PositionSlot::with('position')
+        return PositionSlot::with('position.group')
             ->where('date', $date->toDateString())
             ->get()
             ->reject(fn (PositionSlot $slot): bool => $taken->contains($slot->getKey()))
-            ->sortBy([
-                fn (PositionSlot $slot): string => $slot->start_time ?? '99:99:99',
-                fn (PositionSlot $slot): int => $slot->position->sort_order,
+            // One closure returning an array — see RozpisService::sortSlots() for why an array of
+            // closures silently sorts these backwards.
+            ->sortBy(fn (PositionSlot $slot): array => [
+                $slot->start_time ?? '99:99:99',
+                $slot->position->sort_order,
             ])
             ->values();
     }

@@ -415,6 +415,40 @@ class RozpisTest extends TestCase
         $this->assertSame(20, $second->fresh()->sort_order);
     }
 
+    /**
+     * Rows render in ascending sort_order.
+     *
+     * Asserting the *labels* is not enough — they are numbered by display position, so "Bufet 1,
+     * Bufet 2, Bufet 3" comes out right even when the rows are backwards. This pins which slot is
+     * actually first, which is what a reversed sort breaks.
+     */
+    public function test_rows_render_in_ascending_order(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $date = $this->workday($team);
+
+        $this->lockWeekOf($team, $date);
+
+        $bufet = Position::factory()->create(['team_id' => $team->id, 'name' => 'Bufet', 'code' => null]);
+
+        // Created out of order, so a sort that merely preserves insertion order fails too.
+        $middle = PositionSlot::factory()->forPosition($bufet)->on($date)->create(['sort_order' => 20, 'start_time' => '12:30:00']);
+        $last = PositionSlot::factory()->forPosition($bufet)->on($date)->create(['sort_order' => 30, 'start_time' => '13:00:00']);
+        $first = PositionSlot::factory()->forPosition($bufet)->on($date)->create(['sort_order' => 10, 'start_time' => '12:00:00']);
+
+        $rows = Livewire::actingAs($manager)
+            ->test(RozpisDay::class, ['date' => $date])
+            ->get('rows');
+
+        $this->assertSame(
+            [$first->id, $middle->id, $last->id],
+            array_map(fn (array $row): int => $row['slot']->id, $rows),
+        );
+
+        $this->assertSame(['12:00', '12:30', '13:00'], array_column($rows, 'time'));
+    }
+
     /** Ids from another day are ignored rather than trusted. */
     public function test_reordering_ignores_slots_from_another_day(): void
     {

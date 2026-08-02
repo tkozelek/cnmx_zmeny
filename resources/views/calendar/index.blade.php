@@ -40,6 +40,16 @@
                         </a>
                     @endif
 
+                    {{-- Everyone's way into the finished plan. Only offered once it is published:
+                         a link that bounces with "not published yet" is worse than no link. --}}
+                    @if($rozpisPublished)
+                        <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}"
+                           class="inline-flex min-h-10 items-center gap-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                            Rozpis zmien
+                        </a>
+                    @endif
+
                     @include('partials._fileuploadmodal')
                 </div>
             </header>
