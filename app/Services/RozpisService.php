@@ -9,6 +9,7 @@ use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * Assembles one week of the rozpis builder.
@@ -31,21 +32,74 @@ class RozpisService
     {
         [$from, $to] = $this->weeks->range($weekStart);
 
+        $slots = PositionSlot::with('position.group')->betweenDates($from, $to)->get();
+        $assignments = Assignment::with(['user', 'position'])->betweenDates($from, $to)->get();
+        $fairness = $this->fairness->scores($team, CarbonImmutable::now())->all();
+
         return [
             'weekStart' => $weekStart,
             'weekEnd' => $to,
             'days' => $this->weeks->days($weekStart),
-            'weekSlots' => PositionSlot::with('position.group')
-                ->betweenDates($from, $to)
-                ->get()
-                ->groupBy(fn (PositionSlot $slot): string => $slot->date->toDateString()),
-            'weekAssignments' => Assignment::with(['user', 'position'])
-                ->betweenDates($from, $to)
-                ->get()
-                ->groupBy(fn (Assignment $assignment): string => $assignment->date->toDateString()),
-            'fairness' => $this->fairness->scores($team, CarbonImmutable::now())->all(),
+            'weekSlots' => $slots->groupBy(fn (PositionSlot $slot): string => $slot->date->toDateString()),
+            'weekAssignments' => $assignments->groupBy(fn (Assignment $assignment): string => $assignment->date->toDateString()),
+            'fairness' => $fairness,
+            'workload' => $this->workload($assignments, $slots->count(), $fairness),
+            'history' => $this->history($team, $from, $to),
             'positions' => Position::selectable()->get(),
         ];
+    }
+
+    /**
+     * Who changed this week's plan, most recent first.
+     *
+     * Filtered on the stamped properties rather than by joining the subject rows, because the
+     * edits most worth auditing are the ones that deleted their own subject — see
+     * LogsRozpisActivity for why team and date are carried in the activity itself.
+     *
+     * @return Collection<int, Activity>
+     */
+    private function history(Team $team, CarbonImmutable $from, CarbonImmutable $to): Collection
+    {
+        return Activity::with('causer')
+            ->where('properties->team_id', $team->getKey())
+            ->whereBetween('properties->date', [$from->toDateString(), $to->toDateString()])
+            ->latest()
+            // A week of dragging runs to hundreds of rows; the panel answers "what changed
+            // recently", not "everything that ever happened".
+            ->limit(50)
+            ->get();
+    }
+
+    /**
+     * How many of the week's shifts each person should get, ready to print: one row per volunteer,
+     * the people to lean on first at the top.
+     *
+     * Read once before assigning rather than watched while dragging — nothing in it moves when a
+     * slot is filled, because it is derived from the signups and the history, both of which a
+     * locked week has already fixed.
+     *
+     * @param  Collection<int, Assignment>  $assignments
+     * @param  array<int, array{totalDays: int, avgWeight: float, priorityScore: float}>  $fairness
+     * @return list<array{name: string, signups: int, target: int, priorityScore: float, placed: int}>
+     */
+    private function workload(Collection $assignments, int $capacity, array $fairness): array
+    {
+        $targets = $this->fairness->weeklyTargets($assignments, $capacity, $fairness);
+        $placed = $assignments->whereNotNull('position_slot_id')->countBy('user_id');
+
+        return $assignments
+            ->unique('user_id')
+            ->map(fn (Assignment $assignment): array => [
+                'name' => (string) $assignment->user,
+                'signups' => $targets[$assignment->user_id]['signups'],
+                'target' => $targets[$assignment->user_id]['target'],
+                'placed' => $placed[$assignment->user_id] ?? 0,
+                'priorityScore' => (float) ($fairness[$assignment->user_id]['priorityScore'] ?? 0.0),
+            ])
+            // Most owed first: that is the order a manager works down the list in.
+            ->sortByDesc(fn (array $row): array => [$row['target'], $row['priorityScore']])
+            ->values()
+            ->all();
     }
 
     /**
@@ -60,7 +114,7 @@ class RozpisService
      * on shift. They stay a real slot in the builder — somebody has to be assignable to it — and
      * `managerRows` keeps them for the places that want every shift, like the flat Zoznam sheet.
      *
-     * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string}>, rows: list<array{label: string, time: ?string, name: ?string}>, substitutes: list<string>, complete: bool}>
+     * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string}>, rows: list<array{label: string, time: ?string, name: ?string}>, substitutes: list<string>, unfilled: int}>
      */
     public function plan(Team $team, CarbonImmutable $weekStart): Collection
     {
@@ -118,10 +172,10 @@ class RozpisService
                     ->values()
                     ->all(),
 
-                // Every slot the day offers, vedúci included — an unstaffed manager slot is just
-                // as much a hole in the plan as an unstaffed bufet.
-                'complete' => ($everySlot = [...$rows, ...$managerRows]) !== []
-                    && collect($everySlot)->every(fn (array $row): bool => $row['name'] !== null),
+                // How many printed rows nobody stands in. Manager slots are deliberately out of
+                // it: the vedúci is arranged separately and is routinely still blank while the
+                // rest of the day is settled, so counting them would leave every day flagged.
+                'unfilled' => collect($rows)->whereNull('name')->count(),
             ];
         });
     }
