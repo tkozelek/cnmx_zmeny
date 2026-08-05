@@ -35,7 +35,7 @@ class MediaService
 
     /**
      * Delete the row and the file behind it. A row whose file is already gone is still
-     * deleted — a dangling record is worse than a missing file.
+     * deleted - a dangling record is worse than a missing file.
      */
     public function delete(Media $media): bool
     {

@@ -56,7 +56,7 @@ class ShiftService
 
     /**
      * A shift that ends earlier in the day than it started ran past midnight, so it ends
-     * the next day. This is the bug the DATETIME columns exist to fix — a TIME pair made
+     * the next day. This is the bug the DATETIME columns exist to fix - a TIME pair made
      * a 21:00 -> 01:30 shift come out as minus nineteen and a half hours.
      */
     private function endsAt(array $row): CarbonImmutable

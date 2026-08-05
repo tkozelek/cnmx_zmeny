@@ -14,7 +14,7 @@ use Livewire\WithPagination;
 /**
  * The admin user table: search, sort, approve or block a membership.
  *
- * Scoped to the current cinema — `team_user` is what makes somebody a member, and the role
+ * Scoped to the current cinema - `team_user` is what makes somebody a member, and the role
  * filter runs through Spatie, whose `model_has_roles.team_id` scopes the answer to the same
  * team.
  */
@@ -63,7 +63,7 @@ class UserTable extends Component
     }
 
     /**
-     * Refuse someone. Deactivates the account rather than deleting it — payroll rows are
+     * Refuse someone. Deactivates the account rather than deleting it - payroll rows are
      * RESTRICT, and `is_active = false` is what the legacy "blocked" role meant.
      */
     public function deny(User $user): void

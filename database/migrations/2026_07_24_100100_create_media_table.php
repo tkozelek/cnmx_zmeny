@@ -20,7 +20,7 @@ return new class extends Migration
 
             /**
              * Which week this file belongs to, as the week's first day. Nullable for
-             * files not tied to a week. No week_id — there is no weeks table.
+             * files not tied to a week. No week_id - there is no weeks table.
              */
             $table->date('week_start')->nullable();
 

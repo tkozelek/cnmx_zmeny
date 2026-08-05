@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * A row here means that week is frozen for that team — no signup, no absence
+     * A row here means that week is frozen for that team - no signup, no absence
      * submission, no plan edits.
      *
      * This is all that survives of the legacy `weeks` table. Weeks are not stored:

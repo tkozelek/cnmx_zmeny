@@ -119,7 +119,50 @@ class DatabaseSeeder extends Seeder
             'team.update',
         ];
 
-        $allPermissions = array_merge($absencePermissions, $userPermissions, $teamPermissions);
+        /**
+         * These were checked by AssignmentPolicy/MediaPolicy but never seeded - they only
+         * worked because hasPermissionInTeam() bypasses the check entirely for admin and
+         * manager. Seeding them for real means that bypass stops being load-bearing.
+         *
+         * `assignment.create` and `assignment.delete` deliberately stay off the employee role:
+         * both act as lock overrides (see AssignmentPolicy::create), so granting them would let
+         * an employee sign up for a frozen week.
+         */
+        /**
+         * `assignment.lead-shift` is who may be put on a position flagged `is_manager` - the
+         * vedúci row. A permission rather than a hard-coded list of role names, so a cinema can
+         * hand it to one trusted brigádnik without promoting them.
+         */
+        $assignmentPermissions = [
+            'assignment.create',
+            'assignment.delete',
+            'assignment.lock',
+            'assignment.assign-position',
+            'assignment.lead-shift',
+        ];
+
+        $mediaPermissions = [
+            'media.view',
+            'media.create',
+            'media.update',
+            'media.delete',
+        ];
+
+        $positionPermissions = [
+            'position.view-any',
+            'position.create',
+            'position.update',
+            'position.delete',
+        ];
+
+        $allPermissions = array_merge(
+            $absencePermissions,
+            $userPermissions,
+            $teamPermissions,
+            $assignmentPermissions,
+            $mediaPermissions,
+            $positionPermissions,
+        );
 
         foreach ($allPermissions as $permissionName) {
             Permission::findOrCreate($permissionName, 'web');
@@ -128,16 +171,25 @@ class DatabaseSeeder extends Seeder
         foreach (RoleEnum::cases() as $role) {
             $spatieRole = Role::findOrCreate($role->value, 'web');
 
-            if ($role === RoleEnum::Admin || $role === RoleEnum::Manager) {
-                $spatieRole->syncPermissions($allPermissions);
-            } elseif ($role === RoleEnum::Employee) {
-                $spatieRole->syncPermissions([
+            $spatieRole->syncPermissions(match ($role) {
+                // Run the cinema, including who works there.
+                RoleEnum::Admin, RoleEnum::HeadManager, RoleEnum::Manager => $allPermissions,
+
+                // Runs shifts, not the cinema: builds and publishes the rozpis and may take the
+                // vedúci row, but does not hire, fire or change the cinema's settings.
+                RoleEnum::Supervisor => array_merge(
+                    $assignmentPermissions,
+                    $mediaPermissions,
+                    ['absence.view', 'absence.manage', 'user.view', 'team.view', 'position.view-any'],
+                ),
+
+                RoleEnum::Employee => [
                     'absence.create',
                     'absence.manage-own',
                     'absence.delete-own',
                     'user.view',
-                ]);
-            }
+                ],
+            });
         }
     }
 

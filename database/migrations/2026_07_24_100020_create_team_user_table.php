@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
             // Null until an admin approves the membership. Replaces the legacy
-            // "neovereny" role — pending is a membership state, not a role.
+            // "neovereny" role - pending is a membership state, not a role.
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
 

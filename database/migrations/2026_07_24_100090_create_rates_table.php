@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('team_id')->constrained()->cascadeOnDelete();
 
-            // RESTRICT for the same reason as shifts — pay history is not disposable.
+            // RESTRICT for the same reason as shifts - pay history is not disposable.
             $table->foreignId('user_id')->constrained()->restrictOnDelete();
 
             $table->decimal('weekday', 8, 2);

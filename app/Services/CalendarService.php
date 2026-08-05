@@ -38,12 +38,17 @@ class CalendarService
             ->map(fn ($ws) => $ws instanceof CarbonInterface ? $ws->toDateString() : (string) $ws)
             ->toArray();
 
+        // One row answers both questions: a week is locked when it exists, and published when it
+        // also carries a timestamp. Publication only ever happens to a locked week.
+        $lock = WeekLock::forWeek($team->getKey(), $weekStart);
+
         return [
             'weekStart' => $weekStart,
             'weekEnd' => $to,
             'days' => $this->weeks->days($weekStart),
             'weekAssignments' => $weekAssignments,
-            'locked' => WeekLock::locked($team->getKey(), $weekStart),
+            'locked' => $lock !== null,
+            'rozpisPublished' => (bool) $lock?->isRozpisPublished(),
             'lockedWeekStarts' => $lockedWeekStarts,
             'media' => $this->media($weekStart, $canViewAbsences),
             'absences' => $canViewAbsences ? $this->absences($from, $to) : collect(),
