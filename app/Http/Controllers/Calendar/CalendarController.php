@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * The employee week view — the main screen.
+ * The employee week view - the main screen.
  */
 class CalendarController extends Controller
 {
@@ -24,7 +24,7 @@ class CalendarController extends Controller
         return $this->week($request, $team, null);
     }
 
-    /** `/week/{date}` — any date inside the wanted week, realigned before use. */
+    /** `/week/{date}` - any date inside the wanted week, realigned before use. */
     public function show(Request $request, Team $team, string $date): View
     {
         return $this->week($request, $team, $date);

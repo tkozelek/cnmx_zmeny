@@ -43,7 +43,7 @@ class WeekLockTest extends TestCase
     }
 
     /**
-     * A week is keyed by its first day, so any date inside it must lock the same week —
+     * A week is keyed by its first day, so any date inside it must lock the same week -
      * that realignment is what stops a hand-edited URL creating a second, offset lock.
      */
     public function test_any_date_in_the_week_locks_the_same_week(): void

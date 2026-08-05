@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Signing up for a day, coming off it again, and the lock that stops both — over plain
+ * Signing up for a day, coming off it again, and the lock that stops both - over plain
  * POST/DELETE.
  *
  * The calendar UI drives `App\Livewire\DayCard` instead (see DayCardTest), so these routes are

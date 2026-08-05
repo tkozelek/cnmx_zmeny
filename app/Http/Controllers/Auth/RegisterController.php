@@ -41,7 +41,7 @@ class RegisterController extends Controller
         $user->teams()->attach($team, ['approved_at' => null]);
 
         // The role assignment is scoped by model_has_roles.team_id, which the registrar is
-        // not holding during a guest request — so it is set explicitly here.
+        // not holding during a guest request - so it is set explicitly here.
         app(PermissionRegistrar::class)->setPermissionsTeamId($team->getKey());
         $user->assignRole(Role::Employee->value);
 

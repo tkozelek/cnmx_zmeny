@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Hours actually worked, recorded after the fact. This is the table payroll reads —
+     * Hours actually worked, recorded after the fact. This is the table payroll reads -
      * `assignments` is only the plan.
      */
     public function up(): void
@@ -44,7 +44,7 @@ return new class extends Migration
             $table->index(['team_id', 'user_id', 'starts_at']);
 
             // Admin statistics: the whole team's hours over a date range. Needed as a
-            // separate index — in the composite above, `user_id` is unbound for these
+            // separate index - in the composite above, `user_id` is unbound for these
             // queries and sitting in the middle it stops `starts_at` being usable as a
             // range bound, so MySQL would scan every shift for the team.
             $table->index(['team_id', 'starts_at']);

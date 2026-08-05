@@ -16,11 +16,16 @@ use App\Http\Controllers\Hours\HoursController;
 use App\Http\Controllers\Hours\RateController;
 use App\Http\Controllers\Hours\ShiftController;
 use App\Http\Controllers\Media\MediaController;
+use App\Http\Controllers\Position\PositionController;
 use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\Rozpis\RozpisController;
+use App\Http\Controllers\Rozpis\RozpisExportController;
+use App\Http\Controllers\Rozpis\RozpisPublishController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Team\TeamSettingController;
 use App\Http\Controllers\Team\TeamSwitchController;
+use App\Http\Middleware\SetCurrentTeam;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,8 +34,16 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::view('/welcome', 'welcome.welcome')->name('welcome.index');
-Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
+/*
+| Guests may read these, but they still render the authenticated navigation, whose entries are
+| gated on team-scoped permissions — with no team in the registrar every `@can` there is false and
+| the dropdown silently loses Správa kina and Pozície. `optional` establishes the team when there
+| is one instead of demanding it.
+*/
+Route::middleware(SetCurrentTeam::class.':optional')->group(function () {
+    Route::view('/welcome', 'welcome.welcome')->name('welcome.index');
+    Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/prihlasenie', [LoginController::class, 'index'])->name('login');
@@ -137,5 +150,29 @@ Route::middleware('tenant')->group(function () {
 
     Route::get('/sprava-kina', [TeamSettingController::class, 'edit'])->name('team.settings.edit');
     Route::put('/sprava-kina', [TeamSettingController::class, 'update'])->name('team.settings.update');
+
+    /*
+    |----------------------------------------------------------------------
+    | Positions & the rozpis builder
+    |----------------------------------------------------------------------
+    | Authorized in the controller rather than by `role:admin` middleware — same as
+    | /sprava-kina above. The middleware form would lock out the `manager` role even
+    | though the policies already grant it these permissions.
+    */
+    Route::get('/admin/pozicie', [PositionController::class, 'index'])->name('positions.index');
+
+    Route::get('/tyzden/{date}/rozpis', [RozpisController::class, 'show'])->name('rozpis.show');
+    Route::post('/tyzden/{date}/rozpis/kopirovat', [RozpisController::class, 'copy'])->name('rozpis.copy');
+
+    /*
+    | The published rozpis. Open to every member — the controller decides whether this week is
+    | released yet, because "not published" is a redirect with an explanation, not a 403.
+    */
+    Route::get('/tyzden/{date}/rozpis/zmeny', [RozpisController::class, 'published'])->name('rozpis.published');
+
+    Route::post('/tyzden/{date}/rozpis/zverejnit', [RozpisPublishController::class, 'store'])->name('rozpis.publish');
+    Route::delete('/tyzden/{date}/rozpis/zverejnit', [RozpisPublishController::class, 'destroy'])->name('rozpis.unpublish');
+
+    Route::get('/tyzden/{date}/rozpis/export', RozpisExportController::class)->name('rozpis.export');
 
 });

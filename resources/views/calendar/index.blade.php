@@ -24,10 +24,29 @@
                             </button>
                         </form>
 
+                        {{-- Only once the week is frozen: the builder needs a settled signup list. --}}
+                        @if($locked)
+                            <a href="{{ route('rozpis.show', ['date' => $weekStart->toDateString()]) }}"
+                               class="inline-flex min-h-10 items-center gap-2 rounded-md border border-sky-500/40 bg-sky-500/10 px-4 text-sm font-medium text-sky-300 transition hover:bg-sky-500/20 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                                <i class="fa-solid fa-table-list"></i>
+                                Rozpis
+                            </a>
+                        @endif
+
                         <a href="{{ route('schedule.export', ['date' => $weekStart->toDateString()]) }}"
                            class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium bg-neutral-900 text-neutral-300 ring-1 ring-inset ring-neutral-800 hover:bg-neutral-800 hover:text-white focus:ring-neutral-500 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950">
                             <i class="fa-solid fa-file-arrow-down"></i>
                             Excel
+                        </a>
+                    @endif
+
+                    {{-- Everyone's way into the finished plan. Only offered once it is published:
+                         a link that bounces with "not published yet" is worse than no link. --}}
+                    @if($rozpisPublished)
+                        <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}"
+                           class="inline-flex min-h-10 items-center gap-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                            Rozpis zmien
                         </a>
                     @endif
 
@@ -66,7 +85,7 @@
                                     {{ $absence->isOpenEnded() ? 'trvalá' : $absence->date_to->format('d.m.') }}
                                 </x-table-cell>
                                 <x-table-cell class="whitespace-nowrap text-neutral-500">{{ $absence->created_at->format('d.m. H:i') }}</x-table-cell>
-                                <x-table-cell class="text-neutral-300">{{ $absence->reason ?: '—' }}</x-table-cell>
+                                <x-table-cell class="text-neutral-300">{{ $absence->reason ?: '-' }}</x-table-cell>
                             </x-table-row>
                         @endforeach
                     </x-table>

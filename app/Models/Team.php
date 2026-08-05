@@ -52,7 +52,7 @@ class Team extends Model
     }
 
     /**
-     * Always present — created together with the team, so unsaved defaults never leak.
+     * Always present - created together with the team, so unsaved defaults never leak.
      */
     public function settings(): HasOne
     {
@@ -80,7 +80,7 @@ class Team extends Model
     }
 
     /**
-     * Cached across requests (see CACHING.md, key `team:{id}:settings`) — read on essentially
+     * Cached across requests (see CACHING.md, key `team:{id}:settings`) - read on essentially
      * every request (week rendering, absence create/delete checks) and changed only via the
      * team settings page. `TeamSetting`'s own `saved` hook busts this automatically.
      */
@@ -111,5 +111,27 @@ class Team extends Model
     public function staleAbsenceDeletionDays(): int
     {
         return $this->cachedSettings()?->stale_absence_deletion_days ?? TeamSetting::DEFAULT_STALE_ABSENCE_DELETION_DAYS;
+    }
+
+    /**
+     * What one worked day is worth per weekday, Monday-indexed. Feeds FairnessService.
+     *
+     * @return list<float>
+     */
+    public function fairnessDayWeights(): array
+    {
+        $weights = $this->cachedSettings()?->fairness_day_weights;
+
+        // A stored array of the wrong length would silently misprice part of the week, so a
+        // partial row falls back to the default rather than being padded.
+        return is_array($weights) && count($weights) === 7
+            ? array_map('floatval', array_values($weights))
+            : TeamSetting::DEFAULT_FAIRNESS_DAY_WEIGHTS;
+    }
+
+    /** How many weeks of history the fairness ranking counts. */
+    public function fairnessWindowWeeks(): int
+    {
+        return $this->cachedSettings()?->fairness_window_weeks ?? TeamSetting::DEFAULT_FAIRNESS_WINDOW_WEEKS;
     }
 }

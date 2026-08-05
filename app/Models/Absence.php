@@ -27,7 +27,7 @@ class Absence extends Model
 
     /**
      * Sentinel for an open-ended absence. `date_to` is NOT NULL so the overlap query
-     * stays a plain sargable range scan — "OR date_to IS NULL" cannot use the index.
+     * stays a plain sargable range scan - "OR date_to IS NULL" cannot use the index.
      */
     public const FOREVER = '9999-12-31';
 
@@ -75,7 +75,7 @@ class Absence extends Model
             ->where('date_to', '>=', now()->toDateString());
     }
 
-    /** Already finished — either it ran out or it was ended early / cancelled. */
+    /** Already finished - either it ran out or it was ended early / cancelled. */
     public function scopePast(Builder $query): Builder
     {
         return $query->where(function (Builder $q) {

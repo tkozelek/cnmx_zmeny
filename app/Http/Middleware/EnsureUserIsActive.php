@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * The legacy "blocked" and "unverified" roles are not roles any more: blocked is
  * `users.is_active = false`, and unverified is having no `team_user` row with
- * `approved_at` set. Both mean the same thing here — log them back out with the reason.
+ * `approved_at` set. Both mean the same thing here - log them back out with the reason.
  */
 class EnsureUserIsActive
 {

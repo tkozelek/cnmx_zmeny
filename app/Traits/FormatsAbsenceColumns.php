@@ -7,7 +7,7 @@ use App\Models\Absence;
 
 /**
  * Shared "Stav" and "Akcie" column rendering for the absence data tables
- * (AbsencesDataTable, MyAbsencesDataTable) — identical in both.
+ * (AbsencesDataTable, MyAbsencesDataTable) - identical in both.
  */
 trait FormatsAbsenceColumns
 {

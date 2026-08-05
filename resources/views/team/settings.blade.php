@@ -147,6 +147,72 @@
 
                     </div>
 
+                    <div class="my-6 border-t border-neutral-800"></div>
+
+                    <div class="space-y-4">
+                        <h2 class="text-sm font-semibold uppercase tracking-wider text-sky-400 flex items-center gap-2">
+                            <i class="fa-solid fa-scale-balanced text-xs"></i>
+                            Spravodlivosť rozpisu
+                        </h2>
+
+                        <p class="text-[11px] text-neutral-500">
+                            Koľko „váži“ odpracovaný deň. Vyššia váha = deň, na ktorý sa málokto hlási dobrovoľne
+                            (typicky piatok a víkend) - kto ho odpracuje, má to započítané viac.
+                            Ako neobľúbený sa v rozpise označí deň s váhou <strong>nad priemerom týždňa</strong> -
+                            len v takom dni sa zoznam nezaradených zoradí podľa toho, kto je na ťahu, a pri menách
+                            sa zobrazí poradie spravodlivosti (vyššie číslo = na rade skôr). Ak sú všetky váhy
+                            rovnaké, neoznačí sa žiadny deň.
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+                            @foreach($weekDays as $dayIndex => $dayName)
+                                <div>
+                                    <label for="fairness_day_weights_{{ $dayIndex }}" class="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                                        {{ Str::substr($dayName, 0, 3) }}.
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.1"
+                                        min="0.1"
+                                        max="10"
+                                        name="fairness_day_weights[{{ $dayIndex }}]"
+                                        id="fairness_day_weights_{{ $dayIndex }}"
+                                        value="{{ old('fairness_day_weights.'.$dayIndex, $team->fairnessDayWeights()[$dayIndex]) }}"
+                                        @disabled(! $canEdit)
+                                        required
+                                        title="{{ $dayName }}"
+                                        class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-3 text-sm text-white shadow-inner transition hover:border-neutral-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                    @error('fairness_day_weights.'.$dayIndex)
+                                        <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @error('fairness_day_weights')
+                            <p class="text-xs text-rose-400">{{ $message }}</p>
+                        @enderror
+
+                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <div>
+                                <x-form-input
+                                    type="number"
+                                    name="fairness_window_weeks"
+                                    label="Obdobie hodnotenia (týždne dozadu)"
+                                    placeholder="12"
+                                    :value="old('fairness_window_weeks', $team->fairnessWindowWeeks())"
+                                    icon="fa-clock-rotate-left"
+                                    min="1"
+                                    max="52"
+                                    :disabled="!$canEdit"
+                                    required
+                                />
+                                <p class="text-[11px] text-neutral-500 mt-1">Ako ďaleko do minulosti sa počítajú odpracované dni.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     @if($canEdit)
                         <div class="pt-4 flex justify-end">
                             <button type="submit" class="py-3 px-6 bg-neutral-800 hover:bg-neutral-750 active:bg-neutral-850 text-white font-bold rounded-xl text-sm tracking-widest uppercase border border-neutral-700 hover:border-sky-500/50 shadow-lg transition duration-200 flex items-center gap-2 group">

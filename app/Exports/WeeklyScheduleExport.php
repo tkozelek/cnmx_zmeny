@@ -24,7 +24,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * One week's plan: a column per day, the people signed up listed underneath, plus a second
  * sheet counting days per person.
  *
- * Built from `assignments` — the legacy version walked Week -> Day -> user_days.
+ * Built from `assignments` - the legacy version walked Week -> Day -> user_days.
  */
 class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaultStyles, WithEvents, WithHeadings, WithStyles, WithTitle
 {
@@ -122,7 +122,7 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
         return 'Zapísaní ľudia';
     }
 
-    /** "Kozelek T. (RN)" — surname, initial, position code. */
+    /** "Kozelek T. (RN)" - surname, initial, position code. */
     private function cellsFor(CarbonImmutable $date): array
     {
         return $this->byDate->get($date->toDateString(), collect())

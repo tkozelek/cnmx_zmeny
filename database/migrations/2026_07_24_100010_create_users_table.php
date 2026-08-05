@@ -20,7 +20,7 @@ return new class extends Migration
             // Active team for users who belong to more than one. Membership itself lives in team_user.
             $table->foreignId('current_team_id')->nullable()->constrained('teams')->nullOnDelete();
 
-            // Replaces the legacy "zablokovany" role — blocking is an attribute, not a role.
+            // Replaces the legacy "zablokovany" role - blocking is an attribute, not a role.
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_login_at')->nullable();
             $table->timestamps();

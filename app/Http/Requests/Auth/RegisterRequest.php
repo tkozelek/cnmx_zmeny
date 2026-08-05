@@ -28,7 +28,7 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'email', Rule::unique('users', 'email')],
             'password' => ['required', 'confirmed', Password::min(8)],
 
-            // Which cinema to join. Optional while there is only one — the controller
+            // Which cinema to join. Optional while there is only one - the controller
             // resolves it rather than making the form carry a pointless select.
             'team_id' => ['nullable', Rule::exists('teams', 'id')->where('is_active', true)],
         ];

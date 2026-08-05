@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Hours actually worked. This is what payroll reads — `Assignment` is only the plan.
+ * Hours actually worked. This is what payroll reads - `Assignment` is only the plan.
  */
 class Shift extends Model
 {
@@ -61,7 +61,7 @@ class Shift extends Model
         return (int) $this->starts_at->diffInMinutes($this->ends_at) - $this->break_minutes;
     }
 
-    /** The day the shift is booked to — the day it started, not the day it ended. */
+    /** The day the shift is booked to - the day it started, not the day it ended. */
     public function payrollDate(): string
     {
         return $this->starts_at->toDateString();

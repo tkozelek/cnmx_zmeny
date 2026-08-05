@@ -128,7 +128,7 @@
                                         @endif">
                                         @if($isPending) Neoverený
                                         @elseif(! $user->is_active) Zablokovaný
-                                        @else {{ \App\Enums\Role::tryFrom($roleName)?->label() ?? '—' }}
+                                        @else {{ \App\Enums\Role::tryFrom($roleName)?->label() ?? '-' }}
                                         @endif
                                     </span>
                                 </x-table-cell>
