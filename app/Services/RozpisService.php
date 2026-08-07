@@ -79,8 +79,9 @@ class RozpisService
             return collect();
         }
 
-        // Names resolved in one query rather than per row - the diffs store ids.
-        $names = User::whereIn('id', $activities->pluck('attribute_changes.attributes.user_id')->filter()->unique())
+        // Names resolved in one query rather than per row - the activities store ids. Includes
+        // people who have since left the cinema: their history still has to name them.
+        $names = User::whereIn('id', $activities->pluck('properties.user_id')->filter()->unique())
             ->pluck('name', 'id');
 
         return $activities
@@ -112,7 +113,7 @@ class RozpisService
     {
         $new = (array) data_get($activity->attribute_changes, 'attributes', []);
         $old = (array) data_get($activity->attribute_changes, 'old', []);
-        $who = $names[$new['user_id'] ?? $old['user_id'] ?? null] ?? null;
+        $who = $names[data_get($activity->properties, 'user_id')] ?? null;
         $time = fn (?string $value): string => $value ? substr($value, 0, 5) : 'bez času';
 
         if (class_basename((string) $activity->subject_type) === 'PositionSlot') {
@@ -160,8 +161,8 @@ class RozpisService
             ->unique('user_id')
             ->map(fn (Assignment $assignment): array => [
                 'name' => (string) $assignment->user,
-                'signups' => $targets[$assignment->user_id]['signups'],
-                'target' => $targets[$assignment->user_id]['target'],
+                'signups' => $targets[$assignment->user_id]['signups'] ?? 0,
+                'target' => $targets[$assignment->user_id]['target'] ?? 0,
                 'placed' => $placed[$assignment->user_id] ?? 0,
                 'priorityScore' => (float) ($fairness[$assignment->user_id]['priorityScore'] ?? 0.0),
             ])
