@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Absence\AbsenceController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\PasswordRequestController;
@@ -43,6 +44,18 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(SetCurrentTeam::class.':optional')->group(function () {
     Route::view('/welcome', 'welcome.welcome')->name('welcome.index');
     Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/overenie-emailu', [EmailVerificationController::class, 'notice'])->name('verification.notice');
+
+    Route::get('/overenie-emailu/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware('signed')
+        ->name('verification.verify');
+
+    Route::post('/overenie-emailu', [EmailVerificationController::class, 'send'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
 });
 
 Route::middleware('guest')->group(function () {
@@ -112,7 +125,7 @@ Route::middleware('tenant')->group(function () {
             ->middleware('throttle:20,1');
 
         // Last, so "api" is not swallowed by the {user} wildcard.
-        Route::get('/{user}', [HoursController::class, 'show'])->name('hours.show')->middleware('role:admin');
+        Route::get('/{user}', [HoursController::class, 'show'])->name('hours.show');
     });
 
     Route::post('/hodiny-sadzby', RateController::class)->name('rates.store')->middleware('throttle:6,1');
@@ -123,30 +136,31 @@ Route::middleware('tenant')->group(function () {
     |----------------------------------------------------------------------
     | Admin
     |----------------------------------------------------------------------
+    | Authorized in the controller, not by `role:admin` middleware - same reasoning as the
+    | rozpis/positions routes below. There is no single "admin" role any more: Manager and
+    | HeadManager both reach these, gated by the permission each one actually holds.
     */
-    Route::middleware('role:admin')->group(function () {
-        Route::prefix('/admin/pouzivatelia')->name('admin.users.')->group(function () {
-            Route::get('/', [UserController::class, 'index'])->name('index');
-            Route::post('/', [UserController::class, 'store'])->name('store');
-            Route::get('/{user}', [UserController::class, 'edit'])->name('edit');
-            Route::put('/{user}', [UserController::class, 'update'])->name('update');
-            Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
-        });
-
-        Route::post('/week/{date}/lock', [WeekLockController::class, 'store'])->name('weeks.lock');
-        Route::delete('/week/{date}/lock', [WeekLockController::class, 'destroy'])->name('weeks.unlock');
-        Route::get('/week/{date}/export', ScheduleExportController::class)->name('schedule.export');
-
-        Route::prefix('/profil')->controller(ProfileController::class)->group(function () {
-            Route::get('/', 'index')->name('profile.index');
-            Route::get('/{user}', 'show')->name('profile.show');
-        });
-
-        Route::post('/subory', [MediaController::class, 'store'])->name('media.store');
-        Route::delete('/subor/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
-        Route::patch('/subor/{media}/visibility', [MediaController::class, 'toggleVisibility'])
-            ->name('media.visibility');
+    Route::prefix('/admin/pouzivatelia')->name('admin.users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{user}', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{user}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
     });
+
+    Route::post('/week/{date}/lock', [WeekLockController::class, 'store'])->name('weeks.lock');
+    Route::delete('/week/{date}/lock', [WeekLockController::class, 'destroy'])->name('weeks.unlock');
+    Route::get('/week/{date}/export', ScheduleExportController::class)->name('schedule.export');
+
+    Route::prefix('/profil')->controller(ProfileController::class)->group(function () {
+        Route::get('/', 'index')->name('profile.index');
+        Route::get('/{user}', 'show')->name('profile.show');
+    });
+
+    Route::post('/subory', [MediaController::class, 'store'])->name('media.store');
+    Route::delete('/subor/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
+    Route::patch('/subor/{media}/visibility', [MediaController::class, 'toggleVisibility'])
+        ->name('media.visibility');
 
     Route::get('/sprava-kina', [TeamSettingController::class, 'edit'])->name('team.settings.edit');
     Route::put('/sprava-kina', [TeamSettingController::class, 'update'])->name('team.settings.update');

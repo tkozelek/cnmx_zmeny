@@ -222,6 +222,29 @@ class FairnessServiceTest extends TestCase
     }
 
     /**
+     * The other half of the fairness story: the weekend is "desirable" because it sits below the
+     * fixed 1.0 baseline, not because it sits below the week's average - the average is pulled up
+     * by Friday, so an average-relative test would wrongly call every ordinary weekday desirable
+     * too.
+     */
+    public function test_only_days_below_the_ordinary_baseline_count_as_desirable(): void
+    {
+        $team = $this->tenant();
+        $fairness = app(FairnessService::class);
+
+        // Defaults [1, 1, 1, 1, 1.6, 0.8, 0.8] - only the weekend sits below 1.0.
+        $this->assertTrue($fairness->isDesirableDay($team, CarbonImmutable::parse('2026-08-01')), 'Saturday');
+        $this->assertTrue($fairness->isDesirableDay($team, CarbonImmutable::parse('2026-08-02')), 'Sunday');
+        $this->assertFalse($fairness->isDesirableDay($team, CarbonImmutable::parse('2026-08-03')), 'Monday');
+        $this->assertFalse($fairness->isDesirableDay($team, CarbonImmutable::parse('2026-07-31')), 'Friday');
+
+        // All-equal weights: nothing is below baseline, so nothing is desirable either.
+        $this->setWeights($team, [1, 1, 1, 1, 1, 1, 1]);
+
+        $this->assertFalse($fairness->isDesirableDay($team, CarbonImmutable::parse('2026-08-01')), 'Saturday');
+    }
+
+    /**
      * @param  list<float|int>  $weights
      */
     private function setWeights(Team $team, array $weights): void

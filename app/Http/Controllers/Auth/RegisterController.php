@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Spatie\Permission\PermissionRegistrar;
@@ -21,9 +22,8 @@ class RegisterController extends Controller
     }
 
     /**
-     * Self-registration creates the account and a *pending* membership: no `approved_at`,
-     * so `EnsureUserIsActive` keeps them out until an admin accepts them. That pending
-     * state is what the legacy "neovereny" role used to mean.
+     * Two gates, in order: the address is confirmed by e-mail, then a manager approves the
+     * membership. A manager cannot approve anyone who has not passed the first.
      */
     public function store(RegisterRequest $request): RedirectResponse
     {
@@ -45,7 +45,12 @@ class RegisterController extends Controller
         app(PermissionRegistrar::class)->setPermissionsTeamId($team->getKey());
         $user->assignRole(Role::Employee->value);
 
-        return to_route('welcome.index')->with('message', 'Účet vytvorený. Počkaj na schválenie.');
+        event(new Registered($user));
+
+        return to_route('login')->with(
+            'message',
+            'Účet vytvorený. Poslali sme ti overovací e-mail - potvrď ho a potom ťa schváli vedúci.',
+        );
     }
 
     /** Skip the picker when there is only one cinema to join. */

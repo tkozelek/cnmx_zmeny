@@ -10,7 +10,9 @@
     $averageWeight = array_sum($weights) / count($weights);
 @endphp
 
+{{-- A backdrop click reports the dialog itself as the target; anything inside reports a child. --}}
 <dialog id="rozpis-guide"
+        onclick="if (event.target === this) this.close()"
         class="w-[min(48rem,92vw)] rounded-2xl border border-neutral-800 bg-neutral-900 p-0 text-neutral-200 shadow-2xl backdrop:bg-neutral-950/80 backdrop:backdrop-blur-sm">
     <form method="dialog" class="flex items-start justify-between gap-4 border-b border-neutral-800 px-6 py-4">
         <div>
@@ -67,23 +69,37 @@
 
         <div class="rounded-lg border border-neutral-800 bg-neutral-950/50 px-4 py-3">
             <p class="text-xs leading-relaxed text-neutral-300">
-                Pri nezaradených sa v <strong>neobľúbených dňoch</strong> zobrazuje oranžové číslo - poradie
-                spravodlivosti. <strong class="text-amber-400">Vyššie číslo = na rade skôr.</strong>
-                Je to len odporúčanie, nikoho nepriradí samo - rozhodujete vy.
+                Je to jedno číslo, jeden rebríček - <strong>koho tím ešte "dlhuje" ťažký deň, a koho naopak
+                už netreba na ďalší naháňať</strong>. Zobrazuje sa dvakrát, s opačným poradím:
             </p>
 
             <ul class="mt-2.5 flex flex-col gap-1.5 text-xs leading-relaxed text-neutral-400">
                 <li class="flex gap-2">
-                    <i class="fa-solid fa-arrow-up mt-0.5 text-[0.65rem] text-amber-400"></i>
-                    <span><strong class="text-neutral-200">Vysoké číslo</strong> - chodí často, ale zväčša na tie
-                        pohodlnejšie dni. Takýto človek „dlhuje“ tímu ťažký deň.</span>
+                    <i class="fa-solid fa-triangle-exclamation mt-0.5 text-[0.65rem] text-amber-400"></i>
+                    <span>V <strong class="text-amber-400">neobľúbenom dni</strong> (napr. piatok) je hore
+                        <strong class="text-neutral-200">najvyššie číslo</strong> - kto sa mu doteraz vyhýbal, je na
+                        rade prvý.</span>
                 </li>
                 <li class="flex gap-2">
-                    <i class="fa-solid fa-arrow-down mt-0.5 text-[0.65rem] text-neutral-500"></i>
-                    <span><strong class="text-neutral-200">Nízke číslo</strong> - buď neobľúbené dni pravidelne berie,
-                        alebo tu odpracoval málo dní. V oboch prípadoch nie je na ťahu.</span>
+                    <i class="fa-solid fa-star mt-0.5 text-[0.65rem] text-emerald-400"></i>
+                    <span>V <strong class="text-emerald-400">obľúbenom dni</strong> (napr. víkend) je hore
+                        <strong class="text-neutral-200">najnižšie číslo</strong> - kto ťažké dni už odrobil, dostane
+                        ako odmenu prednosť aj na tento.</span>
                 </li>
             </ul>
+
+            <p class="mt-2.5 text-xs leading-relaxed text-neutral-300">
+                Je to len odporúčanie, nikoho nepriradí samo - rozhodujete vy. To isté číslo vidíte aj v
+                rozbaľovacom zozname <em>- priradiť -</em> pri každom mene v zátvorke, takže platí aj na dotykovom
+                zariadení. Na obyčajný všedný deň sa nezobrazuje nikde, tam poradie nerozhoduje o ničom.
+            </p>
+
+            <p class="mt-2.5 flex gap-2 rounded border border-neutral-800 bg-neutral-900/60 px-2.5 py-2 text-[0.7rem] leading-relaxed text-neutral-400">
+                <i class="fa-solid fa-lightbulb mt-0.5 text-[0.65rem] text-neutral-500"></i>
+                <span><strong class="text-neutral-300">Napríklad:</strong> Janka aj Peter odpracovali po 12 dní. Janka
+                    mala medzi nimi iba 2 piatky, Peter 6. Petrovo číslo je nižšie - na najbližší piatok je preto na
+                    rade Janka, ale na najbližšiu sobotu má naopak prednosť Peter, ktorý si ju "odrobil".</span>
+            </p>
 
             <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-500">
                 Počíta sa z priradení za posledných {{ $team->fairnessWindowWeeks() }} týždňov a z váh
@@ -114,6 +130,13 @@
                         dostupnými ľuďmi nakloní rozdelenie o max. ±25 % v prospech toho, kto je viac na ťahu.</span>
                 </li>
             </ul>
+
+            <p class="mt-2.5 flex gap-2 rounded border border-neutral-800 bg-neutral-900/60 px-2.5 py-2 text-[0.7rem] leading-relaxed text-neutral-400">
+                <i class="fa-solid fa-lightbulb mt-0.5 text-[0.65rem] text-neutral-500"></i>
+                <span><strong class="text-neutral-300">Napríklad:</strong> Janka aj Peter sa zapísali na rovnaké
+                    4 dni tento týždeň. Janka má vyššie poradie spravodlivosti (viac dlhuje tímu ťažký deň), tak jej
+                    panel odporučí o niečo viac zmien než Petrovi - najviac o štvrtinu.</span>
+            </p>
 
             <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-500">
                 Nikdy neodporučí viac dní, než na koľko sa človek zapísal. <strong>0</strong> znamená, že týždeň má

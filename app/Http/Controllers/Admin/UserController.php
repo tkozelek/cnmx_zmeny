@@ -25,7 +25,7 @@ class UserController extends Controller
         $this->authorize('viewAny', User::class);
 
         return view('admin.index', [
-            'roles' => Role::cases(),
+            'roles' => $this->assignableRoles(),
         ]);
     }
 
@@ -36,16 +36,21 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request, Team $team): RedirectResponse
     {
-        $this->authorize('create', User::class);
+        $role = Role::from($request->string('role')->value());
+        $this->authorize('create', [User::class, $role]);
 
         $fields = $request->safe()->except('role');
         $fields['name'] = mb_convert_case($fields['name'], MB_CASE_TITLE, 'UTF-8');
         $fields['lastname'] = mb_convert_case($fields['lastname'], MB_CASE_TITLE, 'UTF-8');
         $fields['password'] = Hash::make(Str::random(32));
 
+        // An admin typing the address in is the vouching step. Sending a verification mail for an
+        // account they never asked for would only lock them out.
+        $fields['email_verified_at'] = now();
+
         $user = User::create($fields);
         $user->teams()->attach($team, ['approved_at' => now()]);
-        $user->assignRole($request->string('role')->value());
+        $user->assignRole($role->value);
 
         try {
             $user->notify(new AddUserResetPassword(Password::broker('add_user')->createToken($user)));
@@ -65,18 +70,36 @@ class UserController extends Controller
 
         return view('admin.edit', [
             'user' => $user,
-            'roles' => Role::cases(),
+            'roles' => $this->assignableRoles(),
         ]);
     }
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $this->authorize('update', $user);
+        $role = Role::from($request->string('role')->value());
+        $this->authorize('update', [$user, $role]);
 
         $user->update($request->safe()->except('role'));
-        $user->syncRoles([$request->string('role')->value()]);
+        $user->syncRoles([$role->value]);
 
         return to_route('admin.users.index')->with(['message' => 'Úspešne zmenené.', 'edit' => 'yes']);
+    }
+
+    /**
+     * A plain Manager may only hand out the brigádnik role - promoting into Manager/HeadManager
+     * is HeadManager's call.
+     *
+     * @return list<Role>
+     */
+    private function assignableRoles(): array
+    {
+        $team = app(Team::class);
+
+        if (request()->user()->hasPermissionInTeam('user.manage-managers', $team)) {
+            return Role::cases();
+        }
+
+        return [Role::Employee];
     }
 
     /**

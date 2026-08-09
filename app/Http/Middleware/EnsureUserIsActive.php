@@ -26,8 +26,14 @@ class EnsureUserIsActive
             return $this->reject($request, 'Účet je zablokovaný.');
         }
 
+        // Not a rejection: they can fix this themselves, and logging them out would take away
+        // the "send it again" button.
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         if ($user->approvedTeams()->isEmpty()) {
-            return $this->reject($request, 'Ešte si nebol/a overený. Počkaj kým ťa administrátor overí.');
+            return $this->reject($request, 'E-mail máš overený, čaká sa na schválenie vedúcim.');
         }
 
         return $next($request);

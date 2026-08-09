@@ -34,7 +34,7 @@ class CalendarPageTest extends TestCase
     {
         $team = $this->tenant();
 
-        $this->actingAs($this->member($team, Role::Admin))
+        $this->actingAs($this->member($team, Role::HeadManager))
             ->get(route('calendar.index'))
             ->assertOk()
             ->assertSee('Zamknúť týždeň')

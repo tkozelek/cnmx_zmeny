@@ -8,7 +8,7 @@
 
                 {{-- Action Buttons Under Week Selector --}}
                 <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
-                    @if(auth()->user()->hasRole('admin'))
+                    @can('lock', \App\Models\Assignment::class)
                         <form method="POST" action="{{ route($locked ? 'weeks.unlock' : 'weeks.lock', ['date' => $weekStart->toDateString()]) }}">
                             @csrf
                             @if($locked)
@@ -38,7 +38,7 @@
                             <i class="fa-solid fa-file-arrow-down"></i>
                             Excel
                         </a>
-                    @endif
+                    @endcan
 
                     {{-- Everyone's way into the finished plan. Only offered once it is published:
                          a link that bounces with "not published yet" is worse than no link. --}}

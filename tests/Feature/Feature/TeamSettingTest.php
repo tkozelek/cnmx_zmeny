@@ -18,7 +18,7 @@ class TeamSettingTest extends TestCase
         Permission::findOrCreate('team.view', 'web');
         Permission::findOrCreate('team.update', 'web');
 
-        $admin = $this->member($team, Role::Admin);
+        $admin = $this->member($team, Role::HeadManager);
         app(PermissionRegistrar::class)->setPermissionsTeamId($team->id);
         $admin->givePermissionTo('team.view');
         $admin->givePermissionTo('team.update');

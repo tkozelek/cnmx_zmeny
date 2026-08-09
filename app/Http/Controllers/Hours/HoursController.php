@@ -18,9 +18,14 @@ class HoursController extends Controller
         return $this->hoursFor($request, $request->user());
     }
 
-    /** Admin view of somebody else's hours. */
+    /** Manager view of somebody else's hours. */
     public function show(Request $request, User $user): View
     {
+        abort_unless(
+            $request->user()->id === $user->id || $request->user()->hasPermissionInTeam('user.view-any'),
+            403
+        );
+
         return $this->hoursFor($request, $user);
     }
 

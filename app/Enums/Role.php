@@ -6,23 +6,19 @@ namespace App\Enums;
  * The Spatie roles this application knows about.
  *
  * The rows are global (roles.team_id null) but assignments are per team, so the same
- * user can be an Admin in one cinema and an Employee in another.
+ * user can be a HeadManager in one cinema and an Employee in another.
  */
 enum Role: string
 {
-    case Admin = 'admin';
     case HeadManager = 'head-manager';
     case Manager = 'manager';
-    case Supervisor = 'supervisor';
     case Employee = 'employee';
 
     public function label(): string
     {
         return match ($this) {
-            self::Admin => 'Administrátor',
             self::HeadManager => 'Hlavný manažér',
             self::Manager => 'Manažér',
-            self::Supervisor => 'Supervízor',
             self::Employee => 'Brigádnik',
         };
     }
@@ -38,7 +34,7 @@ enum Role: string
      */
     public static function leadership(): array
     {
-        return [self::Admin, self::HeadManager, self::Manager, self::Supervisor];
+        return [self::HeadManager, self::Manager];
     }
 
     /**

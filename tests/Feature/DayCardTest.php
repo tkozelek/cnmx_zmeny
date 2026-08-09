@@ -166,7 +166,7 @@ class DayCardTest extends TestCase
     public function test_an_admin_can_remove_anyones_assignment(): void
     {
         $team = $this->tenant();
-        $admin = $this->member($team, Role::Admin);
+        $admin = $this->member($team, Role::HeadManager);
         $employee = $this->member($team);
         $date = CarbonImmutable::now()->addDays(3)->toDateString();
 

@@ -147,4 +147,23 @@ class FairnessService
 
         return $this->dayWeight($team, $date) > array_sum($weights) / count($weights);
     }
+
+    /**
+     * A day weighted below 1.0, the "ordinary weekday" point on the scale - the weekend, with the
+     * default weights.
+     *
+     * Tested against the fixed 1.0 baseline rather than the week's average, unlike
+     * isHardToStaffDay(): the average sits above 1.0 precisely because a hard day is pulling it
+     * up, so an average-relative test would also brand every ordinary weekday "desirable" for the
+     * crime of being cheaper than Friday. 1.0 already means "ordinary" on this scale by
+     * definition (see TeamSetting::DEFAULT_FAIRNESS_DAY_WEIGHTS) - genuinely sought-after is
+     * below *that*, not below whatever the week's outlier drags the average to.
+     *
+     * This is the other half of the fairness story: isHardToStaffDay() decides who is asked to
+     * take the next Friday, this decides who is offered the next weekend as thanks for it.
+     */
+    public function isDesirableDay(Team $team, CarbonInterface $date): bool
+    {
+        return $this->dayWeight($team, $date) < 1.0;
+    }
 }

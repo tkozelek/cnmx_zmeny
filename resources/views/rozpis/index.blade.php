@@ -144,7 +144,10 @@
                                     <th class="pb-1.5 pr-3 text-center font-semibold">Zapísaný</th>
                                     <th class="pb-1.5 pr-3 text-center font-semibold">Odporúčame</th>
                                     <th class="pb-1.5 pr-3 text-center font-semibold">Zaradený</th>
-                                    <th class="pb-1.5 text-center font-semibold">Poradie</th>
+                                    <th class="pb-1.5 text-center font-semibold"
+                                        title="Poradie spravodlivosti: vyššie číslo znamená, že táto osoba dlhšie nemala neobľúbený deň (napr. piatok) a je na rade skôr naň. Kto ho už odrobil, má naopak nižšie číslo a prednosť dostáva na obľúbené dni.">
+                                        Poradie
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>

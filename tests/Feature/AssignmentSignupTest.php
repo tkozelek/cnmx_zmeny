@@ -96,7 +96,7 @@ class AssignmentSignupTest extends TestCase
     public function test_an_admin_can_still_sign_someone_up_in_a_locked_week(): void
     {
         $team = $this->tenant();
-        $admin = $this->member($team, Role::Admin);
+        $admin = $this->member($team, Role::HeadManager);
         $employee = $this->member($team);
         $date = CarbonImmutable::now()->addDays(3);
 
