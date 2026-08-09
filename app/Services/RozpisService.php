@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Absence;
 use App\Models\Assignment;
 use App\Models\Position;
 use App\Models\PositionSlot;
@@ -184,7 +185,13 @@ class RozpisService
      * on shift. They stay a real slot in the builder - somebody has to be assignable to it - and
      * `managerRows` keeps them for the places that want every shift, like the flat Zoznam sheet.
      *
-     * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string}>, rows: list<array{label: string, time: ?string, name: ?string}>, substitutes: list<string>, unfilled: int}>
+     * `eligible` is the manager-only counterpart of `unfilled`: everybody who signed up for the
+     * day and is not yet on a position, minus anyone with an absence covering it (a defensive
+     * filter - a signed-up absentee should not happen, but an absence can be filed after the
+     * signup), ordered by fairness score descending, same as the builder's hard-day pool. It is
+     * not gated here - the published view decides who gets to see it, this just supplies the data.
+     *
+     * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, rows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, substitutes: list<string>, substituteIds: list<int>, eligible: list<array{name: string, priorityScore: float}>, unfilled: int}>
      */
     public function plan(Team $team, CarbonImmutable $weekStart): Collection
     {
@@ -200,54 +207,77 @@ class RozpisService
             ->get()
             ->groupBy(fn (Assignment $assignment): string => $assignment->date->toDateString());
 
-        return $this->weeks->days($weekStart)->map(function (CarbonImmutable $day) use ($slotsByDate, $assignmentsByDate): array {
-            $key = $day->toDateString();
-            $assignments = $assignmentsByDate->get($key, collect());
+        $fairness = $this->fairness->scores($team, CarbonImmutable::now())->all();
 
-            $slots = $this->sortSlots($slotsByDate->get($key, collect()));
+        $absencesByUser = Absence::where('team_id', $team->getKey())
+            ->overlapping($from, $to)
+            ->get()
+            ->groupBy('user_id');
 
-            $labels = $this->labelSlots($slots);
+        return $this->weeks->days($weekStart)
+            ->map(function (CarbonImmutable $day) use ($slotsByDate, $assignmentsByDate, $fairness, $absencesByUser): array {
+                $key = $day->toDateString();
+                $assignments = $assignmentsByDate->get($key, collect());
 
-            $toRow = fn (PositionSlot $slot): array => [
-                'label' => $labels[$slot->getKey()],
-                'group' => $slot->position->groupName(),
-                // The column is a full TIME; everything on screen and on paper wants H:i.
-                'time' => $slot->start_time ? substr((string) $slot->start_time, 0, 5) : null,
-                'name' => ($occupant = $assignments->firstWhere('position_slot_id', $slot->getKey()))
-                    ? (string) $occupant->user
-                    : null,
-            ];
+                $slots = $this->sortSlots($slotsByDate->get($key, collect()));
 
-            // Labelled off the whole day before the split, so pulling the vedúci out cannot
-            // renumber the bufet rows.
-            $isManager = fn (PositionSlot $slot): bool => (bool) $slot->position->is_manager;
+                $labels = $this->labelSlots($slots);
 
-            $managerRows = $slots->filter($isManager)->map($toRow)->values()->all();
-            $rows = $this->markGroupStarts($slots->reject($isManager)->map($toRow)->values()->all());
+                $toRow = fn (PositionSlot $slot): array => [
+                    'label' => $labels[$slot->getKey()],
+                    'group' => $slot->position->groupName(),
+                    // The column is a full TIME; everything on screen and on paper wants H:i.
+                    'time' => $slot->start_time ? substr((string) $slot->start_time, 0, 5) : null,
+                    'name' => ($occupant = $assignments->firstWhere('position_slot_id', $slot->getKey()))
+                        ? (string) $occupant->user
+                        : null,
+                    'user_id' => $occupant->user_id ?? null,
+                ];
 
-            return [
-                'date' => $day,
-                'dayName' => Str::title($day->locale('sk')->dayName),
-                'rows' => $rows,
-                'managerRows' => $managerRows,
+                // Labelled off the whole day before the split, so pulling the vedúci out cannot
+                // renumber the bufet rows.
+                $isManager = fn (PositionSlot $slot): bool => (bool) $slot->position->is_manager;
 
-                // Who was in charge, for the day's heading. The first manager slot with somebody
-                // on it - a day normally offers exactly one.
-                'manager' => collect($managerRows)->pluck('name')->filter()->first(),
+                $managerRows = $slots->filter($isManager)->map($toRow)->values()->all();
+                $rows = $this->markGroupStarts($slots->reject($isManager)->map($toRow)->values()->all());
 
-                // Signed up for the day, never placed. The reference calls these "náhradníci".
-                'substitutes' => $assignments->whereNull('position_slot_id')
+                $pool = $assignments->whereNull('position_slot_id')
                     ->sortBy(fn (Assignment $assignment): string => (string) $assignment->user)
-                    ->map(fn (Assignment $assignment): string => (string) $assignment->user)
-                    ->values()
-                    ->all(),
+                    ->values();
 
-                // How many printed rows nobody stands in. Manager slots are deliberately out of
-                // it: the vedúci is arranged separately and is routinely still blank while the
-                // rest of the day is settled, so counting them would leave every day flagged.
-                'unfilled' => collect($rows)->whereNull('name')->count(),
-            ];
-        });
+                $eligible = $pool
+                    ->reject(fn (Assignment $assignment): bool => ($absencesByUser[$assignment->user_id] ?? collect())
+                        ->contains(fn (Absence $absence): bool => $absence->covers($day)))
+                    ->sortByDesc(fn (Assignment $assignment): float => (float) ($fairness[$assignment->user_id]['priorityScore'] ?? 0.0))
+                    ->map(fn (Assignment $assignment): array => [
+                        'name' => (string) $assignment->user,
+                        'priorityScore' => round((float) ($fairness[$assignment->user_id]['priorityScore'] ?? 0.0), 1),
+                    ])
+                    ->values()
+                    ->all();
+
+                return [
+                    'date' => $day,
+                    'dayName' => Str::title($day->locale('sk')->dayName),
+                    'rows' => $rows,
+                    'managerRows' => $managerRows,
+
+                    // Who was in charge, for the day's heading. The first manager slot with somebody
+                    // on it - a day normally offers exactly one.
+                    'manager' => collect($managerRows)->pluck('name')->filter()->first(),
+
+                    // Signed up for the day, never placed. The reference calls these "náhradníci".
+                    'substitutes' => $pool->map(fn (Assignment $assignment): string => (string) $assignment->user)->all(),
+                    'substituteIds' => $pool->map(fn (Assignment $assignment): int => $assignment->user_id)->all(),
+
+                    'eligible' => $eligible,
+
+                    // How many printed rows nobody stands in. Manager slots are deliberately out of
+                    // it: the vedúci is arranged separately and is routinely still blank while the
+                    // rest of the day is settled, so counting them would leave every day flagged.
+                    'unfilled' => collect($rows)->whereNull('name')->count(),
+                ];
+            });
     }
 
     /**

@@ -19,7 +19,7 @@ class MembershipApprovalTest extends TestCase
     public function test_an_admin_can_approve_a_pending_member(): void
     {
         $team = $this->tenant();
-        $admin = $this->member($team, Role::Admin);
+        $admin = $this->member($team, Role::HeadManager);
         $pending = User::factory()->pendingIn($team)->create();
 
         Livewire::actingAs($admin)
@@ -37,7 +37,7 @@ class MembershipApprovalTest extends TestCase
     public function test_denying_a_member_deactivates_the_account(): void
     {
         $team = $this->tenant();
-        $admin = $this->member($team, Role::Admin);
+        $admin = $this->member($team, Role::HeadManager);
         $pending = User::factory()->pendingIn($team)->create();
 
         Livewire::actingAs($admin)

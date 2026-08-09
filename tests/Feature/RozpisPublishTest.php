@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Exports\RozpisExport;
+use App\Models\Absence;
 use App\Models\Assignment;
 use App\Models\Position;
 use App\Models\PositionSlot;
@@ -325,6 +326,68 @@ class RozpisPublishTest extends TestCase
             ->get(route('rozpis.published', ['date' => $date]))
             ->assertOk()
             ->assertSee('1x neobsadené');
+    }
+
+    /**
+     * The manager-only "vylosovaný" pool: everyone signed up and unplaced, minus anyone with an
+     * absence covering the day, ordered by who is most owed a shift. Employees see the same names
+     * anyway under "Náhradníci" - only the fairness order is manager-only.
+     */
+    public function test_manager_only_eligible_pool_excludes_absentees_and_orders_by_fairness(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $employee = $this->member($team);
+        $weekStart = $this->weekStart($team);
+        $date = $weekStart->toDateString();
+
+        $this->lockWeek($team, $weekStart, published: true);
+
+        $position = Position::factory()->create(['team_id' => $team->id, 'name' => 'Bufet']);
+        PositionSlot::factory()->forPosition($position)->on($date)->create(['start_time' => '16:00:00']);
+
+        $owed = $this->member($team);
+        $settled = $this->member($team);
+        $absent = $this->member($team);
+
+        foreach ([$owed, $settled, $absent] as $user) {
+            Assignment::factory()->create([
+                'team_id' => $team->id, 'user_id' => $user->id,
+                'position_id' => null, 'position_slot_id' => null, 'date' => $date,
+            ]);
+        }
+
+        // $settled already worked a shift, so their fairness score outranks $owed's untouched one.
+        $pastSlot = PositionSlot::factory()->forPosition($position)->on($weekStart->subWeek()->toDateString())->create();
+        Assignment::factory()->create([
+            'team_id' => $team->id, 'user_id' => $settled->id,
+            'position_id' => $position->id, 'position_slot_id' => $pastSlot->getKey(),
+            'date' => $weekStart->subWeek()->toDateString(),
+        ]);
+
+        // $absent signed up too, but is unavailable that day.
+        Absence::factory()->create([
+            'team_id' => $team->id, 'user_id' => $absent->id,
+            'date_from' => $date, 'date_to' => $date,
+        ]);
+
+        $day = app(RozpisService::class)->plan($team, $weekStart)->first();
+
+        $this->assertSame(
+            [(string) $settled, (string) $owed],
+            array_column($day['eligible'], 'name'),
+            'Absent excluded entirely, and the rest ordered by who is most owed a shift.',
+        );
+
+        $this->actingAs($manager)
+            ->get(route('rozpis.published', ['date' => $date]))
+            ->assertOk()
+            ->assertSee('Kto môže byť vylosovaný');
+
+        $this->actingAs($employee)
+            ->get(route('rozpis.published', ['date' => $date]))
+            ->assertOk()
+            ->assertDontSee('Kto môže byť vylosovaný');
     }
 
     private function weekStart(Team $team): CarbonImmutable

@@ -5,9 +5,9 @@ namespace Tests;
 use App\Enums\Role;
 use App\Models\Team;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Cache;
-use Spatie\Permission\Models\Role as SpatieRole;
 use Spatie\Permission\PermissionRegistrar;
 
 abstract class TestCase extends BaseTestCase
@@ -38,12 +38,10 @@ abstract class TestCase extends BaseTestCase
         $registrar = app(PermissionRegistrar::class);
         $registrar->forgetCachedPermissions();
 
-        // Role rows are global; the team lives on the assignment, not the role.
-        $registrar->setPermissionsTeamId(null);
-
-        foreach (Role::cases() as $role) {
-            SpatieRole::findOrCreate($role->value, 'web');
-        }
+        // Role rows are global; the team lives on the assignment, not the role. Seeded for
+        // real (not just findOrCreate'd empty) so a test HeadManager/Manager actor has exactly
+        // the permissions a real one would - hasPermissionInTeam() has no role-name bypass.
+        $this->seed(RolePermissionSeeder::class);
 
         $team = Team::factory()->create();
 

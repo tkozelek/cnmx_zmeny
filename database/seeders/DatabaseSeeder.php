@@ -10,8 +10,6 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
@@ -22,7 +20,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->seedRoles();
+        $this->call(RolePermissionSeeder::class);
 
         $cinemaLocations = [
             'Žilina Max',
@@ -66,8 +64,8 @@ class DatabaseSeeder extends Seeder
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($defaultTeam->id);
 
-        $tommy = $this->member($defaultTeam, 'Tomáš', 'Kozelek', 'tommyside@centrum.sk', RoleEnum::Admin, 'asdasd');
-        $admin = $this->member($defaultTeam, 'Admin', 'Kina', 'admin@kino.test', RoleEnum::Admin);
+        $tommy = $this->member($defaultTeam, 'Tomáš', 'Kozelek', 'tommyside@centrum.sk', RoleEnum::HeadManager, 'asdasd');
+        $admin = $this->member($defaultTeam, 'Admin', 'Kina', 'admin@kino.test', RoleEnum::HeadManager);
         $jana = $this->member($defaultTeam, 'Jana', 'Nováková', 'jana@kino.test', RoleEnum::Employee);
         $peter = $this->member($defaultTeam, 'Peter', 'Horváth', 'peter@kino.test', RoleEnum::Employee);
 
@@ -77,10 +75,10 @@ class DatabaseSeeder extends Seeder
             app(PermissionRegistrar::class)->setPermissionsTeamId($t->id);
 
             $tommy->teams()->attach($t->id, ['approved_at' => now()]);
-            $tommy->assignRole(RoleEnum::Admin->value);
+            $tommy->assignRole(RoleEnum::HeadManager->value);
 
             $admin->teams()->attach($t->id, ['approved_at' => now()]);
-            $admin->assignRole(RoleEnum::Admin->value);
+            $admin->assignRole(RoleEnum::HeadManager->value);
 
             $jana->teams()->attach($t->id, ['approved_at' => now()]);
             $jana->assignRole(RoleEnum::Employee->value);
@@ -90,107 +88,6 @@ class DatabaseSeeder extends Seeder
 
         $this->command?->info('Žilina Max nastavené ako hlavné kino.');
         $this->command?->info("Prihlás sa ako {$tommy->email} s heslom 'asdasd'.");
-    }
-
-    private function seedRoles(): void
-    {
-        app(PermissionRegistrar::class)->setPermissionsTeamId(null);
-
-        $absencePermissions = [
-            'absence.view',
-            'absence.create',
-            'absence.manage-own',
-            'absence.delete-own',
-            'absence.delete-inactive',
-            'absence.manage',
-        ];
-
-        $userPermissions = [
-            'user.view-any',
-            'user.view',
-            'user.create',
-            'user.update',
-            'user.delete',
-            'user.approve',
-        ];
-
-        $teamPermissions = [
-            'team.view',
-            'team.update',
-        ];
-
-        /**
-         * These were checked by AssignmentPolicy/MediaPolicy but never seeded - they only
-         * worked because hasPermissionInTeam() bypasses the check entirely for admin and
-         * manager. Seeding them for real means that bypass stops being load-bearing.
-         *
-         * `assignment.create` and `assignment.delete` deliberately stay off the employee role:
-         * both act as lock overrides (see AssignmentPolicy::create), so granting them would let
-         * an employee sign up for a frozen week.
-         */
-        /**
-         * `assignment.lead-shift` is who may be put on a position flagged `is_manager` - the
-         * vedúci row. A permission rather than a hard-coded list of role names, so a cinema can
-         * hand it to one trusted brigádnik without promoting them.
-         */
-        $assignmentPermissions = [
-            'assignment.create',
-            'assignment.delete',
-            'assignment.lock',
-            'assignment.assign-position',
-            'assignment.lead-shift',
-        ];
-
-        $mediaPermissions = [
-            'media.view',
-            'media.create',
-            'media.update',
-            'media.delete',
-        ];
-
-        $positionPermissions = [
-            'position.view-any',
-            'position.create',
-            'position.update',
-            'position.delete',
-        ];
-
-        $allPermissions = array_merge(
-            $absencePermissions,
-            $userPermissions,
-            $teamPermissions,
-            $assignmentPermissions,
-            $mediaPermissions,
-            $positionPermissions,
-        );
-
-        foreach ($allPermissions as $permissionName) {
-            Permission::findOrCreate($permissionName, 'web');
-        }
-
-        foreach (RoleEnum::cases() as $role) {
-            $spatieRole = Role::findOrCreate($role->value, 'web');
-
-            $spatieRole->syncPermissions(match ($role) {
-                // Run the cinema, including who works there.
-                RoleEnum::Admin, RoleEnum::HeadManager, RoleEnum::Manager => $allPermissions,
-
-                // Runs shifts, not the cinema: builds and publishes the rozpis and may take the
-                // vedúci row, but does not hire, fire or change the cinema's settings.
-                RoleEnum::Supervisor => array_merge(
-                    $assignmentPermissions,
-                    $mediaPermissions,
-                    ['absence.view', 'absence.manage', 'user.view', 'team.view', 'position.view-any'],
-                ),
-
-                RoleEnum::Employee => [
-                    'absence.create',
-                    'absence.manage-own',
-                    'absence.delete-own',
-                    'user.view',
-                ],
-            });
-        }
     }
 
     private function seedPositions(): void

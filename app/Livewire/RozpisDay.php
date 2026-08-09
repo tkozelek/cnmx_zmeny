@@ -452,9 +452,15 @@ class RozpisDay extends Component
     /**
      * Everyone who signed up for this day and has no position yet.
      *
-     * Sorted by priorityScore only on a hard-to-staff (Friday/weekend) day - the days somebody
-     * has to be asked to take, so the order matters. A plain weekday keeps DayCard's alphabetical
-     * listing, and nothing changes for the common case.
+     * Sorted by priorityScore on the two day types where the score means something:
+     * - Hard-to-staff (Friday, by default): descending. Whoever is most owed a hard day surfaces
+     *   first, because somebody has to be asked to take it.
+     * - Desirable (the weekend, by default): ascending. Whoever has already taken the fewest
+     *   hard days - the low score from having paid that debt - surfaces first, so the fairness
+     *   score is a reason to get the good day too, not just a reason to be spared the bad one.
+     *
+     * A plain weekday is neither, and keeps DayCard's alphabetical listing - nothing changes for
+     * the common case.
      *
      * @return Collection<int, Assignment>
      */
@@ -463,13 +469,19 @@ class RozpisDay extends Component
     {
         $pool = $this->assignments->whereNull('position_id');
 
-        if (! $this->isHardToStaff) {
-            return $pool->sortBy(fn (Assignment $assignment): string => (string) $assignment->user)->values();
+        if ($this->isHardToStaff) {
+            return $pool
+                ->sortByDesc(fn (Assignment $assignment): float => $this->scoreFor($assignment->user_id))
+                ->values();
         }
 
-        return $pool
-            ->sortByDesc(fn (Assignment $assignment): float => $this->scoreFor($assignment->user_id))
-            ->values();
+        if ($this->isDesirableDay) {
+            return $pool
+                ->sortBy(fn (Assignment $assignment): float => $this->scoreFor($assignment->user_id))
+                ->values();
+        }
+
+        return $pool->sortBy(fn (Assignment $assignment): string => (string) $assignment->user)->values();
     }
 
     public function filledFor(int $slotId): ?Assignment
@@ -612,6 +624,12 @@ class RozpisDay extends Component
     public function isHardToStaff(): bool
     {
         return app(FairnessService::class)->isHardToStaffDay(app(Team::class), $this->dayCarbon);
+    }
+
+    #[Computed]
+    public function isDesirableDay(): bool
+    {
+        return app(FairnessService::class)->isDesirableDay(app(Team::class), $this->dayCarbon);
     }
 
     #[Computed]

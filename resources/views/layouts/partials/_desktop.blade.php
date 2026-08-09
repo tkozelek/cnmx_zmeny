@@ -1,6 +1,6 @@
 <nav class="hidden md:flex items-center gap-2">
     @auth
-        @if(auth()->user()->hasRole('admin'))
+        @can('viewAny', \App\Models\User::class)
             <x-nav-link
                 route="admin.users.index"
                 icon='<i class="fa-solid fa-users text-sm"></i>'
@@ -12,7 +12,7 @@
                     </span>
                 @endif
             </x-nav-link>
-        @endif
+        @endcan
 
         <x-nav-link
             route="absences.index"

@@ -61,7 +61,7 @@ class TeamIsolationTest extends TestCase
         $teamA = $this->tenant();
         $teamB = Team::factory()->create(['name' => 'Kino B']);
 
-        $admin = $this->member($teamA, Role::Admin);
+        $admin = $this->member($teamA, Role::HeadManager);
         $admin->teams()->attach($teamB, ['approved_at' => now()]);
 
         $usersUrl = route('admin.users.index');

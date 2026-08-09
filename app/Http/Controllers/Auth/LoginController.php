@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class LoginController extends Controller
@@ -32,6 +33,15 @@ class LoginController extends Controller
         }
 
         $request->session()->regenerate();
+
+        // Login is the only moment the plaintext exists, so it is the only moment an old hash can
+        // be upgraded. Accounts still on the previous cost factor move over as people come back,
+        // and raising BCRYPT_ROUNDS again later needs no migration - just this.
+        $user = $request->user();
+
+        if (Hash::needsRehash($user->password)) {
+            $user->forceFill(['password' => $request->string('password')->value()])->save();
+        }
 
         return to_route('calendar.index')->with('message', 'Úspešne prihlásený.');
     }
