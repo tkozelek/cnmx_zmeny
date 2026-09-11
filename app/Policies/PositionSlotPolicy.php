@@ -6,6 +6,7 @@ use App\Models\PositionSlot;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WeekLock;
+use App\Traits\GuardsCurrentTeam;
 use App\Services\WeekService;
 use Carbon\CarbonInterface;
 
@@ -19,6 +20,8 @@ use Carbon\CarbonInterface;
  */
 class PositionSlotPolicy
 {
+    use GuardsCurrentTeam;
+
     public function __construct(private readonly WeekService $weeks) {}
 
     public function create(User $user, CarbonInterface $date): bool
@@ -28,7 +31,7 @@ class PositionSlotPolicy
 
     public function delete(User $user, PositionSlot $slot): bool
     {
-        if ($slot->team_id !== app(Team::class)->getKey()) {
+        if (! $this->belongsToCurrentTeam($slot)) {
             return false;
         }
 

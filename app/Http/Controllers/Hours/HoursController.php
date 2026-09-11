@@ -18,11 +18,19 @@ class HoursController extends Controller
         return $this->hoursFor($request, $request->user());
     }
 
-    /** Manager view of somebody else's hours. */
+    /**
+     * Manager view of somebody else's hours.
+     *
+     * The membership check is the tenant boundary: `{user}` is a plain route binding over a
+     * table shared by every cinema, so the permission alone would authorise reading a stranger.
+     */
     public function show(Request $request, User $user): View
     {
+        $team = app(Team::class);
+
         abort_unless(
-            $request->user()->id === $user->id || $request->user()->hasPermissionInTeam('user.view-any'),
+            $request->user()->id === $user->id
+                || ($user->isMemberOf($team) && $request->user()->hasPermissionInTeam('user.view-any', $team)),
             403
         );
 

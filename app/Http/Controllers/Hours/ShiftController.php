@@ -66,6 +66,10 @@ class ShiftController extends Controller
     /**
      * Only an admin may read someone else's hours; everyone else gets their own,
      * whatever user_id they send.
+     *
+     * Resolved through the team's members rather than by bare id: `users` is shared across
+     * cinemas, so an unscoped findOrFail() would let a manager read the hours of somebody who
+     * has never worked here.
      */
     private function resolveUser(Request $request, ?int $userId): User
     {
@@ -76,6 +80,6 @@ class ShiftController extends Controller
         $team = app(Team::class);
         abort_unless($request->user()->hasPermissionInTeam('user.view-any', $team), 403);
 
-        return User::findOrFail($userId);
+        return $team->users()->findOrFail($userId);
     }
 }

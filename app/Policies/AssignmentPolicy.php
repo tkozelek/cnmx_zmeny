@@ -6,6 +6,7 @@ use App\Models\Assignment;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WeekLock;
+use App\Traits\GuardsCurrentTeam;
 use App\Services\WeekService;
 use Carbon\CarbonInterface;
 
@@ -17,9 +18,17 @@ use Carbon\CarbonInterface;
  */
 class AssignmentPolicy
 {
+    use GuardsCurrentTeam;
+
     public function __construct(private readonly WeekService $weeks) {}
 
-    /** Sign up for a date. Admins are not stopped by a lock - they are the ones locking. */
+    /**
+     * Sign up for a date. Admins are not stopped by a lock - they are the ones locking.
+     *
+     * `$targetUser` is who is being written into the day, which is not always `$user`: a manager
+     * may sign somebody else up. The absence check has to be about *them* - refusing the manager
+     * their own day off while happily booking an absent brigádnik is exactly backwards.
+     */
     public function create(User $user, Team $team, CarbonInterface $date, ?User $targetUser = null): bool
     {
         $forUser = $targetUser ?? $user;
@@ -46,7 +55,8 @@ class AssignmentPolicy
     public function delete(User $user, Assignment $assignment): bool
     {
         $team = app(Team::class);
-        if ($assignment->team_id !== $team->id) {
+
+        if (! $this->belongsToCurrentTeam($assignment)) {
             return false;
         }
 
@@ -69,7 +79,7 @@ class AssignmentPolicy
     {
         $team = app(Team::class);
 
-        if ($assignment->team_id !== $team->getKey()) {
+        if (! $this->belongsToCurrentTeam($assignment)) {
             return false;
         }
 

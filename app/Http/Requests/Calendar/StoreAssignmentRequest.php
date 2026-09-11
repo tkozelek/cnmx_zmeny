@@ -34,7 +34,14 @@ class StoreAssignmentRequest extends FormRequest
             ],
 
             // Only admins may sign somebody else up; the controller ignores this otherwise.
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            // Scoped to this cinema's approved members for the same reason position_id is:
+            // `users` is shared across cinemas, so a bare exists: rule would let a manager write
+            // somebody from another cinema into their own week.
+            'user_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('team_user', 'user_id')->where('team_id', $teamId)->whereNotNull('approved_at'),
+            ],
 
             'note' => ['nullable', 'string', 'max:255'],
         ];

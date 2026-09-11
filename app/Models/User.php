@@ -136,6 +136,30 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Belongs to this cinema at all - pending, approved or denied.
+     *
+     * Weaker than isApprovedIn() on purpose: it is the tenant boundary for acting *on* a user
+     * (UserPolicy), where the pending queue is exactly the case that must stay reachable. Not
+     * cached, because it gates writes and a stale answer here is a cross-tenant edit.
+     */
+    public function isMemberOf(Team $team): bool
+    {
+        return $this->teams()->whereKey($team->getKey())->exists();
+    }
+
+    /**
+     * May turn this cinema's signups into a shift plan - the rozpis builder, its slots, its
+     * exports and its AI draft all hang off this one permission.
+     *
+     * A method rather than the raw check because two Livewire components and five controllers
+     * ask the same question, and "who may build" is a fact about a user, not about a component.
+     */
+    public function canBuildRozpis(): bool
+    {
+        return $this->hasPermissionInTeam('assignment.assign-position', app(Team::class));
+    }
+
+    /**
      * Point the user at another of their teams. Refuses teams they are not approved in,
      * so a forged team id on the switch route cannot cross the tenant boundary.
      */
