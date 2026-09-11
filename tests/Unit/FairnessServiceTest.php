@@ -19,9 +19,18 @@ use Tests\TestCase;
  * how hard it is to fill. Friday (1.6) is the shift nobody volunteers for; the weekend (0.8) is
  * sought after, which is why it sits *below* an ordinary weekday rather than above it.
  *
- * So `priorityScore = totalDays × (ceiling − avgWeight)` answers "how much does this person owe
- * the team a hard day": high for a regular whose shifts have been the easy ones, low for someone
- * who already takes the Fridays, and low for anyone who barely works at all.
+ * Two scores come out of that, because the builder asks two opposite questions:
+ *
+ * - `earnedCredit` = Σ(weight of every day worked) - what somebody has put in. It rises with
+ *   volume *and* with taking the unpopular days, so it answers "who has earned the next weekend,
+ *   and a bigger share of next week".
+ * - `hardDayDebt` = totalDays × (team average weight − their own) - who has been dodging the hard
+ *   days relative to what this cinema's people typically carry, scaled by how much they work. It
+ *   answers "who is next to be asked to take the Friday".
+ *
+ * Both are read highest-first. That is the point of having two: the single score they replaced had
+ * to be read backwards on desirable days, and reading a volume-weighted score backwards handed the
+ * best shift to whoever worked least.
  */
 class FairnessServiceTest extends TestCase
 {
@@ -61,14 +70,68 @@ class FairnessServiceTest extends TestCase
             'A weekend shift must weigh less than an ordinary weekday.',
         );
 
-        // ceiling = max(weights) + 1 = 2.6 → 12 × 1.4 = 16.8 vs 12 × 1.8 = 21.6
-        $this->assertSame(16.8, $scores[$takesFridays->id]['priorityScore']);
-        $this->assertSame(21.6, $scores[$avoidsFridays->id]['priorityScore']);
+        // Team average across all 24 worked days is (14.4 + 9.6) / 24 = 1.0, so the debts are
+        // 12 × (1.0 − 1.2) = −2.4 and 12 × (1.0 − 0.8) = +2.4.
+        $this->assertSame(-2.4, $scores[$takesFridays->id]['hardDayDebt']);
+        $this->assertSame(2.4, $scores[$avoidsFridays->id]['hardDayDebt']);
 
         $this->assertGreaterThan(
-            $scores[$takesFridays->id]['priorityScore'],
-            $scores[$avoidsFridays->id]['priorityScore'],
+            $scores[$takesFridays->id]['hardDayDebt'],
+            $scores[$avoidsFridays->id]['hardDayDebt'],
             'Whoever has taken fewer of the hard days is next in line for one.',
+        );
+
+        // And the mirror image: 6 Fridays + 6 Saturdays is worth more than 12 Saturdays, so the
+        // one who carried the Fridays has the stronger claim when the weekend comes round.
+        $this->assertSame(14.4, $scores[$takesFridays->id]['earnedCredit']);
+        $this->assertSame(9.6, $scores[$avoidsFridays->id]['earnedCredit']);
+
+        $this->assertGreaterThan(
+            $scores[$avoidsFridays->id]['earnedCredit'],
+            $scores[$takesFridays->id]['earnedCredit'],
+            'Carrying the unpopular days must earn more than cherry-picking the popular ones.',
+        );
+    }
+
+    /**
+     * The regression this whole split exists for.
+     *
+     * The weekend used to be handed out by reading one volume-weighted score *backwards*, so the
+     * lowest score won it - and the lowest score belongs to whoever barely turns up, not to
+     * whoever has been carrying the Fridays. Both rankings are read highest-first now.
+     */
+    public function test_the_weekend_goes_to_whoever_earned_it_not_whoever_works_least(): void
+    {
+        $team = $this->tenant();
+        $position = Position::factory()->create(['team_id' => $team->id]);
+        $fairness = app(FairnessService::class);
+
+        $veteran = $this->member($team);
+        $barelyWorks = $this->member($team);
+
+        $this->worked($veteran, $position, $this->weekdays('friday', 10));
+        $this->worked($barelyWorks, $position, $this->weekdays('saturday', 1));
+
+        $scores = $fairness->scores($team, CarbonImmutable::parse(self::AS_OF));
+
+        $saturday = CarbonImmutable::parse('2026-08-01');
+        $friday = CarbonImmutable::parse('2026-07-31');
+
+        $this->assertSame('earnedCredit', $fairness->rankingKeyFor($team, $saturday));
+        $this->assertSame('hardDayDebt', $fairness->rankingKeyFor($team, $friday));
+
+        // 10 Fridays = 16.0 against one Saturday = 0.8.
+        $this->assertGreaterThan(
+            $scores[$barelyWorks->id]['earnedCredit'],
+            $scores[$veteran->id]['earnedCredit'],
+            'Ten Fridays must outrank one Saturday for the next Saturday.',
+        );
+
+        // ... and the Friday is still offered to the one who has not been taking them.
+        $this->assertGreaterThan(
+            $scores[$veteran->id]['hardDayDebt'],
+            $scores[$barelyWorks->id]['hardDayDebt'],
+            'The person who has carried every Friday is not the one to ask for the next one.',
         );
     }
 
@@ -93,8 +156,13 @@ class FairnessServiceTest extends TestCase
         $this->assertSame(1.0, $scores[$regular->id]['avgWeight']);
         $this->assertSame(1.0, $scores[$occasional->id]['avgWeight']);
 
-        $this->assertSame(19.2, $scores[$regular->id]['priorityScore']);
-        $this->assertSame(3.2, $scores[$occasional->id]['priorityScore']);
+        $this->assertSame(12.0, $scores[$regular->id]['earnedCredit']);
+        $this->assertSame(2.0, $scores[$occasional->id]['earnedCredit']);
+
+        // Everybody here worked the same kind of day, so nobody is dodging anything: the team
+        // average *is* 1.0 and both debts are zero. Volume alone must not manufacture a debt.
+        $this->assertSame(0.0, $scores[$regular->id]['hardDayDebt']);
+        $this->assertSame(0.0, $scores[$occasional->id]['hardDayDebt']);
     }
 
     /** The window is a per-team dial, so widening it must change what is counted. */
@@ -170,7 +238,7 @@ class FairnessServiceTest extends TestCase
     }
 
     /**
-     * The recommended split: availability decides the shape, the score only tilts it.
+     * The recommended split: availability decides the shape, earned credit only tilts it.
      *
      * Both people below are equally available, so a plain proportional split would give them the
      * same number. The tilt is what separates them - and it is bounded, which the cap test below
@@ -180,13 +248,13 @@ class FairnessServiceTest extends TestCase
     {
         $team = $this->tenant();
 
-        $owed = $this->member($team);
-        $settled = $this->member($team);
+        $veteran = $this->member($team);
+        $newer = $this->member($team);
         $occasional = $this->member($team);
 
         $signups = collect([
-            [$owed, '2026-08-03'], [$owed, '2026-08-04'],
-            [$settled, '2026-08-03'], [$settled, '2026-08-04'],
+            [$veteran, '2026-08-03'], [$veteran, '2026-08-04'],
+            [$newer, '2026-08-03'], [$newer, '2026-08-04'],
             [$occasional, '2026-08-05'],
         ])->map(fn (array $signup): Assignment => Assignment::factory()->create([
             'team_id' => $team->id,
@@ -195,19 +263,19 @@ class FairnessServiceTest extends TestCase
             'date' => $signup[1],
         ]));
 
-        // 4 slots for 5 signups, and $owed outranks $settled on the fairness score.
+        // 4 slots for 5 signups, and $veteran has put far more in than $newer.
         $targets = app(FairnessService::class)->weeklyTargets($signups, 4, [
-            $owed->id => ['totalDays' => 10, 'avgWeight' => 1.0, 'priorityScore' => 20.0],
-            $settled->id => ['totalDays' => 10, 'avgWeight' => 1.6, 'priorityScore' => 4.0],
+            $veteran->id => ['totalDays' => 10, 'avgWeight' => 1.6, 'earnedCredit' => 20.0, 'hardDayDebt' => -1.0],
+            $newer->id => ['totalDays' => 4, 'avgWeight' => 1.0, 'earnedCredit' => 4.0, 'hardDayDebt' => 0.5],
         ]);
 
-        $this->assertSame(2, $targets[$owed->id]['signups']);
-        $this->assertSame(2, $targets[$settled->id]['signups']);
+        $this->assertSame(2, $targets[$veteran->id]['signups']);
+        $this->assertSame(2, $targets[$newer->id]['signups']);
 
         $this->assertGreaterThan(
-            $targets[$settled->id]['target'],
-            $targets[$owed->id]['target'],
-            'Equal availability, higher score - this one is recommended more of the week.',
+            $targets[$newer->id]['target'],
+            $targets[$veteran->id]['target'],
+            'Equal availability, more earned - this one is recommended more of the week.',
         );
 
         // Nobody is ever recommended past their own availability, whatever the score says.

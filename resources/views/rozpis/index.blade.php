@@ -40,11 +40,8 @@
                 {{-- Own week nav: x-date links to calendar.show, which would leave the builder. --}}
                 <div class="flex items-center gap-2"
                      x-data="weekJump(@js($weekStart->toDateString()), @js(route('rozpis.show', ['date' => '__DATE__'])))">
-                    <a href="{{ route('rozpis.show', ['date' => $previousWeek->toDateString()]) }}"
-                       title="Predchádzajúci týždeň"
-                       class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900 text-neutral-200 transition hover:border-neutral-700 hover:text-white">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </a>
+                    <x-rozpis.week-arrow direction="previous"
+                                        :href="route('rozpis.show', ['date' => $previousWeek->toDateString()])" />
 
                     <button type="button" x-ref="trigger" @click="open()"
                             title="Kliknutím vyberte týždeň"
@@ -55,11 +52,8 @@
                     </button>
                     <input x-ref="input" type="text" class="sr-only" tabindex="-1" aria-hidden="true">
 
-                    <a href="{{ route('rozpis.show', ['date' => $nextWeek->toDateString()]) }}"
-                       title="Nasledujúci týždeň"
-                       class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900 text-neutral-200 transition hover:border-neutral-700 hover:text-white">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </a>
+                    <x-rozpis.week-arrow direction="next"
+                                        :href="route('rozpis.show', ['date' => $nextWeek->toDateString()])" />
 
                     <a href="{{ route('rozpis.export', ['date' => $weekStart->toDateString()]) }}"
                        title="Stiahnuť rozpis ako Excel na tlač"
@@ -142,9 +136,9 @@
                     <div class="overflow-x-auto border-t border-neutral-800/80 px-4 py-3">
                         <p class="mb-2.5 text-[0.7rem] leading-relaxed text-neutral-500">
                             Vychádza z toho, na koľko dní sa človek zapísal - kto je k dispozícii viac, dostane viac -
-                            a z poradia spravodlivosti, ktoré rozdiel medzi rovnako dostupnými ľuďmi nakloní
-                            v prospech toho, kto je viac na ťahu. Nikdy neodporučí viac dní, než na koľko sa zapísal.
-                            Je to odporúčanie, nie pravidlo.
+                            a zo zásluh, ktoré rozdiel medzi rovnako dostupnými ľuďmi nakloní v prospech toho,
+                            kto pre kino odrobil viac: viac dní a viac tých neobľúbených. Nikdy neodporučí viac
+                            dní, než na koľko sa zapísal. Je to odporúčanie, nie pravidlo.
                         </p>
 
                         <table class="w-full min-w-[28rem] text-xs">
@@ -155,8 +149,8 @@
                                     <th class="pb-1.5 pr-3 text-center font-semibold">Odporúčame</th>
                                     <th class="pb-1.5 pr-3 text-center font-semibold">Zaradený</th>
                                     <th class="pb-1.5 text-center font-semibold"
-                                        title="Poradie spravodlivosti: vyššie číslo znamená, že táto osoba dlhšie nemala neobľúbený deň (napr. piatok) a je na rade skôr naň. Kto ho už odrobil, má naopak nižšie číslo a prednosť dostáva na obľúbené dni.">
-                                        Poradie
+                                        title="Zásluhy: súčet váh odpracovaných dní za sledované obdobie. Vyššie číslo znamená viac odrobených dní a viac tých neobľúbených (piatok 1,6, bežný deň 1, víkend 0,8) - takže väčší nárok na zmeny aj na obľúbené dni.">
+                                        Zásluhy
                                     </th>
                                 </tr>
                             </thead>
@@ -173,7 +167,7 @@
                                             'text-amber-400' => $row['placed'] < $row['target'],
                                             'text-neutral-400' => $row['placed'] >= $row['target'],
                                         ])>{{ $row['placed'] }}</td>
-                                        <td class="py-1.5 text-center tabular-nums text-neutral-500">{{ number_format($row['priorityScore'], 1) }}</td>
+                                        <td class="py-1.5 text-center tabular-nums text-neutral-500">{{ number_format($row['earnedCredit'], 1) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

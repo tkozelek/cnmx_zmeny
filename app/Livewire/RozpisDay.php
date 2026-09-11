@@ -41,7 +41,7 @@ class RozpisDay extends Component
 
     public ?Collection $initialAssignments = null;
 
-    /** @var array<int, array{totalDays: int, avgWeight: float, priorityScore: float}>|null */
+    /** @var array<int, array{totalDays: int, avgWeight: float, earnedCredit: float, hardDayDebt: float}>|null */
     public ?array $initialFairness = null;
 
     /** "Add position" form. */
@@ -130,14 +130,14 @@ class RozpisDay extends Component
 
         $this->authorize('create', [PositionSlot::class, $this->dayCarbon]);
 
-        abort_unless($slot->position->is_manager, 422, 'Táto pozícia nie je vedúca zmeny.');
+        abort_unless($slot->isManagerSlot(), 422, 'Táto pozícia nie je vedúca zmeny.');
 
         $leader = $this->leadershipRoster->firstWhere('id', $userId);
 
         abort_unless($leader !== null, 403);
 
         $assignment = Assignment::firstOrCreate(
-            ['team_id' => app(Team::class)->getKey(), 'user_id' => $leader->id, 'date' => $this->date],
+            ['team_id' => $this->team->getKey(), 'user_id' => $leader->id, 'date' => $this->date],
         );
 
         // Straight through the ordinary path, so the slot is freed, the times are copied and the
@@ -154,12 +154,10 @@ class RozpisDay extends Component
     #[Computed]
     public function leadershipRoster(): Collection
     {
-        $team = app(Team::class);
-
-        return $team->users()
+        return $this->team->users()
             ->orderBy('name')
             ->get()
-            ->filter(fn (User $user): bool => $user->hasPermissionInTeam('assignment.lead-shift', $team))
+            ->filter(fn (User $user): bool => $user->hasPermissionInTeam('assignment.lead-shift', $this->team))
             ->values();
     }
 
@@ -182,7 +180,7 @@ class RozpisDay extends Component
             'newPositionId' => [
                 'required', 'integer',
                 Rule::exists('positions', 'id')
-                    ->where('team_id', app(Team::class)->getKey())
+                    ->where('team_id', $this->team->getKey())
                     ->where('is_active', true),
             ],
             'newStartTime' => ['nullable', 'date_format:H:i'],
@@ -340,7 +338,7 @@ class RozpisDay extends Component
         $this->authorize('create', [PositionSlot::class, $this->dayCarbon]);
 
         $this->suggestions = app(AiRozpisSuggestionService::class)
-            ->suggest(app(Team::class), $this->dayCarbon);
+            ->suggest($this->team, $this->dayCarbon);
 
         $this->dispatch('toast', ...match (count($this->suggestions)) {
             0 => ['message' => 'AI nenavrhla žiadne zaradenie.', 'type' => 'error'],
@@ -452,12 +450,17 @@ class RozpisDay extends Component
     /**
      * Everyone who signed up for this day and has no position yet.
      *
-     * Sorted by priorityScore on the two day types where the score means something:
-     * - Hard-to-staff (Friday, by default): descending. Whoever is most owed a hard day surfaces
-     *   first, because somebody has to be asked to take it.
-     * - Desirable (the weekend, by default): ascending. Whoever has already taken the fewest
-     *   hard days - the low score from having paid that debt - surfaces first, so the fairness
-     *   score is a reason to get the good day too, not just a reason to be spared the bad one.
+     * Sorted, descending, by whichever fairness ranking this day is decided on
+     * (FairnessService::rankingKeyFor):
+     * - Hard-to-staff (Friday, by default): `hardDayDebt`. Whoever has been carrying fewest of
+     *   the unpopular days surfaces first, because somebody has to be asked to take it.
+     * - Desirable (the weekend, by default): `earnedCredit`. Whoever has done most for the team -
+     *   most days, and most of the hard ones - surfaces first, so the good day is the thanks for
+     *   the bad ones rather than a prize for showing up rarely.
+     *
+     * Both descending, deliberately. The previous single score had to be read backwards here,
+     * and reading a volume-weighted score backwards put whoever works *least* at the top of the
+     * queue for the best shift.
      *
      * A plain weekday is neither, and keeps DayCard's alphabetical listing - nothing changes for
      * the common case.
@@ -469,19 +472,13 @@ class RozpisDay extends Component
     {
         $pool = $this->assignments->whereNull('position_id');
 
-        if ($this->isHardToStaff) {
-            return $pool
-                ->sortByDesc(fn (Assignment $assignment): float => $this->scoreFor($assignment->user_id))
-                ->values();
+        if ($this->rankingKey === null) {
+            return $pool->sortBy(fn (Assignment $assignment): string => (string) $assignment->user)->values();
         }
 
-        if ($this->isDesirableDay) {
-            return $pool
-                ->sortBy(fn (Assignment $assignment): float => $this->scoreFor($assignment->user_id))
-                ->values();
-        }
-
-        return $pool->sortBy(fn (Assignment $assignment): string => (string) $assignment->user)->values();
+        return $pool
+            ->sortByDesc(fn (Assignment $assignment): float => $this->scoreFor($assignment->user_id))
+            ->values();
     }
 
     public function filledFor(int $slotId): ?Assignment
@@ -527,7 +524,7 @@ class RozpisDay extends Component
     public function hasUnfilledNonManagerSlots(): bool
     {
         return $this->slots
-            ->reject(fn (PositionSlot $slot): bool => (bool) $slot->position->is_manager)
+            ->reject(fn (PositionSlot $slot): bool => $slot->isManagerSlot())
             ->contains(fn (PositionSlot $slot): bool => ! $this->filledFor($slot->getKey()));
     }
 
@@ -588,10 +585,9 @@ class RozpisDay extends Component
     #[Computed]
     public function copyTargets(): array
     {
-        $team = app(Team::class);
         $weeks = app(WeekService::class);
 
-        return $weeks->days($weeks->start($team, $this->dayCarbon))
+        return $weeks->days($weeks->start($this->team, $this->dayCarbon))
             ->reject(fn (CarbonImmutable $day): bool => $day->isSameDay($this->dayCarbon))
             ->map(fn (CarbonImmutable $day): array => $this->dayOption($day))
             ->values()
@@ -620,8 +616,7 @@ class RozpisDay extends Component
     #[Computed]
     public function copySources(): array
     {
-        $team = app(Team::class);
-        $weekStart = app(WeekService::class)->start($team, $this->dayCarbon);
+        $weekStart = app(WeekService::class)->start($this->team, $this->dayCarbon);
 
         return app(RozpisService::class)->copySources($weekStart, $this->dayCarbon)
             ->map(fn (CarbonImmutable $day): array => $this->dayOption($day))
@@ -632,19 +627,32 @@ class RozpisDay extends Component
     #[Computed]
     public function isHardToStaff(): bool
     {
-        return app(FairnessService::class)->isHardToStaffDay(app(Team::class), $this->dayCarbon);
+        return app(FairnessService::class)->isHardToStaffDay($this->team, $this->dayCarbon);
     }
 
     #[Computed]
     public function isDesirableDay(): bool
     {
-        return app(FairnessService::class)->isDesirableDay(app(Team::class), $this->dayCarbon);
+        return app(FairnessService::class)->isDesirableDay($this->team, $this->dayCarbon);
     }
 
     #[Computed]
     public function canBuild(): bool
     {
-        return auth()->user()?->hasPermissionInTeam('assignment.assign-position', app(Team::class)) ?? false;
+        return auth()->user()?->canBuildRozpis() ?? false;
+    }
+
+    /**
+     * The cinema this request is acting in.
+     *
+     * SetCurrentTeam binds the instance, so every app(Team::class) is the same object - this is
+     * about reading, not about cost. Eleven of them in one component is noise around the lines
+     * that matter.
+     */
+    #[Computed]
+    public function team(): Team
+    {
+        return app(Team::class);
     }
 
     #[Computed]
@@ -654,31 +662,46 @@ class RozpisDay extends Component
     }
 
     /**
-     * @return array<int, array{totalDays: int, avgWeight: float, priorityScore: float}>
+     * @return array<int, array{totalDays: int, avgWeight: float, earnedCredit: float, hardDayDebt: float}>
      */
     #[Computed]
     public function fairness(): array
     {
         $scores = $this->initialFairness
-            ?? app(FairnessService::class)->scores(app(Team::class), CarbonImmutable::now())->all();
+            ?? app(FairnessService::class)->scores($this->team, CarbonImmutable::now())->all();
 
         $this->initialFairness = null;
 
         return $scores;
     }
 
-    /** Never worked inside the window: score 0, which sorts last. */
-    public function scoreFor(int $userId): float
+    /** Which fairness ranking this day is ordered on, or null on an ordinary weekday. */
+    #[Computed]
+    public function rankingKey(): ?string
     {
-        return (float) ($this->fairness[$userId]['priorityScore'] ?? 0.0);
+        return app(FairnessService::class)->rankingKeyFor($this->team, $this->dayCarbon);
     }
 
     /**
-     * @return array{totalDays: int, avgWeight: float, priorityScore: float}
+     * This person's standing *on this day* - the number the pool is sorted on and the badge
+     * prints. Zero on an ordinary weekday, where the pool is alphabetical and no score applies.
+     *
+     * Never worked inside the window: 0, which sorts last on a desirable day and mid-table on a
+     * hard one - correct in both cases, since they have neither earned the weekend nor built up
+     * a claim to be spared it.
+     */
+    public function scoreFor(int $userId): float
+    {
+        return app(FairnessService::class)->rank($this->fairness, $userId, $this->rankingKey);
+    }
+
+    /**
+     * @return array{totalDays: int, avgWeight: float, earnedCredit: float, hardDayDebt: float}
      */
     public function statsFor(int $userId): array
     {
-        return $this->fairness[$userId] ?? ['totalDays' => 0, 'avgWeight' => 0.0, 'priorityScore' => 0.0];
+        return $this->fairness[$userId]
+            ?? ['totalDays' => 0, 'avgWeight' => 0.0, 'earnedCredit' => 0.0, 'hardDayDebt' => 0.0];
     }
 
     public function render()

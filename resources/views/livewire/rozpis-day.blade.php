@@ -4,11 +4,7 @@
     'border-emerald-500/40 ring-1 ring-emerald-500/20' => $this->isDesirableDay,
     'border-neutral-800' => ! $this->isHardToStaff && ! $this->isDesirableDay,
 ])>
-    {{-- Day header --}}
-    <div class="flex flex-col items-center justify-center border-b border-neutral-800 bg-neutral-900/60 px-4 py-3 text-center">
-        <p class="truncate text-lg font-bold text-neutral-100">{{ $this->dayName }}</p>
-        <p class="mt-0.5 text-sm font-bold tracking-wide text-neutral-200">{{ $this->dayCarbon->format('d.m.Y') }}</p>
-
+    <x-rozpis.day-heading :name="$this->dayName" :date="$this->dayCarbon">
         @if($this->rows)
             <p @class([
                 'mt-1 text-[0.7rem] font-semibold',
@@ -30,7 +26,7 @@
                 Obľúbený deň
             </span>
         @endif
-    </div>
+    </x-rozpis.day-heading>
 
     {{-- Position rows: draggable to reorder, and each one a drop target for a person. --}}
     <div class="flex flex-col gap-2 px-3 py-2.5"
@@ -180,17 +176,17 @@
                              touch users would build blind to the one thing that decides the order. --}}
                         <select wire:change="place($event.target.value, {{ $row['slot']->id }})"
                                 @if($this->isHardToStaff)
-                                    title="Zoradené podľa poradia spravodlivosti - vyššie číslo je na rade skôr."
+                                    title="Zoradené podľa spravodlivosti - vyššie číslo znamená, že tento človek odpracoval menej ťažkých dní, než je v kine zvykom, a je na rade."
                                 @elseif($this->isDesirableDay)
-                                    title="Zoradené podľa poradia spravodlivosti - nižšie číslo si tento deň zaslúži viac."
+                                    title="Zoradené podľa spravodlivosti - vyššie číslo znamená viac odpracovaných a ťažších dní, takže si tento deň zaslúži viac."
                                 @endif
                                 class="w-full rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-sky-500 focus:outline-none">
                             <option value="">- priradiť -</option>
                             @foreach($this->unassignedPool as $candidate)
                                 <option value="{{ $candidate->id }}">
                                     {{ $candidate->user }}
-                                    @if($this->isHardToStaff || $this->isDesirableDay)
-                                        ({{ number_format($this->statsFor($candidate->user_id)['priorityScore'], 1) }})
+                                    @if($this->rankingKey)
+                                        ({{ number_format($this->scoreFor($candidate->user_id), 1) }})
                                     @endif
                                 </option>
                             @endforeach
@@ -285,13 +281,13 @@
 
                     @if($this->isHardToStaff)
                         <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-[0.65rem] font-semibold text-amber-400"
-                              title="Kto je na ťahu - vyššie číslo znamená, že je na rade skôr">
-                            {{ number_format($this->statsFor($assignment->user_id)['priorityScore'], 1) }}
+                              title="Kto je na ťahu - vyššie číslo znamená, že odpracoval menej ťažkých dní, než je v kine zvykom">
+                            {{ number_format($this->scoreFor($assignment->user_id), 1) }}
                         </span>
                     @elseif($this->isDesirableDay)
                         <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-[0.65rem] font-semibold text-emerald-400"
-                              title="Kto si tento deň zaslúži - nižšie číslo znamená, že si ho zaslúži viac">
-                            {{ number_format($this->statsFor($assignment->user_id)['priorityScore'], 1) }}
+                              title="Kto si tento deň zaslúži - vyššie číslo znamená viac odpracovaných a ťažších dní">
+                            {{ number_format($this->scoreFor($assignment->user_id), 1) }}
                         </span>
                     @endif
                 </div>
