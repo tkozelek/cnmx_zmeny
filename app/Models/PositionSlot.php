@@ -87,6 +87,18 @@ class PositionSlot extends Model
     }
 
     /** The one person placed here, if any. Enforced one-per-slot by a unique index. */
+    /**
+     * A shift-leader row ("vedúci zmeny").
+     *
+     * These are never filled from the volunteer pool - a manager puts a leader on them by hand
+     * (RozpisDay::placeLeader), and the AI never sees them at all. Asked in enough places that
+     * the predicate belongs here rather than being re-spelled at each one.
+     */
+    public function isManagerSlot(): bool
+    {
+        return (bool) $this->position->is_manager;
+    }
+
     public function occupant(): HasOne
     {
         return $this->hasOne(Assignment::class);

@@ -26,22 +26,16 @@
                 </div>
 
                 <div class="flex flex-wrap items-center justify-center gap-2">
-                    <a href="{{ route('rozpis.published', ['date' => $previousWeek->toDateString()]) }}"
-                       title="Predchádzajúci týždeň"
-                       class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900 text-neutral-200 transition hover:border-neutral-700 hover:text-white">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </a>
+                    <x-rozpis.week-arrow direction="previous"
+                                        :href="route('rozpis.published', ['date' => $previousWeek->toDateString()])" />
 
                     <span class="inline-flex h-11 items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-5 text-base font-bold tracking-wide text-neutral-100">
                         <i class="fa-regular fa-calendar text-neutral-400"></i>
                         <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} - {{ $weekEnd->format('d.m.Y') }}</span>
                     </span>
 
-                    <a href="{{ route('rozpis.published', ['date' => $nextWeek->toDateString()]) }}"
-                       title="Nasledujúci týždeň"
-                       class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900 text-neutral-200 transition hover:border-neutral-700 hover:text-white">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </a>
+                    <x-rozpis.week-arrow direction="next"
+                                        :href="route('rozpis.published', ['date' => $nextWeek->toDateString()])" />
 
                     @if($canBuild)
                         <a href="{{ route('rozpis.export', ['date' => $weekStart->toDateString()]) }}"
@@ -86,10 +80,7 @@
                             'border-sky-500/40 ring-1 ring-sky-500/20' => $isMyDay,
                             'border-neutral-800' => ! $isMyDay,
                         ])>
-                            <div class="flex flex-col items-center justify-center border-b border-neutral-800 bg-neutral-900/60 px-4 py-3 text-center">
-                                <p class="truncate text-lg font-bold text-neutral-100">{{ $day['dayName'] }}</p>
-                                <p class="mt-0.5 text-sm font-bold tracking-wide text-neutral-200">{{ $day['date']->format('d.m.Y') }}</p>
-
+                            <x-rozpis.day-heading :name="$day['dayName']" :date="$day['date']">
                                 @if($day['manager'])
                                     <p class="mt-1 text-[0.7rem] text-neutral-400">
                                         manažér:
@@ -109,7 +100,7 @@
                                         {{ $day['unfilled'] }}x neobsadené
                                     </p>
                                 @endif
-                            </div>
+                            </x-rozpis.day-heading>
 
                             {{-- Separators are darker than the card, not lighter: a neutral-800 rule
                                  on a neutral-900 card reads as a bright line, and seven columns of
@@ -171,20 +162,22 @@
                                 </div>
                             @endif
 
-                            {{-- Manager-only: who from the signed-up, unplaced, non-absent pool is
-                                 owed this day most, in case an unfilled position gets filled by
-                                 draw rather than by name. Everyone already sees these same people
-                                 above as "Náhradníci" - this just adds the fairness order, which is
-                                 advisory context a manager needs and a regular employee does not. --}}
+                            {{-- Manager-only: the signed-up, unplaced, non-absent pool in the order
+                                 this day is decided on - who is owed an unpopular day when it is a
+                                 hard one, who has earned the shift otherwise - in case an unfilled
+                                 position gets filled by draw rather than by name.
+                                 Everyone already sees these same people above as "Náhradníci"; this
+                                 just adds the fairness order, which is advisory context a manager
+                                 needs and a regular employee does not. --}}
                             @if($canBuild && $day['unfilled'] > 0 && $day['eligible'])
                                 <div class="border-t border-neutral-800/80 bg-emerald-500/[0.04] px-3 py-2">
                                     <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-emerald-500"
-                                       title="Zapísaní, bez absencie tento deň, ešte nezaradení - zoradení podľa poradia spravodlivosti, kto je najviac na rade.">
+                                       title="Zapísaní, bez absencie tento deň, ešte nezaradení - zoradení podľa spravodlivosti: v neobľúbený deň je hore ten, kto ich odrobil najmenej, v obľúbený ten, kto si ho najviac zaslúžil.">
                                         Kto môže byť vylosovaný
                                     </p>
                                     <p class="mt-1 text-xs leading-relaxed text-neutral-400">
                                         @foreach($day['eligible'] as $person)
-                                            {{ $person['name'] }} ({{ $person['priorityScore'] }}){{ ! $loop->last ? ', ' : '' }}
+                                            {{ $person['name'] }} ({{ $person['score'] }}){{ ! $loop->last ? ', ' : '' }}
                                         @endforeach
                                     </p>
                                 </div>

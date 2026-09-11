@@ -212,7 +212,7 @@ class AiRozpisSuggestionTest extends TestCase
             fn (): PositionSlot => PositionSlot::factory()->forPosition($position)->on($date)->create()
         )->values();
 
-        // Three people, none of whom has any history - every priorityScore is 0.
+        // Three people, none of whom has any history - every fairness score is 0.
         $people = collect(range(1, 3))->map(function () use ($team, $date): User {
             $user = $this->member($team);
             $this->signUp($team, $user, $date);

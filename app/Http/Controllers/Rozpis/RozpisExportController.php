@@ -26,7 +26,7 @@ class RozpisExportController extends Controller
 
     public function __invoke(Request $request, Team $team, string $date): BinaryFileResponse
     {
-        abort_unless($request->user()->hasPermissionInTeam('assignment.assign-position', $team), 403);
+        abort_unless($request->user()->canBuildRozpis(), 403);
 
         $weekStart = $this->weeks->alignFromRequest($team, $date);
         $weekEnd = $this->weeks->end($weekStart);

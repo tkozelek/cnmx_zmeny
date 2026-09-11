@@ -41,11 +41,19 @@ class AiRozpisSuggestionService
     /** Long enough that a collision is not a practical concern, short enough to read in a log. */
     private const int TOKEN_LENGTH = 16;
 
+    /** Nobody worked inside the lookback window - no claim in either direction. */
+    private const array NO_HISTORY = [
+        'totalDays' => 0,
+        'avgWeight' => 0.0,
+        'earnedCredit' => 0.0,
+        'hardDayDebt' => 0.0,
+    ];
+
     /**
      * Memoised per instance: scores() is one query over the whole lookback window, and a single
      * suggest() call needs the same answer three times (pool, payload, re-verify).
      *
-     * @var Collection<int, array{totalDays: int, avgWeight: float, priorityScore: float}>|null
+     * @var Collection<int, array{totalDays: int, avgWeight: float, earnedCredit: float, hardDayDebt: float}>|null
      */
     private ?Collection $cachedScores = null;
 
@@ -142,7 +150,7 @@ class AiRozpisSuggestionService
 
         try {
             $placements = $this->ask(
-                $this->weekPayload($team, $weekStart, $tokens, $signups, $slots, $openSlots),
+                $this->weekPayload($team, $weekStart, $tokens, $signups, $openSlots),
                 $this->weekInstructions(),
                 self::WEEK_MAX_OUTPUT_TOKENS,
             );
@@ -156,18 +164,24 @@ class AiRozpisSuggestionService
     }
 
     /**
-     * The week's slots nobody occupies.
+     * The slots this reply may fill, in the order it should fill them: no shift-leader rows, none
+     * already occupied, earliest day and earliest start first.
      *
-     * @param  Collection<int, Assignment>  $signups
+     * One definition for both paths - a single day's suggestion and the whole week's - because
+     * two copies of "what the model is allowed to touch" is two chances to disagree about it. The
+     * date is part of the sort so a week's collection comes out day by day; for a single day it
+     * is a constant and the start time decides, exactly as before.
+     *
      * @param  Collection<int, PositionSlot>  $slots
+     * @param  Collection<int, int>  $takenSlotIds
      * @return Collection<int, PositionSlot>
      */
-    private function openSlotsIn(Collection $signups, Collection $slots): Collection
+    private function assignableSlots(Collection $slots, Collection $takenSlotIds): Collection
     {
-        $taken = $signups->pluck('position_slot_id')->filter();
-
         return $slots
-            ->reject(fn (PositionSlot $slot): bool => $slot->position->is_manager || $taken->contains($slot->getKey()))
+            ->reject(fn (PositionSlot $slot): bool => $slot->isManagerSlot() || $takenSlotIds->contains($slot->getKey()))
+            // One closure returning an array - see RozpisService::sortSlots() for why an array of
+            // closures silently sorts these backwards.
             ->sortBy(fn (PositionSlot $slot): array => [
                 $slot->date->toDateString(),
                 $slot->start_time ?? '99:99:99',
@@ -177,11 +191,22 @@ class AiRozpisSuggestionService
     }
 
     /**
+     * The week's slots nobody occupies.
+     *
+     * @param  Collection<int, Assignment>  $signups
+     * @param  Collection<int, PositionSlot>  $slots
+     * @return Collection<int, PositionSlot>
+     */
+    private function openSlotsIn(Collection $signups, Collection $slots): Collection
+    {
+        return $this->assignableSlots($slots, $signups->pluck('position_slot_id')->filter());
+    }
+
+    /**
      * Everything the model may know about the week: the people once, then the days.
      *
      * @param  array<string, int>  $tokens  token -> user_id
      * @param  Collection<int, Assignment>  $signups
-     * @param  Collection<int, PositionSlot>  $slots
      * @param  Collection<int, PositionSlot>  $openSlots
      * @return array<string, mixed>
      */
@@ -190,11 +215,13 @@ class AiRozpisSuggestionService
         CarbonImmutable $weekStart,
         array $tokens,
         Collection $signups,
-        Collection $slots,
         Collection $openSlots,
     ): array {
         $scores = $this->scores($team);
-        $targets = $this->fairness->weeklyTargets($signups, $slots->count(), $scores->all());
+        // Only the slots this reply may fill. Counting manager rows (which are off limits) or
+        // rows already taken by hand would hand everybody a budget bigger than the work, and the
+        // budget is the only thing stopping one person collecting a shift on all seven days.
+        $targets = $this->fairness->weeklyTargets($signups, $openSlots->count(), $scores->all());
 
         // Days somebody has already been placed on by hand count against their target - the model
         // is filling the remainder of the week, not planning it from scratch.
@@ -206,11 +233,12 @@ class AiRozpisSuggestionService
         $people = [];
 
         foreach ($tokens as $token => $userId) {
-            $stats = $scores[$userId] ?? ['totalDays' => 0, 'avgWeight' => 0.0, 'priorityScore' => 0.0];
+            $stats = $scores[$userId] ?? self::NO_HISTORY;
 
             $people[] = [
                 'token' => $token,
-                'priorityScore' => $stats['priorityScore'],
+                'earnedCredit' => $stats['earnedCredit'],
+                'hardDayDebt' => $stats['hardDayDebt'],
                 'avgWeight' => $stats['avgWeight'],
                 'totalDays' => $stats['totalDays'],
                 'signedUpDays' => $targets[$userId]['signups'] ?? 0,
@@ -219,8 +247,9 @@ class AiRozpisSuggestionService
             ];
         }
 
-        // Highest claim first, same as the single-day pool.
-        usort($people, fn (array $a, array $b): int => $b['priorityScore'] <=> $a['priorityScore']);
+        // Strongest claim on the week's work first - the same key the weekly budget is derived
+        // from, so the order the model reads and the budget it is held to cannot disagree.
+        usort($people, fn (array $a, array $b): int => $b['earnedCredit'] <=> $a['earnedCredit']);
 
         $byDate = $openSlots->groupBy(fn (PositionSlot $slot): string => $slot->date->toDateString());
         $tokenOf = array_flip($tokens);
@@ -239,6 +268,7 @@ class AiRozpisSuggestionService
                     'weekday' => $day->format('l'),
                     'dayWeight' => $this->fairness->dayWeight($team, $day),
                     'isHardToStaffDay' => $this->fairness->isHardToStaffDay($team, $day),
+                    'isDesirableDay' => $this->fairness->isDesirableDay($team, $day),
                     // Only these people signed up for this day. Nobody else may be placed on it.
                     'availableTokens' => $available->get($key, collect())
                         ->map(fn (Assignment $assignment): string => $tokenOf[$assignment->user_id])
@@ -255,7 +285,8 @@ class AiRozpisSuggestionService
         $weights = $team->fairnessDayWeights();
 
         return [
-            'ordinaryDayWeight' => min($weights),
+            'ordinaryDayWeight' => FairnessService::ORDINARY_DAY_WEIGHT,
+            'lowestDayWeight' => min($weights),
             'highestDayWeight' => max($weights),
             'people' => $people,
             'days' => $days,
@@ -285,22 +316,37 @@ class AiRozpisSuggestionService
 
         A single JSON object:
 
+        - `ordinaryDayWeight`, `lowestDayWeight`, `highestDayWeight` - the scale every `dayWeight`
+          and `avgWeight` below is measured on. `ordinaryDayWeight` is a routine weekday;
+          `highestDayWeight` is the day nobody volunteers for; `lowestDayWeight` is the one
+          everybody wants, typically because it pays better.
         - `people` - the volunteers for the week, **already sorted strongest claim first**. Never
           any names; each has:
           - `token` - an opaque identifier, the same person across every day of the week.
-          - `priorityScore` - how strong their claim is. Higher is earlier in the queue.
+          - `earnedCredit` - **what they have already done for the cinema**: the sum of the day
+            weights of every shift they worked in the recent history window. It rises with how
+            much somebody works *and* with how unpopular the days they worked were, so a Friday
+            counts for more than a Saturday. High = they have earned the good shifts.
+          - `hardDayDebt` - **how much they owe the cinema an unpopular day.** Positive means they
+            have been taking fewer hard days than this cinema's people typically do, scaled by how
+            much they work. High = they are the one to ask next. Negative means they have been
+            carrying more than their share and should be spared for now.
           - `totalDays` - shifts worked in the recent history window; a rough proxy for experience.
           - `avgWeight` - the average day weight they have worked. Near `highestDayWeight` means
-            they routinely take the unpopular days.
+            they routinely take the unpopular days; near `lowestDayWeight` means they mostly pick
+            the sought-after ones.
           - `signedUpDays` - how many days this week they made themselves available for.
           - `recommendedDays` - **how many shifts this person should get this week.** Already
-            balances their availability against their claim. This is your budget per person.
+            balances their availability against their `earnedCredit`. This is your budget per person.
           - `alreadyPlacedDays` - shifts the manager has already given them by hand this week.
             These count against `recommendedDays`.
         - `days` - one entry per day that still has open slots, in week order. Each has `date`,
           `weekday`, `dayWeight` (what one shift that day is worth - high means few volunteer),
-          `isHardToStaffDay`, `availableTokens` and `slots` (sorted earliest start first, each with
-          `slot_id`, `name`, `code`, `startTime`, `isManagerRole`).
+          `isHardToStaffDay`, `isDesirableDay`, `availableTokens` and `slots` (sorted earliest
+          start first, each with `slot_id`, `name`, `code`, `startTime`).
+
+        Every slot you are given is an ordinary slot. Shift-leader rows ("vedúci zmeny") are
+        assigned by hand and have already been removed from this input - you will never see one.
 
         # Hard rules - a reply that breaks any of these is discarded
 
@@ -312,9 +358,8 @@ class AiRozpisSuggestionService
         3. Each `slot_id` at most once across the whole reply.
         4. At most one slot per person per day. Across the week a person may and should work
            several days - but never two slots on the same date.
-        5. Never assign or schedule anyone to slots where `isManagerRole` is true. Manager positions ("vedúci zmeny") are assigned manually by shift managers.
-        6. Never invent a person, a slot or a day.
-        7. More slots than available people on a day: leave the surplus out. Do not pad.
+        5. Never invent a person, a slot or a day.
+        6. More slots than available people on a day: leave the surplus out. Do not pad.
 
         # The budget: how much each person should work this week
 
@@ -332,7 +377,7 @@ class AiRozpisSuggestionService
           slot would otherwise stay empty, and prefer whoever is least far over.
 
         Somebody who already has a lot of shifts this week is *not* a good candidate for the next
-        one, however high their `priorityScore`. The score decides who is favoured **between people
+        one, however high their `earnedCredit`. The scores decide who is favoured **between people
         with the same load**, never a reason to pile a fourth day onto someone whose budget is two.
         Spreading the work across the team is the whole point of planning the week in one pass.
 
@@ -347,21 +392,23 @@ class AiRozpisSuggestionService
            the shifts nobody volunteers for, so they get the pick of the available people. An easy
            Tuesday can be filled from whoever is left.
         2. Inside a day, work down `slots` in the given order - earliest start first.
-        3. For each slot, out of the people whose token is in that day's `availableTokens`, who
+        3. For each slot, out of the people whose token is in that day's `availableTokens` and who
            have no slot yet on that date, choose:
            a. the lowest load relative to their budget (most under-loaded first);
-           b. break ties on the higher `priorityScore` - that is what the score is for;
-           c. break remaining ties on the lower `avgWeight`, so an unpopular day goes to somebody
-              who has not been carrying them.
-        4. `isManagerRole` slots want experience: among candidates of similar load, prefer the
-           higher `totalDays`. A preference, never a reason to break a hard rule or to overload.
-        5. Full coverage beats the budget. If a slot has no under-loaded candidate left, fill it
+           b. break ties on **the ranking that matches the day**:
+              - `isHardToStaffDay` → the higher `hardDayDebt`. Somebody has to take the Friday, and
+                it should be whoever has been dodging them, not whoever always covers them.
+              - `isDesirableDay` → the higher `earnedCredit`. This day is the thanks for the hard
+                ones, so it goes to whoever has done most for the cinema.
+              - neither → the higher `earnedCredit`.
+           c. break remaining ties on the higher `totalDays`, preferring the more experienced hand.
+        4. Full coverage beats the budget. If a slot has no under-loaded candidate left, fill it
            with the least over-loaded available person rather than leaving the cinema unstaffed.
-        6. Someone with a high `priorityScore` who has taken few of the unpopular days
-           (`avgWeight` near `ordinaryDayWeight`) is exactly who should be asked to take a
-           hard-to-staff day. That is what "benefit the ones who need it" means here: the reward is
-           being scheduled fairly, not being spared the hard days.
-        7. Stop when every slot is filled or no eligible person remains. People left unplaced is a
+        5. `hardDayDebt` near zero means two opposite things and only one of them is a reason to
+           spare somebody: a regular who already carries their share, and a newcomer who has barely
+           worked at all. Read it with `totalDays`. The newcomer has not earned an exemption from
+           the unpopular days - they simply have no history yet.
+        6. Stop when every slot is filled or no eligible person remains. People left unplaced is a
            correct outcome - they are the week's náhradníci.
 
         # Sanity check before you answer
@@ -450,11 +497,12 @@ class AiRozpisSuggestionService
     private function pool(Team $team, CarbonImmutable $date): Collection
     {
         $scores = $this->scores($team);
+        $claims = $this->claimsFor($team, $date, $scores);
 
         return Assignment::where('date', $date->toDateString())
             ->whereNull('position_id')
             ->get()
-            ->sortByDesc(fn (Assignment $a): float => (float) ($scores[$a->user_id]['priorityScore'] ?? 0.0))
+            ->sortByDesc(fn (Assignment $a): float => $claims[$a->user_id] ?? 0.0)
             ->values();
     }
 
@@ -469,25 +517,44 @@ class AiRozpisSuggestionService
             ->whereNotNull('position_slot_id')
             ->pluck('position_slot_id');
 
-        return PositionSlot::with('position.group')
-            ->where('date', $date->toDateString())
-            ->get()
-            ->reject(fn (PositionSlot $slot): bool => $slot->position->is_manager || $taken->contains($slot->getKey()))
-            // One closure returning an array - see RozpisService::sortSlots() for why an array of
-            // closures silently sorts these backwards.
-            ->sortBy(fn (PositionSlot $slot): array => [
-                $slot->start_time ?? '99:99:99',
-                $slot->position->sort_order,
-            ])
-            ->values();
+        return $this->assignableSlots(
+            PositionSlot::with('position.group')->where('date', $date->toDateString())->get(),
+            $taken,
+        );
     }
 
     /**
-     * @return Collection<int, array{totalDays: int, avgWeight: float, priorityScore: float}>
+     * @return Collection<int, array{totalDays: int, avgWeight: float, earnedCredit: float, hardDayDebt: float}>
      */
     private function scores(Team $team): Collection
     {
         return $this->cachedScores ??= $this->fairness->scores($team, CarbonImmutable::now());
+    }
+
+    /**
+     * Everyone's claim on one day, keyed by user_id - the `claim` field the day prompt ranks on.
+     *
+     * Whichever of the two fairness rankings that day is decided by: `hardDayDebt` when somebody
+     * has to be asked to take it, `earnedCredit` when it is the day people want, and plain
+     * `earnedCredit` on an ordinary weekday that settles neither. Always "higher is a stronger
+     * claim", so the pool sorts descending in every case and the prompt needs one rule rather
+     * than two opposite ones.
+     *
+     * The day's ranking key is resolved once here rather than per candidate: it is a property of
+     * the date, and the date does not change while we sort.
+     *
+     * @param  Collection<int, array{totalDays: int, avgWeight: float, earnedCredit: float, hardDayDebt: float}>  $scores
+     * @return array<int, float>
+     */
+    private function claimsFor(Team $team, CarbonImmutable $date, Collection $scores): array
+    {
+        $key = $this->fairness->rankingKeyOrMerit($team, $date);
+
+        return $scores->keys()
+            ->mapWithKeys(fn (int $userId): array => [
+                $userId => $this->fairness->rank($scores->all(), $userId, $key),
+            ])
+            ->all();
     }
 
     /**
@@ -525,16 +592,17 @@ class AiRozpisSuggestionService
     private function payload(Team $team, CarbonImmutable $date, array $tokens, Collection $slots): array
     {
         $scores = $this->scores($team);
+        $claims = $this->claimsFor($team, $date, $scores);
         $weights = $team->fairnessDayWeights();
 
         $people = [];
 
         foreach ($tokens as $token => $assignment) {
-            $stats = $scores[$assignment->user_id] ?? ['totalDays' => 0, 'avgWeight' => 0.0, 'priorityScore' => 0.0];
+            $stats = $scores[$assignment->user_id] ?? self::NO_HISTORY;
 
             $people[] = [
                 'token' => $token,
-                'priorityScore' => $stats['priorityScore'],
+                'claim' => round($claims[$assignment->user_id] ?? 0.0, 2),
                 'avgWeight' => $stats['avgWeight'],
                 'totalDays' => $stats['totalDays'],
             ];
@@ -543,9 +611,11 @@ class AiRozpisSuggestionService
         return [
             'weekday' => $date->format('l'),
             'dayWeight' => $this->fairness->dayWeight($team, $date),
-            'ordinaryDayWeight' => min($weights),
+            'ordinaryDayWeight' => FairnessService::ORDINARY_DAY_WEIGHT,
+            'lowestDayWeight' => min($weights),
             'highestDayWeight' => max($weights),
             'isHardToStaffDay' => $this->fairness->isHardToStaffDay($team, $date),
+            'isDesirableDay' => $this->fairness->isDesirableDay($team, $date),
             // Already sorted best-claim-first and earliest-slot-first, so the model pairs two
             // ranked lists rather than inventing its own notion of fairness.
             'people' => $people,
@@ -575,7 +645,6 @@ class AiRozpisSuggestionService
                 'name' => $slot->label($ordinal, $totals[$slot->position_id] > 1),
                 'code' => $slot->position->code,
                 'startTime' => $slot->start_time ? substr((string) $slot->start_time, 0, 5) : null,
-                'isManagerRole' => (bool) $slot->position->is_manager,
             ];
         })->all();
     }
@@ -667,25 +736,29 @@ class AiRozpisSuggestionService
 
         A single JSON object:
 
-        - `weekday`, `dayWeight`, `ordinaryDayWeight`, `highestDayWeight`, `isHardToStaffDay` -
-          `dayWeight` is what one shift on this day is worth to the cinema. A weight at or near
-          `highestDayWeight` marks a day almost nobody volunteers for; `ordinaryDayWeight` is a
-          routine day. When `isHardToStaffDay` is true, who gets which position matters more,
-          because somebody has to be asked to take the unpopular work.
+        - `weekday`, `dayWeight`, `ordinaryDayWeight`, `lowestDayWeight`, `highestDayWeight`,
+          `isHardToStaffDay`, `isDesirableDay` - `dayWeight` is what one shift on this day is worth
+          to the cinema. `ordinaryDayWeight` is a routine weekday. At or near `highestDayWeight`
+          (`isHardToStaffDay`) is a day almost nobody volunteers for; at or near `lowestDayWeight`
+          (`isDesirableDay`) is one everybody wants, typically because it pays better.
         - `people` - the volunteers, **already sorted so the person with the strongest claim on
           this day comes first**. Each has:
           - `token` - an opaque identifier. You will never see names; this is deliberate.
-          - `priorityScore` - how strong their claim is. It already combines how much they work
-            overall with how many unpopular days they have taken, so a high score means "this
-            person has earned the next good slot, or is next in line to be asked". Higher is
-            earlier in the queue.
+          - `claim` - how strong their claim on **this** day is. Already computed for the kind of
+            day this is: on a hard-to-staff day it measures how much they owe the cinema an
+            unpopular shift, on a sought-after day how much they have earned one by working a lot
+            and taking the hard days; on an ordinary weekday it is simply how much they have
+            earned. Always: higher is earlier in the queue.
           - `totalDays` - shifts worked in the recent history window. A rough proxy for
             experience.
           - `avgWeight` - the average `dayWeight` of the shifts they have worked. Near
-            `highestDayWeight` means they routinely take the unpopular days.
+            `highestDayWeight` means they routinely take the unpopular days; near
+            `lowestDayWeight` means they mostly pick the sought-after ones.
         - `slots` - the still-unfilled slots, **already sorted earliest start time first**. Each
-          has `slot_id`, `name` (numbered when the day repeats a job), `code`, `startTime` and
-          `isManagerRole`.
+          has `slot_id`, `name` (numbered when the day repeats a job), `code` and `startTime`.
+
+        Every slot you are given is an ordinary slot. Shift-leader rows ("vedúci zmeny") are
+        assigned by hand and have already been removed from this input - you will never see one.
 
         # Hard rules - a reply that breaks any of these is discarded
 
@@ -693,21 +766,18 @@ class AiRozpisSuggestionService
         2. Use only `slot_id` values that appear in `slots`, copied exactly.
         3. Each token at most once. Nobody works two slots on the same day.
         4. Each `slot_id` at most once. A slot holds one person.
-        5. Never assign or schedule anyone to slots where `isManagerRole` is true. Manager positions ("vedúci zmeny") must be left unassigned by the AI - shift managers assign these manually.
-        6. Never invent a person, a slot, or a placement for anyone not listed. The people in
+        5. Never invent a person, a slot, or a placement for anyone not listed. The people in
            `people` volunteered for this specific day; nobody else may be scheduled.
-        7. If there are more slots than people, leave the surplus slots out of your reply
+        6. If there are more slots than people, leave the surplus slots out of your reply
            entirely. Do not pad the list.
 
         # How to choose
 
-        1. Work down `slots` in the order given. For each, take the highest-`priorityScore`
-           person still unplaced. The given order is authoritative - do not re-derive fairness
-           from the raw numbers or second-guess the ranking.
-        2. Prefer a person with a high `totalDays` for a slot where `isManagerRole` is true: that
-           row runs the shift and wants someone experienced. This is a preference, not a rule -
-           never break a hard rule above to satisfy it, and if it conflicts with the queue order,
-           prefer the queue.
+        1. Work down `slots` in the order given. For each, take the highest-`claim` person still
+           unplaced. The given order is authoritative - do not re-derive fairness from `totalDays`
+           and `avgWeight` or second-guess the ranking; `claim` already accounts for both, and for
+           what kind of day this is.
+        2. Break a tie in `claim` on the higher `totalDays` - the more experienced hand.
         3. Once every slot has someone, stop. People left unplaced is a correct outcome.
         4. If there are more people than slots, every slot must still be filled - do not leave a
            slot empty because the remaining candidates have low scores. Full coverage wins once

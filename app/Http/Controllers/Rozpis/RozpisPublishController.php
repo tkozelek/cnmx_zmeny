@@ -60,7 +60,7 @@ class RozpisPublishController extends Controller
      */
     private function lockFor(Request $request, Team $team, string $date): WeekLock
     {
-        abort_unless($request->user()->hasPermissionInTeam('assignment.assign-position', $team), 403);
+        abort_unless($request->user()->canBuildRozpis(), 403);
 
         $weekStart = $this->weeks->alignFromRequest($team, $date);
 

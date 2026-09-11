@@ -53,7 +53,7 @@ class RozpisWeekAi extends Component
     public function enabled(): bool
     {
         return app(AiRozpisSuggestionService::class)->enabled()
-            && (auth()->user()?->hasPermissionInTeam('assignment.assign-position', app(Team::class)) ?? false);
+            && (auth()->user()?->canBuildRozpis() ?? false);
     }
 
     public function render()

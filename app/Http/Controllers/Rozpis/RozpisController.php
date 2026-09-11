@@ -33,7 +33,7 @@ class RozpisController extends Controller
         // Checked here rather than through a policy: the two failures need different answers.
         // Lacking the permission is a 403, but an unlocked week is a "not yet" - the manager
         // is in the right place and simply has to lock first.
-        abort_unless($request->user()->hasPermissionInTeam('assignment.assign-position', $team), 403);
+        abort_unless($request->user()->canBuildRozpis(), 403);
 
         if (! WeekLock::locked($team->getKey(), $weekStart)) {
             return redirect()
@@ -65,7 +65,7 @@ class RozpisController extends Controller
     {
         $weekStart = $this->weeks->alignFromRequest($team, $date);
         $lock = WeekLock::forWeek($team->getKey(), $weekStart);
-        $mayBuild = $request->user()->hasPermissionInTeam('assignment.assign-position', $team);
+        $mayBuild = $request->user()->canBuildRozpis();
 
         if (! $lock?->isRozpisPublished() && ! $mayBuild) {
             return redirect()

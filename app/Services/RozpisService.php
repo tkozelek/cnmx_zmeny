@@ -45,7 +45,14 @@ class RozpisService
             'weekSlots' => $slots->groupBy(fn (PositionSlot $slot): string => $slot->date->toDateString()),
             'weekAssignments' => $assignments->groupBy(fn (Assignment $assignment): string => $assignment->date->toDateString()),
             'fairness' => $fairness,
-            'workload' => $this->workload($assignments, $slots->count(), $fairness),
+            // Capacity is what the volunteer pool can actually be given: manager rows are filled
+            // from the leadership roster (RozpisDay::placeLeader), never from the signups, so
+            // counting them would inflate everybody's recommended share of the week.
+            'workload' => $this->workload(
+                $assignments,
+                $slots->reject(fn (PositionSlot $slot): bool => $slot->isManagerSlot())->count(),
+                $fairness,
+            ),
             'history' => $this->history($team, $from, $to),
             'positions' => Position::selectable()->get(),
         ];
@@ -150,8 +157,8 @@ class RozpisService
      * locked week has already fixed.
      *
      * @param  Collection<int, Assignment>  $assignments
-     * @param  array<int, array{totalDays: int, avgWeight: float, priorityScore: float}>  $fairness
-     * @return list<array{name: string, signups: int, target: int, priorityScore: float, placed: int}>
+     * @param  array<int, array{totalDays: int, avgWeight: float, earnedCredit: float, hardDayDebt: float}>  $fairness
+     * @return list<array{name: string, signups: int, target: int, earnedCredit: float, placed: int}>
      */
     private function workload(Collection $assignments, int $capacity, array $fairness): array
     {
@@ -165,10 +172,11 @@ class RozpisService
                 'signups' => $targets[$assignment->user_id]['signups'] ?? 0,
                 'target' => $targets[$assignment->user_id]['target'] ?? 0,
                 'placed' => $placed[$assignment->user_id] ?? 0,
-                'priorityScore' => (float) ($fairness[$assignment->user_id]['priorityScore'] ?? 0.0),
+                'earnedCredit' => (float) ($fairness[$assignment->user_id]['earnedCredit'] ?? 0.0),
             ])
-            // Most owed first: that is the order a manager works down the list in.
-            ->sortByDesc(fn (array $row): array => [$row['target'], $row['priorityScore']])
+            // Biggest share first, then whoever has done most for the team: that is the order a
+            // manager works down the list in.
+            ->sortByDesc(fn (array $row): array => [$row['target'], $row['earnedCredit']])
             ->values()
             ->all();
     }
@@ -188,10 +196,11 @@ class RozpisService
      * `eligible` is the manager-only counterpart of `unfilled`: everybody who signed up for the
      * day and is not yet on a position, minus anyone with an absence covering it (a defensive
      * filter - a signed-up absentee should not happen, but an absence can be filed after the
-     * signup), ordered by fairness score descending, same as the builder's hard-day pool. It is
-     * not gated here - the published view decides who gets to see it, this just supplies the data.
+     * signup), always in rank order: by `hardDayDebt` on a hard-to-staff day, by `earnedCredit`
+     * on a desirable or an ordinary one. It is not gated here - the published view decides who
+     * gets to see it, this just supplies the data.
      *
-     * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, rows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, substitutes: list<string>, eligible: list<array{name: string, priorityScore: float}>, unfilled: int}>
+     * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, rows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, substitutes: list<string>, eligible: list<array{name: string, score: float}>, unfilled: int}>
      */
     public function plan(Team $team, CarbonImmutable $weekStart): Collection
     {
@@ -215,7 +224,7 @@ class RozpisService
             ->groupBy('user_id');
 
         return $this->weeks->days($weekStart)
-            ->map(function (CarbonImmutable $day) use ($slotsByDate, $assignmentsByDate, $fairness, $absencesByUser): array {
+            ->map(function (CarbonImmutable $day) use ($team, $slotsByDate, $assignmentsByDate, $fairness, $absencesByUser): array {
                 $key = $day->toDateString();
                 $assignments = $assignmentsByDate->get($key, collect());
 
@@ -236,7 +245,7 @@ class RozpisService
 
                 // Labelled off the whole day before the split, so pulling the vedúci out cannot
                 // renumber the bufet rows.
-                $isManager = fn (PositionSlot $slot): bool => (bool) $slot->position->is_manager;
+                $isManager = fn (PositionSlot $slot): bool => $slot->isManagerSlot();
 
                 $managerRows = $slots->filter($isManager)->map($toRow)->values()->all();
                 $rows = $this->markGroupStarts($slots->reject($isManager)->map($toRow)->values()->all());
@@ -245,13 +254,22 @@ class RozpisService
                     ->sortBy(fn (Assignment $assignment): string => (string) $assignment->user)
                     ->values();
 
+                // This list exists to rank people, so an unremarkable day falls back to plain
+                // merit rather than to $pool's alphabetical order - which would make the whole
+                // block a verbatim copy of the "Náhradníci" list printed above it.
+                $rankingKey = $this->fairness->rankingKeyOrMerit($team, $day);
+
+                $rankOf = fn (Assignment $assignment): float => $this->fairness->rank(
+                    $fairness, $assignment->user_id, $rankingKey,
+                );
+
                 $eligible = $pool
                     ->reject(fn (Assignment $assignment): bool => ($absencesByUser[$assignment->user_id] ?? collect())
                         ->contains(fn (Absence $absence): bool => $absence->covers($day)))
-                    ->sortByDesc(fn (Assignment $assignment): float => (float) ($fairness[$assignment->user_id]['priorityScore'] ?? 0.0))
+                    ->sortByDesc($rankOf)
                     ->map(fn (Assignment $assignment): array => [
                         'name' => (string) $assignment->user,
-                        'priorityScore' => round((float) ($fairness[$assignment->user_id]['priorityScore'] ?? 0.0), 1),
+                        'score' => round($rankOf($assignment), 1),
                     ])
                     ->values()
                     ->all();

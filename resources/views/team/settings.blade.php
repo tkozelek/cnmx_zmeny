@@ -156,11 +156,15 @@
                         </h2>
 
                         <p class="text-[11px] text-neutral-500">
-                            Koľko „váži“ odpracovaný deň. Vyššia váha = deň, na ktorý sa málokto hlási dobrovoľne
-                            (typicky piatok a víkend) - kto ho odpracuje, má to započítané viac.
-                            Ako neobľúbený sa v rozpise označí deň s váhou <strong>nad priemerom týždňa</strong> -
-                            len v takom dni sa zoznam nezaradených zoradí podľa toho, kto je na ťahu, a pri menách
-                            sa zobrazí poradie spravodlivosti (vyššie číslo = na rade skôr). Ak sú všetky váhy
+                            Koľko „váži“ odpracovaný deň. Vyššia váha = deň, na ktorý sa málokto hlási
+                            dobrovoľne - kto ho odpracuje, má to započítané viac. Nižšia váha ako
+                            <strong>1,0</strong> = deň, o ktorý je záujem (typicky víkend) - ten sa počíta za menej,
+                            lebo ho netreba nikomu nanútiť.
+                            Ako <strong>neobľúbený</strong> sa označí deň s váhou nad priemerom týždňa: v ňom sa
+                            zoznam nezaradených zoradí podľa toho, kto takých dní odrobil najmenej - ten je na rade.
+                            Ako <strong>obľúbený</strong> sa označí deň s váhou pod 1,0: v ňom sa zoradí podľa zásluh,
+                            teda kto pre kino odrobil najviac dní a najviac tých neobľúbených. Pri menách sa v oboch
+                            prípadoch zobrazí príslušné číslo, vyššie je vždy vyššie v poradí. Ak sú všetky váhy
                             rovnaké, neoznačí sa žiadny deň.
                         </p>
 
