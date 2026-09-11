@@ -522,6 +522,15 @@ class RozpisDay extends Component
             ->count();
     }
 
+    /** Whether there are non-manager slots still waiting to be assigned. */
+    #[Computed]
+    public function hasUnfilledNonManagerSlots(): bool
+    {
+        return $this->slots
+            ->reject(fn (PositionSlot $slot): bool => (bool) $slot->position->is_manager)
+            ->contains(fn (PositionSlot $slot): bool => ! $this->filledFor($slot->getKey()));
+    }
+
     /**
      * The SortableJS group name. Scoped per day, so a card can move between this day's lists but
      * never into another day.

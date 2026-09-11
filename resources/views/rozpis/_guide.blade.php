@@ -74,17 +74,15 @@
             </p>
 
             <ul class="mt-2.5 flex flex-col gap-1.5 text-xs leading-relaxed text-neutral-400">
-                <li class="flex gap-2">
-                    <i class="fa-solid fa-triangle-exclamation mt-0.5 text-[0.65rem] text-amber-400"></i>
-                    <span>V <strong class="text-amber-400">neobľúbenom dni</strong> (napr. piatok) je hore
-                        <strong class="text-neutral-200">najvyššie číslo</strong> - kto sa mu doteraz vyhýbal, je na
-                        rade prvý.</span>
+                <li>
+                    V <strong class="text-amber-400">neobľúbenom dni</strong> (napr. piatok) je hore
+                    <strong class="text-neutral-200">najvyššie číslo</strong> - kto sa mu doteraz vyhýbal, je na
+                    rade prvý.
                 </li>
-                <li class="flex gap-2">
-                    <i class="fa-solid fa-star mt-0.5 text-[0.65rem] text-emerald-400"></i>
-                    <span>V <strong class="text-emerald-400">obľúbenom dni</strong> (napr. víkend) je hore
-                        <strong class="text-neutral-200">najnižšie číslo</strong> - kto ťažké dni už odrobil, dostane
-                        ako odmenu prednosť aj na tento.</span>
+                <li>
+                    V <strong class="text-emerald-400">obľúbenom dni</strong> (napr. víkend) je hore
+                    <strong class="text-neutral-200">najnižšie číslo</strong> - kto ťažké dni už odrobil, dostane
+                    ako odmenu prednosť aj na tento.
                 </li>
             </ul>
 
@@ -94,11 +92,10 @@
                 zariadení. Na obyčajný všedný deň sa nezobrazuje nikde, tam poradie nerozhoduje o ničom.
             </p>
 
-            <p class="mt-2.5 flex gap-2 rounded border border-neutral-800 bg-neutral-900/60 px-2.5 py-2 text-[0.7rem] leading-relaxed text-neutral-400">
-                <i class="fa-solid fa-lightbulb mt-0.5 text-[0.65rem] text-neutral-500"></i>
-                <span><strong class="text-neutral-300">Napríklad:</strong> Janka aj Peter odpracovali po 12 dní. Janka
-                    mala medzi nimi iba 2 piatky, Peter 6. Petrovo číslo je nižšie - na najbližší piatok je preto na
-                    rade Janka, ale na najbližšiu sobotu má naopak prednosť Peter, ktorý si ju "odrobil".</span>
+            <p class="mt-2.5 rounded border border-neutral-800 bg-neutral-900/60 px-2.5 py-2 text-[0.7rem] leading-relaxed text-neutral-400">
+                <strong class="text-neutral-300">Napríklad:</strong> Janka aj Peter odpracovali po 12 dní. Janka
+                mala medzi nimi iba 2 piatky, Peter 6. Petrovo číslo je nižšie - na najbližší piatok je preto na
+                rade Janka, ale na najbližšiu sobotu má naopak prednosť Peter, ktorý si ju "odrobil".
             </p>
 
             <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-500">
@@ -131,11 +128,10 @@
                 </li>
             </ul>
 
-            <p class="mt-2.5 flex gap-2 rounded border border-neutral-800 bg-neutral-900/60 px-2.5 py-2 text-[0.7rem] leading-relaxed text-neutral-400">
-                <i class="fa-solid fa-lightbulb mt-0.5 text-[0.65rem] text-neutral-500"></i>
-                <span><strong class="text-neutral-300">Napríklad:</strong> Janka aj Peter sa zapísali na rovnaké
-                    4 dni tento týždeň. Janka má vyššie poradie spravodlivosti (viac dlhuje tímu ťažký deň), tak jej
-                    panel odporučí o niečo viac zmien než Petrovi - najviac o štvrtinu.</span>
+            <p class="mt-2.5 rounded border border-neutral-800 bg-neutral-900/60 px-2.5 py-2 text-[0.7rem] leading-relaxed text-neutral-400">
+                <strong class="text-neutral-300">Napríklad:</strong> Janka aj Peter sa zapísali na rovnaké
+                4 dni tento týždeň. Janka má vyššie poradie spravodlivosti (viac dlhuje tímu ťažký deň), tak jej
+                panel odporučí o niečo viac zmien než Petrovi - najviac o štvrtinu.
             </p>
 
             <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-500">

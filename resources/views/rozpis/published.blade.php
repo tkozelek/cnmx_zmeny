@@ -72,14 +72,13 @@
             @else
                 <div class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 2xl:gap-4">
                     @foreach($plan as $day)
-                        {{-- One flag, reused for the card border and every row/name it touches: a
-                             row, the manažér line, or a náhradník entry all count as "you work this
-                             day", so the day stands out as a whole, not just one line in it. --}}
+                        {{-- One flag, reused for the card border and every row it touches. Standing
+                             on an actual position only - a náhradník is signed up, not working,
+                             so it does not light the day up. --}}
                         @php
                             $isMyRow = fn (array $row): bool => $row['user_id'] !== null && $row['user_id'] === auth()->id();
                             $isMyDay = collect($day['rows'])->contains($isMyRow)
-                                || collect($day['managerRows'])->contains($isMyRow)
-                                || in_array(auth()->id(), $day['substituteIds'], true);
+                                || collect($day['managerRows'])->contains($isMyRow);
                         @endphp
 
                         <section id="day-{{ $day['date']->toDateString() }}" @class([
@@ -99,12 +98,6 @@
                                             'text-sky-300' => $isMyRow($day['managerRows'][0] ?? ['user_id' => null]),
                                             'text-neutral-300' => ! $isMyRow($day['managerRows'][0] ?? ['user_id' => null]),
                                         ])>{{ $day['manager'] }}</span>
-                                    </p>
-                                @endif
-
-                                @if($isMyDay)
-                                    <p class="mt-1.5 inline-flex items-center gap-1 rounded bg-sky-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-sky-400">
-                                        <i class="fa-solid fa-user text-[0.6rem]"></i> Vy pracujete
                                     </p>
                                 @endif
 
@@ -173,9 +166,7 @@
                                         Náhradníci
                                     </p>
                                     <p class="mt-1 text-xs leading-relaxed text-neutral-400">
-                                        @foreach($day['substitutes'] as $i => $name)
-                                            <span @class(['font-semibold text-sky-300' => ($day['substituteIds'][$i] ?? null) === auth()->id()])>{{ $name }}</span>{{ ! $loop->last ? ', ' : '' }}
-                                        @endforeach
+                                        {{ implode(', ', $day['substitutes']) }}
                                     </p>
                                 </div>
                             @endif
@@ -187,9 +178,9 @@
                                  advisory context a manager needs and a regular employee does not. --}}
                             @if($canBuild && $day['unfilled'] > 0 && $day['eligible'])
                                 <div class="border-t border-neutral-800/80 bg-emerald-500/[0.04] px-3 py-2">
-                                    <p class="flex items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-wider text-emerald-500"
+                                    <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-emerald-500"
                                        title="Zapísaní, bez absencie tento deň, ešte nezaradení - zoradení podľa poradia spravodlivosti, kto je najviac na rade.">
-                                        <i class="fa-solid fa-shuffle text-[0.6rem]"></i> Kto môže byť vylosovaný
+                                        Kto môže byť vylosovaný
                                     </p>
                                     <p class="mt-1 text-xs leading-relaxed text-neutral-400">
                                         @foreach($day['eligible'] as $person)

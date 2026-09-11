@@ -191,7 +191,7 @@ class RozpisService
      * signup), ordered by fairness score descending, same as the builder's hard-day pool. It is
      * not gated here - the published view decides who gets to see it, this just supplies the data.
      *
-     * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, rows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, substitutes: list<string>, substituteIds: list<int>, eligible: list<array{name: string, priorityScore: float}>, unfilled: int}>
+     * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, rows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, substitutes: list<string>, eligible: list<array{name: string, priorityScore: float}>, unfilled: int}>
      */
     public function plan(Team $team, CarbonImmutable $weekStart): Collection
     {
@@ -268,7 +268,6 @@ class RozpisService
 
                     // Signed up for the day, never placed. The reference calls these "náhradníci".
                     'substitutes' => $pool->map(fn (Assignment $assignment): string => (string) $assignment->user)->all(),
-                    'substituteIds' => $pool->map(fn (Assignment $assignment): int => $assignment->user_id)->all(),
 
                     'eligible' => $eligible,
 
@@ -395,6 +394,27 @@ class RozpisService
         }
 
         return $added;
+    }
+
+    /**
+     * Copy the entire position slot structure from a previous week to a target week.
+     * Maps each day of the source week to the corresponding day of the target week by day index.
+     */
+    public function copyWeekSlots(Team $team, CarbonImmutable $sourceWeekStart, CarbonImmutable $targetWeekStart): int
+    {
+        $sourceDays = $this->weeks->days($sourceWeekStart)->values();
+        $targetDays = $this->weeks->days($targetWeekStart)->values();
+        $totalAdded = 0;
+
+        foreach ($sourceDays as $index => $sourceDay) {
+            $targetDay = $targetDays->get($index);
+
+            if ($targetDay) {
+                $totalAdded += $this->copySlots($sourceDay, $targetDay);
+            }
+        }
+
+        return $totalAdded;
     }
 
     /**
