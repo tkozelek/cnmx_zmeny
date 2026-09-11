@@ -48,17 +48,32 @@ return new class extends Migration
         // A user already holding $newRole in the same team would collide on the composite
         // primary key [team_id, role_id, model_id, model_type] if the old row were updated
         // in place, so those duplicates are dropped instead of merged.
-        DB::table($modelHasRolesTable)
-            ->where('role_id', $oldRole->id)
-            ->whereExists(function ($query) use ($modelHasRolesTable, $newRole, $teamKey) {
-                $query->selectRaw('1')
-                    ->from("{$modelHasRolesTable} as existing")
-                    ->whereColumn('existing.model_id', "{$modelHasRolesTable}.model_id")
-                    ->whereColumn('existing.model_type', "{$modelHasRolesTable}.model_type")
-                    ->whereColumn("existing.{$teamKey}", "{$modelHasRolesTable}.{$teamKey}")
-                    ->where('existing.role_id', $newRole->id);
+        // Selected via join first to avoid MySQL error 1093 (cannot delete from table referenced in subquery FROM clause).
+        $collidingRows = DB::table("{$modelHasRolesTable} as old")
+            ->join("{$modelHasRolesTable} as existing", function ($join) use ($newRole, $teamKey) {
+                $join->on('existing.model_id', '=', 'old.model_id')
+                    ->on('existing.model_type', '=', 'old.model_type')
+                    ->on("existing.{$teamKey}", '=', "old.{$teamKey}")
+                    ->where('existing.role_id', '=', $newRole->id);
             })
-            ->delete();
+            ->where('old.role_id', $oldRole->id)
+            ->select('old.model_id', 'old.model_type', "old.{$teamKey}")
+            ->get();
+
+        foreach ($collidingRows as $row) {
+            $query = DB::table($modelHasRolesTable)
+                ->where('role_id', $oldRole->id)
+                ->where('model_id', $row->model_id)
+                ->where('model_type', $row->model_type);
+
+            if ($row->{$teamKey} === null) {
+                $query->whereNull($teamKey);
+            } else {
+                $query->where($teamKey, $row->{$teamKey});
+            }
+
+            $query->delete();
+        }
 
         DB::table($modelHasRolesTable)
             ->where('role_id', $oldRole->id)
