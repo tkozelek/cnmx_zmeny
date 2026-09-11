@@ -31,7 +31,7 @@
                 <x-team-switcher />
             </div>
 
-            @if(auth()->user()->hasRole('admin'))
+            @can('viewAny', \App\Models\User::class)
                 <x-nav-link
                     route="admin.users.index"
                     :is-mobile="true"
@@ -44,7 +44,7 @@
                         </span>
                     @endif
                 </x-nav-link>
-            @endif
+            @endcan
 
             <x-nav-link
                 route="absences.index"

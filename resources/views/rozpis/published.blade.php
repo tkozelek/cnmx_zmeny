@@ -25,7 +25,7 @@
                     @endif
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-wrap items-center justify-center gap-2">
                     <a href="{{ route('rozpis.published', ['date' => $previousWeek->toDateString()]) }}"
                        title="Predchádzajúci týždeň"
                        class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900 text-neutral-200 transition hover:border-neutral-700 hover:text-white">
@@ -72,14 +72,32 @@
             @else
                 <div class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 2xl:gap-4">
                     @foreach($plan as $day)
-                        <section class="flex flex-col overflow-hidden rounded-md border border-neutral-800 bg-neutral-900 shadow-sm">
+                        {{-- One flag, reused for the card border and every row it touches. Standing
+                             on an actual position only - a náhradník is signed up, not working,
+                             so it does not light the day up. --}}
+                        @php
+                            $isMyRow = fn (array $row): bool => $row['user_id'] !== null && $row['user_id'] === auth()->id();
+                            $isMyDay = collect($day['rows'])->contains($isMyRow)
+                                || collect($day['managerRows'])->contains($isMyRow);
+                        @endphp
+
+                        <section id="day-{{ $day['date']->toDateString() }}" @class([
+                            'flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm',
+                            'border-sky-500/40 ring-1 ring-sky-500/20' => $isMyDay,
+                            'border-neutral-800' => ! $isMyDay,
+                        ])>
                             <div class="flex flex-col items-center justify-center border-b border-neutral-800 bg-neutral-900/60 px-4 py-3 text-center">
                                 <p class="truncate text-lg font-bold text-neutral-100">{{ $day['dayName'] }}</p>
                                 <p class="mt-0.5 text-sm font-bold tracking-wide text-neutral-200">{{ $day['date']->format('d.m.Y') }}</p>
 
                                 @if($day['manager'])
                                     <p class="mt-1 text-[0.7rem] text-neutral-400">
-                                        manažér: <span class="font-semibold text-neutral-300">{{ $day['manager'] }}</span>
+                                        manažér:
+                                        <span @class([
+                                            'font-semibold',
+                                            'text-sky-300' => $isMyRow($day['managerRows'][0] ?? ['user_id' => null]),
+                                            'text-neutral-300' => ! $isMyRow($day['managerRows'][0] ?? ['user_id' => null]),
+                                        ])>{{ $day['manager'] }}</span>
                                     </p>
                                 @endif
 
@@ -108,18 +126,21 @@
                                          card glares, a darker one still cuts the block up seven
                                          times over; a faint tint on every other row separates them
                                          without drawing an edge at all. --}}
-                                    {{-- An unfilled row wins over the striping: a gap in the plan
-                                         is the one thing worth spotting in a column of names. --}}
+                                    {{-- An unfilled row wins over the striping, and your own row
+                                         wins over both - a gap in the plan and your own shift are
+                                         the two things worth spotting in a column of names. --}}
                                     <div @class([
                                         'flex items-center justify-between gap-2 px-3 py-2',
-                                        'bg-neutral-950/25' => $loop->index % 2 === 1 && $row['name'] !== null,
+                                        'bg-neutral-950/25' => $loop->index % 2 === 1 && $row['name'] !== null && ! $isMyRow($row),
                                         'bg-amber-500/[0.07]' => $row['name'] === null,
+                                        'bg-sky-500/10' => $isMyRow($row),
                                     ])>
                                         <span class="min-w-0">
                                             <span @class([
                                                 'block truncate text-sm font-semibold',
-                                                'text-neutral-100' => $row['name'] !== null,
+                                                'text-neutral-100' => $row['name'] !== null && ! $isMyRow($row),
                                                 'text-amber-400/80 italic' => $row['name'] === null,
+                                                'text-sky-300' => $isMyRow($row),
                                             ])>
                                                 {{ $row['name'] ?? 'neobsadené' }}
                                             </span>
@@ -149,9 +170,36 @@
                                     </p>
                                 </div>
                             @endif
+
+                            {{-- Manager-only: who from the signed-up, unplaced, non-absent pool is
+                                 owed this day most, in case an unfilled position gets filled by
+                                 draw rather than by name. Everyone already sees these same people
+                                 above as "Náhradníci" - this just adds the fairness order, which is
+                                 advisory context a manager needs and a regular employee does not. --}}
+                            @if($canBuild && $day['unfilled'] > 0 && $day['eligible'])
+                                <div class="border-t border-neutral-800/80 bg-emerald-500/[0.04] px-3 py-2">
+                                    <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-emerald-500"
+                                       title="Zapísaní, bez absencie tento deň, ešte nezaradení - zoradení podľa poradia spravodlivosti, kto je najviac na rade.">
+                                        Kto môže byť vylosovaný
+                                    </p>
+                                    <p class="mt-1 text-xs leading-relaxed text-neutral-400">
+                                        @foreach($day['eligible'] as $person)
+                                            {{ $person['name'] }} ({{ $person['priorityScore'] }}){{ ! $loop->last ? ', ' : '' }}
+                                        @endforeach
+                                    </p>
+                                </div>
+                            @endif
                         </section>
                     @endforeach
                 </div>
+
+                @php $todayDay = $plan->first(fn (array $day): bool => $day['date']->isToday()); @endphp
+                @if($todayDay)
+                    <script>
+                        document.getElementById('day-{{ $todayDay['date']->toDateString() }}')
+                            ?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    </script>
+                @endif
             @endif
         </div>
     </div>

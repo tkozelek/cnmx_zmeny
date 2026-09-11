@@ -70,7 +70,7 @@ class DataTableTest extends TestCase
     public function test_admin_can_instantly_delete_their_own_inactive_absence_from_the_admin_table(): void
     {
         $team = $this->tenant();
-        $admin = $this->member($team, Role::Admin);
+        $admin = $this->member($team, Role::HeadManager);
 
         $absence = Absence::factory()->create([
             'team_id' => $team->id,

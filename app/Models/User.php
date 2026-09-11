@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use App\Enums\Role as RoleEnum;
 use App\Notifications\AddUserResetPassword;
 use App\Notifications\ResetPasswordNotification;
+use App\Notifications\VerifyEmailAddress;
 use App\Traits\Loggable;
 use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,7 +29,7 @@ use Spatie\Permission\Traits\HasRoles;
  * The legacy `id_role` column is gone. Its two non-permission values became attributes:
  * blocked -> `is_active = false`, unverified -> `team_user.approved_at IS NULL`.
  */
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use CanResetPassword, HasFactory, HasRoles, Loggable, Notifiable;
 
@@ -164,10 +165,6 @@ class User extends Authenticatable
         setPermissionsTeamId($team->id);
 
         try {
-            if ($this->hasAnyRole([RoleEnum::Admin->value, RoleEnum::Manager->value])) {
-                return true;
-            }
-
             return $this->hasPermissionTo($permission);
         } catch (PermissionDoesNotExist) {
             return false;
@@ -180,6 +177,11 @@ class User extends Authenticatable
     public function __toString(): string
     {
         return $this->lastname.' '.mb_substr($this->name, 0, 1).'.';
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailAddress);
     }
 
     public function sendPasswordResetNotification($token): void

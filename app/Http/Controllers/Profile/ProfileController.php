@@ -24,6 +24,8 @@ class ProfileController extends Controller
 
     public function show(Request $request, User $user): View
     {
+        $this->authorize('view', $user);
+
         return $this->profile($user, $this->periodStart($request->input('date')));
     }
 

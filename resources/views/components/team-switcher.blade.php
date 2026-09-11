@@ -2,9 +2,6 @@
     @php
         $user = auth()->user();
         $teams = $user->approvedTeams();
-        if ($teams->isEmpty() && $user->hasRole('admin')) {
-            $teams = \App\Models\Team::all();
-        }
         $currentTeam = $user->currentTeam ?? $teams->first() ?? app(\App\Models\Team::class);
     @endphp
 

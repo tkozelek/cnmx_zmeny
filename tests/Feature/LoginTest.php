@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -92,7 +93,52 @@ class LoginTest extends TestCase
         $this->get(route('calendar.index'))->assertRedirect(route('login'));
         $this->assertGuest();
 
-        $this->get(route('login'))->assertOk()->assertSee('Ešte si nebol/a overený', false);
+        $this->get(route('login'))->assertOk()->assertSee('čaká sa na schválenie vedúcim', false);
+    }
+
+    /**
+     * The first of the two gates. An unverified account is not logged out - it is parked on the
+     * notice page, which is where the "send it again" button lives.
+     */
+    public function test_an_unverified_member_is_sent_to_the_verification_notice(): void
+    {
+        $team = $this->tenant();
+        $unverified = User::factory()->unverified()->memberOf($team)->create(['current_team_id' => $team->id]);
+
+        $this->post(route('login.auth'), ['email' => $unverified->email, 'password' => 'password']);
+
+        $this->get(route('calendar.index'))->assertRedirect(route('verification.notice'));
+        $this->assertAuthenticated();
+    }
+
+    /**
+     * An account hashed at the old cost factor still logs in, and comes out stored at the new one.
+     * The upgrade must be invisible: same password, same session, stronger hash.
+     */
+    public function test_a_password_hashed_at_an_older_cost_is_upgraded_on_login(): void
+    {
+        $team = $this->tenant();
+
+        // The suite itself runs at rounds 4 for speed, so both ends have to be set explicitly for
+        // the assertion to mean anything: raise the configured cost first (and drop the already
+        // resolved hasher, which captured the old one), then hash below it.
+        config(['hashing.bcrypt.rounds' => 6]);
+        Hash::forgetDrivers();
+
+        $legacy = Hash::driver('bcrypt')->make('password', ['rounds' => 4]);
+        $user = User::factory()->memberOf($team)->create([
+            'current_team_id' => $team->id,
+            'password' => $legacy,
+        ]);
+
+        $this->post(route('login.auth'), ['email' => $user->email, 'password' => 'password'])
+            ->assertRedirect(route('calendar.index'));
+
+        $stored = $user->fresh()->password;
+
+        $this->assertNotSame($legacy, $stored, 'The weak hash must not survive a successful login.');
+        $this->assertFalse(Hash::needsRehash($stored), 'It is stored at the configured cost now.');
+        $this->assertTrue(Hash::check('password', $stored), 'And the password still works.');
     }
 
     public function test_a_missing_email_is_a_validation_error(): void

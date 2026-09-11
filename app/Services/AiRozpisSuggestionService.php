@@ -167,7 +167,7 @@ class AiRozpisSuggestionService
         $taken = $signups->pluck('position_slot_id')->filter();
 
         return $slots
-            ->reject(fn (PositionSlot $slot): bool => $taken->contains($slot->getKey()))
+            ->reject(fn (PositionSlot $slot): bool => $slot->position->is_manager || $taken->contains($slot->getKey()))
             ->sortBy(fn (PositionSlot $slot): array => [
                 $slot->date->toDateString(),
                 $slot->start_time ?? '99:99:99',
@@ -312,8 +312,9 @@ class AiRozpisSuggestionService
         3. Each `slot_id` at most once across the whole reply.
         4. At most one slot per person per day. Across the week a person may and should work
            several days - but never two slots on the same date.
-        5. Never invent a person, a slot or a day.
-        6. More slots than available people on a day: leave the surplus out. Do not pad.
+        5. Never assign or schedule anyone to slots where `isManagerRole` is true. Manager positions ("vedúci zmeny") are assigned manually by shift managers.
+        6. Never invent a person, a slot or a day.
+        7. More slots than available people on a day: leave the surplus out. Do not pad.
 
         # The budget: how much each person should work this week
 
@@ -471,7 +472,7 @@ class AiRozpisSuggestionService
         return PositionSlot::with('position.group')
             ->where('date', $date->toDateString())
             ->get()
-            ->reject(fn (PositionSlot $slot): bool => $taken->contains($slot->getKey()))
+            ->reject(fn (PositionSlot $slot): bool => $slot->position->is_manager || $taken->contains($slot->getKey()))
             // One closure returning an array - see RozpisService::sortSlots() for why an array of
             // closures silently sorts these backwards.
             ->sortBy(fn (PositionSlot $slot): array => [
@@ -692,9 +693,10 @@ class AiRozpisSuggestionService
         2. Use only `slot_id` values that appear in `slots`, copied exactly.
         3. Each token at most once. Nobody works two slots on the same day.
         4. Each `slot_id` at most once. A slot holds one person.
-        5. Never invent a person, a slot, or a placement for anyone not listed. The people in
+        5. Never assign or schedule anyone to slots where `isManagerRole` is true. Manager positions ("vedúci zmeny") must be left unassigned by the AI - shift managers assign these manually.
+        6. Never invent a person, a slot, or a placement for anyone not listed. The people in
            `people` volunteered for this specific day; nobody else may be scheduled.
-        6. If there are more slots than people, leave the surplus slots out of your reply
+        7. If there are more slots than people, leave the surplus slots out of your reply
            entirely. Do not pad the list.
 
         # How to choose

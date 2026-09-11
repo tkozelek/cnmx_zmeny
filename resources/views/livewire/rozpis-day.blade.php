@@ -1,7 +1,8 @@
 <div @class([
     'flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm transition',
     'border-amber-500/40 ring-1 ring-amber-500/20' => $this->isHardToStaff,
-    'border-neutral-800' => ! $this->isHardToStaff,
+    'border-emerald-500/40 ring-1 ring-emerald-500/20' => $this->isDesirableDay,
+    'border-neutral-800' => ! $this->isHardToStaff && ! $this->isDesirableDay,
 ])>
     {{-- Day header --}}
     <div class="flex flex-col items-center justify-center border-b border-neutral-800 bg-neutral-900/60 px-4 py-3 text-center">
@@ -22,6 +23,11 @@
             <span class="mt-1.5 inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-amber-400"
                   title="Málokto sa naň hlási dobrovoľne. Zoznam nezaradených je preto zoradený podľa toho, kto je na ťahu.">
                 <i class="fa-solid fa-triangle-exclamation text-[0.55rem]"></i> Neobľúbený deň
+            </span>
+        @elseif($this->isDesirableDay)
+            <span class="mt-1.5 inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-emerald-400"
+                  title="Obľúbený deň. Zoznam nezaradených je preto zoradený tak, aby bol hore ten, kto si ho najviac zaslúži za odrobené neobľúbené dni.">
+                Obľúbený deň
             </span>
         @endif
     </div>
@@ -167,12 +173,26 @@
                             @endforeach
                         </select>
                     @elseif($this->canBuild && $this->unassignedPool->isNotEmpty())
-                        {{-- Keyboard and touch path to the same server method the drag calls. --}}
+                        {{-- Keyboard and touch path to the same server method the drag calls. The
+                             drag pool shows the score as a coloured badge next to the name; a
+                             <select> cannot render that, so on the two day types where the number
+                             means something it is appended to the option text instead - otherwise
+                             touch users would build blind to the one thing that decides the order. --}}
                         <select wire:change="place($event.target.value, {{ $row['slot']->id }})"
+                                @if($this->isHardToStaff)
+                                    title="Zoradené podľa poradia spravodlivosti - vyššie číslo je na rade skôr."
+                                @elseif($this->isDesirableDay)
+                                    title="Zoradené podľa poradia spravodlivosti - nižšie číslo si tento deň zaslúži viac."
+                                @endif
                                 class="w-full rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-sky-500 focus:outline-none">
                             <option value="">- priradiť -</option>
                             @foreach($this->unassignedPool as $candidate)
-                                <option value="{{ $candidate->id }}">{{ $candidate->user }}</option>
+                                <option value="{{ $candidate->id }}">
+                                    {{ $candidate->user }}
+                                    @if($this->isHardToStaff || $this->isDesirableDay)
+                                        ({{ number_format($this->statsFor($candidate->user_id)['priorityScore'], 1) }})
+                                    @endif
+                                </option>
                             @endforeach
                         </select>
                     @else
@@ -187,8 +207,8 @@
         @endforelse
     </div>
 
-    {{-- AI draft controls. Hidden entirely when no API key is configured. --}}
-    @if($this->canBuild && $this->aiEnabled && $this->rows)
+    {{-- AI draft controls. Hidden entirely when no API key is configured or all non-manager slots are filled. --}}
+    @if($this->canBuild && $this->aiEnabled && $this->rows && ($suggestions || $this->hasUnfilledNonManagerSlots))
         <div class="flex items-center gap-1 border-t border-neutral-800/80 px-2.5 py-2">
             @if($suggestions)
                 <button type="button" wire:click="acceptAllSuggestions"
@@ -266,6 +286,11 @@
                     @if($this->isHardToStaff)
                         <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-[0.65rem] font-semibold text-amber-400"
                               title="Kto je na ťahu - vyššie číslo znamená, že je na rade skôr">
+                            {{ number_format($this->statsFor($assignment->user_id)['priorityScore'], 1) }}
+                        </span>
+                    @elseif($this->isDesirableDay)
+                        <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-[0.65rem] font-semibold text-emerald-400"
+                              title="Kto si tento deň zaslúži - nižšie číslo znamená, že si ho zaslúži viac">
                             {{ number_format($this->statsFor($assignment->user_id)['priorityScore'], 1) }}
                         </span>
                     @endif
