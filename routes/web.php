@@ -177,6 +177,7 @@ Route::middleware('tenant')->group(function () {
 
     Route::get('/tyzden/{date}/rozpis', [RozpisController::class, 'show'])->name('rozpis.show');
     Route::post('/tyzden/{date}/rozpis/kopirovat', [RozpisController::class, 'copy'])->name('rozpis.copy');
+    Route::post('/tyzden/{date}/rozpis/kopirovat-tyzden', [RozpisController::class, 'copyWeek'])->name('rozpis.copy-week');
 
     /*
     | The published rozpis. Open to every member — the controller decides whether this week is

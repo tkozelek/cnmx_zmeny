@@ -27,7 +27,7 @@
         @elseif($this->isDesirableDay)
             <span class="mt-1.5 inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-emerald-400"
                   title="Obľúbený deň. Zoznam nezaradených je preto zoradený tak, aby bol hore ten, kto si ho najviac zaslúži za odrobené neobľúbené dni.">
-                <i class="fa-solid fa-star text-[0.55rem]"></i> Obľúbený deň
+                Obľúbený deň
             </span>
         @endif
     </div>
@@ -207,8 +207,8 @@
         @endforelse
     </div>
 
-    {{-- AI draft controls. Hidden entirely when no API key is configured. --}}
-    @if($this->canBuild && $this->aiEnabled && $this->rows)
+    {{-- AI draft controls. Hidden entirely when no API key is configured or all non-manager slots are filled. --}}
+    @if($this->canBuild && $this->aiEnabled && $this->rows && ($suggestions || $this->hasUnfilledNonManagerSlots))
         <div class="flex items-center gap-1 border-t border-neutral-800/80 px-2.5 py-2">
             @if($suggestions)
                 <button type="button" wire:click="acceptAllSuggestions"

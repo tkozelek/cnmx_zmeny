@@ -84,6 +84,16 @@
                         </button>
                     @endif
 
+                    <form method="POST" action="{{ route('rozpis.copy-week', ['date' => $weekStart->toDateString()]) }}">
+                        @csrf
+                        <button type="submit"
+                                title="Skopírovať rozloženie pozícií z minulého týždňa"
+                                class="inline-flex h-11 items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm font-semibold text-neutral-300 transition hover:border-neutral-700 hover:text-white">
+                            <i class="fa-solid fa-copy text-xs text-sky-400"></i>
+                            Kopírovať z minulého týždňa
+                        </button>
+                    </form>
+
                     {{-- Week-wide draft. Lives here rather than in a day card because the point of
                          it is the days seeing each other. --}}
                     <livewire:rozpis-week-ai :week-start="$weekStart->toDateString()" />

@@ -126,4 +126,26 @@ class RozpisController extends Controller
                 'icon' => 'fa fa-copy',
             ]);
     }
+
+    /**
+     * Copy the entire week's position slot structure from the previous week.
+     */
+    public function copyWeek(Request $request, Team $team, string $date): RedirectResponse
+    {
+        $targetWeekStart = $this->weeks->alignFromRequest($team, $date);
+        $previousWeekStart = $this->weeks->previous($targetWeekStart);
+
+        $this->authorize('create', [PositionSlot::class, $targetWeekStart]);
+
+        $added = $this->rozpis->copyWeekSlots($team, $previousWeekStart, $targetWeekStart);
+
+        return redirect()
+            ->route('rozpis.show', ['date' => $targetWeekStart->toDateString()])
+            ->with([
+                'message' => $added === 0
+                    ? 'Nepridali sa žiadne pozície z minulého týždňa - týždeň ich už má, alebo bol minulý týždeň prázdny.'
+                    : "Skopírovaných pozícií z minulého týždňa: {$added}.",
+                'icon' => 'fa fa-copy',
+            ]);
+    }
 }
