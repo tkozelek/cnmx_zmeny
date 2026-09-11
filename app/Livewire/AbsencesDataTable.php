@@ -18,6 +18,18 @@ class AbsencesDataTable extends DataTableComponent
 
     protected $model = Absence::class;
 
+    /**
+     * The component asserts its own permission.
+     *
+     * It is also gated where it is rendered (holiday/index.blade.php), and Livewire snapshots are signed, so
+     * this is belt and braces - but a view-level @can is the only thing standing between an
+     * employee and every colleague's absence record, and that kind of gate is easy to lose in a refactor.
+     */
+    public function mount(): void
+    {
+        $this->authorize('viewAny', Absence::class);
+    }
+
     public function configure(): void
     {
         $this->setPrimaryKey('id')

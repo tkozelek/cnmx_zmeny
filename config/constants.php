@@ -12,6 +12,10 @@ return [
     'messages' => [
         'name.required' => 'Meno je potrebné.',
         'lastname.required' => 'Priezvisko je potrebné.',
+
+        // Shared by every form that takes a person's name - see the NO_FORMULA_PREFIX rule.
+        'name.not_regex' => 'Meno nesmie začínať znakom =, +, - ani @.',
+        'lastname.not_regex' => 'Priezvisko nesmie začínať znakom =, +, - ani @.',
         'email.required' => 'Emailová adresa je potrebná.',
         'email.email' => 'Emailová adresa nie je platná.',
         'email.unique' => 'Emailová adresa už bola použitá.',

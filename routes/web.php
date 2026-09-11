@@ -76,7 +76,12 @@ Route::middleware('guest')->group(function () {
             ->middleware('throttle:6,1');
 
         Route::get('/{token}', [PasswordResetController::class, 'show'])->name('password.reset');
-        Route::post('/store', [PasswordResetController::class, 'store'])->name('password.store');
+
+        // Throttled like every other pre-auth POST: the token is long enough that guessing it is
+        // not the threat, but this was the one unthrottled way in.
+        Route::post('/store', [PasswordResetController::class, 'store'])
+            ->name('password.store')
+            ->middleware('throttle:6,1');
     });
 });
 

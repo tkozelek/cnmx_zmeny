@@ -16,24 +16,41 @@ class DataTableTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** As a manager: the component is only ever rendered behind that permission. */
     public function test_users_data_table_renders(): void
     {
         $team = $this->tenant();
-        $user = $this->member($team);
 
-        Livewire::actingAs($user)
+        Livewire::actingAs($this->member($team, Role::Manager))
             ->test(UsersDataTable::class)
             ->assertOk();
     }
 
+    /** The all-staff table, so a manager - MyAbsencesDataTable is the everyone-facing one. */
     public function test_absences_data_table_renders(): void
     {
         $team = $this->tenant();
-        $user = $this->member($team);
 
-        Livewire::actingAs($user)
+        Livewire::actingAs($this->member($team, Role::Manager))
             ->test(AbsencesDataTable::class)
             ->assertOk();
+    }
+
+    /**
+     * Both all-staff tables refuse an employee on their own, not just in the Blade that renders
+     * them. A view-level @can is the only thing that has ever stood between an employee and
+     * every colleague's account and absence history.
+     */
+    public function test_the_all_staff_tables_refuse_an_employee(): void
+    {
+        $team = $this->tenant();
+        $employee = $this->member($team);
+
+        // Livewire's test helper renders the AuthorizationException as a 403 rather than
+        // throwing it, so the status is what there is to assert.
+        foreach ([UsersDataTable::class, AbsencesDataTable::class] as $component) {
+            Livewire::actingAs($employee)->test($component)->assertStatus(403);
+        }
     }
 
     /**
@@ -45,7 +62,7 @@ class DataTableTest extends TestCase
     public function test_absences_data_table_shows_cancelled_status_and_delete_action(): void
     {
         $team = $this->tenant();
-        $user = $this->member($team);
+        $user = $this->member($team, Role::Manager);
 
         Absence::factory()->create([
             'team_id' => $team->id,
