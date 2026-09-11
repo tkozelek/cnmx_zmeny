@@ -300,7 +300,7 @@ class AbsenceTest extends TestCase
     public function test_an_admin_cannot_bypass_the_retention_period_on_their_own_absence(): void
     {
         $team = $this->tenant();
-        $admin = $this->member($team, Role::Admin);
+        $admin = $this->member($team, Role::HeadManager);
         $team->settings->update(['stale_absence_deletion_days' => 5]);
 
         $absence = Absence::factory()->create([

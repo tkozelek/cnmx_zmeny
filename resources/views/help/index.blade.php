@@ -115,7 +115,7 @@
                 </div>
             </div>
             {{-- 5. Správa pre Administrátorov --}}
-            @if(auth()->user() && auth()->user()->hasRole('admin'))
+            @can('lock', \App\Models\Assignment::class)
                 <div>
                     <h2>
                         <button

@@ -15,7 +15,9 @@ return [
     |
     */
 
-    'default' => env('CACHE_DRIVER', 'file'),
+    // CACHE_STORE is the current name; CACHE_DRIVER stays as a fallback so an already-deployed
+    // .env keeps working. Reading both is also what lets phpunit.xml's CACHE_STORE=array apply.
+    'default' => env('CACHE_STORE', env('CACHE_DRIVER', 'file')),
 
     /*
     |--------------------------------------------------------------------------

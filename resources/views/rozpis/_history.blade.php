@@ -4,7 +4,9 @@
 
      Rows are sittings, not writes: RozpisService::history() groups by person and minute, so
      filling a Friday reads as one entry with twenty lines under it rather than twenty entries. --}}
+{{-- A backdrop click reports the dialog itself as the target; anything inside reports a child. --}}
 <dialog id="rozpis-history"
+        onclick="if (event.target === this) this.close()"
         class="w-[min(42rem,92vw)] rounded-2xl border border-neutral-800 bg-neutral-900 p-0 text-neutral-200 shadow-2xl backdrop:bg-neutral-950/80 backdrop:backdrop-blur-sm">
     <form method="dialog" class="flex items-start justify-between gap-4 border-b border-neutral-800 px-6 py-4">
         <div>

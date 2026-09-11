@@ -24,7 +24,14 @@ class UserFactory extends Factory
             'password' => 'password',
             'remember_token' => Str::random(10),
             'is_active' => true,
+            'email_verified_at' => now(),
         ];
+    }
+
+    /** Registered but has not clicked the link yet, so no manager may approve them. */
+    public function unverified(): static
+    {
+        return $this->state(fn (): array => ['email_verified_at' => null]);
     }
 
     /** Blocked - the state the legacy "zablokovany" role stood for. */

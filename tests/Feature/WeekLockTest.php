@@ -16,7 +16,7 @@ class WeekLockTest extends TestCase
     public function test_an_admin_can_lock_and_unlock_a_week(): void
     {
         $team = $this->tenant();
-        $admin = $this->member($team, Role::Admin);
+        $admin = $this->member($team, Role::HeadManager);
         $date = CarbonImmutable::now()->addDays(3)->toDateString();
 
         $this->actingAs($admin)->post(route('weeks.lock', ['date' => $date]))->assertRedirect();
@@ -49,7 +49,7 @@ class WeekLockTest extends TestCase
     public function test_any_date_in_the_week_locks_the_same_week(): void
     {
         $team = $this->tenant();
-        $admin = $this->member($team, Role::Admin);
+        $admin = $this->member($team, Role::HeadManager);
 
         $weekStart = $this->weekStart($team, CarbonImmutable::now()->addDays(3)->toDateString());
 

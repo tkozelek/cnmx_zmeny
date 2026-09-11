@@ -1,5 +1,5 @@
 <div class="bg-neutral-900 p-4 md:p-6 rounded-lg shadow-xl text-neutral-200">
-    @if(auth()->user()->hasRole('admin'))
+    @can('create', \App\Models\Media::class)
         <div class="w-full mb-8">
             <form action="{{ route('media.store') }}" method="post"
                   class="dropzone bg-neutral-950 rounded-xl border-2 border-dashed border-neutral-800 hover:border-neutral-600 transition-all duration-300 p-6 text-center"
@@ -15,7 +15,7 @@
                 </div>
             </form>
         </div>
-    @endif
+    @endcan
 
     <div class="w-full">
         @if($media->isNotEmpty())
@@ -49,7 +49,7 @@
                                 <span class="ml-2 hidden sm:inline">Stiahnuť</span>
                             </a>
 
-                            @if(auth()->user()->hasRole('admin'))
+                            @can('toggleVisibility', $file)
                                 <form method="POST" action="{{ route('media.visibility', $file) }}">
                                     @csrf
                                     @method('PATCH')
@@ -60,7 +60,9 @@
                                         <span class="ml-2 hidden sm:inline">{{ $file->is_visible ? 'Skryť' : 'Zverejniť' }}</span>
                                     </button>
                                 </form>
+                            @endcan
 
+                            @can('delete', $file)
                                 <form method="POST" action="{{ route('media.destroy', $file) }}"
                                       onsubmit="return confirm('Určite zmazať súbor {{ $file->original_name }}?')">
                                     @csrf
@@ -72,7 +74,7 @@
                                         <span class="ml-2 hidden sm:inline">Zmazať</span>
                                     </button>
                                 </form>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 @endforeach
@@ -81,9 +83,9 @@
             <div class="text-center py-10 bg-neutral-950 rounded-lg border border-neutral-800">
                 <i class="fa-solid fa-folder-open text-5xl text-neutral-600 mb-4"></i>
                 <h3 class="text-xl font-medium text-neutral-400">Žiadne súbory neboli pridané.</h3>
-                @if(auth()->user()->hasRole('admin'))
+                @can('create', \App\Models\Media::class)
                     <p class="text-neutral-500 mt-2">Súbory môžete pridať pomocou formulára vyššie.</p>
-                @endif
+                @endcan
             </div>
         @endif
     </div>

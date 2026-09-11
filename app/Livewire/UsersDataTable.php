@@ -46,7 +46,7 @@ class UsersDataTable extends DataTableComponent
                     '' => 'Všetky role',
                     RoleEnum::Employee->value => RoleEnum::Employee->label(),
                     RoleEnum::Manager->value => RoleEnum::Manager->label(),
-                    RoleEnum::Admin->value => RoleEnum::Admin->label(),
+                    RoleEnum::HeadManager->value => RoleEnum::HeadManager->label(),
                     'pending' => 'Neoverený',
                     'blocked' => 'Zablokovaný',
                 ])
@@ -56,7 +56,7 @@ class UsersDataTable extends DataTableComponent
                     match ($value) {
                         RoleEnum::Employee->value,
                         RoleEnum::Manager->value,
-                        RoleEnum::Admin->value => $builder->role($value),
+                        RoleEnum::HeadManager->value => $builder->role($value),
                         'pending' => $builder->whereHas('teams', fn ($q) => $q->where('teams.id', $team->id)->whereNull('team_user.approved_at')),
                         'blocked' => $builder->where('users.is_active', false),
                         default => null,
@@ -109,8 +109,8 @@ class UsersDataTable extends DataTableComponent
                         return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-neutral-800 text-neutral-400 border border-neutral-700">Zablokovaný</span>';
                     }
 
-                    if ($roleName === RoleEnum::Admin->value) {
-                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30">Administrátor</span>';
+                    if ($roleName === RoleEnum::HeadManager->value) {
+                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30">'.RoleEnum::HeadManager->label().'</span>';
                     }
 
                     return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">'.(RoleEnum::tryFrom($roleName)?->label() ?? '-').'</span>';
@@ -149,6 +149,12 @@ class UsersDataTable extends DataTableComponent
     public function accept(User $user): void
     {
         $this->authorize('approve', $user);
+
+        if (! $user->hasVerifiedEmail()) {
+            $this->dispatch('toast', message: 'Používateľ si ešte neoveril e-mail.', type: 'error');
+
+            return;
+        }
 
         $team = app(Team::class);
         $team->users()->updateExistingPivot($user->id, ['approved_at' => now()]);

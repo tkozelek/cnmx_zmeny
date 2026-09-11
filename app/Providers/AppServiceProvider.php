@@ -72,6 +72,10 @@ class AppServiceProvider extends ServiceProvider
                 'team_id' => $subject->team_id ?? null,
                 // Y-m-d, so filtering a week is one whereBetween. Null on a model with no day.
                 'date' => $subject->date?->toDateString(),
+                // Who the row is about. Not derivable from the diff: logOnlyDirty strips every
+                // column that did not change, so moving somebody between slots records the slot
+                // and not the person - and a deleted row has no subject left to ask afterwards.
+                'user_id' => $subject->user_id ?? null,
             ], fn (mixed $value): bool => $value !== null));
         });
     }
