@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Enums\Role;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -133,5 +136,35 @@ class Team extends Model
     public function fairnessWindowWeeks(): int
     {
         return $this->cachedSettings()?->fairness_window_weeks ?? TeamSetting::DEFAULT_FAIRNESS_WINDOW_WEEKS;
+    }
+
+    /**
+     * Everybody in this cinema who holds $role and can actually use it: approved membership and
+     * an active account.
+     *
+     * "Can actually use it" is the point - a cinema whose only hlavný manažér is blocked or
+     * unapproved has nobody who can administer it, which is the state isLastHeadManager() exists
+     * to prevent. Counting the role alone would call that team covered.
+     *
+     * Brackets the registrar the way User::hasPermissionInTeam() does, so the answer is about
+     * *this* team rather than whichever one the request happens to be acting in.
+     *
+     * @return EloquentCollection<int, User>
+     */
+    public function activeHoldersOf(Role $role): EloquentCollection
+    {
+        $originalTeamId = getPermissionsTeamId();
+        setPermissionsTeamId($this->getKey());
+
+        try {
+            return User::role($role->value)
+                ->where('users.is_active', true)
+                ->whereHas('teams', fn (Builder $query) => $query
+                    ->where('teams.id', $this->getKey())
+                    ->whereNotNull('team_user.approved_at'))
+                ->get();
+        } finally {
+            setPermissionsTeamId($originalTeamId);
+        }
     }
 }

@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Livewire\UsersDataTable;
+use Livewire\Livewire;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -223,5 +225,115 @@ class UserRoleManagementTest extends TestCase
             ->assertOk()
             ->assertSee(Role::Manager->label())
             ->assertSee(Role::HeadManager->label());
+    }
+
+    /**
+     * A cinema must always keep somebody who can administer it.
+     *
+     * Promoting *into* the hlavný manažér tier needs `user.manage-managers`, which only that tier
+     * holds - so a cinema that loses its last one cannot appoint another. There is no way back
+     * short of database access, and a head manager demoting themselves is the likeliest route in.
+     */
+    public function test_the_last_head_manager_cannot_be_demoted(): void
+    {
+        $team = $this->tenant();
+        $headManager = $this->member($team, Role::HeadManager);
+
+        $this->actingAs($headManager)
+            ->put(route('admin.users.update', ['user' => $headManager->id]), [
+                'name' => $headManager->name,
+                'lastname' => $headManager->lastname,
+                'email' => $headManager->email,
+                'role' => Role::Employee->value,
+            ])
+            ->assertForbidden();
+
+        $this->assertTrue($headManager->fresh()->hasRole(Role::HeadManager->value));
+    }
+
+    public function test_the_last_head_manager_cannot_be_deactivated(): void
+    {
+        $team = $this->tenant();
+        $first = $this->member($team, Role::HeadManager);
+        $second = $this->member($team, Role::HeadManager);
+
+        // Two of them, so this one is expendable.
+        $this->actingAs($first)
+            ->delete(route('admin.users.destroy', ['user' => $second->id]))
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertFalse($second->fresh()->is_active);
+
+        // Now $first is the only one left, and nobody may deactivate them.
+        $manager = $this->member($team, Role::Manager);
+
+        $this->actingAs($manager)
+            ->delete(route('admin.users.destroy', ['user' => $first->id]))
+            ->assertForbidden();
+
+        $this->assertTrue($first->fresh()->is_active);
+    }
+
+    /** Once there are two, either may be demoted - the rule is about the last one, not the tier. */
+    public function test_a_head_manager_can_be_demoted_while_another_remains(): void
+    {
+        $team = $this->tenant();
+        $staying = $this->member($team, Role::HeadManager);
+        $leaving = $this->member($team, Role::HeadManager);
+
+        $this->actingAs($staying)
+            ->put(route('admin.users.update', ['user' => $leaving->id]), [
+                'name' => $leaving->name,
+                'lastname' => $leaving->lastname,
+                'email' => $leaving->email,
+                'role' => Role::Employee->value,
+            ])
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertTrue($leaving->fresh()->hasRole(Role::Employee->value));
+    }
+
+    /**
+     * A blocked or unapproved head manager does not count as cover: the cinema still has nobody
+     * who can log in and administer it.
+     */
+    public function test_a_blocked_head_manager_does_not_count_as_the_one_who_remains(): void
+    {
+        $team = $this->tenant();
+        $active = $this->member($team, Role::HeadManager);
+        $blocked = $this->member($team, Role::HeadManager);
+        $blocked->update(['is_active' => false]);
+
+        $this->actingAs($active)
+            ->put(route('admin.users.update', ['user' => $active->id]), [
+                'name' => $active->name,
+                'lastname' => $active->lastname,
+                'email' => $active->email,
+                'role' => Role::Employee->value,
+            ])
+            ->assertForbidden();
+
+        $this->assertTrue($active->fresh()->hasRole(Role::HeadManager->value));
+    }
+
+    /**
+     * The approve/deny buttons were a way around the whole hierarchy: `user.approve` is a
+     * permission a plain manager holds, and refusing a membership unapproves and deactivates.
+     */
+    public function test_a_manager_cannot_revoke_a_head_managers_membership(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $headManager = $this->member($team, Role::HeadManager);
+
+        Livewire::actingAs($manager)
+            ->test(UsersDataTable::class)
+            ->call('deny', $headManager->id)
+            ->assertStatus(403);
+
+        $headManager->forgetApprovedTeamsCache();
+
+        $this->assertTrue($headManager->fresh()->is_active);
+        $this->assertTrue($headManager->fresh()->isApprovedIn($team));
     }
 }
