@@ -6,6 +6,7 @@ use App\Enums\AbsenceStatus;
 use App\Models\Absence;
 use App\Models\Team;
 use App\Models\User;
+use App\Traits\GuardsCurrentTeam;
 use Carbon\CarbonImmutable;
 
 /**
@@ -30,6 +31,8 @@ use Carbon\CarbonImmutable;
  */
 class AbsencePolicy
 {
+    use GuardsCurrentTeam;
+
     /** How long after creating an absence its owner may delete it outright, no questions asked. */
     private const CREATION_DELETE_GRACE_MINUTES = 15;
 
@@ -61,7 +64,7 @@ class AbsencePolicy
     {
         $team = app(Team::class);
 
-        return $absence->team_id === $team->id && $absence->user_id === $user->id;
+        return $this->belongsToCurrentTeam($absence) && $absence->user_id === $user->id;
     }
 
     /**
@@ -75,7 +78,7 @@ class AbsencePolicy
     {
         $team = app(Team::class);
 
-        if ($absence->team_id !== $team->id) {
+        if (! $this->belongsToCurrentTeam($absence)) {
             return false;
         }
 

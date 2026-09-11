@@ -21,8 +21,6 @@ class AssignmentController extends Controller
     {
         $date = CarbonImmutable::parse($request->date('date'))->startOfDay();
 
-        $this->authorize('create', [Assignment::class, $team, $date]);
-
         // Signing somebody else up is an admin act, and it is what created_by records.
         $isForSomeoneElse = $request->filled('user_id')
             && (int) $request->input('user_id') !== $request->user()->id;
@@ -31,7 +29,16 @@ class AssignmentController extends Controller
             abort(403, 'Zapísať môžeš iba seba.');
         }
 
-        $userId = $isForSomeoneElse ? (int) $request->input('user_id') : $request->user()->id;
+        // Resolved before authorising, because the policy's absence check is about the person
+        // being written into the day - not about the manager doing the writing. The request has
+        // already confirmed the id belongs to an approved member of this cinema.
+        $target = $isForSomeoneElse
+            ? $team->users()->findOrFail((int) $request->input('user_id'))
+            : $request->user();
+
+        $this->authorize('create', [Assignment::class, $team, $date, $target]);
+
+        $userId = $target->getKey();
 
         // Keyed on (user_id, date), matching the table's unique index: one signup per person
         // per day, so a resubmitted form is idempotent rather than an integrity error.

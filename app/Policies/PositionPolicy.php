@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Position;
 use App\Models\Team;
 use App\Models\User;
+use App\Traits\GuardsCurrentTeam;
 
 /**
  * Who may define the cinema's positions.
@@ -14,6 +15,8 @@ use App\Models\User;
  */
 class PositionPolicy
 {
+    use GuardsCurrentTeam;
+
     public function viewAny(User $user): bool
     {
         return $user->hasPermissionInTeam('position.view-any', app(Team::class));
@@ -21,7 +24,7 @@ class PositionPolicy
 
     public function view(User $user, Position $position): bool
     {
-        return $this->sameTeam($position) && $this->viewAny($user);
+        return $this->belongsToCurrentTeam($position) && $this->viewAny($user);
     }
 
     public function create(User $user): bool
@@ -31,7 +34,7 @@ class PositionPolicy
 
     public function update(User $user, Position $position): bool
     {
-        return $this->sameTeam($position)
+        return $this->belongsToCurrentTeam($position)
             && $user->hasPermissionInTeam('position.update', app(Team::class));
     }
 
@@ -42,12 +45,7 @@ class PositionPolicy
      */
     public function delete(User $user, Position $position): bool
     {
-        return $this->sameTeam($position)
+        return $this->belongsToCurrentTeam($position)
             && $user->hasPermissionInTeam('position.delete', app(Team::class));
-    }
-
-    private function sameTeam(Position $position): bool
-    {
-        return $position->team_id === app(Team::class)->getKey();
     }
 }

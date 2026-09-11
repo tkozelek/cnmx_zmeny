@@ -28,12 +28,21 @@ class UsersDataTable extends DataTableComponent
             ->setEmptyMessage('Žiadni používatelia neboli nájdení.');
     }
 
+    /**
+     * The team's people, once they have confirmed their address.
+     *
+     * Registration is two gates - confirm the e-mail, then be approved by a manager - and only
+     * the second one is a decision anybody makes here. Somebody who has not passed the first is
+     * not yet a candidate, so they stay out of the queue rather than sitting in it as a row
+     * nobody is allowed to accept.
+     */
     public function builder(): Builder
     {
         $team = app(Team::class);
 
         return User::query()
             ->select('users.*')
+            ->whereNotNull('users.email_verified_at')
             ->whereHas('teams', fn (Builder $q) => $q->where('teams.id', $team->id))
             ->with(['roles', 'teams']);
     }
@@ -47,7 +56,7 @@ class UsersDataTable extends DataTableComponent
                     RoleEnum::Employee->value => RoleEnum::Employee->label(),
                     RoleEnum::Manager->value => RoleEnum::Manager->label(),
                     RoleEnum::HeadManager->value => RoleEnum::HeadManager->label(),
-                    'pending' => 'Neoverený',
+                    'pending' => 'Čaká na schválenie',
                     'blocked' => 'Zablokovaný',
                 ])
                 ->filter(function (Builder $builder, string $value) {
@@ -101,12 +110,14 @@ class UsersDataTable extends DataTableComponent
                     $isPending = is_null($membership?->pivot?->approved_at);
                     $roleName = $row->roles->first()?->name;
 
-                    if ($isPending) {
-                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">Neoverený</span>';
-                    }
-
+                    // Blocked first: a denied member is both inactive *and* unapproved, and
+                    // "zablokovaný" is the state that actually explains why they cannot get in.
                     if (! $row->is_active) {
                         return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-neutral-800 text-neutral-400 border border-neutral-700">Zablokovaný</span>';
+                    }
+
+                    if ($isPending) {
+                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">Čaká na schválenie</span>';
                     }
 
                     if ($roleName === RoleEnum::HeadManager->value) {
@@ -129,7 +140,9 @@ class UsersDataTable extends DataTableComponent
                     $membership = $row->teams->firstWhere('id', $team->id);
                     $isPending = is_null($membership?->pivot?->approved_at);
 
-                    if ($isPending) {
+                    // A denied member keeps a null `approved_at`, so "still waiting" is the
+                    // active ones - otherwise a blocked account would be offered for approval.
+                    if ($isPending && $row->is_active) {
                         return '<div class="flex items-center justify-start gap-2">
                             <button wire:click="accept('.$row->id.')" title="Schváliť" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-check text-sm"></i></button>
                             <button wire:click="deny('.$row->id.')" title="Zamietnuť" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-xmark text-sm"></i></button>
@@ -161,19 +174,34 @@ class UsersDataTable extends DataTableComponent
         $user->forgetApprovedTeamsCache();
 
         $user->notify(new UserAllowedToLogin($user));
-        $this->dispatch('toast', message: 'Používateľ overený.');
+        $this->dispatch('toast', message: 'Používateľ schválený.');
     }
 
+    /**
+     * Refuse a pending membership.
+     *
+     * `approved_at` stays null - it used to be stamped here, which left a denied person
+     * *approved* in the pivot with only `is_active` keeping them out. Since `is_active` is
+     * editable from the user edit form, re-enabling a denied account silently granted them a
+     * membership nobody ever approved.
+     *
+     * Blocking the account is global (`users.is_active` is not team-scoped), so it is only the
+     * right answer when this cinema was their only one - otherwise refusing them here would lock
+     * them out of a cinema that did approve them.
+     */
     public function deny(User $user): void
     {
         $this->authorize('approve', $user);
 
         $team = app(Team::class);
-        $team->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
+        $team->users()->updateExistingPivot($user->id, ['approved_at' => null]);
 
-        $user->update(['is_active' => false]);
+        if ($user->teams()->count() === 1) {
+            $user->update(['is_active' => false]);
+        }
+
         $user->forgetApprovedTeamsCache();
 
-        $this->dispatch('toast', message: 'Používateľ zablokovaný.');
+        $this->dispatch('toast', message: 'Používateľ zamietnutý.');
     }
 }

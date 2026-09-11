@@ -30,7 +30,7 @@ class UserPolicy
             return true;
         }
 
-        return $user->hasPermissionInTeam('user.view');
+        return $this->inCurrentTeam($model) && $user->hasPermissionInTeam('user.view');
     }
 
     /** $targetRole is the role the new account is about to be assigned. */
@@ -51,7 +51,7 @@ class UserPolicy
     {
         $team = app(Team::class);
 
-        if (! $user->hasPermissionInTeam('user.update', $team)) {
+        if (! $this->inCurrentTeam($model) || ! $user->hasPermissionInTeam('user.update', $team)) {
             return false;
         }
 
@@ -65,7 +65,7 @@ class UserPolicy
             return false;
         }
 
-        if (! $user->hasPermissionInTeam('user.delete')) {
+        if (! $this->inCurrentTeam($model) || ! $user->hasPermissionInTeam('user.delete')) {
             return false;
         }
 
@@ -76,7 +76,20 @@ class UserPolicy
     {
         $team = app(Team::class);
 
-        return $user->hasPermissionInTeam('user.approve', $team);
+        return $this->inCurrentTeam($model) && $user->hasPermissionInTeam('user.approve', $team);
+    }
+
+    /**
+     * The tenant boundary for every check above.
+     *
+     * `User` is the one model here that is not team-owned - it is shared across cinemas through
+     * `team_user` - so nothing scopes these lookups automatically. Without this, holding
+     * `user.update` in one cinema authorised editing, role-changing or deactivating *any*
+     * account in the database by id.
+     */
+    private function inCurrentTeam(User $model): bool
+    {
+        return $model->isMemberOf(app(Team::class));
     }
 
     /** Manager/HeadManager-tier accounts are the one thing a plain Manager may not touch. */

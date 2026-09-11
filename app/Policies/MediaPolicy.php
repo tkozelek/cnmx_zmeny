@@ -5,9 +5,12 @@ namespace App\Policies;
 use App\Models\Media;
 use App\Models\Team;
 use App\Models\User;
+use App\Traits\GuardsCurrentTeam;
 
 class MediaPolicy
 {
+    use GuardsCurrentTeam;
+
     public function viewAny(User $user): bool
     {
         $team = app(Team::class);
@@ -18,7 +21,7 @@ class MediaPolicy
     public function download(User $user, Media $media): bool
     {
         $team = app(Team::class);
-        if ($media->team_id !== $team->id) {
+        if (! $this->belongsToCurrentTeam($media)) {
             return false;
         }
 
@@ -35,7 +38,7 @@ class MediaPolicy
     public function delete(User $user, Media $media): bool
     {
         $team = app(Team::class);
-        if ($media->team_id !== $team->id) {
+        if (! $this->belongsToCurrentTeam($media)) {
             return false;
         }
 
@@ -45,7 +48,7 @@ class MediaPolicy
     public function toggleVisibility(User $user, Media $media): bool
     {
         $team = app(Team::class);
-        if ($media->team_id !== $team->id) {
+        if (! $this->belongsToCurrentTeam($media)) {
             return false;
         }
 

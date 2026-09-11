@@ -74,6 +74,64 @@ class TeamIsolationTest extends TestCase
         $this->assertEquals($teamB->id, $admin->fresh()->current_team_id);
     }
 
+    /**
+     * `User` is the one model here that is not team-owned - it is shared across cinemas through
+     * `team_user`, so nothing scopes a route binding on it. Holding `user.update` in one cinema
+     * used to authorise editing, role-changing or deactivating *any* account in the database by
+     * guessing its id; UserPolicy now checks the target's membership as well as the actor's
+     * permission.
+     */
+    public function test_a_manager_cannot_manage_a_user_from_another_cinema(): void
+    {
+        $teamA = $this->tenant();
+        $manager = $this->member($teamA, Role::Manager);
+
+        $teamB = Team::factory()->create(['name' => 'Kino B']);
+        $outsider = $this->member($teamB);
+
+        $this->actingAs($manager)
+            ->get(route('admin.users.edit', $outsider))
+            ->assertForbidden();
+
+        $this->actingAs($manager)
+            ->delete(route('admin.users.destroy', $outsider))
+            ->assertForbidden();
+
+        $this->assertTrue($outsider->fresh()->is_active, 'A stranger must not be deactivable from here.');
+    }
+
+    /** Same boundary on the read side: `user.view` is a permission every employee holds. */
+    public function test_an_employee_cannot_read_a_profile_from_another_cinema(): void
+    {
+        $teamA = $this->tenant();
+        $employee = $this->member($teamA);
+
+        $teamB = Team::factory()->create(['name' => 'Kino B']);
+        $outsider = $this->member($teamB);
+
+        $this->actingAs($employee)
+            ->get(route('profile.show', $outsider))
+            ->assertForbidden();
+    }
+
+    /** And on the hours screen, which resolves its subject from a raw id. */
+    public function test_a_manager_cannot_read_hours_of_a_user_from_another_cinema(): void
+    {
+        $teamA = $this->tenant();
+        $manager = $this->member($teamA, Role::Manager);
+
+        $teamB = Team::factory()->create(['name' => 'Kino B']);
+        $outsider = $this->member($teamB);
+
+        $this->actingAs($manager)
+            ->get(route('hours.show', $outsider))
+            ->assertForbidden();
+
+        $this->actingAs($manager)
+            ->getJson(route('shifts.index', ['user_id' => $outsider->id, 'month' => '2026-08']))
+            ->assertNotFound();
+    }
+
     public function test_resources_are_strictly_isolated_between_teams(): void
     {
         $teamA = $this->tenant();
