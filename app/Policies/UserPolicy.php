@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Enums\Role;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 /**
  * Team-managed User Policy using dot-notation permissions:
@@ -47,7 +48,7 @@ class UserPolicy
      * $newRole is the role the form is about to set - omitted when just opening the edit page,
      * in which case only $model's current role gates access.
      */
-    public function update(User $user, User $model, ?Role $newRole = null): bool
+    public function update(User $user, User $model, ?Role $newRole = null): bool|Response
     {
         $team = app(Team::class);
 
@@ -55,11 +56,20 @@ class UserPolicy
             return false;
         }
 
-        return $this->canManageRole($user, $this->roleOf($model))
-            && $this->canManageRole($user, $newRole);
+        if (! $this->canManageRole($user, $this->roleOf($model)) || ! $this->canManageRole($user, $newRole)) {
+            return false;
+        }
+
+        // $newRole is null when the edit page is merely being opened - nothing is being changed
+        // yet, so there is nothing to protect against.
+        if ($newRole === null || $newRole === Role::HeadManager || ! $this->isLastHeadManager($model)) {
+            return true;
+        }
+
+        return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina - najprv vymenujte ďalšieho, potom mu môžete zmeniť rolu.');
     }
 
-    public function delete(User $user, User $model): bool
+    public function delete(User $user, User $model): bool|Response
     {
         if ($user->id === $model->id) {
             return false;
@@ -69,14 +79,69 @@ class UserPolicy
             return false;
         }
 
-        return $this->canManageRole($user, $this->roleOf($model));
+        if (! $this->canManageRole($user, $this->roleOf($model))) {
+            return false;
+        }
+
+        if ($this->isLastHeadManager($model)) {
+            return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina - jeho deaktiváciou by kino zostalo bez správcu.');
+        }
+
+        return true;
     }
 
-    public function approve(User $user, User $model): bool
+    /**
+     * Accept or refuse a membership.
+     *
+     * Tier-checked like update() and delete(), which it was not: `user.approve` is a permission a
+     * plain Manager holds, so refusing a membership was a way to unapprove and deactivate a
+     * HeadManager - routing straight around canManageRole(). The buttons only appear for pending
+     * members, but a Livewire call is not limited to what the buttons offer.
+     */
+    public function approve(User $user, User $model): bool|Response
     {
         $team = app(Team::class);
 
-        return $this->inCurrentTeam($model) && $user->hasPermissionInTeam('user.approve', $team);
+        if (! $this->inCurrentTeam($model) || ! $user->hasPermissionInTeam('user.approve', $team)) {
+            return false;
+        }
+
+        if (! $this->canManageRole($user, $this->roleOf($model))) {
+            return false;
+        }
+
+        if ($this->isLastHeadManager($model)) {
+            return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina - nemožno mu odobrať prístup.');
+        }
+
+        return true;
+    }
+
+    /** A refusal that explains itself; the 403 page prints the message. */
+    private function denyLastHeadManager(string $message): Response
+    {
+        return Response::deny($message);
+    }
+
+    /**
+     * Whether this person is the only one left who can administer the cinema.
+     *
+     * Demoting, deactivating or unapproving them would leave the team with no hlavný manažér at
+     * all - and since promoting *into* that tier needs `user.manage-managers`, which only that
+     * tier holds, there would be no way back short of database access. A HeadManager demoting
+     * themselves is the likeliest route in, so this is checked regardless of who is acting.
+     */
+    private function isLastHeadManager(User $model): bool
+    {
+        $team = app(Team::class);
+
+        if ($this->roleOf($model) !== Role::HeadManager) {
+            return false;
+        }
+
+        return $team->activeHoldersOf(Role::HeadManager)
+            ->reject(fn (User $holder): bool => $holder->getKey() === $model->getKey())
+            ->isEmpty();
     }
 
     /**
