@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class PasswordResetController extends Controller
 {
@@ -25,7 +26,9 @@ class PasswordResetController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:6|confirmed',
+            // Same strength as registration and the change-password form. This path used to
+            // accept six characters, which made it the cheapest way to weaken an account.
+            'password' => ['required', 'confirmed', PasswordRule::min(8)],
         ]);
 
         $status = Password::reset(

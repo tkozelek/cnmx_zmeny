@@ -3,14 +3,33 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Closure;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * These routes sit on plain `auth`, not on the `tenant` group, because a user who has not
+ * confirmed their address has to be able to reach them - EnsureUserIsActive is what sends them
+ * here, so guarding them with it would loop.
+ *
+ * That leaves `is_active` unchecked, which is the one thing from that middleware still worth
+ * enforcing: a blocked account could otherwise authenticate and use these endpoints. So it is
+ * checked here instead.
+ */
 class EmailVerificationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function (Request $request, Closure $next) {
+            abort_unless($request->user()?->is_active, 403, 'Účet je zablokovaný.');
+
+            return $next($request);
+        });
+    }
+
     public function notice(Request $request): RedirectResponse|View
     {
         return $request->user()->hasVerifiedEmail()

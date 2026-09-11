@@ -9,6 +9,15 @@ use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
+    /**
+     * A name may not begin with a character Excel reads as the start of a formula.
+     *
+     * Names land in the .xlsx exports a manager opens; the exports escape these too, but keeping
+     * them out of the column in the first place means anything else that ever renders a name -
+     * a PDF, a CSV, a print sheet - inherits the fix for free. No real name starts with these.
+     */
+    private const string NO_FORMULA_PREFIX = 'not_regex:/^[=+\\-@\\t\\r]/';
+
     public function authorize(): bool
     {
         return true;
@@ -23,8 +32,8 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100'],
-            'lastname' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100', self::NO_FORMULA_PREFIX],
+            'lastname' => ['required', 'string', 'max:100', self::NO_FORMULA_PREFIX],
             'email' => ['required', 'email', Rule::unique('users', 'email')],
             'password' => ['required', 'confirmed', Password::min(8)],
 

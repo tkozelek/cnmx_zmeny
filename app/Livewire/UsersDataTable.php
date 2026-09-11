@@ -16,6 +16,18 @@ class UsersDataTable extends DataTableComponent
 {
     protected $model = User::class;
 
+    /**
+     * The component asserts its own permission.
+     *
+     * It is also gated where it is rendered (Admin\UserController::index()), and Livewire snapshots are signed, so
+     * this is belt and braces - but a view-level @can is the only thing standing between an
+     * employee and every colleague's account, and that kind of gate is easy to lose in a refactor.
+     */
+    public function mount(): void
+    {
+        $this->authorize('viewAny', User::class);
+    }
+
     public function configure(): void
     {
         $this->setPrimaryKey('id')
@@ -91,7 +103,10 @@ class UsersDataTable extends DataTableComponent
             Column::make('E-mail', 'email')
                 ->sortable()
                 ->searchable()
-                ->format(fn ($value) => '<span class="text-neutral-300">'.$value.'</span>')
+                // e(), because Laravel's `email` rule uses RFCValidation, which accepts quoted
+                // local parts - `"<img src=x onerror=...>"@example.com` is a valid address and
+                // this column is ->html(). The audience is a manager's session.
+                ->format(fn ($value) => '<span class="text-neutral-300">'.e($value).'</span>')
                 ->html(),
 
             Column::make('Rola', 'id')

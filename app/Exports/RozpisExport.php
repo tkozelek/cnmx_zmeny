@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Team;
+use App\Traits\EscapesSpreadsheetFormulas;
 use App\Services\RozpisService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -32,6 +33,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
 {
+    use EscapesSpreadsheetFormulas;
+
     /** Rows per day block, including its two header rows. Fits an A4 landscape half-page. */
     private const BAND_HEIGHT = 17;
 
@@ -195,7 +198,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
             if (isset($rows[$i])) {
                 // An em dash rather than a blank: an unfilled row must read as "nobody yet", not
                 // as a cell somebody forgot to write to.
-                $grid[$row][$column] = $rows[$i]['name'] ?? '-';
+                $grid[$row][$column] = $this->escapeFormula($rows[$i]['name'] ?? null) ?? '-';
                 $grid[$row][$column + 1] = $rows[$i]['label'];
                 $grid[$row][$column + 2] = $rows[$i]['time'] ?? '';
             }
@@ -365,7 +368,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
             foreach ([...$day['managerRows'], ...$day['rows']] as $entry) {
                 $this->writeListRow(
                     $sheet, $row++, $day,
-                    $entry['group'] ?? '', $entry['label'], $entry['name'] ?? '-', $entry['time'] ?? '',
+                    $entry['group'] ?? '', $entry['label'], $this->escapeFormula($entry['name'] ?? null) ?? '-', $entry['time'] ?? '',
                 );
             }
 
@@ -417,7 +420,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
         $sheet->setCellValue('B'.$row, $day['dayName']);
         $sheet->setCellValue('C'.$row, $group);
         $sheet->setCellValue('D'.$row, $position);
-        $sheet->setCellValue('E'.$row, $name);
+        $sheet->setCellValue('E'.$row, $this->escapeFormula($name));
         $sheet->setCellValue('F'.$row, $time);
     }
 

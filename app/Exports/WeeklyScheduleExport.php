@@ -19,6 +19,7 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use App\Traits\EscapesSpreadsheetFormulas;
 
 /**
  * One week's plan: a column per day, the people signed up listed underneath, plus a second
@@ -28,6 +29,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaultStyles, WithEvents, WithHeadings, WithStyles, WithTitle
 {
+    use EscapesSpreadsheetFormulas;
+
     /** @var Collection<string, Collection<int, Assignment>> */
     private Collection $byDate;
 
@@ -130,7 +133,7 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
             ->map(function (Assignment $assignment): string {
                 $code = $assignment->position?->label();
 
-                return trim($assignment->user.($code ? " ({$code})" : ''));
+                return $this->escapeFormula(trim($assignment->user.($code ? " ({$code})" : '')));
             })
             ->values()
             ->all();
@@ -143,7 +146,7 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
             ->flatten(1)
             ->groupBy('user_id')
             ->map(fn (Collection $rows): array => [
-                'name' => (string) $rows->first()->user,
+                'name' => (string) $this->escapeFormula((string) $rows->first()->user),
                 'count' => $rows->pluck('date')->unique()->count(),
             ])
             ->sortByDesc('count');

@@ -9,6 +9,7 @@ use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\SetCurrentTeam;
 use App\Http\Middleware\TrimStrings;
+use App\Http\Middleware\TrustHosts;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\ValidateSignature;
 use App\Http\Middleware\VerifyCsrfToken;
@@ -42,7 +43,11 @@ class Kernel extends HttpKernel
      * @var array<int, class-string|string>
      */
     protected $middleware = [
-        // \App\Http\Middleware\TrustHosts::class,
+        // Host header validation. Laravel builds absolute URLs from the incoming Host, and the
+        // password-reset and e-mail-verification links are absolute - so without this an attacker
+        // can request a reset for somebody else's address with a spoofed Host and have the link
+        // point at their own domain. TrustHosts allows this app's URL and its subdomains only.
+        TrustHosts::class,
         TrustProxies::class,
         HandleCors::class,
         PreventRequestsDuringMaintenance::class,
