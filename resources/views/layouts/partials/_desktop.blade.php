@@ -1,5 +1,5 @@
 <nav class="hidden md:flex items-center gap-2">
-    @auth
+    @if(auth()->check() && auth()->user()->hasVerifiedEmail())
         @can('viewAny', \App\Models\User::class)
             <x-nav-link
                 route="admin.users.index"
@@ -20,7 +20,7 @@
         >
             Absencie
         </x-nav-link>
-    @endauth
+    @endif
 
     <x-nav-link
         route="help"
@@ -29,7 +29,7 @@
         Pomoc
     </x-nav-link>
 
-    @auth
+    @if(auth()->check() && auth()->user()->hasVerifiedEmail())
         <x-team-switcher />
 
         {{-- High-Contrast Vertical Separator --}}
@@ -65,12 +65,6 @@
                 class="absolute right-0 top-full pt-1 z-50 w-56"
                 style="display: none;"
             >
-
-
-
-
-
-
                 <div class="rounded-xl border border-neutral-800 bg-neutral-900 p-1.5 shadow-2xl">
                     <div class="px-3 py-2 border-b border-neutral-800 mb-1">
                         <p class="text-xs font-medium text-neutral-400">Prihlásený ako</p>
@@ -115,7 +109,6 @@
 
                     <div class="my-1 border-t border-neutral-800"></div>
 
-
                     <x-logout-button icon='<i class="fa-solid fa-right-from-bracket text-xs"></i>'>
                         Odhlásiť sa
                     </x-logout-button>
@@ -137,5 +130,5 @@
                 Registrácia
             </a>
         </div>
-    @endauth
+    @endif
 </nav>

@@ -26,7 +26,7 @@
 
 
 
-        @auth
+        @if(auth()->check() && auth()->user()->hasVerifiedEmail())
             <div class="w-full mb-2 flex justify-center">
                 <x-team-switcher />
             </div>
@@ -53,7 +53,7 @@
             >
                 Absencie
             </x-nav-link>
-        @endauth
+        @endif
 
         <x-nav-link
             route="help"
@@ -63,7 +63,7 @@
             Pomoc
         </x-nav-link>
 
-        @auth
+        @if(auth()->check() && auth()->user()->hasVerifiedEmail())
             <div class="my-2 w-full border-t border-neutral-800"></div>
 
             @can('viewSettings', app(\App\Models\Team::class))
@@ -75,8 +75,6 @@
                     Správa kina
                 </x-nav-link>
             @endcan
-
-
 
             <x-nav-link
                 route="hours.index"
@@ -94,7 +92,6 @@
                 Zmena hesla
             </x-nav-link>
 
-
             <x-logout-button
                 :is-mobile="true"
                 icon='<i class="fa-solid fa-right-from-bracket"></i>'
@@ -105,6 +102,6 @@
             <div class="my-2 w-full border-t border-neutral-800"></div>
             <a class="w-full rounded-lg bg-neutral-900 border border-neutral-800 py-3 text-base font-semibold text-neutral-200 transition hover:bg-neutral-800" href="{{ route('login') }}">Prihlásenie</a>
             <a class="w-full rounded-lg bg-neutral-100 py-3 text-base font-semibold text-neutral-900 transition hover:bg-white" href="{{ route('register') }}">Registrácia</a>
-        @endauth
+        @endif
     </nav>
 </div>

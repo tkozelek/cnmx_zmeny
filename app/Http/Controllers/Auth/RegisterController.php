@@ -47,10 +47,11 @@ class RegisterController extends Controller
 
         event(new Registered($user));
 
-        return to_route('login')->with(
-            'message',
-            'Účet vytvorený. Poslali sme ti overovací e-mail - potvrď ho a potom ťa schváli vedúci.',
-        );
+        return to_route('login')->with([
+            'registered_email' => $user->email,
+            'show_registration_modal' => true,
+            'message' => 'Účet vytvorený. Poslali sme ti overovací e-mail - potvrď ho a potom ťa schváli vedúci.',
+        ]);
     }
 
     /** Skip the picker when there is only one cinema to join. */

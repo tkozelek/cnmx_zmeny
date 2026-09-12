@@ -46,12 +46,19 @@ Route::middleware(SetCurrentTeam::class.':optional')->group(function () {
     Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
 });
 
+Route::get('/overenie-emailu/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware('signed')
+    ->name('verification.verify');
+
+Route::get('/email-overeny', [EmailVerificationController::class, 'verified'])
+    ->name('verification.verified');
+
+Route::post('/overenie-emailu/znova', [EmailVerificationController::class, 'resendGuest'])
+    ->middleware('throttle:6,1')
+    ->name('verification.resend_guest');
+
 Route::middleware('auth')->group(function () {
     Route::get('/overenie-emailu', [EmailVerificationController::class, 'notice'])->name('verification.notice');
-
-    Route::get('/overenie-emailu/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-        ->middleware('signed')
-        ->name('verification.verify');
 
     Route::post('/overenie-emailu', [EmailVerificationController::class, 'send'])
         ->middleware('throttle:6,1')
