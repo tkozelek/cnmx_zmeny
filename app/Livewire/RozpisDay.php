@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\Role;
 use App\Models\Assignment;
 use App\Models\Position;
 use App\Models\PositionSlot;
@@ -146,19 +147,15 @@ class RozpisDay extends Component
     }
 
     /**
-     * Who may take a vedúci row in this cinema, by permission rather than by role name - a cinema
-     * can grant `assignment.lead-shift` to one trusted brigádnik without promoting them.
+     * Who may take a vedúci row in this cinema: active users who outrank Brigádnik
+     * (Role::leadership() -> HeadManager, Manager) and are approved in this team.
      *
      * @return Collection<int, User>
      */
     #[Computed]
     public function leadershipRoster(): Collection
     {
-        return $this->team->users()
-            ->orderBy('name')
-            ->get()
-            ->filter(fn (User $user): bool => $user->hasPermissionInTeam('assignment.lead-shift', $this->team))
-            ->values();
+        return $this->team->activeHoldersOf(Role::leadership());
     }
 
     public function unplace(int $assignmentId): void

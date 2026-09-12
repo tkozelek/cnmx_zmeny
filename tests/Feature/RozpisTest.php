@@ -512,6 +512,41 @@ class RozpisTest extends TestCase
         );
     }
 
+    public function test_veduci_slot_dropdown_includes_active_managers_and_excludes_employees_and_blocked_users(): void
+    {
+        $team = $this->tenant();
+        $headManager = $this->member($team, Role::HeadManager);
+        $manager = $this->member($team, Role::Manager);
+        $employee = $this->member($team, Role::Employee);
+        $blockedManager = User::factory()->inactive()->memberOf($team, Role::Manager->value)->create();
+        $date = $this->workday($team);
+
+        $this->lockWeekOf($team, $date);
+
+        $position = Position::factory()->manager()->create(['team_id' => $team->id]);
+        $slot = PositionSlot::factory()->forPosition($position)->on($date)->create();
+
+        $test = Livewire::actingAs($manager)
+            ->test(RozpisDay::class, ['date' => $date]);
+
+        $leaderIds = $test->get('leadershipRoster')->pluck('id')->all();
+
+        $this->assertContains($headManager->id, $leaderIds);
+        $this->assertContains($manager->id, $leaderIds);
+        $this->assertNotContains($employee->id, $leaderIds);
+        $this->assertNotContains($blockedManager->id, $leaderIds);
+
+        $test->call('placeLeader', $headManager->id, $slot->id);
+
+        $this->assertDatabaseHas('assignments', [
+            'team_id' => $team->id,
+            'user_id' => $headManager->id,
+            'position_id' => $position->id,
+            'position_slot_id' => $slot->id,
+            'date' => $date,
+        ]);
+    }
+
     private function weekStart(Team $team): CarbonImmutable
     {
         return app(WeekService::class)->start($team, CarbonImmutable::now());

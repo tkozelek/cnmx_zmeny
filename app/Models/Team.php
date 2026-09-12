@@ -151,19 +151,25 @@ class Team extends Model
      * Brackets the registrar the way User::hasPermissionInTeam() does, so the answer is about
      * *this* team rather than whichever one the request happens to be acting in.
      *
+     * @param  list<Role>|Role  $roles
      * @return EloquentCollection<int, User>
      */
-    public function activeHoldersOf(Role $role): EloquentCollection
+    public function activeHoldersOf(array|Role $roles): EloquentCollection
     {
+        $roles = is_array($roles) ? $roles : [$roles];
+        $roleValues = array_map(fn (Role $r): string => $r->value, $roles);
+
         $originalTeamId = getPermissionsTeamId();
         setPermissionsTeamId($this->getKey());
 
         try {
-            return User::role($role->value)
+            return User::role($roleValues)
                 ->where('users.is_active', true)
                 ->whereHas('teams', fn (Builder $query) => $query
                     ->where('teams.id', $this->getKey())
                     ->whereNotNull('team_user.approved_at'))
+                ->orderBy('lastname')
+                ->orderBy('name')
                 ->get();
         } finally {
             setPermissionsTeamId($originalTeamId);
