@@ -27,7 +27,7 @@
             ])
             ->class([
                 'row col-12' => $isBootstrap && ($defaultAttributes['default-styling'] ?? true),
-                'grid grid-cols-12 gap-6 px-4 py-2 mb-2' => $isTailwind && ($defaultAttributes['default-styling'] ?? true),
+                'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 mb-4 rounded-xl border border-neutral-800 bg-neutral-900/60 shadow-lg' => $isTailwind && ($defaultAttributes['default-styling'] ?? true),
             ])
             ->except(['default','default-colors','default-styling'])
         }} 
@@ -52,19 +52,8 @@
                             $isBootstrap &&
                             $filter->hasFilterSlidedownColspan() &&
                             $filter->getFilterSlidedownColspan() === 4,
-                        'space-y-1 col-span-12' =>
+                        'space-y-1' =>
                             $isTailwind,
-                        'sm:col-span-6 md:col-span-4 lg:col-span-2' =>
-                            $isTailwind &&
-                            !$filter->hasFilterSlidedownColspan(),
-                        'sm:col-span-12 md:col-span-8 lg:col-span-4' =>
-                            $isTailwind &&
-                            $filter->hasFilterSlidedownColspan() &&
-                            $filter->getFilterSlidedownColspan() === 2,
-                        'sm:col-span-9 md:col-span-4 lg:col-span-3' =>
-                            $isTailwind &&
-                            $filter->hasFilterSlidedownColspan() &&
-                            $filter->getFilterSlidedownColspan() === 3,
                     ])
                     id="{{ $tableName }}-filter-{{ $filter->getKey() }}-wrapper"
                 >

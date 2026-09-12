@@ -6,7 +6,7 @@
     {{
         $toolBarAttributes->merge()
         ->class([
-            'flex flex-wrap items-center gap-2 md:justify-between mb-4 px-4 md:p-0' => $isTailwind && ($toolBarAttributes['default-styling'] ?? true),
+            'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4' => $isTailwind && ($toolBarAttributes['default-styling'] ?? true),
             'd-md-flex justify-content-between mb-3' => $isBootstrap && ($toolBarAttributes['default-styling'] ?? true),
         ])
         ->except(['default','default-styling','default-colors'])
@@ -14,7 +14,7 @@
 >
     <div @class([
             'd-md-flex' => $isBootstrap,
-            'flex flex-1 flex-wrap items-center gap-2 min-w-0 md:w-2/4 md:flex-none' => $isTailwind,
+            'flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto' => $isTailwind,
         ])
     >
         @if ($this->hasConfigurableAreaFor('toolbar-left-start'))
@@ -30,16 +30,28 @@
             <x-livewire-tables::tools.toolbar.items.reorder-buttons />
         @endif
 
-        {{-- Takes whatever width the buttons beside it leave, down to a still-usable minimum. --}}
         @if ($this->showSearchField())
-            <div class="flex-1 min-w-[9rem]">
+            <div class="w-full sm:w-72 md:w-80">
                 <x-livewire-tables::tools.toolbar.items.search-field />
             </div>
         @endif
 
-        @if ($this->showFiltersButton())
-            <x-livewire-tables::tools.toolbar.items.filter-button />
-        @endif
+        <div class="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+            @if ($this->showFiltersButton())
+                <x-livewire-tables::tools.toolbar.items.filter-button />
+            @endif
+
+            {{-- Mobile-only right container: per page aligns at the end of the row on mobile --}}
+            <div class="flex items-center gap-2 sm:hidden ml-auto">
+                @if ($this->columnSelectIsEnabled)
+                    <x-livewire-tables::tools.toolbar.items.column-select />
+                @endif
+
+                @if ($this->showPaginationDropdown())
+                    <x-livewire-tables::tools.toolbar.items.pagination-dropdown />
+                @endif
+            </div>
+        </div>
 
         @if($this->showActionsInToolbarLeft())
             <x-livewire-tables::includes.actions/>
@@ -55,10 +67,11 @@
         @endif
     </div>
 
+    {{-- Desktop right items (sm and up) --}}
     <div x-cloak x-show="!currentlyReorderingStatus"
         @class([
             'd-md-flex' => $isBootstrap,
-            'flex flex-wrap items-center gap-2 shrink-0' => $isTailwind,
+            'hidden sm:flex items-center justify-end gap-3 shrink-0 sm:ml-auto' => $isTailwind,
         ])
     >
         @includeWhen($this->hasConfigurableAreaFor('toolbar-right-start'), $this->getConfigurableAreaFor('toolbar-right-start'), $this->getParametersForConfigurableArea('toolbar-right-start'))
@@ -75,12 +88,8 @@
             <x-livewire-tables::tools.toolbar.items.column-select />
         @endif
 
-        {{-- The select itself is `block w-full`; the cap is put on its wrapper so it sizes to the
-             numbers it holds instead of eating the row. --}}
         @if ($this->showPaginationDropdown())
-            <div class="w-[5.5rem]">
-                <x-livewire-tables::tools.toolbar.items.pagination-dropdown />
-            </div>
+            <x-livewire-tables::tools.toolbar.items.pagination-dropdown />
         @endif
 
         @includeWhen($this->hasConfigurableAreaFor('toolbar-right-end'), $this->getConfigurableAreaFor('toolbar-right-end'), $this->getParametersForConfigurableArea('toolbar-right-end'))

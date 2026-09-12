@@ -1,11 +1,11 @@
 @aware([ 'tableName','isTailwind','isBootstrap','isBootstrap4','isBootstrap5', 'localisationPath'])
 @if ($isTailwind)
-    <div class="@if ($this->getColumnSelectIsHiddenOnMobile()) hidden sm:block @elseif ($this->getColumnSelectIsHiddenOnTablet()) hidden md:block @endif mb-4 w-full md:w-auto md:mb-0 md:ml-2">
+    <div class="@if ($this->getColumnSelectIsHiddenOnMobile()) hidden sm:block @elseif ($this->getColumnSelectIsHiddenOnTablet()) hidden md:block @endif">
         <div
             x-data="{ open: false, childElementOpen: false }"
             @keydown.window.escape="if (!childElementOpen) { open = false }"
             x-on:click.away="if (!childElementOpen) { open = false }"
-            class="inline-block relative w-full text-left md:w-auto"
+            class="inline-block relative text-left"
             wire:key="{{ $tableName }}-column-select-button"
         >
             <div>
