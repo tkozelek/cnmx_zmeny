@@ -119,4 +119,25 @@ class DataTableTest extends TestCase
         $this->assertFalse($component->getColumnSelectStatus());
         $this->assertSame(10, $component->getPerPage());
     }
+
+    public function test_manager_cannot_see_edit_action_for_head_manager_in_users_data_table(): void
+    {
+        $team = $this->tenant();
+        $headManager = $this->member($team, Role::HeadManager);
+        $manager = $this->member($team, Role::Manager);
+        $employee = $this->member($team, Role::Employee);
+
+        $editEmployeeUrl = route('admin.users.edit', ['user' => $employee->id]);
+        $editHeadManagerUrl = route('admin.users.edit', ['user' => $headManager->id]);
+
+        Livewire::actingAs($manager)
+            ->test(UsersDataTable::class)
+            ->assertSeeHtml($editEmployeeUrl)
+            ->assertDontSeeHtml($editHeadManagerUrl);
+
+        Livewire::actingAs($headManager)
+            ->test(UsersDataTable::class)
+            ->assertSeeHtml($editEmployeeUrl)
+            ->assertSeeHtml($editHeadManagerUrl);
+    }
 }

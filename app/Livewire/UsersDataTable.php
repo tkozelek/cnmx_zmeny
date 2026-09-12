@@ -160,10 +160,18 @@ class UsersDataTable extends DataTableComponent
                     // A denied member keeps a null `approved_at`, so "still waiting" is the
                     // active ones - otherwise a blocked account would be offered for approval.
                     if ($isPending && $row->is_active) {
+                        if (! auth()->user()?->can('approve', $row)) {
+                            return '';
+                        }
+
                         return '<div class="flex items-center justify-start gap-2">
                             <button wire:click="accept('.$row->id.')" title="Schváliť" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-check text-sm"></i></button>
                             <button wire:click="deny('.$row->id.')" title="Zamietnuť" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-xmark text-sm"></i></button>
                         </div>';
+                    }
+
+                    if (! auth()->user()?->can('update', $row)) {
+                        return '';
                     }
 
                     $editUrl = route('admin.users.edit', ['user' => $row->id]);

@@ -45,6 +45,7 @@ class ExtraNote extends Component
         $this->note = mb_substr($trimmed, 0, self::MAX_LENGTH);
 
         session([self::SESSION_KEY => $this->note]);
+        $this->dispatch('toast', message: 'Extra info poznámka uložená.', type: 'info');
     }
 
     public function clear(): void
@@ -52,6 +53,7 @@ class ExtraNote extends Component
         $this->note = '';
 
         session()->forget(self::SESSION_KEY);
+        $this->dispatch('toast', message: 'Extra info poznámka vymazaná.', type: 'info');
     }
 
     public function render()

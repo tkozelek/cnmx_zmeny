@@ -46,7 +46,7 @@ class DayCard extends Component
         unset($this->assignments, $this->mine);
 
         $this->dispatch('assignment-updated')->to(SignupSummary::class);
-        $this->dispatch('toast', message: 'Deň zapísaný.');
+        $this->dispatch('toast', message: 'Úspešne zapísaný na zmenu.', type: 'success');
     }
 
     public function withdraw(): void
@@ -62,12 +62,20 @@ class DayCard extends Component
     {
         $this->authorize('delete', $assignment);
 
+        $isOwn = $assignment->user_id === auth()->id();
+        $targetName = $assignment->user ? trim($assignment->user->name.' '.$assignment->user->lastname) : 'Používateľ';
+
         $assignment->delete();
 
         unset($this->assignments, $this->mine);
 
         $this->dispatch('assignment-updated')->to(SignupSummary::class);
-        $this->dispatch('toast', message: 'Deň odpísaný.', type: 'error');
+
+        if ($isOwn) {
+            $this->dispatch('toast', message: 'Úspešne odpísaný zo zmeny.', type: 'info');
+        } else {
+            $this->dispatch('toast', message: "Používateľ {$targetName} bol odpísaný.", type: 'info');
+        }
     }
 
     /**
