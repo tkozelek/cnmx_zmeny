@@ -1,73 +1,126 @@
-<nav class="hidden w-full flex-grow items-center pb-4 md:container md:pb-0 md:flex md:justify-end md:flex-row">
-    @auth
-        @if(auth()->user()->isAdmin())
+<nav class="hidden md:flex items-center gap-2">
+    @if(auth()->check() && auth()->user()->hasVerifiedEmail())
+        @can('viewAny', \App\Models\User::class)
             <x-nav-link
-                class="relative"
-                icon='<i class="fa-solid fa-user"></i>'
                 route="admin.users.index"
+                icon='<i class="fa-solid fa-users text-sm"></i>'
             >
                 Používatelia
                 @if(isset($newUserCount) && $newUserCount > 0)
-                    <span class="absolute top-1 right-1 -mt-1 -mr-1 flex h-4 w-4">
-                        <span class="animate-ping absolute inline-flex h-4 w-4 text-xs font-bold bg-red-500 border-2 border-gray-900 rounded-full"></span>
-                        <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 items-center justify-center text-xs text-white">
-                            {{ $newUserCount }}
-                        </span>
+                    <span class="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1.5 text-xs font-bold text-white bg-rose-500 rounded-full align-middle">
+                        {{ $newUserCount }}
                     </span>
                 @endif
             </x-nav-link>
-        @endif
+        @endcan
+
         <x-nav-link
-            icon='<i class="fa fa-calendar"></i>'
-            route="holiday.index"
+            route="absences.index"
+            icon='<i class="fa-solid fa-calendar-days text-sm"></i>'
         >
             Absencie
         </x-nav-link>
-    @endauth
+    @endif
+
     <x-nav-link
-        icon='<i class="fa-solid fa-circle-question"></i>'
         route="help"
+        icon='<i class="fa-solid fa-circle-question text-sm"></i>'
     >
         Pomoc
     </x-nav-link>
-    @auth
-        <x-nav-link
-            icon='<i class="fa-solid fa-bug"></i>'
-            route="bugreport.index"
+
+    @if(auth()->check() && auth()->user()->hasVerifiedEmail())
+        <x-team-switcher />
+
+        {{-- High-Contrast Vertical Separator --}}
+        <div class="h-6 w-px bg-neutral-700/80 mx-3 self-center"></div>
+
+        <div
+            x-data="{ openProfile: false }"
+            @mouseenter="openProfile = true"
+            @mouseleave="openProfile = false"
+            @click.outside="openProfile = false"
+            class="relative py-1"
         >
-            Nahlásiť chybu
-        </x-nav-link>
-    @endauth
-
-    <div class="hidden md:block w-px h-6 bg-gray-600 mx-4"></div>
-
-    @auth
-        <div @click.away="open = false" class="relative" x-data="{ open: false }">
-            <button @click="open = !open" class="flex flex-row items-center w-full px-4 py-2 mt-2 text-sm font-semibold text-left bg-transparent rounded-lg hover:bg-gray-700 md:w-auto md:inline md:mt-0 md:ml-2 focus:outline-none focus:shadow-outline transition-colors duration-200">
-                <span class="font-medium">{{ auth()->user()->name }}</span>
-                <svg fill="currentColor" viewBox="0 0 20 20" :class="{'rotate-180': open, 'rotate-0': !open}" class="inline w-5 h-5 ml-1 transition-transform duration-200 transform"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            <button
+                type="button"
+                @click="openProfile = !openProfile"
+                class="flex items-center gap-2.5 px-3 py-1.5 text-base font-semibold text-neutral-200 transition hover:text-white focus:outline-none"
+            >
+                <i class="fa-solid fa-user text-sm text-neutral-400"></i>
+                <span>{{ auth()->user()->name }} {{ auth()->user()->lastname }}</span>
+                <i class="fa-solid fa-chevron-down text-xs text-neutral-500 transition-transform duration-200" :class="{'rotate-180': openProfile}"></i>
             </button>
-            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="z-50 absolute right-0 w-full mt-2 origin-top-right rounded-md shadow-lg md:w-48" style="display: none;">
-                <div class="px-2 py-2 rounded-md shadow bg-gray-800">
-                    <a class="block px-4 py-2 text-sm font-semibold bg-transparent rounded-lg hover:bg-gray-700 text-gray-200" href="{{ route('hours.index') }}">
-                        Evidencia hodín
-                    </a>
-                    <a class="block px-4 py-2 text-sm font-semibold bg-transparent rounded-lg hover:bg-gray-700 text-gray-200" href="{{route('settings.password')}}">
+
+            {{-- Dropdown Container --}}
+            <div
+                x-cloak
+                x-show="openProfile"
+                x-transition:enter="transition ease-out duration-150"
+                x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                class="absolute right-0 top-full pt-1 z-50 w-56"
+                style="display: none;"
+            >
+                <div class="rounded-xl border border-neutral-800 bg-neutral-900 p-1.5 shadow-2xl">
+                    <div class="px-3 py-2 border-b border-neutral-800 mb-1">
+                        <p class="text-xs font-medium text-neutral-400">Prihlásený ako</p>
+                        <p class="truncate text-sm font-semibold text-neutral-100">{{ auth()->user()->name }} {{ auth()->user()->lastname }}</p>
+                    </div>
+
+                    @can('viewSettings', app(\App\Models\Team::class))
+                        <a
+                            href="{{ route('team.settings.edit') }}"
+                            class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
+                        >
+                            <i class="fa-solid fa-sliders text-xs text-sky-400"></i>
+                            Správa kina
+                        </a>
+                    @endcan
+
+                    @can('viewAny', \App\Models\Position::class)
+                        <a
+                            href="{{ route('positions.index') }}"
+                            class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
+                        >
+                            <i class="fa-solid fa-list-check text-xs text-sky-400"></i>
+                            Pozície
+                        </a>
+                    @endcan
+
+                    <a
+                        href="{{ route('settings.password.edit') }}"
+                        class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
+                    >
+                        <i class="fa-solid fa-key text-xs text-neutral-400"></i>
                         Zmena hesla
                     </a>
-                    <div class="border-t border-gray-600 my-1"></div>
-                    <a class="block w-full text-left px-4 py-2 text-sm font-semibold bg-transparent rounded-lg text-red-400 hover:bg-red-500 hover:text-white" href="{{url('/logout')}}">
-                        Odhlásiť
-                    </a>
+
+                    <div class="my-1 border-t border-neutral-800"></div>
+
+                    <x-logout-button icon='<i class="fa-solid fa-right-from-bracket text-xs"></i>'>
+                        Odhlásiť sa
+                    </x-logout-button>
                 </div>
             </div>
         </div>
     @else
-        <a class="{{ Route::is('login') ? 'bg-blue-600' : '' }} px-4 py-2 mt-2 text-sm font-semibold rounded-lg hover:bg-gray-700 md:mt-0 md:ml-4 transition-colors duration-200" href="{{route('login')}}">
-            Prihlásenie
-        </a>
-        <a class="{{ Route::is('register') ? 'bg-blue-600' : '' }} px-4 py-2 mt-2 text-sm font-semibold text-white rounded-lg hover:bg-gray-700 md:mt-0 md:ml-2 transition-colors duration-200" href="{{route('register')}}">
-            Registrácia
-        </a>
-    @endauth
+        <div class="flex items-center gap-2 ml-2">
+            <a
+                href="{{ route('login') }}"
+                class="rounded-lg px-4 py-2 text-base font-semibold text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
+            >
+                Prihlásenie
+            </a>
+            <a
+                href="{{ route('register') }}"
+                class="rounded-lg bg-neutral-100 px-4 py-2 text-base font-semibold text-neutral-900 transition hover:bg-white"
+            >
+                Registrácia
+            </a>
+        </div>
+    @endif
 </nav>

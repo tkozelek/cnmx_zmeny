@@ -1,82 +1,96 @@
 <x-layout :title="$title">
-    @if(isset($days) && count($days) != 0)
-        @if(auth()->user()->hasRole(config('constants.roles.admin')))
-            @include('partials._adminbutton')
-        @else
-            @include('partials._nonadminbutton')
-        @endif
-        <x-date :week="$week" />
-        <section class="md:container mx-auto">
-            <div class="text-center mb-2">
-                @include('partials._toggle')
-                @include('partials._extratext')
+    <div class="container mx-auto px-4 py-6 md:px-6 lg:px-8">
+        <div class="flex flex-col gap-6">
+
+            {{-- Centered Header & Week Selector --}}
+            <header class="flex flex-col items-center justify-center gap-3 text-center">
+                <x-date :week-start="$weekStart" :week-end="$weekEnd" :previous="$previousWeek" :next="$nextWeek" :locked="$locked" :locked-week-starts="$lockedWeekStarts ?? []" />
+
+                {{-- Action Buttons Under Week Selector --}}
+                <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
+                    @can('lock', \App\Models\Assignment::class)
+                        <form method="POST" action="{{ route($locked ? 'weeks.unlock' : 'weeks.lock', ['date' => $weekStart->toDateString()]) }}">
+                            @csrf
+                            @if($locked)
+                                @method('DELETE')
+                            @endif
+                            <button type="submit" @class([
+                                'inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950',
+                                'bg-sky-500/10 text-sky-300 border border-sky-500/40 hover:bg-sky-500/20 focus:ring-sky-400' => $locked,
+                                'bg-neutral-900 text-neutral-300 ring-1 ring-inset ring-neutral-800 hover:bg-neutral-800 hover:text-white focus:ring-neutral-500' => ! $locked,
+                            ])>
+                                <i class="fa-solid {{ $locked ? 'fa-lock-open text-sky-400' : 'fa-lock' }}"></i>
+                                {{ $locked ? 'Odomknúť týždeň' : 'Zamknúť týždeň' }}
+                            </button>
+                        </form>
+
+                        {{-- Only once the week is frozen: the builder needs a settled signup list. --}}
+                        @if($locked)
+                            <a href="{{ route('rozpis.show', ['date' => $weekStart->toDateString()]) }}"
+                               class="inline-flex min-h-10 items-center gap-2 rounded-md border border-sky-500/40 bg-sky-500/10 px-4 text-sm font-medium text-sky-300 transition hover:bg-sky-500/20 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                                <i class="fa-solid fa-table-list"></i>
+                                Rozpis
+                            </a>
+                        @endif
+
+                        <a href="{{ route('schedule.export', ['date' => $weekStart->toDateString()]) }}"
+                           class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium bg-neutral-900 text-neutral-300 ring-1 ring-inset ring-neutral-800 hover:bg-neutral-800 hover:text-white focus:ring-neutral-500 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                            Excel
+                        </a>
+                    @endcan
+
+                    {{-- Everyone's way into the finished plan. Only offered once it is published:
+                         a link that bounces with "not published yet" is worse than no link. --}}
+                    @if($rozpisPublished)
+                        <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}"
+                           class="inline-flex min-h-10 items-center gap-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                            Rozpis zmien
+                        </a>
+                    @endif
+
+                    @include('partials._fileuploadmodal')
+                </div>
+            </header>
+
+            {{-- Controls row: Names toggle on left, Extra info note on right --}}
+            <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-2">
+                <x-names-toggle />
+                <livewire:extra-note />
             </div>
-            <div
-                class="text-center grid-flow-row auto-rows-max grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 2xl:grid-cols-7 gap-3">
+
+            {{-- Day cards grid (items-start so columns don't stretch to uniform height) --}}
+            <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
                 @foreach($days as $day)
-                    <x-one-day :day="$day" :locked="$week->locked"/>
+                    <livewire:day-card :date="$day->toDateString()"
+                                       :locked="$locked"
+                                       :initial-assignments="$weekAssignments->get($day->toDateString(), collect())"
+                                       :key="'day-'.$day->toDateString()" />
                 @endforeach
             </div>
-            @if(isset($userCount) && count($userCount) != 0)
-                <div class="mt-10 md:mt-12 mb-8">
-                    <h3 class="text-lg sm:text-xl font-semibold text-slate-100 mb-4">Prehľad počtu zapísaných</h3>
-                    <div class="bg-slate-800 shadow-xl rounded-lg overflow-hidden max-w-md mx-auto sm:mx-0">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left text-slate-300">
-                                <thead class="text-xs text-slate-200 uppercase bg-slate-700/60">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3 font-medium">Meno</th>
-                                    <th scope="col" class="px-4 py-3 font-medium text-center">Počet</th>
-                                </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-700">
-                                @foreach($userCount as $user)
-                                    <tr class="hover:bg-slate-700/40 transition-colors duration-150">
-                                        <td class="px-4 py-3 font-medium text-slate-100">{{ $user }}</td>
-                                        <td class="px-4 py-3 text-center">{{ $user->count }}</td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            @endif
 
-            @if(isset($absences) && count($absences) != 0)
-                <div class="mt-10 md:mt-12 mb-8">
-                    <h3 class="text-lg sm:text-xl font-semibold text-slate-100 mb-4">Absencie v aktuálnom týždni</h3>
-                    <div class="bg-slate-800 shadow-xl rounded-lg overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left text-slate-300">
-                                <thead class="text-xs text-slate-200 uppercase bg-slate-700/60">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 font-medium">Meno</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">Začiatok</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">Koniec</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">Vytvorené</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">Dôvod</th>
-                                </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-700">
-                                @foreach($absences as $absence)
-                                    <tr class="hover:bg-slate-700/40 transition-colors duration-150">
-                                        <td class="px-6 py-3 font-medium text-slate-100">{{ $absence->user }}</td>
-                                        <td class="px-6 py-3 whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_from, 'd.m') }}</td>
-                                        <td class="px-6 py-3 whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->date_to, 'd.m') }}</td>
-                                        <td class="px-6 py-3 whitespace-nowrap">{{ App\Helpers::getDateFromAttribute($absence->created_at, 'd.m H:i') }}</td>
-                                        <td class="px-6 py-3">{{ $absence->popis }}</td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            @endif
-        </section>
-    @else
-        <p>no found</p>
-    @endif
+            {{-- Live updating signup summary table --}}
+            <livewire:signup-summary :week-start="$weekStart->toDateString()" :key="'summary-'.$weekStart->toDateString()" />
 
+            @if($absences->isNotEmpty())
+                <section class="flex flex-col gap-3">
+                    <h2 class="text-lg font-semibold text-neutral-100">Absencie v tomto týždni</h2>
+                    <x-table :headers="['Meno', 'Začiatok', 'Koniec', 'Nahlásené', 'Dôvod']">
+                        @foreach($absences as $absence)
+                            <x-table-row>
+                                <x-table-cell class="font-medium text-neutral-100">{{ $absence->user }}</x-table-cell>
+                                <x-table-cell class="whitespace-nowrap text-neutral-300">{{ $absence->date_from->format('d.m.') }}</x-table-cell>
+                                <x-table-cell class="whitespace-nowrap text-neutral-300">
+                                    {{ $absence->isOpenEnded() ? 'trvalá' : $absence->date_to->format('d.m.') }}
+                                </x-table-cell>
+                                <x-table-cell class="whitespace-nowrap text-neutral-500">{{ $absence->created_at->format('d.m. H:i') }}</x-table-cell>
+                                <x-table-cell class="text-neutral-300">{{ $absence->reason ?: '-' }}</x-table-cell>
+                            </x-table-row>
+                        @endforeach
+                    </x-table>
+                </section>
+            @endif
+        </div>
+    </div>
 </x-layout>

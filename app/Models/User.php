@@ -4,117 +4,196 @@ namespace App\Models;
 
 use App\Notifications\AddUserResetPassword;
 use App\Notifications\ResetPasswordNotification;
+use App\Notifications\VerifyEmailAddress;
 use App\Traits\Loggable;
-use Carbon\Carbon;
 use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Password;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+/**
+ * A person. Deliberately *not* team-scoped: one account can belong to several cinemas and
+ * hold a different role in each, which is why `BelongsToTeam` is not used here and why
+ * `email` is globally unique. Membership lives in `team_user`.
+ *
+ * The legacy `id_role` column is gone. Its two non-permission values became attributes:
+ * blocked -> `is_active = false`, unverified -> `team_user.approved_at IS NULL`.
+ */
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use CanResetPassword, HasFactory, Loggable, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $attributes = [
-        'id_role' => 1,
-    ];
+    use CanResetPassword, HasFactory, HasRoles, Loggable, Notifiable;
 
     protected $fillable = [
         'name',
         'lastname',
-        'username',
         'email',
         'password',
-        'id_role',
+        'current_team_id',
+        'is_active',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
      * @var array<int, string>
      */
     protected $hidden = [
         'password',
         'remember_token',
-        'id_role',
-        'email',
-        'created_at',
-        'updated_at',
-        'last_login_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+            'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
+        ];
+    }
+
+    /** Every membership, approved or not. */
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class)
+            ->withPivot('approved_at')
+            ->withTimestamps();
+    }
+
+    /** The team this user is currently acting in. */
+    public function currentTeam(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'current_team_id');
+    }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class);
+    }
+
+    public function absences(): HasMany
+    {
+        return $this->hasMany(Absence::class);
+    }
+
+    public function media(): HasMany
+    {
+        return $this->hasMany(Media::class);
+    }
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
+     * Cached across requests (see CACHING.md, key `user:{id}:approved-teams`) - re-queried
+     * independently by middleware, every permission check, the team switcher (rendered twice,
+     * desktop + mobile nav), and once per row when rendering action columns, and membership
+     * approval changes rarely. Also memoized on the instance so one request never hits the
+     * cache store twice.
      */
-    protected $casts = [
-        'password' => 'hashed',
-    ];
+    private ?Collection $approvedTeamsCache = null;
 
-    public function days()
+    /** @return Collection<int, Team> */
+    public function approvedTeams(): Collection
     {
-        return $this->belongsToMany(Day::class, 'user_days', 'id_user', 'id_day');
+        if ($this->approvedTeamsCache !== null) {
+            return $this->approvedTeamsCache;
+        }
+
+        $cacheKey = "user:{$this->id}:approved-teams";
+
+        return $this->approvedTeamsCache = Cache::remember($cacheKey, now()->addMinutes(10), function () {
+            return $this->teams()->wherePivotNotNull('approved_at')->get();
+        });
     }
 
-    public function holidays()
+    /** Call after any change to this user's team_user.approved_at (accept/deny in the pending queue). */
+    public function forgetApprovedTeamsCache(): void
     {
-        return $this->hasMany(Holiday::class, 'id_user');
+        Cache::forget("user:{$this->id}:approved-teams");
+        $this->approvedTeamsCache = null;
     }
 
-    public function role()
+    public function isApprovedIn(Team $team): bool
     {
-        return $this->belongsTo(Role::class, 'id_role');
+        return $this->approvedTeams()->contains(fn (Team $t) => $t->getKey() === $team->getKey());
     }
 
-    public function files()
+    /**
+     * Belongs to this cinema at all - pending, approved or denied.
+     *
+     * Weaker than isApprovedIn() on purpose: it is the tenant boundary for acting *on* a user
+     * (UserPolicy), where the pending queue is exactly the case that must stay reachable. Not
+     * cached, because it gates writes and a stale answer here is a cross-tenant edit.
+     */
+    public function isMemberOf(Team $team): bool
     {
-        return $this->hasMany(File::class, 'id_user');
+        return $this->teams()->whereKey($team->getKey())->exists();
     }
 
-    public function shifts()
+    /**
+     * May turn this cinema's signups into a shift plan - the rozpis builder, its slots, its
+     * exports and its AI draft all hang off this one permission.
+     *
+     * A method rather than the raw check because two Livewire components and five controllers
+     * ask the same question, and "who may build" is a fact about a user, not about a component.
+     */
+    public function canBuildRozpis(): bool
     {
-        return $this->hasMany(Shift::class);
+        return $this->hasPermissionInTeam('assignment.assign-position', app(Team::class));
     }
 
-    public function rates() {
-        return $this->hasOne(Rate::class);
-    }
-
-    public function hasRole($i): bool
+    /**
+     * Point the user at another of their teams. Refuses teams they are not approved in,
+     * so a forged team id on the switch route cannot cross the tenant boundary.
+     */
+    public function switchTeam(Team $team): bool
     {
-        return $this->id_role == $i;
+        if (! $this->isApprovedIn($team)) {
+            return false;
+        }
+
+        $this->forceFill(['current_team_id' => $team->getKey()])->save();
+
+        return true;
     }
 
-    public function isAdmin(): bool
+    /**
+     * Check whether the user has a specific permission in a given cinema team (or current active team).
+     */
+    public function hasPermissionInTeam(string $permission, ?Team $team = null): bool
     {
-        return $this->id_role == config('constants.roles.admin');
+        $team = $team ?? $this->currentTeam;
+
+        if (! $team || ! $this->isApprovedIn($team)) {
+            return false;
+        }
+
+        $originalTeamId = getPermissionsTeamId();
+        setPermissionsTeamId($team->id);
+
+        try {
+            return $this->hasPermissionTo($permission);
+        } catch (PermissionDoesNotExist) {
+            return false;
+        } finally {
+            setPermissionsTeamId($originalTeamId);
+        }
     }
 
-    public function getCreatedAtAttribute($date)
-    {
-        return Carbon::parse($date)->format('d.m.Y H:i:s');
-    }
-
-    public function getUpdatedAtAttribute($date)
-    {
-        return Carbon::parse($date)->format('d.m.Y H:i:s');
-    }
-
-    public function getDate($date)
-    {
-        return Carbon::parse($date)->format('d.m.Y H:i:s');
-    }
-
-    public function __toString()
+    /** Views print users directly: "Kozelek T." */
+    public function __toString(): string
     {
         return $this->lastname.' '.mb_substr($this->name, 0, 1).'.';
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailAddress);
     }
 
     public function sendPasswordResetNotification($token): void

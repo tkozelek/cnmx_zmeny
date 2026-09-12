@@ -1,33 +1,34 @@
 <?php
 
+/*
+ * Slovak validation messages, shared by every form request.
+ *
+ * The old `roles` map is gone — roles are Spatie rows now, see App\Enums\Role.
+ * `calendar.generate_weeks` and `db` are gone too: weeks are computed rather than
+ * generated, and the lookahead lives in team_settings.week_lookahead.
+ */
+
 return [
-    'roles' => [
-        'brigadnik' => 2,
-        'admin' => 3,
-        'zablokovany' => 4,
-        'neovereny' => 1,
-    ],
-    'calendar' => [
-        'generate_weeks' => 5,
-    ],
-    'db' => [
-        'string' => 50,
-        'integer' => 10,
-    ],
     'messages' => [
         'name.required' => 'Meno je potrebné.',
         'lastname.required' => 'Priezvisko je potrebné.',
-        'username.required' => 'Prihlásovacie meno je potrebné.',
-        'username.unique' => 'Prihlásovacie meno už je obsadené.',
+
+        // Shared by every form that takes a person's name - see the NO_FORMULA_PREFIX rule.
+        'name.not_regex' => 'Meno nesmie začínať znakom =, +, - ani @.',
+        'lastname.not_regex' => 'Priezvisko nesmie začínať znakom =, +, - ani @.',
         'email.required' => 'Emailová adresa je potrebná.',
+        'email.email' => 'Emailová adresa nie je platná.',
         'email.unique' => 'Emailová adresa už bola použitá.',
         'password.required' => 'Heslo je potrebné.',
-        'password_confirmation.required' => 'Potvrdenie heslá je potrebné.',
-        'password.confirmed' => 'Hesla sa nezhoduju.',
-        'password.min' => 'Heslo je moc kratke. Musi mat aspon 5 znakov.',
-        'new_password' => 'Nové heslo je potrebné.',
-        'new_password.min' => 'Heslo je moc kratke. Musi mat aspon 5 znakov.',
-        'current_password' => 'Aktuálne heslo je potrebné.',
-        'new_password.confirmed' => 'Hesla sa nezhoduju.',
+        'password.confirmed' => 'Heslá sa nezhodujú.',
+        'password.min' => 'Heslo je príliš krátke. Musí mať aspoň 8 znakov.',
+        'password_confirmation.required' => 'Potvrdenie hesla je potrebné.',
+        'current_password.required' => 'Aktuálne heslo je potrebné.',
+        'current_password.current_password' => 'Aktuálne heslo je nesprávne.',
+        'new_password.required' => 'Nové heslo je potrebné.',
+        'new_password.confirmed' => 'Heslá sa nezhodujú.',
+        'new_password.min' => 'Heslo je príliš krátke. Musí mať aspoň 8 znakov.',
+        'role.required' => 'Vyber rolu.',
+        'role.in' => 'Neznáma rola.',
     ],
 ];

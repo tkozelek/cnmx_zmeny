@@ -33,9 +33,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    @yield('alpine', '<script src="//unpkg.com/alpinejs" defer></script>')
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{-- Alpine ships with Livewire 3, but Livewire only auto-injects its bundle on pages that
+         rendered a component - declared here so every page gets Alpine, not just Livewire ones. --}}
+    @livewireStyles
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('additional')

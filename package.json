@@ -7,23 +7,14 @@
     },
     "devDependencies": {
         "autoprefixer": "^10.4.18",
-        "axios": "^1.1.2",
-        "flowbite": "^2.3.0",
-        "laravel-mix": "^6.0.49",
         "laravel-vite-plugin": "^2.0.1",
         "postcss": "^8.4.35",
         "tailwindcss": "^3.4.1",
-        "vite": "^7.1.7",
-        "webpack": "^5.90.3"
+        "vite": "^7.1.7"
     },
     "dependencies": {
-        "@themesberg/tailwind-datepicker": "^1.1.0",
         "chart.js": "^4.5.0",
-        "flowbite-datepicker": "^1.2.6",
-        "laravel-mix-webpack-config": "^1.1.7",
-        "puppeteer": "^24.8.2",
-        "react-tailwindcss-datetimepicker": "^3.0.3",
-        "sortablejs": "^1.15.2",
-        "touch": "^3.1.0"
+        "flatpickr": "^4.6.13",
+        "sortablejs": "^1.15.2"
     }
 }

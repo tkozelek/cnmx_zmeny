@@ -1,82 +1,169 @@
-import 'flowbite';
-import DateRangePicker from 'flowbite-datepicker/DateRangePicker';
-import {Chart, registerables} from "chart.js";
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.css";
+import "flatpickr/dist/themes/dark.css";
+import { Slovak } from "flatpickr/dist/l10n/sk.js";
+import { Chart, registerables } from "chart.js";
+import Sortable from "sortablejs";
 
-$(document).ready(function() {
-    function ajaxRequest(url, method, data, successCallback, errorCallback) {
-        let token = $('meta[name="csrf-token"]').attr('content');
-        $.ajax({
-            url: url,
-            method: method,
-            headers: {
-                'X-CSRF-TOKEN': token
-            },
-            data: data,
-            success: successCallback,
-            error: errorCallback
-        });
-    }
+flatpickr.localize(Slovak);
+window.flatpickr = flatpickr;
 
-    let addButton = $('.add-user-btn');
-
-    addButton.click(function() {
-        let clickedButton = $(this);
-
-        let day = clickedButton.data('day');
-        let popis = $('#extra_popis').val();
-
-        const addUserUrl = window.appRoutes.addUserUrl;
-
-        ajaxRequest(addUserUrl, 'POST', { day: day, popis: popis }, function(response) {
-            if (response['error'] === 10) {
-                return;
-            }
-
-            if (response['status'] === 2) {
-                clickedButton.removeClass('bg-green-300 hover:bg-green-600').addClass('bg-red-300 hover:bg-red-400').text('ZAPISAŤ');
-                showToast("Deň odpísaný.", "error");
-            } else {
-                clickedButton.removeClass('bg-red-300 hover:bg-red-400').addClass('bg-green-300 hover:bg-green-600').text('ODPISAŤ');
-                showToast("Deň zapísaný.", "success");
-            }
-            toggleDateStatus(clickedButton);
-
-            let usersContainer = $('#c-' + day).find('.users-container');
-            usersContainer.empty(); // Clear existing users
-            response['users'].forEach(function (user) {
-                let isBlocked = user.id_role === 4;
-
-                let userDiv = $('<div>').addClass('bg-gray-900 text-white border-b border-gray-700 py-1 shadow-md text-md rows px-1 flex items-center');
-
-                if (isBlocked) {
-                    userDiv.addClass('line-through justify-center');
-                }  else {
-                    userDiv.addClass('justify-center');
-                }
-
-                let popisHtml = user.pivot.popis ? `<span class="text-slate-400/80 italic text-sm ml-1">(${user.pivot.popis})</span>` : '';
-                let userNameHtml = `${user.lastname} ${user.name[0]}.`;
-
-                let nameWrapper = $('<span class="truncate max-w-[calc(100%-20px)]">').html(userNameHtml + popisHtml);
-                userDiv.append(nameWrapper);
-
-                usersContainer.append(userDiv);
-            });
-        }, function(response) {
-            showToast("Nemáš prístup.");
-            console.log(response.json());
-        });
-    });
-});
-
-function toggleDateStatus(dayButton) {
-    let status = $(dayButton).data('status');
-
-    let newStatus = status === 0 ? 1 : 0;
-
-    dayButton.data('status', newStatus);
-    dayButton.attr('data-status', newStatus);
+function toIsoDate(date) {
+    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
 }
+
+document.addEventListener('alpine:init', () => {
+    /**
+     * Drag a card between lists and tell Livewire where it landed.
+     *
+     * `x-sortable="place"` names the Livewire method; the element's data attributes carry the
+     * rest. `sortable-group` decides which lists exchange cards (scoped per day, so a person can
+     * never be dragged into another day), and `sortable-target` — the id of the slot this list
+     * belongs to — is passed as the second argument alongside the dropped card's `sortable-id`.
+     * A list with no target sends null: that is the unassigned pool, and null is exactly what
+     * "not placed anywhere" means server-side.
+     *
+     * Only onAdd fires a request: reordering inside one list changes nothing that is stored.
+     */
+    Alpine.directive('sortable', (el, { expression }, { evaluate, cleanup }) => {
+        const sortable = Sortable.create(el, {
+            group: el.dataset.sortableGroup ?? 'sortable',
+            animation: 150,
+            ghostClass: 'opacity-40',
+            onAdd: (event) => {
+                const id = event.item.dataset.sortableId;
+                if (!id) return;
+
+                const target = el.dataset.sortableTarget ?? 'null';
+
+                // `$wire.` is not optional: Livewire exposes the component to Alpine as the
+                // $wire magic and does NOT put component methods in Alpine's scope, so a bare
+                // `place(...)` throws "place is not defined" — which Alpine swallows, leaving a
+                // drag that silently does nothing.
+                //
+                // Livewire re-renders from server state right after, repainting the card
+                // wherever the server says it belongs.
+                evaluate(`$wire.${expression}(${id}, ${target})`);
+            },
+        });
+
+        cleanup(() => sortable.destroy());
+    });
+
+    /**
+     * Reorder rows within one list and persist the new order.
+     *
+     * Only the grip icon drags (`handle`), because each row *contains* another sortable list —
+     * without that, grabbing a person card would pick up the whole row. Reads `el.children`
+     * rather than a query selector for the same reason: nested cards must not be collected.
+     */
+    Alpine.directive('sortable-order', (el, { expression }, { evaluate, cleanup }) => {
+        const sortable = Sortable.create(el, {
+            animation: 150,
+            handle: '[data-drag-handle]',
+            draggable: '[data-slot-id]',
+            ghostClass: 'opacity-40',
+            onEnd: () => {
+                const ids = Array.from(el.children)
+                    .map((node) => node.dataset.slotId)
+                    .filter(Boolean);
+
+                // `$wire.` prefix required — see the note in x-sortable above.
+                if (ids.length) evaluate(`$wire.${expression}([${ids.join(',')}])`);
+            },
+        });
+
+        cleanup(() => sortable.destroy());
+    });
+
+    /**
+     * 24-hour time field. `<input type="time">` renders AM/PM purely from the OS locale and
+     * there is no HTML attribute to force 24-hour, so the picker has to own the format.
+     */
+    const timeFieldOptions = (initial) => ({
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: 'H:i',
+        time_24hr: true,
+        minuteIncrement: 15,
+        defaultDate: initial,
+    });
+
+    /** Writes into a Livewire property — for a field that is part of a form. */
+    Alpine.data('timePicker', (property, initial = null) => ({
+        init() {
+            if (typeof window.flatpickr !== 'function') return;
+
+            this.picker = window.flatpickr(this.$refs.input, {
+                ...timeFieldOptions(initial),
+                // Third arg false: don't re-render the component on every keystroke.
+                onChange: (dates, value) => this.$wire.set(property, value, false),
+            });
+        },
+        clear() {
+            this.picker?.clear();
+            this.$wire.set(property, null, false);
+        },
+    }));
+
+    /**
+     * Saves straight to one existing slot — there is no form around it, the change *is* the
+     * submit. Separate from timePicker because that one fills in a property to be submitted
+     * later, while this one persists on change.
+     */
+    Alpine.data('slotTimePicker', (slotId, initial = null) => ({
+        init() {
+            if (typeof window.flatpickr !== 'function') return;
+
+            window.flatpickr(this.$refs.input, {
+                ...timeFieldOptions(initial),
+                onChange: (dates, value) => this.$wire.updateSlotTime(slotId, value || null),
+            });
+        },
+    }));
+
+    /** Jump straight to a week instead of clicking the arrows repeatedly. */
+    Alpine.data('weekJump', (current, urlTemplate) => ({
+        init() {
+            if (typeof window.flatpickr !== 'function') return;
+
+            window.flatpickr(this.$refs.input, {
+                dateFormat: 'Y-m-d',
+                defaultDate: current,
+                positionElement: this.$refs.trigger,
+                position: 'below center',
+                onChange: (dates, value) => {
+                    if (value) window.location.href = urlTemplate.replace('__DATE__', value);
+                },
+            });
+        },
+        open() {
+            this.$refs.input._flatpickr?.open();
+        },
+    }));
+
+    Alpine.data('absenceRangePicker', (dateFrom, dateTo, openModal = false) => ({
+        openModal,
+        dateFrom,
+        dateTo,
+        initFlatpickr() {
+            if (typeof window.flatpickr !== 'function') return;
+            window.flatpickr(this.$refs.rangeInput, {
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altInputClass: 'w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none cursor-pointer',
+                altFormat: 'j. n. Y',
+                defaultDate: [this.dateFrom, this.dateTo],
+                onChange: (selectedDates) => {
+                    if (!selectedDates.length) return;
+                    this.dateFrom = toIsoDate(selectedDates[0]);
+                    this.dateTo = selectedDates.length === 2 ? toIsoDate(selectedDates[1]) : this.dateFrom;
+                },
+            });
+        },
+    }));
+});
 
 function showToast(message, type = 'success', icon = '') {
     window.dispatchEvent(new CustomEvent('toast', {
@@ -84,53 +171,10 @@ function showToast(message, type = 'success', icon = '') {
     }));
 }
 
-$(document).ready(function() {
-    $('#names_checkbox').change(function() {
-        $(".rows").toggle();
-    });
-});
-
-let options = {
-    language: "sk",
-    weekStart: "1",
-    format: "dd.mm.yyyy",
-    todayHighlight: true,
-    autoclose: true,
-    hideOnClickOutside: true,
-    hideOnSelect: true,
-    orientation: "up",
-};
-
-
-let dateRangePickerEl = document.getElementById('daterangepicker');
-if (dateRangePickerEl)
-    new DateRangePicker(dateRangePickerEl, options);
-
-$(document).ready(function() {
-    $('.delete-file').click(function() {
-        let token = $('meta[name="csrf-token"]').attr('content');
-        var fileId = $(this).data('file-id');
-        var element = $('[div-file-id="' + fileId + '"]');
-        console.log(element);
-
-        $.ajax({
-            url: '/upload/' + fileId + '/destroy',
-            headers: {
-                'X-CSRF-TOKEN': token
-            },
-            type: 'DELETE',
-            success: function(response) {
-                if (response['status'] === 200) {
-                    showToast("Súbor zmazaný.", "warning");
-                    element.remove();
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-
-    });
+document.addEventListener('change', function (event) {
+    if (event.target.id === 'names_checkbox') {
+        document.documentElement.classList.toggle('hide-names', !event.target.checked);
+    }
 });
 
 function togglePasswordVisibility(inputId) {
@@ -198,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (element) {
         const myDropzone = new Dropzone("#my-dropzone", {
-            url: fileUpload,
+            url: window.appRoutes.fileUpload,
             paramName: "file",
             maxFilesize: 2,
         });
@@ -211,7 +255,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-
-
-

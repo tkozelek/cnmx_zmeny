@@ -2,30 +2,14 @@
 
 namespace App\Providers;
 
-use App\Http\ViewComposers\UnverifiedUserComposerViewComposer;
+use App\Http\ViewComposers\PendingMemberCountComposer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class ViewServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
+    public function boot(): void
     {
-        //
-    }
-
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        // Use a view composer to pass the new user count to the layout view
-        View::composer('layouts.layout', UnverifiedUserComposerViewComposer::class);
+        View::composer('layouts.layout', PendingMemberCountComposer::class);
     }
 }

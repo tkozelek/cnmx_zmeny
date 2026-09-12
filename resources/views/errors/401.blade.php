@@ -21,7 +21,7 @@
         Prejsť na domovskú stránku
     </a>
     <p class="mt-6 text-sm text-slate-400/80">
-        Ak si myslíte, že ide o chybu, prosím, <a href="{{ route('bugreport.index') }}" class="text-red-300 hover:text-red-400 underline transition-colors duration-150">kontaktujte podporu</a>.
+        Ak si myslíte, že ide o chybu, prosím, <a href="{{ route('help') }}" class="text-red-300 hover:text-red-400 underline transition-colors duration-150">kontaktujte podporu</a>.
     </p>
 </div>
 </body>
