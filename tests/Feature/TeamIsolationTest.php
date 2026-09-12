@@ -114,24 +114,6 @@ class TeamIsolationTest extends TestCase
             ->assertForbidden();
     }
 
-    /** And on the hours screen, which resolves its subject from a raw id. */
-    public function test_a_manager_cannot_read_hours_of_a_user_from_another_cinema(): void
-    {
-        $teamA = $this->tenant();
-        $manager = $this->member($teamA, Role::Manager);
-
-        $teamB = Team::factory()->create(['name' => 'Kino B']);
-        $outsider = $this->member($teamB);
-
-        $this->actingAs($manager)
-            ->get(route('hours.show', $outsider))
-            ->assertForbidden();
-
-        $this->actingAs($manager)
-            ->getJson(route('shifts.index', ['user_id' => $outsider->id, 'month' => '2026-08']))
-            ->assertNotFound();
-    }
-
     public function test_resources_are_strictly_isolated_between_teams(): void
     {
         $teamA = $this->tenant();

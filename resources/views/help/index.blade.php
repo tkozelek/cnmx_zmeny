@@ -92,45 +92,23 @@
                 </div>
             </div>
 
-            {{-- 4. Evidencia hodín --}}
-            <div>
-                <h2>
-                    <button
-                        type="button"
-                        @click="activeAccordion = (activeAccordion === 4 ? null : 4)"
-                        class="group flex items-center justify-between w-full p-6 font-semibold text-neutral-100 hover:bg-neutral-800/60 focus:outline-none transition-colors duration-200"
-                    >
-                        <span class="flex items-center gap-3 text-lg">
-                            <i class="fa-solid fa-clock text-sky-400"></i>
-                            Evidencia odpracovaných hodín
-                        </span>
-                        <i class="fa-solid fa-chevron-down text-neutral-400 transition-transform duration-200" :class="{ 'rotate-180': activeAccordion === 4 }"></i>
-                    </button>
-                </h2>
-                <div x-show="activeAccordion === 4" style="display: none;">
-                    <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800/80 bg-neutral-950/40 space-y-4 text-sm">
-                        <p>V sekcii <strong class="font-semibold text-white">Evidencia hodín</strong> vidíte mesačný prehľad odpracovaných zmien a vypočítanú mzdu.</p>
-                        <p>Hodiny si môžete dopĺňať alebo upravovať za každý odpracovaný deň.</p>
-                    </div>
-                </div>
-            </div>
-            {{-- 5. Správa pre Administrátorov --}}
+            {{-- 4. Správa pre Administrátorov --}}
             @can('lock', \App\Models\Assignment::class)
                 <div>
                     <h2>
                         <button
                             type="button"
-                            @click="activeAccordion = (activeAccordion === 5 ? null : 5)"
+                            @click="activeAccordion = (activeAccordion === 4 ? null : 4)"
                             class="group flex items-center justify-between w-full p-6 font-semibold text-neutral-100 hover:bg-neutral-800/60 focus:outline-none transition-colors duration-200"
                         >
                             <span class="flex items-center gap-3 text-lg">
                                 <i class="fa-solid fa-shield-halved text-sky-400"></i>
                                 Administrácia kina
                             </span>
-                            <i class="fa-solid fa-chevron-down text-neutral-400 transition-transform duration-200" :class="{ 'rotate-180': activeAccordion === 5 }"></i>
+                            <i class="fa-solid fa-chevron-down text-neutral-400 transition-transform duration-200" :class="{ 'rotate-180': activeAccordion === 4 }"></i>
                         </button>
                     </h2>
-                    <div x-show="activeAccordion === 5" style="display: none;">
+                    <div x-show="activeAccordion === 4" style="display: none;">
                         <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800/80 bg-neutral-950/40 space-y-4 text-sm">
                             <h3 class="text-lg font-bold text-neutral-100">Spravovanie používateľov</h3>
                             <ul class="list-disc list-inside space-y-1.5 text-neutral-300 pl-2">

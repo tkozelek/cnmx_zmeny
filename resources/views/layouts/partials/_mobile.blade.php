@@ -77,14 +77,6 @@
             @endcan
 
             <x-nav-link
-                route="hours.index"
-                :is-mobile="true"
-                icon='<i class="fa-solid fa-clock"></i>'
-            >
-                Evidencia hodín
-            </x-nav-link>
-
-            <x-nav-link
                 route="settings.password.edit"
                 :is-mobile="true"
                 icon='<i class="fa-solid fa-key"></i>'
