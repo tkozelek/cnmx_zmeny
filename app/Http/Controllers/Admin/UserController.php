@@ -61,7 +61,7 @@ class UserController extends Controller
             return back()->with(['error' => 'Nastala chyba, kontaktujte administrátora.']);
         }
 
-        return back()->with(['message' => 'Používateľ úspešne vytvorený.']);
+        return back()->with(['success' => 'Používateľ bol úspešne vytvorený.', 'message' => 'Používateľ bol úspešne vytvorený.']);
     }
 
     public function edit(User $user): View
@@ -82,7 +82,7 @@ class UserController extends Controller
         $user->update($request->safe()->except('role'));
         $user->syncRoles([$role->value]);
 
-        return to_route('admin.users.index')->with(['message' => 'Úspešne zmenené.', 'edit' => 'yes']);
+        return to_route('admin.users.index')->with(['success' => 'Používateľ bol úspešne upravený.', 'message' => 'Používateľ bol úspešne upravený.', 'edit' => 'yes']);
     }
 
     /**
@@ -116,6 +116,6 @@ class UserController extends Controller
 
         $user->update(['is_active' => false]);
 
-        return to_route('admin.users.index')->with(['message' => 'Účet deaktivovaný.']);
+        return to_route('admin.users.index')->with(['success' => 'Účet bol úspešne deaktivovaný.', 'message' => 'Účet bol úspešne deaktivovaný.']);
     }
 }

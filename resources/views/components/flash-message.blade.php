@@ -2,7 +2,8 @@
     x-data="{
         toasts: [],
         addToast(message, type = 'success', icon = '') {
-            const id = Date.now();
+            if (!message) return;
+            const id = Date.now() + Math.random();
             this.toasts.push({
                 id,
                 message,
@@ -16,10 +17,21 @@
             });
             setTimeout(() => {
                 this.removeToast(id);
-            }, 4000);
+            }, 4500);
         },
         removeToast(id) {
             this.toasts = this.toasts.filter(t => t.id !== id);
+        },
+        handleToastEvent(e) {
+            let d = e.detail;
+            if (Array.isArray(d)) d = d[0] || {};
+            if (typeof d === 'string') {
+                this.addToast(d);
+                return;
+            }
+            if (d && typeof d === 'object') {
+                this.addToast(d.message || d.title || '', d.type || 'success', d.icon || '');
+            }
         }
     }"
     x-init="
@@ -27,16 +39,22 @@
             addToast(@json(session('success')), 'success', @json(session('icon', '')));
         @elseif(session('message'))
             addToast(@json(session('message')), 'success', @json(session('icon', '')));
-        @elseif(session('error'))
+        @endif
+        @if(session('error'))
             addToast(@json(session('error')), 'error', @json(session('icon', '')));
-        @elseif(session('info') || session('status'))
-            addToast(@json(session('status') ?? session('info')), 'info', @json(session('icon', '')));
-        @elseif(session('warning'))
+        @endif
+        @if(session('status') && !session('success') && !session('message'))
+            addToast(@json(session('status')), 'info', @json(session('icon', '')));
+        @endif
+        @if(session('info'))
+            addToast(@json(session('info')), 'info', @json(session('icon', '')));
+        @endif
+        @if(session('warning'))
             addToast(@json(session('warning')), 'warning', @json(session('icon', '')));
         @endif
     "
-    @toast.window="addToast($event.detail.message, $event.detail.type, $event.detail.icon)"
-    class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-xs w-full px-4 sm:px-0"
+    @toast.window="handleToastEvent($event)"
+    class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full px-4 sm:px-0 pointer-events-none"
 >
     <template x-for="toast in toasts" :key="toast.id">
         <div
@@ -46,7 +64,7 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 translate-y-2"
-            class="flex items-center gap-2.5 rounded-lg border border-neutral-800 bg-neutral-900/95 backdrop-blur-sm px-3 py-2 shadow-lg text-neutral-100"
+            class="pointer-events-auto flex items-center gap-2.5 rounded-xl border border-neutral-800 bg-neutral-900/95 backdrop-blur-md px-4 py-3 shadow-2xl text-neutral-100"
             :class="{
                 'border-emerald-500/50': toast.type === 'success',
                 'border-rose-500/50': toast.type === 'error',
@@ -55,12 +73,12 @@
             }"
         >
             <i class="shrink-0 text-sm" :class="toast.icon"></i>
-            <p class="flex-1 min-w-0 text-xs font-medium leading-snug truncate" x-text="toast.message" :title="toast.message"></p>
+            <p class="flex-1 min-w-0 text-xs font-medium leading-snug break-words" x-text="toast.message" :title="toast.message"></p>
 
             <button
                 type="button"
                 @click="removeToast(toast.id)"
-                class="shrink-0 text-neutral-500 hover:text-white transition-colors focus:outline-none"
+                class="shrink-0 text-neutral-500 hover:text-white transition-colors focus:outline-none ml-2"
                 aria-label="Zavrieť oznam"
             >
                 <i class="fa-solid fa-xmark text-xs"></i>
