@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Closure;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -24,7 +24,9 @@ class EmailVerificationController extends Controller
     public function __construct()
     {
         $this->middleware(function (Request $request, Closure $next) {
-            abort_unless($request->user()?->is_active, 403, 'Účet je zablokovaný.');
+            if ($request->user() && ! $request->user()->is_active) {
+                abort(403, 'Účet je zablokovaný.');
+            }
 
             return $next($request);
         });
@@ -32,30 +34,56 @@ class EmailVerificationController extends Controller
 
     public function notice(Request $request): RedirectResponse|View
     {
-        return $request->user()->hasVerifiedEmail()
-            ? to_route('calendar.index')
-            : view('users.verify-email');
-    }
-
-    public function verify(EmailVerificationRequest $request): RedirectResponse
-    {
-        if (! $request->user()->hasVerifiedEmail()) {
-            $request->user()->markEmailAsVerified();
-
-            event(new Verified($request->user()));
+        if ($request->user() && $request->user()->hasVerifiedEmail()) {
+            return to_route('calendar.index');
         }
 
-        return to_route('login')->with('message', 'E-mail overený. Vedúci ťa teraz môže schváliť.');
+        return view('users.verify-email');
+    }
+
+    public function verify(Request $request, string $id, string $hash): RedirectResponse
+    {
+        $user = User::findOrFail($id);
+
+        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+            abort(403, 'Neplatný overovací odkaz.');
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+
+            event(new Verified($user));
+        }
+
+        return to_route('verification.verified');
+    }
+
+    public function verified(): View
+    {
+        return view('users.verified');
     }
 
     public function send(Request $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
+        if ($request->user()?->hasVerifiedEmail()) {
             return to_route('calendar.index');
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        $request->user()?->sendEmailVerificationNotification();
 
         return back()->with('message', 'Overovací e-mail odoslaný znova.');
+    }
+
+    public function resendGuest(Request $request): RedirectResponse
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && ! $user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
+        }
+
+        return back()->with('message', 'Overovací e-mail bol odoslaný. Skontroluj si schránku.');
     }
 }

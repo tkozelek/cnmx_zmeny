@@ -32,13 +32,23 @@ class LoginController extends Controller
                 ->onlyInput('email');
         }
 
+        $user = $request->user();
+
+        if (! $user->hasVerifiedEmail()) {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')
+                ->with('unverified_email', $user->email)
+                ->with('show_unverified_modal', true);
+        }
+
         $request->session()->regenerate();
 
         // Login is the only moment the plaintext exists, so it is the only moment an old hash can
         // be upgraded. Accounts still on the previous cost factor move over as people come back,
         // and raising BCRYPT_ROUNDS again later needs no migration - just this.
-        $user = $request->user();
-
         if (Hash::needsRehash($user->password)) {
             $user->forceFill(['password' => $request->string('password')->value()])->save();
         }

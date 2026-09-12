@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\VerifyEmailAddress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 /**
@@ -97,18 +100,24 @@ class LoginTest extends TestCase
     }
 
     /**
-     * The first of the two gates. An unverified account is not logged out - it is parked on the
-     * notice page, which is where the "send it again" button lives.
+     * An unverified account is not signed in and is redirected to login with the verification modal.
      */
-    public function test_an_unverified_member_is_sent_to_the_verification_notice(): void
+    public function test_an_unverified_member_is_not_signed_in_and_shown_verification_modal(): void
     {
         $team = $this->tenant();
         $unverified = User::factory()->unverified()->memberOf($team)->create(['current_team_id' => $team->id]);
 
-        $this->post(route('login.auth'), ['email' => $unverified->email, 'password' => 'password']);
+        $response = $this->post(route('login.auth'), ['email' => $unverified->email, 'password' => 'password']);
 
-        $this->get(route('calendar.index'))->assertRedirect(route('verification.notice'));
-        $this->assertAuthenticated();
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('show_unverified_modal', true);
+        $response->assertSessionHas('unverified_email', $unverified->email);
+        $this->assertGuest();
+
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('Účet čaká na overenie e-mailu')
+            ->assertDontSee('Správa kina');
     }
 
     /**
@@ -150,5 +159,65 @@ class LoginTest extends TestCase
             ->assertSessionHasErrors('email');
 
         $this->assertGuest();
+    }
+
+    public function test_registration_shows_verification_email_modal(): void
+    {
+        $team = $this->tenant();
+
+        $response = $this->post(route('register.store'), [
+            'name' => 'Janko',
+            'lastname' => 'Hraško',
+            'email' => 'janko@example.com',
+            'password' => 'secret1234',
+            'password_confirmation' => 'secret1234',
+            'team_id' => $team->id,
+        ]);
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('show_registration_modal', true);
+        $response->assertSessionHas('registered_email', 'janko@example.com');
+
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('Overovací e-mail bol odoslaný')
+            ->assertSee('janko@example.com');
+    }
+
+    public function test_guest_can_verify_email_via_signed_url(): void
+    {
+        $team = $this->tenant();
+        $user = User::factory()->unverified()->memberOf($team)->create();
+
+        $url = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        $response = $this->get($url);
+
+        $response->assertRedirect(route('verification.verified'));
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+
+        $this->get(route('verification.verified'))
+            ->assertOk()
+            ->assertSee('E-mail bol úspešne overený')
+            ->assertSee('schválenie vedúcim kina (manažérom)');
+    }
+
+    public function test_guest_can_resend_verification_email(): void
+    {
+        Notification::fake();
+
+        $team = $this->tenant();
+        $user = User::factory()->unverified()->memberOf($team)->create();
+
+        $response = $this->post(route('verification.resend_guest'), [
+            'email' => $user->email,
+        ]);
+
+        $response->assertSessionHas('message');
+        Notification::assertSentTo($user, VerifyEmailAddress::class);
     }
 }

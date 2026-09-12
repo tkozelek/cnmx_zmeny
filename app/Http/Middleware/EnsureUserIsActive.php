@@ -26,10 +26,14 @@ class EnsureUserIsActive
             return $this->reject($request, 'Účet je zablokovaný.');
         }
 
-        // Not a rejection: they can fix this themselves, and logging them out would take away
-        // the "send it again" button.
         if (! $user->hasVerifiedEmail()) {
-            return redirect()->route('verification.notice');
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')
+                ->with('unverified_email', $user->email)
+                ->with('show_unverified_modal', true);
         }
 
         if ($user->approvedTeams()->isEmpty()) {

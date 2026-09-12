@@ -7,7 +7,7 @@
             </h1>
 
             <p class="mt-3 text-sm leading-relaxed text-neutral-300">
-                Na adresu <strong class="text-neutral-100">{{ auth()->user()->email }}</strong> sme poslali
+                Na adresu <strong class="text-neutral-100">{{ auth()->user()?->email ?? session('unverified_email', 'tvoj e-mail') }}</strong> sme poslali
                 overovací odkaz. Klikni naň a vráť sa sem.
             </p>
 
