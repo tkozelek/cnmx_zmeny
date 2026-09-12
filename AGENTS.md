@@ -200,7 +200,7 @@ This repository contains **CNMX Zmeny**, a multi-tenant shift-scheduling system 
 ## Single-Database Multi-Tenancy Architecture
 
 - **Tenant Scoping**: Single-database architecture utilizing Spatie Permission teams (`teams` + `team_user` pivot, `users.current_team_id`).
-- **Team Scoping**: Explicit `team_id` on `positions`, `assignments`, `absences`, `week_locks`, `shifts`, `rates`, `media`, and `team_settings`.
+- **Team Scoping**: Explicit `team_id` on `positions`, `assignments`, `absences`, `week_locks`, `media`, and `team_settings`.
 - **Date-Based Scheduling Model**: Shifts and signups use the `assignments` table keyed on `date` (`unique(user_id, date)`), nullable `position_id`, and `team_id`. Weeks are computed dynamically based on `team_settings.week_start_day` (default: Wednesday = 3) instead of pre-generating rows.
 - **Locking**: Locked weeks are stored in `week_locks` (`team_id`, `week_start`).
 - **Livewire Calendar**: Each day card runs via `App\Livewire\DayCard`. `ExtraNote` manages notes in session state.
@@ -228,8 +228,8 @@ php artisan migrate:fresh --seed # Reset & seed DB
 
 ## Route Conventions & Slovak Localization
 
-- Slovak-first URLs and flash messages: `/prihlasenie`, `/registracia`, `/dovolenka`, `/vsetky-hodiny`, `/admin/pouzivatelia`.
-- Key route names: `assignments.store`/`destroy`, `weeks.lock`/`unlock`, `absences.*`, `media.*`, `shifts.index`/`store`, `schedule.export`.
+- Slovak-first URLs and flash messages: `/prihlasenie`, `/registracia`, `/dovolenka`, `/admin/pouzivatelia`.
+- Key route names: `assignments.store`/`destroy`, `weeks.lock`/`unlock`, `absences.*`, `media.*`, `schedule.export`.
 - Sign out is **POST** `/odhlasenie` (`logout` route).
 
 ## Testing & Quality Requirements

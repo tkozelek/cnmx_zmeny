@@ -13,9 +13,6 @@ use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Calendar\ScheduleExportController;
 use App\Http\Controllers\Calendar\WeekLockController;
 use App\Http\Controllers\HelpController;
-use App\Http\Controllers\Hours\HoursController;
-use App\Http\Controllers\Hours\RateController;
-use App\Http\Controllers\Hours\ShiftController;
 use App\Http\Controllers\Media\MediaController;
 use App\Http\Controllers\Position\PositionController;
 use App\Http\Controllers\Profile\ProfileController;
@@ -127,20 +124,6 @@ Route::middleware('tenant')->group(function () {
     });
 
     Route::post('/kino/{team}', TeamSwitchController::class)->name('teams.switch');
-
-    Route::prefix('/hodiny')->group(function () {
-        Route::get('/', [HoursController::class, 'index'])->name('hours.index');
-
-        Route::get('/api/shifts', [ShiftController::class, 'index'])->name('shifts.index');
-        Route::post('/api/shifts', [ShiftController::class, 'store'])
-            ->name('shifts.store')
-            ->middleware('throttle:20,1');
-
-        // Last, so "api" is not swallowed by the {user} wildcard.
-        Route::get('/{user}', [HoursController::class, 'show'])->name('hours.show');
-    });
-
-    Route::post('/hodiny-sadzby', RateController::class)->name('rates.store')->middleware('throttle:6,1');
 
     Route::get('/subor/{media}/download', [MediaController::class, 'download'])->name('media.download');
 

@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
@@ -82,17 +81,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function absences(): HasMany
     {
         return $this->hasMany(Absence::class);
-    }
-
-    public function shifts(): HasMany
-    {
-        return $this->hasMany(Shift::class);
-    }
-
-    /** One rate row per team, and a user acts in one team at a time. */
-    public function rate(): HasOne
-    {
-        return $this->hasOne(Rate::class);
     }
 
     public function media(): HasMany

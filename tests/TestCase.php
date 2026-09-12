@@ -19,7 +19,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         // The rate limiter keeps its counters in the cache, and the array store survives
-        // between tests in one process. Without this, a throttled route (login, hours, rates)
+        // between tests in one process. Without this, a throttled route (e.g. login)
         // starts each test with the previous test's attempt count and eventually returns 429
         // for reasons that have nothing to do with the test - which reads as a real failure
         // and only shows up when the suite runs in a particular order.

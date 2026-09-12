@@ -92,14 +92,6 @@
                     @endcan
 
                     <a
-                        href="{{ route('hours.index') }}"
-                        class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
-                    >
-                        <i class="fa-solid fa-clock text-xs text-neutral-400"></i>
-                        Evidencia hodín
-                    </a>
-
-                    <a
                         href="{{ route('settings.password.edit') }}"
                         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
                     >
