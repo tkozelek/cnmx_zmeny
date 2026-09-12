@@ -63,6 +63,26 @@ return [
             ]) : [],
         ],
 
+        /*
+         * Read-only source for `app:import-legacy-data`. Same shape as `mysql`, but its own
+         * host/credentials so it can point at a genuinely separate server (e.g. prod) instead
+         * of always being a second schema on this app's own database server.
+         */
+        'legacy' => [
+            'driver' => 'mysql',
+            'host' => env('LEGACY_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('LEGACY_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('LEGACY_DB_DATABASE', 'd40700_sys'),
+            'username' => env('LEGACY_DB_USERNAME', env('DB_USERNAME', 'forge')),
+            'password' => env('LEGACY_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
