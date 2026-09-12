@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Models\Assignment;
+use App\Models\Media;
 use App\Models\Position;
 use App\Services\WeekService;
 use Carbon\CarbonImmutable;
@@ -110,5 +111,75 @@ class CalendarPageTest extends TestCase
             ->assertOk()
             ->assertSee((string) $user)
             ->assertSee('od 15:00');
+    }
+
+    public function test_subory_button_is_hidden_for_employee_when_no_visible_media(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $weekStart = app(WeekService::class)->start($team, CarbonImmutable::now());
+
+        // 1. No media at all
+        $this->actingAs($user)
+            ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
+            ->assertOk()
+            ->assertDontSee('Súbory');
+
+        // 2. Media exists but is hidden
+        Media::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'week_start' => $weekStart->toDateString(),
+            'disk' => 'local',
+            'path' => 'media/hidden.pdf',
+            'filename' => 'hidden.pdf',
+            'original_name' => 'hidden.pdf',
+            'mime_type' => 'application/pdf',
+            'size' => 1024,
+            'is_visible' => false,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
+            ->assertOk()
+            ->assertDontSee('Súbory');
+    }
+
+    public function test_subory_button_is_visible_for_employee_when_visible_media_exists(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $weekStart = app(WeekService::class)->start($team, CarbonImmutable::now());
+
+        Media::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'week_start' => $weekStart->toDateString(),
+            'disk' => 'local',
+            'path' => 'media/visible.pdf',
+            'filename' => 'visible.pdf',
+            'original_name' => 'visible.pdf',
+            'mime_type' => 'application/pdf',
+            'size' => 1024,
+            'is_visible' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
+            ->assertOk()
+            ->assertSee('Súbory');
+    }
+
+    public function test_subory_button_is_always_visible_for_manager(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $weekStart = app(WeekService::class)->start($team, CarbonImmutable::now());
+
+        // No media exists, but manager can upload files
+        $this->actingAs($manager)
+            ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
+            ->assertOk()
+            ->assertSee('Súbory');
     }
 }
