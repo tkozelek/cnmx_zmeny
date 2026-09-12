@@ -105,4 +105,18 @@ class DataTableTest extends TestCase
 
         $this->assertModelMissing($absence);
     }
+
+    public function test_users_data_table_filter_configuration_matches_absences(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+
+        $test = Livewire::actingAs($manager)->test(UsersDataTable::class);
+        $component = $test->instance();
+
+        $this->assertTrue($component->isFilterLayoutSlideDown());
+        $this->assertFalse($component->getFilterPillsStatus());
+        $this->assertFalse($component->getColumnSelectStatus());
+        $this->assertSame(10, $component->getPerPage());
+    }
 }

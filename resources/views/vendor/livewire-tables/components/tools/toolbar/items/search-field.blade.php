@@ -1,6 +1,6 @@
 @aware(['isTailwind', 'isBootstrap'])
 
-<div class="relative flex items-center w-full md:w-80">
+<div class="relative flex items-center w-full">
     <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none text-neutral-400">
         <i class="fa-solid fa-magnifying-glass text-xs"></i>
     </div>

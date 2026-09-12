@@ -1,5 +1,5 @@
 @aware([ 'tableName','isTailwind','isBootstrap','isBootstrap4','isBootstrap5', 'localisationPath'])
-<div class="ml-0 md:ml-2">
+<div>
     <select
         wire:model.live="perPage"
         id="{{ $tableName }}-perPage"
