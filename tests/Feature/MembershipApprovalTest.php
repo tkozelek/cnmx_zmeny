@@ -104,6 +104,25 @@ class MembershipApprovalTest extends TestCase
             ->assertDontSee($unconfirmed->lastname);
     }
 
+    public function test_pending_users_count_in_navbar_only_includes_email_verified_users(): void
+    {
+        $team = $this->tenant();
+        $admin = $this->member($team, Role::HeadManager);
+
+        // An unverified user does not increment the count
+        User::factory()->unverified()->pendingIn($team)->create();
+        $this->assertSame(0, $team->pendingUsers()->count());
+
+        // Once email is verified, they are counted and badge shows up
+        User::factory()->pendingIn($team)->create();
+        $this->assertSame(1, $team->pendingUsers()->count());
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertSee('Používatelia')
+            ->assertSee('1');
+    }
+
     /**
      * No approved membership means no access - the state that used to be the "neovereny"
      * role. The user is logged back out, not merely redirected.
