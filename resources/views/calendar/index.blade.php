@@ -17,9 +17,9 @@
                             <button type="submit" @class([
                                 'inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950 shadow-sm',
                                 'bg-amber-600 hover:bg-amber-500 text-white border-b-2 border-amber-700 focus:ring-amber-400' => $locked,
-                                'bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border-b-2 border-neutral-700 hover:border-neutral-600 hover:text-white focus:ring-neutral-500' => ! $locked,
+                                'bg-rose-600 hover:bg-rose-500 text-white border-b-2 border-rose-700 hover:text-white focus:ring-rose-500' => ! $locked,
                             ])>
-                                <i class="fa-solid {{ $locked ? 'fa-lock-open text-amber-200' : 'fa-lock text-neutral-400' }}"></i>
+                                <i class="fa-solid {{ $locked ? 'fa-lock-open text-amber-200' : 'fa-lock text-rose-200' }}"></i>
                                 {{ $locked ? 'Odomknúť týždeň' : 'Zamknúť týždeň' }}
                             </button>
                         </form>
