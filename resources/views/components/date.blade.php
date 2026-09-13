@@ -19,123 +19,13 @@
 
     {{-- Main Date Trigger --}}
     <div
-        x-data="{
-            picker: null,
-            lockedDates: @js($lockedWeekStarts),
-            weekStartDay: {{ $currentTeam->weekStartDay() }}, // 3 = Thursday by default
-            getWeekRange(dateStr) {
-                if (!dateStr) return [];
-                const d = new Date(dateStr + 'T00:00:00');
-                // Calculate day offset based on team week_start_day
-                // Flatpickr JS day: 0 = Sun, 1 = Mon ... 4 = Thu
-                // Convert weekStartDay (0=Mon .. 6=Sun) to JS day: (weekStartDay + 1) % 7
-                const jsStartDay = (this.weekStartDay + 1) % 7;
-                let diff = d.getDay() - jsStartDay;
-                if (diff < 0) diff += 7;
-                
-                const start = new Date(d);
-                start.setDate(d.getDate() - diff);
-                
-                const range = [];
-                for (let i = 0; i < 7; i++) {
-                    const curr = new Date(start);
-                    curr.setDate(start.getDate() + i);
-                    // Format Y-m-d
-                    const year = curr.getFullYear();
-                    const month = String(curr.getMonth() + 1).padStart(2, '0');
-                    const day = String(curr.getDate()).padStart(2, '0');
-                    range.push(`${year}-${month}-${day}`);
-                }
-                return range;
-            },
-            currentWeekRange: [],
-            init() {
-                if (typeof window.flatpickr !== 'function') return;
-                const self = this;
-                this.currentWeekRange = this.getWeekRange('{{ $weekStart->toDateString() }}');
-                this.picker = window.flatpickr($refs.pickerInput, {
-                    dateFormat: 'Y-m-d',
-                    defaultDate: '{{ $weekStart->toDateString() }}',
-                    position: 'below center',
-                    positionElement: $refs.triggerButton,
-                    onReady: (dObj, dStr, fp) => {
-                        if (!fp.calendarContainer.querySelector('.flatpickr-week-legend')) {
-                            const legend = document.createElement('div');
-                            legend.className = 'flatpickr-week-legend border-t border-neutral-800 pt-2.5 mt-2 flex items-center justify-between px-1 text-[11px] font-semibold text-neutral-400';
-                            legend.innerHTML = `
-                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500/80 border border-emerald-400"></span> Otvorené</span>
-                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500/80 border border-amber-400"></span> Zamknuté</span>
-                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-indigo-500 border border-indigo-400"></span> Aktuálny</span>
-                            `;
-                            fp.calendarContainer.appendChild(legend);
-                        }
-                    },
-                    onDayCreate: (dObj, dStr, fp, dayElem) => {
-                        const dateObj = dayElem.dateObj;
-                        const year = dateObj.getFullYear();
-                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                        const day = String(dateObj.getDate()).padStart(2, '0');
-                        const dateFormatted = `${year}-${month}-${day}`;
-                        
-                        const weekRange = self.getWeekRange(dateFormatted);
-                        const isLocked = self.lockedDates.includes(weekRange[0]);
-                        const isCurrentActive = self.currentWeekRange.includes(dateFormatted);
-                        
-                        if (isLocked) {
-                            dayElem.classList.add('is-locked-week-day');
-                            dayElem.title = 'Zamknutý týždeň (' + weekRange[0] + ')';
-                            if (dateFormatted === weekRange[0]) dayElem.classList.add('is-locked-week-start');
-                            if (dateFormatted === weekRange[6]) dayElem.classList.add('is-locked-week-end');
-                        } else {
-                            dayElem.classList.add('is-open-week-day');
-                            dayElem.title = 'Otvorený týždeň (' + weekRange[0] + ')';
-                            if (dateFormatted === weekRange[0]) dayElem.classList.add('is-open-week-start');
-                            if (dateFormatted === weekRange[6]) dayElem.classList.add('is-open-week-end');
-                        }
-
-                        if (isCurrentActive) {
-                            dayElem.classList.add('is-active-week-day');
-                            if (dateFormatted === self.currentWeekRange[0]) dayElem.classList.add('is-week-start');
-                            if (dateFormatted === self.currentWeekRange[6]) dayElem.classList.add('is-week-end');
-                        }
-
-                        // Add hover effect for full week block
-                        dayElem.addEventListener('mouseenter', () => {
-                            fp.calendarContainer.querySelectorAll('.flatpickr-day').forEach(el => {
-                                const elDateObj = el.dateObj;
-                                if (!elDateObj) return;
-                                const ey = elDateObj.getFullYear();
-                                const em = String(elDateObj.getMonth() + 1).padStart(2, '0');
-                                const ed = String(elDateObj.getDate()).padStart(2, '0');
-                                const ef = `${ey}-${em}-${ed}`;
-                                if (weekRange.includes(ef)) {
-                                    el.classList.add('week-hover');
-                                    if (isLocked) {
-                                        el.classList.add('week-hover-locked');
-                                    } else {
-                                        el.classList.add('week-hover-open');
-                                    }
-                                }
-                            });
-                        });
-                        dayElem.addEventListener('mouseleave', () => {
-                            fp.calendarContainer.querySelectorAll('.flatpickr-day.week-hover').forEach(el => {
-                                el.classList.remove('week-hover', 'week-hover-locked', 'week-hover-open');
-                            });
-                        });
-                    },
-                    onChange: (selectedDates, dateStr) => {
-                        if (dateStr) window.location.href = '/week/' + dateStr;
-                    }
-                });
-            }
-        }"
+        x-data="weekPicker(@js($lockedWeekStarts), {{ $currentTeam->weekStartDay() }}, '{{ $weekStart->toDateString() }}')"
         class="relative flex items-center justify-center min-w-0 order-1 sm:order-none basis-full sm:basis-auto"
     >
         <button
             x-ref="triggerButton"
             type="button"
-            @click="picker ? picker.open() : null"
+            @click="open()"
             @class([
                 'inline-flex h-12 sm:h-14 w-full sm:w-auto items-center justify-center rounded-lg border font-bold text-neutral-100 transition focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink sm:shrink-0 min-w-0 leading-none text-base sm:text-lg gap-3 sm:gap-4 px-4 sm:px-8 py-0',
                 $triggerStyle,
