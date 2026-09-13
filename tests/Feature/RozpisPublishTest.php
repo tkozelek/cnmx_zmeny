@@ -405,8 +405,8 @@ class RozpisPublishTest extends TestCase
             ->get(route('rozpis.published', ['date' => $weekStart->toDateString()]))
             ->assertOk()
             ->assertSee('id="day-'.$today.'"', false)
-            ->assertSee('border-white')
-            ->assertSee('Dnes');
+            ->assertSee('border-neutral-500')
+            ->assertDontSee('Dnes');
     }
 
     private function weekStart(Team $team): CarbonImmutable
