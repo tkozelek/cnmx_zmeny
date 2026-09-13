@@ -163,6 +163,103 @@ document.addEventListener('alpine:init', () => {
             });
         },
     }));
+
+    Alpine.data('weekPicker', (lockedDates = [], weekStartDay = 3, currentWeekStart = '') => ({
+        picker: null,
+        lockedDates: lockedDates || [],
+        weekStartDay: weekStartDay ?? 3,
+        currentWeekRange: [],
+        getWeekRange(dateStr) {
+            if (!dateStr) return [];
+            const d = new Date(dateStr + 'T00:00:00');
+            const jsStartDay = (this.weekStartDay + 1) % 7;
+            let diff = d.getDay() - jsStartDay;
+            if (diff < 0) diff += 7;
+            const start = new Date(d);
+            start.setDate(d.getDate() - diff);
+            const range = [];
+            for (let i = 0; i < 7; i++) {
+                const curr = new Date(start);
+                curr.setDate(start.getDate() + i);
+                const year = curr.getFullYear();
+                const month = String(curr.getMonth() + 1).padStart(2, '0');
+                const day = String(curr.getDate()).padStart(2, '0');
+                range.push(`${year}-${month}-${day}`);
+            }
+            return range;
+        },
+        init() {
+            if (typeof window.flatpickr !== 'function') return;
+            const self = this;
+            this.currentWeekRange = this.getWeekRange(currentWeekStart);
+            this.picker = window.flatpickr(this.$refs.pickerInput, {
+                dateFormat: 'Y-m-d',
+                defaultDate: currentWeekStart,
+                position: 'below center',
+                positionElement: this.$refs.triggerButton,
+                onDayCreate: (dObj, dStr, fp, dayElem) => {
+                    const dateObj = dayElem.dateObj;
+                    const year = dateObj.getFullYear();
+                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const day = String(dateObj.getDate()).padStart(2, '0');
+                    const dateFormatted = `${year}-${month}-${day}`;
+
+                    const weekRange = self.getWeekRange(dateFormatted);
+                    const isLocked = self.lockedDates.includes(weekRange[0]);
+                    const isCurrentActive = self.currentWeekRange.includes(dateFormatted);
+
+                    if (isLocked) {
+                        dayElem.classList.add('is-locked-week-day');
+                        dayElem.title = 'Zamknutý týždeň (' + weekRange[0] + ')';
+                        if (dateFormatted === weekRange[0]) dayElem.classList.add('is-locked-week-start');
+                        if (dateFormatted === weekRange[6]) dayElem.classList.add('is-locked-week-end');
+                    } else {
+                        dayElem.classList.add('is-open-week-day');
+                        dayElem.title = 'Otvorený týždeň (' + weekRange[0] + ')';
+                        if (dateFormatted === weekRange[0]) dayElem.classList.add('is-open-week-start');
+                        if (dateFormatted === weekRange[6]) dayElem.classList.add('is-open-week-end');
+                    }
+
+                    if (isCurrentActive) {
+                        dayElem.classList.add('is-active-week-day');
+                        if (dateFormatted === self.currentWeekRange[0]) dayElem.classList.add('is-week-start');
+                        if (dateFormatted === self.currentWeekRange[6]) dayElem.classList.add('is-week-end');
+                    }
+
+                    dayElem.addEventListener('mouseenter', () => {
+                        fp.calendarContainer.querySelectorAll('.flatpickr-day').forEach(el => {
+                            const elDateObj = el.dateObj;
+                            if (!elDateObj) return;
+                            const ey = elDateObj.getFullYear();
+                            const em = String(elDateObj.getMonth() + 1).padStart(2, '0');
+                            const ed = String(elDateObj.getDate()).padStart(2, '0');
+                            const ef = `${ey}-${em}-${ed}`;
+                            if (weekRange.includes(ef)) {
+                                el.classList.add('week-hover');
+                                if (isLocked) {
+                                    el.classList.add('week-hover-locked');
+                                } else {
+                                    el.classList.add('week-hover-open');
+                                }
+                            }
+                        });
+                    });
+
+                    dayElem.addEventListener('mouseleave', () => {
+                        fp.calendarContainer.querySelectorAll('.flatpickr-day.week-hover').forEach(el => {
+                            el.classList.remove('week-hover', 'week-hover-locked', 'week-hover-open');
+                        });
+                    });
+                },
+                onChange: (selectedDates, dateStr) => {
+                    if (dateStr) window.location.href = '/week/' + dateStr;
+                }
+            });
+        },
+        open() {
+            this.picker ? this.picker.open() : null;
+        }
+    }));
 });
 
 function showToast(message, type = 'success', icon = '') {
