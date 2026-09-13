@@ -7,7 +7,6 @@ use App\Enums\Role as RoleEnum;
 use App\Models\Absence;
 use App\Models\Assignment;
 use App\Models\Media;
-use App\Models\PositionSlot;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WeekLock;
@@ -19,9 +18,13 @@ use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 /**
- * One-off import from the legacy production schema (see the `legacy` connection in
- * config/database.php - LEGACY_DB_* in .env) into the rewritten schema. Replaces the target
- * team's seeded/demo data with the real one.
+ * Repeatable import from the legacy production schema (see the `legacy` connection in
+ * config/database.php - LEGACY_DB_* in .env) into the rewritten schema. Safe to cron: users
+ * and absences are fully replaced from legacy, but assignments are diff-merged rather than
+ * wiped, so a position placement made in the rozpis builder (position_id/position_slot_id/
+ * start_time/end_time - set by RozpisDay::place() onto the same assignment row) survives a
+ * re-run as long as the person is still signed up for that date in legacy. `position_slots`
+ * (the day's offered positions) are never touched here at all.
  *
  * Read-only against `legacy`: every call against that connection is a SELECT. This is what
  * makes it safe to point LEGACY_DB_* at a real production database and import prod -> whatever
@@ -66,7 +69,8 @@ class ImportLegacyData extends Command
         }
 
         if (! $this->option('force') && ! $this->confirm(
-            "Toto vymaže demo dáta tímu '{$team->name}' (zamestnancov, rozpisy, absencie) a nahradí ich reálnymi dátami. Pokračovať?"
+            "Toto nahradí zamestnancov a absencie tímu '{$team->name}' reálnymi dátami z legacy databázy. ".
+            'Zapísané zmeny sa zlúčia a rozpis pozícií zostane zachovaný. Pokračovať?'
         )) {
             return self::SUCCESS;
         }
@@ -91,17 +95,20 @@ class ImportLegacyData extends Command
     }
 
     /**
-     * Wipes this team's plan data outright (scoped by the setPermissionsTeamId() global scope,
-     * see BelongsToTeam), then drops every member who has no counterpart in the legacy data -
-     * unless they also belong to another team, in which case only this team's membership goes.
+     * Wipes this team's media/week-locks/absences outright (scoped by the
+     * setPermissionsTeamId() global scope, see BelongsToTeam), then drops every member who has
+     * no counterpart in the legacy data - unless they also belong to another team, in which
+     * case only this team's membership goes.
+     *
+     * Assignments and position_slots are deliberately NOT cleared here - importAssignments()
+     * diff-merges them instead, so a position placement already made in the rozpis builder
+     * survives a re-run.
      */
     private function clearSeededData(Team $team, Connection $legacy): void
     {
         Media::query()->delete();
         WeekLock::query()->delete();
-        Assignment::query()->delete();
         Absence::query()->delete();
-        PositionSlot::query()->delete();
 
         $legacyEmails = $legacy->table('users')->pluck('email');
 
@@ -155,24 +162,35 @@ class ImportLegacyData extends Command
     }
 
     /**
-     * user_days -> assignments. `days` is only ever consulted here to resolve `id_day` to an
-     * actual date - resolved in PHP rather than a SQL join, since `legacy` may be a genuinely
-     * separate database server that a cross-table join can't reach.
+     * user_days -> assignments, diff-merged rather than wiped and reinserted. `days` is only
+     * ever consulted here to resolve `id_day` to an actual date - resolved in PHP rather than a
+     * SQL join, since `legacy` may be a genuinely separate database server that a cross-table
+     * join can't reach.
      *
-     * position_id is left null: legacy signup never chose a position either (popis is a free-text
-     * time note, not a position code - confirmed against the restored data), so this matches the
-     * "employee signs up for a day, admin fills in the position later" model exactly.
+     * Legacy owns only the signup itself (who, which date, the free-text `popis` note) - never
+     * a position. So on a row that already exists, only `note` is refreshed; `position_id`,
+     * `position_slot_id`, `start_time` and `end_time` (written onto this same row by
+     * RozpisDay::place() in the builder) are left exactly as they were. A signup missing from
+     * this legacy pull gets deleted, since nobody keeps a position they are no longer signed up
+     * for; a new signup is inserted bare, same as before ("admin fills in the position later").
      *
      * @param  array<int, int>  $userMap
      */
     private function importAssignments(Connection $legacy, array $userMap): void
     {
-        $dayDates = $legacy->table('days')->pluck('date', 'id');
+        $teamId = getPermissionsTeamId();
+
+        // Normalised to a bare Y-m-d: the diff below matches these against
+        // $assignment->date->toDateString(), so both sides need the same shape regardless of
+        // whether legacy's `days.date` column carries a time component.
+        $dayDates = $legacy->table('days')->pluck('date', 'id')
+            ->map(fn (string $date): string => Carbon::parse($date)->toDateString());
 
         $rows = $legacy->table('user_days')->get(['id_user', 'id_day', 'popis']);
 
-        $now = now();
-        $insert = [];
+        // Keyed "userId|date" - legacy user_days has no unique (user, day) constraint, so a
+        // duplicate signup silently overwrites the earlier one instead of failing the import.
+        $incoming = [];
 
         foreach ($rows as $row) {
             $userId = $userMap[$row->id_user] ?? null;
@@ -182,22 +200,33 @@ class ImportLegacyData extends Command
                 continue;
             }
 
-            $insert[] = [
-                'team_id' => getPermissionsTeamId(),
-                'user_id' => $userId,
-                'position_id' => null,
-                'date' => $date,
-                'note' => $row->popis !== null ? mb_substr(trim($row->popis), 0, 255) : null,
-                'created_by' => null,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
+            $incoming[$userId.'|'.$date] = $row->popis !== null ? mb_substr(trim($row->popis), 0, 255) : null;
         }
 
-        // insertOrIgnore: legacy user_days has no unique (user, day) constraint, so a handful
-        // of duplicate signups are silently dropped rather than failing the whole import.
-        foreach (array_chunk($insert, 500) as $chunk) {
-            DB::table('assignments')->insertOrIgnore($chunk);
+        Assignment::query()
+            ->get(['id', 'user_id', 'date'])
+            ->reject(fn (Assignment $assignment): bool => array_key_exists(
+                $assignment->user_id.'|'.$assignment->date->toDateString(),
+                $incoming
+            ))
+            ->each(fn (Assignment $assignment) => $assignment->delete());
+
+        foreach ($incoming as $key => $note) {
+            [$userId, $date] = explode('|', $key, 2);
+
+            $assignment = Assignment::firstOrNew([
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'date' => $date,
+            ]);
+
+            $assignment->note = $note;
+
+            if (! $assignment->exists) {
+                $assignment->created_by = null;
+            }
+
+            $assignment->save();
         }
     }
 
