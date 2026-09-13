@@ -15,11 +15,11 @@
                                 @method('DELETE')
                             @endif
                             <button type="submit" @class([
-                                'inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950 shadow-sm',
-                                'bg-neutral-900 text-sky-300 border border-sky-600 hover:bg-neutral-800 hover:border-sky-500 hover:text-white focus:ring-sky-500' => $locked,
-                                'bg-neutral-900 text-neutral-200 border border-neutral-700 hover:bg-neutral-800 hover:border-neutral-600 hover:text-white focus:ring-neutral-500' => ! $locked,
+                                'inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950 shadow-sm',
+                                'bg-amber-600 hover:bg-amber-500 text-white border-b-2 border-amber-700 focus:ring-amber-400' => $locked,
+                                'bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border-b-2 border-neutral-700 hover:border-neutral-600 hover:text-white focus:ring-neutral-500' => ! $locked,
                             ])>
-                                <i class="fa-solid {{ $locked ? 'fa-lock-open text-sky-400' : 'fa-lock text-neutral-400' }}"></i>
+                                <i class="fa-solid {{ $locked ? 'fa-lock-open text-amber-200' : 'fa-lock text-neutral-400' }}"></i>
                                 {{ $locked ? 'Odomknúť týždeň' : 'Zamknúť týždeň' }}
                             </button>
                         </form>
@@ -27,15 +27,15 @@
                         {{-- Only once the week is frozen: the builder needs a settled signup list. --}}
                         @if($locked)
                             <a href="{{ route('rozpis.show', ['date' => $weekStart->toDateString()]) }}"
-                               class="inline-flex min-h-10 items-center gap-2 rounded-md border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 hover:border-neutral-600 px-4 text-sm font-medium text-neutral-200 hover:text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-neutral-950">
-                                <i class="fa-solid fa-table-list text-sky-400"></i>
+                               class="inline-flex min-h-10 items-center gap-2 rounded-md border-b-2 border-indigo-700 bg-indigo-600 hover:bg-indigo-500 px-4 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                                <i class="fa-solid fa-table-list text-indigo-200"></i>
                                 Rozpis
                             </a>
                         @endif
 
                         <a href="{{ route('schedule.export', ['date' => $weekStart->toDateString()]) }}"
-                           class="inline-flex min-h-10 items-center gap-2 rounded-md border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 hover:border-neutral-600 px-4 text-sm font-medium text-neutral-200 hover:text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 focus:ring-offset-neutral-950">
-                            <i class="fa-solid fa-file-arrow-down text-emerald-500"></i>
+                           class="inline-flex min-h-10 items-center gap-2 rounded-md border-b-2 border-emerald-800 bg-emerald-700 hover:bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                            <i class="fa-solid fa-file-arrow-down text-emerald-200"></i>
                             Excel
                         </a>
                     @endcan
@@ -44,8 +44,8 @@
                          a link that bounces with "not published yet" is worse than no link. --}}
                     @if($rozpisPublished)
                         <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}"
-                           class="inline-flex min-h-10 items-center gap-2 rounded-md border border-emerald-600 bg-emerald-700 hover:bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
-                            <i class="fa-solid fa-clipboard-list"></i>
+                           class="inline-flex min-h-10 items-center gap-2 rounded-md border-b-2 border-emerald-700 bg-emerald-600 hover:bg-emerald-500 px-4 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                            <i class="fa-solid fa-clipboard-list text-emerald-200"></i>
                             Rozpis zmien
                         </a>
                     @endif

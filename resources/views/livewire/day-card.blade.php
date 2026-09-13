@@ -1,7 +1,8 @@
 <div @class([
     'relative flex flex-col overflow-hidden rounded-lg border bg-neutral-900 shadow-sm transition',
-    'border-indigo-500/80 ring-1 ring-indigo-500/30' => $this->isToday,
-    'border-neutral-800 hover:border-neutral-700' => ! $this->isToday,
+    'border-emerald-500/70 ring-1 ring-emerald-500/30' => $this->mine && ! $this->isToday,
+    'border-indigo-500 ring-2 ring-indigo-500/40' => $this->isToday,
+    'border-neutral-800 hover:border-neutral-700' => ! $this->mine && ! $this->isToday,
     'opacity-80' => $locked,
 ])>
     {{-- Loading overlay with solid badge --}}
@@ -17,7 +18,7 @@
 
     {{-- Day Card Content (blurred during Livewire loading) --}}
     <div wire:loading.class="blur-sm pointer-events-none select-none" class="flex flex-col flex-1 transition-[filter] duration-200">
-        {{-- Full Width Top Action Button (Solid, not transparent) --}}
+        {{-- Full Width Top Action Button (Solid & Vibrant) --}}
         <div>
             @if($locked)
                 <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-neutral-950 text-xs font-semibold uppercase tracking-wider text-neutral-500 border-b border-neutral-800">
@@ -25,7 +26,7 @@
                     Zamknutý
                 </div>
             @elseif($this->mine)
-                {{-- Signed Up -> Solid Green Button, on hover turns Rose with Odpísať sa --}}
+                {{-- Signed Up -> Solid Vibrant Emerald Green Button, on hover turns Rose with Odpísať sa --}}
                 <button
                     type="button"
                     wire:click="withdraw"
@@ -45,17 +46,17 @@
                     <span wire:loading wire:target="withdraw"><i class="fa-solid fa-circle-notch fa-spin text-xs"></i></span>
                 </button>
             @else
-                {{-- Not Signed Up -> Solid Neutral Button, turns Indigo on hover --}}
+                {{-- Not Signed Up -> Solid Vibrant Sky Blue Button --}}
                 <button
                     type="button"
                     wire:click="signUp"
                     wire:loading.attr="disabled"
                     wire:target="signUp"
-                    class="flex min-h-11 w-full items-center justify-center gap-2 bg-neutral-800 hover:bg-indigo-600 border-b-2 border-neutral-700/80 hover:border-indigo-700 px-3 py-2 text-xs font-bold uppercase tracking-wider text-neutral-200 hover:text-white transition focus:outline-none disabled:opacity-50 cursor-pointer shadow-sm"
+                    class="flex min-h-11 w-full items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 border-b-2 border-sky-700 hover:border-sky-600 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white transition focus:outline-none disabled:opacity-50 cursor-pointer shadow-sm"
                     title="Kliknutím sa zapíšete na tento deň"
                 >
                     <span wire:loading.remove wire:target="signUp" class="flex items-center justify-center gap-1.5 w-full">
-                        <i class="fa-solid fa-plus text-xs"></i> Zapísať sa
+                        <i class="fa-solid fa-plus text-xs text-sky-200"></i> Zapísať sa
                     </span>
                     <span wire:loading wire:target="signUp"><i class="fa-solid fa-circle-notch fa-spin text-xs"></i></span>
                 </button>
@@ -63,16 +64,31 @@
         </div>
 
         {{-- Day Info Header --}}
-        <div class="flex flex-col items-center justify-center px-4 py-2.5 border-b border-neutral-800 bg-neutral-950 text-center relative">
+        <div @class([
+            'flex flex-col items-center justify-center px-4 py-2.5 border-b text-center relative transition-colors',
+            'bg-emerald-950/40 border-emerald-800/60' => $this->mine && ! $this->isToday,
+            'bg-indigo-950/40 border-indigo-800/60' => $this->isToday,
+            'bg-neutral-950 border-neutral-800' => ! $this->mine && ! $this->isToday,
+        ])>
             @if($this->isToday)
-                <span class="inline-flex items-center px-2 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-neutral-800 text-indigo-400 border border-neutral-700 mb-1">
+                <span class="inline-flex items-center px-2 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-900 text-indigo-200 border border-indigo-700 mb-1">
                     Dnes
                 </span>
             @endif
-            <p class="truncate text-base font-bold text-neutral-100 max-w-full" title="{{ Str::title($this->dayCarbon->locale('sk')->dayName) }}">
+            <p @class([
+                'truncate text-base font-bold max-w-full',
+                'text-emerald-200' => $this->mine && ! $this->isToday,
+                'text-indigo-200' => $this->isToday,
+                'text-neutral-100' => ! $this->mine && ! $this->isToday,
+            ]) title="{{ Str::title($this->dayCarbon->locale('sk')->dayName) }}">
                 {{ Str::title($this->dayCarbon->locale('sk')->dayName) }}
             </p>
-            <p class="mt-0.5 text-xs font-semibold text-neutral-400 tracking-wide">{{ $this->dayCarbon->format('d.m.Y') }}</p>
+            <p @class([
+                'mt-0.5 text-xs font-semibold tracking-wide',
+                'text-emerald-300/80' => $this->mine && ! $this->isToday,
+                'text-indigo-300/80' => $this->isToday,
+                'text-neutral-400' => ! $this->mine && ! $this->isToday,
+            ])>{{ $this->dayCarbon->format('d.m.Y') }}</p>
         </div>
 
         {{-- Signed-up Entries Container --}}
@@ -87,7 +103,7 @@
                         'text-neutral-200' => $assignment->user->is_active,
                     ])>
                     <div class="flex min-w-0 items-center gap-1.5 text-left">
-                        <span class="shrink-0 font-semibold text-sm {{ $assignment->user_id === auth()->id() ? 'text-indigo-300' : 'text-neutral-200' }}">
+                        <span class="shrink-0 font-semibold text-sm {{ $assignment->user_id === auth()->id() ? 'text-emerald-300 font-bold' : 'text-neutral-200' }}">
                             @if($this->canViewUsers)
                                 <a href="{{ route('profile.show', $assignment->user) }}"
                                    class="transition hover:text-white">{{ $assignment->user }}</a>
@@ -97,7 +113,7 @@
                         </span>
 
                         @if($assignment->user_id === auth()->id())
-                            <span class="px-1 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-neutral-800 text-neutral-300 border border-neutral-700/80">Ja</span>
+                            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-700/80">Ja</span>
                         @endif
 
                         @if($assignment->note)

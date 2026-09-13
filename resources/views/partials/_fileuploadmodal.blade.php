@@ -5,12 +5,12 @@
 
 @if($hasVisibleMedia || $canManageMedia)
     <button
-        class="inline-flex min-h-10 items-center gap-2 rounded-md border border-neutral-700 bg-neutral-900 px-4 text-sm font-medium text-neutral-200 hover:bg-neutral-800 hover:border-neutral-600 hover:text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-neutral-500"
+        class="inline-flex min-h-10 items-center gap-2 rounded-md border-b-2 border-amber-700 bg-amber-600 hover:bg-amber-500 px-4 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-neutral-950"
         type="button"
         x-data=""
         x-on:click.prevent="$dispatch('open-modal', 'files-modal')"
     >
-        <i class="fa-solid fa-folder-open text-amber-400"></i>
+        <i class="fa-solid fa-folder-open text-amber-200"></i>
         Súbory
     </button>
 
