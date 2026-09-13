@@ -19,24 +19,85 @@ class ProfileController extends Controller
 
     public function index(Request $request): View
     {
-        return $this->profile($request->user(), null);
+        return $this->profile($request, $request->user());
     }
 
     public function show(Request $request, User $user): View
     {
         $this->authorize('view', $user);
 
-        return $this->profile($user, $this->periodStart($request->input('date')));
+        return $this->profile($request, $user);
     }
 
-    private function profile(User $user, ?CarbonImmutable $since): View
+    private function profile(Request $request, User $user): View
     {
-        $byWeekday = $this->assignmentsPerWeekday($user, $since);
+        $user->loadMissing(['roles', 'teams']);
+
+        // Track external origin for the "Späť" button so browsing the profile never overrides where the user came from
+        $referrer = (string) $request->headers->get('referer', '');
+        $currentHost = $request->getHost();
+
+        $isInternal = empty($referrer)
+            || ! str_contains($referrer, $currentHost)
+            || str_contains($referrer, '/profil')
+            || str_contains($referrer, '/login')
+            || str_contains($referrer, '/heslo');
+
+        if (! $isInternal) {
+            session(['profile_origin_url' => $referrer]);
+        }
+
+        $backUrl = session('profile_origin_url');
+        if (! $backUrl || str_contains($backUrl, '/profil')) {
+            $backUrl = (auth()->id() !== $user->id && auth()->user()->can('viewAny', User::class))
+                ? route('admin.users.index')
+                : route('calendar.index');
+        }
+
+        $weekdays = ['Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota', 'Nedeľa'];
+
+        $allData = $this->assignmentsPerWeekday($user, null);
+        $monthData = $this->assignmentsPerWeekday($user, CarbonImmutable::now()->subMonth());
+        $yearData = $this->assignmentsPerWeekday($user, CarbonImmutable::now()->subYear());
+
+        $periods = [
+            'all' => [
+                'counts' => $allData,
+                'total' => array_sum($allData),
+                'max' => max($allData),
+                'mostActiveDay' => max($allData) > 0 ? $weekdays[array_search(max($allData), $allData)] : '—',
+                'label' => 'Za celé obdobie',
+            ],
+            'month' => [
+                'counts' => $monthData,
+                'total' => array_sum($monthData),
+                'max' => max($monthData),
+                'mostActiveDay' => max($monthData) > 0 ? $weekdays[array_search(max($monthData), $monthData)] : '—',
+                'label' => 'Za posledný mesiac',
+            ],
+            'year' => [
+                'counts' => $yearData,
+                'total' => array_sum($yearData),
+                'max' => max($yearData),
+                'mostActiveDay' => max($yearData) > 0 ? $weekdays[array_search(max($yearData), $yearData)] : '—',
+                'label' => 'Za posledný rok',
+            ],
+        ];
+
+        $initialPeriod = (string) $request->input('date', 'all');
+        if (! array_key_exists($initialPeriod, $periods)) {
+            $initialPeriod = 'all';
+        }
 
         return view('profile.index', [
             'user' => $user,
-            'daysCount' => array_sum($byWeekday),
-            'arr' => $byWeekday,
+            'periods' => $periods,
+            'activePeriod' => $initialPeriod,
+            'daysCount' => $periods[$initialPeriod]['total'],
+            'arr' => $periods[$initialPeriod]['counts'],
+            'weekdays' => $weekdays,
+            'mostActiveDay' => $periods[$initialPeriod]['mostActiveDay'],
+            'backUrl' => $backUrl,
             'activeAbsences' => $this->absences->activeFor($user),
             'inactiveAbsences' => $this->absences->pastFor($user),
         ]);
@@ -52,13 +113,18 @@ class ProfileController extends Controller
      */
     private function assignmentsPerWeekday(User $user, ?CarbonImmutable $since): array
     {
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+        $dayOfWeekExpr = $isSqlite
+            ? "((CAST(strftime('%w', date) AS INTEGER) + 6) % 7)"
+            : 'WEEKDAY(date)';
+
         $counts = $user->assignments()
             ->when($since, fn ($query) => $query->where('date', '>=', $since->toDateString()))
             ->groupBy('day_of_week')
             ->orderBy('day_of_week')
             ->pluck(
                 DB::raw('COUNT(DISTINCT date) as count'),
-                DB::raw('WEEKDAY(date) as day_of_week'),
+                DB::raw("{$dayOfWeekExpr} as day_of_week"),
             );
 
         return array_replace(array_fill(0, 7, 0), $counts->all());
