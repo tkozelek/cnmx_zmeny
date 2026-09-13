@@ -204,7 +204,7 @@ class RozpisService
      *
      * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, rows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, substitutes: list<string>, eligible: list<array{name: string, score: float}>, unfilled: int}>
      */
-    public function plan(Team $team, CarbonImmutable $weekStart): Collection
+    public function plan(Team $team, CarbonImmutable $weekStart, bool $preferCode = true): Collection
     {
         [$from, $to] = $this->weeks->range($weekStart);
 
@@ -230,13 +230,13 @@ class RozpisService
         $activeEmployees = $team->activeHoldersOf(Role::Employee);
 
         return $this->weeks->days($weekStart)
-            ->map(function (CarbonImmutable $day) use ($team, $slotsByDate, $assignmentsByDate, $fairness, $absencesByUser, $activeEmployees): array {
+            ->map(function (CarbonImmutable $day) use ($team, $slotsByDate, $assignmentsByDate, $fairness, $absencesByUser, $activeEmployees, $preferCode): array {
                 $key = $day->toDateString();
                 $assignments = $assignmentsByDate->get($key, collect());
 
                 $slots = $this->sortSlots($slotsByDate->get($key, collect()));
 
-                $labels = $this->labelSlots($slots);
+                $labels = $this->labelSlots($slots, $preferCode);
 
                 $toRow = fn (PositionSlot $slot): array => [
                     'label' => $labels[$slot->getKey()],
@@ -366,7 +366,7 @@ class RozpisService
      * @param  Collection<int, PositionSlot>  $slots
      * @return array<int, string>
      */
-    public function labelSlots(Collection $slots): array
+    public function labelSlots(Collection $slots, bool $preferCode = true): array
     {
         $totals = $slots->countBy('position_id');
         $seen = [];
@@ -375,7 +375,7 @@ class RozpisService
         foreach ($slots as $slot) {
             $ordinal = $seen[$slot->position_id] = ($seen[$slot->position_id] ?? 0) + 1;
 
-            $labels[$slot->getKey()] = $slot->label($ordinal, $totals[$slot->position_id] > 1);
+            $labels[$slot->getKey()] = $slot->label($ordinal, $totals[$slot->position_id] > 1, $preferCode);
         }
 
         return $labels;

@@ -3,8 +3,8 @@
 namespace App\Exports;
 
 use App\Models\Team;
-use App\Traits\EscapesSpreadsheetFormulas;
 use App\Services\RozpisService;
+use App\Traits\EscapesSpreadsheetFormulas;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -68,8 +68,6 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
      */
     private const INK = 'FF1F3864';
 
-    private const INK_WARN = 'FFBF8F00';
-
     private const HEADER_BG = 'FFF2F2F2';
 
     private const STRIPE_BG = 'FFF7F9FC';
@@ -86,7 +84,8 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
         private readonly CarbonImmutable $weekStart,
         RozpisService $rozpis,
     ) {
-        $this->plan = $rozpis->plan($team, $weekStart);
+        // The printed poster spells out the position ("uvádzač VIP"), not the screen's short code.
+        $this->plan = $rozpis->plan($team, $weekStart, preferCode: false);
     }
 
     /**
@@ -259,14 +258,11 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
             'font' => ['size' => 11],
         ]);
 
-        // The day's headline. Amber when the day still has an empty position - one glance across
-        // the printed page then shows which days need work.
+        // The day's headline - always the same ink. Which position is missing is flagged on its
+        // own row below (GAP_BG), not by turning the whole day's header amber.
         $sheet->getStyle($first.$startRow.':'.$last.$startRow)->applyFromArray([
             'font' => ['bold' => true, 'size' => 12, 'color' => ['argb' => 'FFFFFFFF']],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['argb' => $day['unfilled'] === 0 ? self::INK : self::INK_WARN],
-            ],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => self::INK]],
         ]);
 
         $sheet->getStyle($first.($startRow + 1).':'.$last.($startRow + 1))->applyFromArray([

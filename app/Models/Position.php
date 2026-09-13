@@ -85,8 +85,12 @@ class Position extends Model
             ->orderBy('name');
     }
 
-    public function label(): string
+    /**
+     * The short `code` is what the screen shows (builder, published plan); the printed poster
+     * wants the full `name` instead, so `$preferCode` lets one caller opt out.
+     */
+    public function label(bool $preferCode = true): string
     {
-        return $this->code ?: $this->name;
+        return $preferCode && $this->code ? $this->code : $this->name;
     }
 }
