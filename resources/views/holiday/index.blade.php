@@ -1,4 +1,4 @@
-<x-layout title="ABSENCIE">
+<x-layout title="Absencie" description="Nahláste a spravujte svoje absencie a dovolenky.">
     <div
         x-data="absenceRangePicker('{{ old('date_from', now()->format('Y-m-d')) }}', '{{ old('date_to', now()->format('Y-m-d')) }}', @js($errors->any()))"
         x-init="$nextTick(() => initFlatpickr())"

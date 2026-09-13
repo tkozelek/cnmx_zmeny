@@ -1,4 +1,4 @@
-<x-layout title="ZMENA HESLA">
+<x-layout title="Zmena hesla" description="Zmeňte si heslo do svojho účtu Cine-max Zmeny.">
     <div class="container mx-auto max-w-lg px-4 py-8">
         <div class="flex flex-col gap-6">
             <x-page-header icon="fa-key" title="Zmena hesla" subtitle="Zadajte svoje aktuálne a nové heslo pre účet" />

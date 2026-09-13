@@ -1,4 +1,4 @@
-<x-layout title="POZÍCIE">
+<x-layout title="Pozície" description="Pracovné pozície, z ktorých sa skladá rozpis zmien.">
     <div class="container mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-6">
 

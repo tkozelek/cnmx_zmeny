@@ -1,4 +1,4 @@
-<x-layout>
+<x-layout title="Nastavenia" description="Rýchly prístup k absenciám a zmene hesla.">
     <section class="bg-gray-700">
         <div class="flex flex-col items-center mt-20 px-6 py-8 mx-auto lg:py-0">
             <div class="w-full rounded-lg shadow border md:mt-0 sm:max-w-md xl:p-0 bg-gray-800 border-gray-700">
