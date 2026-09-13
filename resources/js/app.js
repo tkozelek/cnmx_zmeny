@@ -193,50 +193,117 @@ function togglePasswordVisibility(inputId) {
 }
 window.togglePasswordVisibility = togglePasswordVisibility;
 
-document.addEventListener('DOMContentLoaded', function() {
-    Chart.register(...registerables);
+Chart.register(...registerables);
+window.Chart = Chart;
 
-    var canvas = document.getElementById('barChart');
-    if (canvas) {
-        var ctx = canvas.getContext('2d');
+function renderProfileChart(newData) {
+    const canvas = document.getElementById('barChart');
+    if (!canvas) return;
 
-        var myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota', 'Nedeľa'],
-                datasets: [{
-                    label: 'Počty dni',
-                    data: chartData,
-                    backgroundColor: 'rgba(5,19,183,0.2)',
-                    borderColor: 'rgb(21,26,155)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Frekvencia zapisovanych dni',
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0,
-                        },
-                        grace: '5%',
-                    }
-                },
-                elements: {
-                    bar: {
-                        backgroundColor: '#ea3308'
-                    }
-                },
-                responsive: true
-            }
-        });
+    let data = newData || window.chartData;
+    if (!data && canvas.dataset.chart) {
+        try {
+            data = JSON.parse(canvas.dataset.chart);
+        } catch (e) {
+            data = [0, 0, 0, 0, 0, 0, 0];
+        }
     }
+    if (!data) return;
+
+    if (canvas._chartInstance) {
+        canvas._chartInstance.data.datasets[0].data = data;
+        canvas._chartInstance.update();
+        return;
+    }
+
+    const isMobile = window.innerWidth < 640;
+    const shortLabels = ['Pon', 'Uto', 'Str', 'Štv', 'Pia', 'Sob', 'Ned'];
+    const fullLabels = ['Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota', 'Nedeľa'];
+
+    const ctx = canvas.getContext('2d');
+    canvas._chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: isMobile ? shortLabels : fullLabels,
+            datasets: [{
+                label: 'Odpracované dni',
+                data: data,
+                backgroundColor: 'rgba(99, 102, 241, 0.85)',
+                hoverBackgroundColor: 'rgba(129, 140, 248, 1)',
+                borderRadius: 6,
+                borderSkipped: false,
+                maxBarThickness: isMobile ? 32 : 44,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#171717',
+                    titleColor: '#f5f5f5',
+                    bodyColor: '#d4d4d4',
+                    borderColor: '#262626',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 6,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return fullLabels[tooltipItems[0].dataIndex] || '';
+                        },
+                        label: function(context) {
+                            const val = context.parsed.y;
+                            if (val === 1) return '1 odpracovaný deň';
+                            if (val >= 2 && val <= 4) return `${val} odpracované dni`;
+                            return `${val} odpracovaných dní`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#a3a3a3',
+                        maxRotation: 0,
+                        minRotation: 0,
+                        autoSkip: false,
+                        font: {
+                            family: 'inherit',
+                            size: isMobile ? 11 : 12,
+                            weight: 500
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.06)'
+                    },
+                    ticks: {
+                        precision: 0,
+                        color: '#737373',
+                        font: {
+                            family: 'inherit',
+                            size: 11
+                        }
+                    },
+                    grace: '8%'
+                }
+            }
+        }
+    });
+}
+window.renderProfileChart = renderProfileChart;
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderProfileChart();
 
     const element = document.getElementById('my-dropzone');
 
