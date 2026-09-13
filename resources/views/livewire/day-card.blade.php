@@ -3,7 +3,7 @@
     'border-emerald-500/70 ring-1 ring-emerald-500/30' => $this->mine && ! $this->isToday,
     'border-indigo-500 ring-2 ring-indigo-500/40' => $this->isToday,
     'border-neutral-800 hover:border-neutral-700' => ! $this->mine && ! $this->isToday,
-    'opacity-80' => $locked,
+    'opacity-75' => $locked && ! $this->mine,
 ])>
     {{-- Loading overlay with solid badge --}}
     <div wire:loading class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-neutral-950/70 pointer-events-none transition-all duration-200">
@@ -21,10 +21,20 @@
         {{-- Full Width Top Action Button (Solid & Vibrant) --}}
         <div>
             @if($locked)
-                <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-neutral-950 text-xs font-semibold uppercase tracking-wider text-neutral-500 border-b border-neutral-800">
-                    <i class="fa-solid fa-lock text-xs"></i>
-                    Zamknutý
-                </div>
+                @if($this->mine)
+                    {{-- Locked but signed up: clear green status indicator --}}
+                    <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-emerald-700 text-xs font-bold uppercase tracking-wider text-white border-b-2 border-emerald-800 shadow-sm">
+                        <i class="fa-solid fa-check text-xs"></i>
+                        <span>Zapísaný</span>
+                        <span class="text-emerald-200 text-[10px] font-semibold tracking-wide">(Zamknuté)</span>
+                    </div>
+                @else
+                    {{-- Locked and not signed up: clear neutral lock status --}}
+                    <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-neutral-950 text-xs font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-800">
+                        <i class="fa-solid fa-lock text-xs text-neutral-500"></i>
+                        <span>Zamknutý</span>
+                    </div>
+                @endif
             @elseif($this->mine)
                 {{-- Signed Up -> Solid Vibrant Emerald Green Button, on hover turns Rose with Odpísať sa --}}
                 <button
@@ -92,7 +102,7 @@
         </div>
 
         {{-- Signed-up Entries Container --}}
-        <div class="flex flex-col px-3 py-1 flex-1">
+        <div class="day-card-entries flex flex-col px-3 py-1 flex-1">
             @forelse($this->assignments as $assignment)
                 <div wire:key="assignment-{{ $assignment->id }}"
                      title="{{ $assignment->user->lastname }} {{ $assignment->user->name }}@if($assignment->note) ({{ $assignment->note }})@endif"
@@ -103,18 +113,14 @@
                         'text-neutral-200' => $assignment->user->is_active,
                     ])>
                     <div class="flex min-w-0 items-center gap-1.5 text-left">
-                        <span class="shrink-0 font-semibold text-sm {{ $assignment->user_id === auth()->id() ? 'text-emerald-300 font-bold' : 'text-neutral-200' }}">
+                        <span class="shrink-0 font-semibold text-sm {{ $assignment->user_id === auth()->id() ? 'text-emerald-400 font-bold' : 'text-neutral-200' }}">
                             @if($this->canViewUsers)
                                 <a href="{{ route('profile.show', $assignment->user) }}"
-                                   class="transition hover:text-white">{{ $assignment->user }}</a>
+                                   class="transition {{ $assignment->user_id === auth()->id() ? 'hover:text-emerald-300' : 'hover:text-white' }}">{{ $assignment->user }}</a>
                             @else
                                 <span>{{ $assignment->user }}</span>
                             @endif
                         </span>
-
-                        @if($assignment->user_id === auth()->id())
-                            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-700/80">Ja</span>
-                        @endif
 
                         @if($assignment->note)
                             <span class="min-w-0 truncate text-xs font-normal text-neutral-400">
@@ -147,7 +153,7 @@
         </div>
 
         {{-- Count Footer --}}
-        <div class="border-t border-neutral-800 px-3 py-1.5 text-center bg-neutral-950 mt-auto">
+        <div class="day-card-footer border-t border-neutral-800 px-3 py-1.5 text-center bg-neutral-950 mt-auto">
             <span @class([
                 'text-xs font-semibold',
                 'text-neutral-500' => $this->assignments->count() === 0,

@@ -66,6 +66,14 @@ body {
     display: none;
 }
 
+.hide-names .day-card-entries {
+    display: none !important;
+}
+
+.hide-names .day-card-footer {
+    border-top: none !important;
+}
+
 /* Custom Flatpickr Neutral Dark Styling */
 .flatpickr-calendar {
     @apply bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl text-neutral-200 !important;
@@ -201,41 +209,105 @@ span.flatpickr-weekday {
     @apply text-neutral-700 opacity-25 cursor-not-allowed !important;
 }
 
-/* Locked Week Days Indicator in DatePicker */
+/* --- Flatpickr Week Picker Custom Theming --- */
+
+/* 1. Open Weeks (available for signups) */
+.flatpickr-day.is-open-week-day {
+    @apply bg-emerald-950/30 text-emerald-200/90 font-medium border-y border-emerald-500/20 rounded-none !important;
+}
+
+.flatpickr-day.is-open-week-day.is-open-week-start,
+.flatpickr-day.is-open-week-day:first-child {
+    @apply rounded-l-md border-l border-emerald-500/20 !important;
+}
+
+.flatpickr-day.is-open-week-day.is-open-week-end,
+.flatpickr-day.is-open-week-day:last-child {
+    @apply rounded-r-md border-r border-emerald-500/20 !important;
+}
+
+/* 2. Locked Weeks (closed signups) */
 .flatpickr-day.is-locked-week-day {
-    @apply bg-sky-500/20 text-sky-300 font-semibold border-sky-500/30 !important;
+    @apply bg-amber-950/40 text-amber-300/90 font-medium border-y border-amber-500/30 rounded-none !important;
 }
 
-.flatpickr-day.is-locked-week-day:hover {
-    @apply bg-sky-500/30 text-sky-100 !important;
+.flatpickr-day.is-locked-week-day.is-locked-week-start,
+.flatpickr-day.is-locked-week-day:first-child {
+    @apply rounded-l-md border-l border-amber-500/30 !important;
 }
 
-/* Full Week Hover Block Effect */
+.flatpickr-day.is-locked-week-day.is-locked-week-end,
+.flatpickr-day.is-locked-week-day:last-child {
+    @apply rounded-r-md border-r border-amber-500/30 !important;
+}
+
+/* 3. Hovering over weeks */
 .flatpickr-day.week-hover {
-    @apply bg-neutral-800 text-neutral-100 rounded-none !important;
+    @apply rounded-none !important;
 }
 
-.flatpickr-day.week-hover:first-child,
-.flatpickr-day.week-hover.is-week-start {
-    @apply rounded-l-xl !important;
+.flatpickr-day.week-hover-open {
+    @apply bg-emerald-900/60 text-emerald-100 border-y border-emerald-400/60 !important;
 }
 
-.flatpickr-day.week-hover:last-child,
-.flatpickr-day.week-hover.is-week-end {
-    @apply rounded-r-xl !important;
+.flatpickr-day.week-hover-open.is-week-start,
+.flatpickr-day.week-hover-open.is-open-week-start,
+.flatpickr-day.week-hover-open:first-child {
+    @apply rounded-l-md border-l border-emerald-400/60 !important;
 }
 
-/* Currently Open Week Outline / Highlight Effect */
+.flatpickr-day.week-hover-open.is-week-end,
+.flatpickr-day.week-hover-open.is-open-week-end,
+.flatpickr-day.week-hover-open:last-child {
+    @apply rounded-r-md border-r border-emerald-400/60 !important;
+}
+
+.flatpickr-day.week-hover-locked {
+    @apply bg-amber-900/60 text-amber-100 border-y border-amber-400/60 !important;
+}
+
+.flatpickr-day.week-hover-locked.is-week-start,
+.flatpickr-day.week-hover-locked.is-locked-week-start,
+.flatpickr-day.week-hover-locked:first-child {
+    @apply rounded-l-md border-l border-amber-400/60 !important;
+}
+
+.flatpickr-day.week-hover-locked.is-week-end,
+.flatpickr-day.week-hover-locked.is-locked-week-end,
+.flatpickr-day.week-hover-locked:last-child {
+    @apply rounded-r-md border-r border-amber-400/60 !important;
+}
+
+/* 4. Currently Viewed Active Week */
 .flatpickr-day.is-active-week-day {
-    @apply bg-neutral-800/90 text-white font-bold rounded-none border-y-2 border-indigo-500 !important;
+    @apply bg-indigo-600 text-white font-bold rounded-none border-y-2 border-indigo-400 shadow-md !important;
 }
 
-.flatpickr-day.is-active-week-day.is-week-start {
-    @apply rounded-l-xl border-l-2 border-indigo-500 !important;
+.flatpickr-day.is-active-week-day.is-week-start,
+.flatpickr-day.is-active-week-day:first-child {
+    @apply rounded-l-md border-l-2 border-indigo-400 !important;
 }
 
-.flatpickr-day.is-active-week-day.is-week-end {
-    @apply rounded-r-xl border-r-2 border-indigo-500 !important;
+.flatpickr-day.is-active-week-day.is-week-end,
+.flatpickr-day.is-active-week-day:last-child {
+    @apply rounded-r-md border-r-2 border-indigo-400 !important;
+}
+
+/* Currently Viewed Active Week if also locked */
+.flatpickr-day.is-active-week-day.is-locked-week-day {
+    @apply bg-amber-600 text-white font-bold rounded-none border-y-2 border-amber-300 shadow-md !important;
+}
+
+.flatpickr-day.is-active-week-day.is-locked-week-day.is-week-start,
+.flatpickr-day.is-active-week-day.is-locked-week-day.is-locked-week-start,
+.flatpickr-day.is-active-week-day.is-locked-week-day:first-child {
+    @apply rounded-l-md border-l-2 border-amber-300 !important;
+}
+
+.flatpickr-day.is-active-week-day.is-locked-week-day.is-week-end,
+.flatpickr-day.is-active-week-day.is-locked-week-day.is-locked-week-end,
+.flatpickr-day.is-active-week-day.is-locked-week-day:last-child {
+    @apply rounded-r-md border-r-2 border-amber-300 !important;
 }
 
 /* Custom subtle scrollbar */
