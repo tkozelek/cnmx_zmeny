@@ -110,11 +110,11 @@ class PositionSlot extends Model
      * $ordinal is the slot's 1-based position among that day's slots for the same position, which
      * only the caller holding the whole day can work out - passing it in beats a query per row.
      */
-    public function label(?int $ordinal = null, bool $repeated = false): string
+    public function label(?int $ordinal = null, bool $repeated = false, bool $preferCode = true): string
     {
         return $repeated
-            ? $this->position->label().' '.$ordinal
-            : $this->position->label();
+            ? $this->position->label($preferCode).' '.$ordinal
+            : $this->position->label($preferCode);
     }
 
     public function scopeBetweenDates(Builder $query, CarbonInterface $from, CarbonInterface $to): Builder
