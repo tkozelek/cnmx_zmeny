@@ -4,8 +4,12 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Livewire\UsersDataTable;
-use Livewire\Livewire;
+use App\Models\User;
+use App\Notifications\AddUserResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -185,6 +189,36 @@ class UserRoleManagementTest extends TestCase
             ->post(route('admin.users.store'), $payload('by-head@kino.test', Role::Manager));
 
         $this->assertDatabaseHas('users', ['email' => 'by-head@kino.test']);
+    }
+
+    /** The invite e-mail promises 24h; the reset must honor that, not the 60min forgot-password window. */
+    public function test_a_new_users_invite_link_still_works_after_the_forgot_password_window(): void
+    {
+        Notification::fake();
+        $team = $this->tenant();
+
+        $this->actingAs($this->member($team, Role::HeadManager))
+            ->post(route('admin.users.store'), [
+                'name' => 'Nova', 'lastname' => 'Osoba', 'email' => 'invite@kino.test', 'role' => Role::Employee->value,
+            ]);
+
+        $user = User::where('email', 'invite@kino.test')->firstOrFail();
+        $token = null;
+        Notification::assertSentTo($user, AddUserResetPassword::class, function ($n) use (&$token) {
+            $token = $n->token;
+
+            return true;
+        });
+
+        $this->travel(90)->minutes();
+        auth()->logout();
+
+        $this->post(route('password.store'), [
+            'token' => $token, 'email' => $user->email,
+            'password' => 'new-password-1', 'password_confirmation' => 'new-password-1',
+        ])->assertRedirect(route('login'));
+
+        $this->assertTrue(Hash::check('new-password-1', $user->fresh()->password));
     }
 
     /** A manager may still hire brigádnici - that is most of the job. */
