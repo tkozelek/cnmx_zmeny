@@ -273,7 +273,7 @@
 
             {{-- flatpickr, not <input type="time">: the native control renders AM/PM from the OS
                  locale and no HTML attribute can force 24-hour. --}}
-            <div x-data="timePicker('newStartTime', @js($newStartTime))" class="shrink-0">
+            <div x-data="timePicker('newStartTime', @js($newStartTime))" x-on:rozpis-slot-added.window="clear()" class="shrink-0">
                 <input x-ref="input" type="text" readonly placeholder="čas" title="Čas nástupu"
                        class="w-[5rem] cursor-pointer rounded border border-neutral-800 bg-neutral-900 px-2 py-1.5 text-center text-xs tabular-nums text-neutral-300 focus:border-sky-500 focus:outline-none">
             </div>
