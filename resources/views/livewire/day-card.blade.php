@@ -77,27 +77,20 @@
         <div @class([
             'flex flex-col items-center justify-center px-4 py-2.5 border-b text-center relative transition-colors',
             'bg-emerald-950/40 border-emerald-800/60' => $this->mine && ! $this->isToday,
-            'bg-indigo-950/40 border-indigo-800/60' => $this->isToday,
+            'bg-neutral-950 border-neutral-500' => $this->isToday,
             'bg-neutral-950 border-neutral-800' => ! $this->mine && ! $this->isToday,
         ])>
-            @if($this->isToday)
-                <span class="inline-flex items-center px-2 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-900 text-indigo-200 border border-indigo-700 mb-1">
-                    Dnes
-                </span>
-            @endif
             <p @class([
                 'truncate text-base font-bold max-w-full',
                 'text-emerald-200' => $this->mine && ! $this->isToday,
-                'text-indigo-200' => $this->isToday,
-                'text-neutral-100' => ! $this->mine && ! $this->isToday,
+                'text-neutral-100' => ! ($this->mine && ! $this->isToday),
             ]) title="{{ Str::title($this->dayCarbon->locale('sk')->dayName) }}">
                 {{ Str::title($this->dayCarbon->locale('sk')->dayName) }}
             </p>
             <p @class([
                 'mt-0.5 text-xs font-semibold tracking-wide',
                 'text-emerald-300/80' => $this->mine && ! $this->isToday,
-                'text-indigo-300/80' => $this->isToday,
-                'text-neutral-400' => ! $this->mine && ! $this->isToday,
+                'text-neutral-400' => ! ($this->mine && ! $this->isToday),
             ])>{{ $this->dayCarbon->format('d.m.Y') }}</p>
         </div>
 
