@@ -4,7 +4,7 @@
     $navBtnStyle = 'inline-flex h-12 sm:h-14 w-12 sm:w-14 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-600 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink-0 leading-none';
 
     $triggerStyle = $locked
-        ? 'border-sky-600 bg-neutral-900 hover:border-sky-500 text-white'
+        ? 'border-amber-500/80 bg-neutral-900 ring-1 ring-amber-500/30 hover:border-amber-400 text-white'
         : 'border-neutral-700 bg-neutral-900 hover:border-neutral-600 hover:text-white';
 @endphp
 
@@ -58,6 +58,18 @@
                     defaultDate: '{{ $weekStart->toDateString() }}',
                     position: 'below center',
                     positionElement: $refs.triggerButton,
+                    onReady: (dObj, dStr, fp) => {
+                        if (!fp.calendarContainer.querySelector('.flatpickr-week-legend')) {
+                            const legend = document.createElement('div');
+                            legend.className = 'flatpickr-week-legend border-t border-neutral-800 pt-2.5 mt-2 flex items-center justify-between px-1 text-[11px] font-semibold text-neutral-400';
+                            legend.innerHTML = `
+                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500/80 border border-emerald-400"></span> Otvorené</span>
+                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500/80 border border-amber-400"></span> Zamknuté</span>
+                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-indigo-500 border border-indigo-400"></span> Aktuálny</span>
+                            `;
+                            fp.calendarContainer.appendChild(legend);
+                        }
+                    },
                     onDayCreate: (dObj, dStr, fp, dayElem) => {
                         const dateObj = dayElem.dateObj;
                         const year = dateObj.getFullYear();
@@ -67,13 +79,21 @@
                         
                         const weekRange = self.getWeekRange(dateFormatted);
                         const isLocked = self.lockedDates.includes(weekRange[0]);
+                        const isCurrentActive = self.currentWeekRange.includes(dateFormatted);
                         
                         if (isLocked) {
                             dayElem.classList.add('is-locked-week-day');
                             dayElem.title = 'Zamknutý týždeň (' + weekRange[0] + ')';
+                            if (dateFormatted === weekRange[0]) dayElem.classList.add('is-locked-week-start');
+                            if (dateFormatted === weekRange[6]) dayElem.classList.add('is-locked-week-end');
+                        } else {
+                            dayElem.classList.add('is-open-week-day');
+                            dayElem.title = 'Otvorený týždeň (' + weekRange[0] + ')';
+                            if (dateFormatted === weekRange[0]) dayElem.classList.add('is-open-week-start');
+                            if (dateFormatted === weekRange[6]) dayElem.classList.add('is-open-week-end');
                         }
 
-                        if (self.currentWeekRange.includes(dateFormatted)) {
+                        if (isCurrentActive) {
                             dayElem.classList.add('is-active-week-day');
                             if (dateFormatted === self.currentWeekRange[0]) dayElem.classList.add('is-week-start');
                             if (dateFormatted === self.currentWeekRange[6]) dayElem.classList.add('is-week-end');
@@ -90,12 +110,17 @@
                                 const ef = `${ey}-${em}-${ed}`;
                                 if (weekRange.includes(ef)) {
                                     el.classList.add('week-hover');
+                                    if (isLocked) {
+                                        el.classList.add('week-hover-locked');
+                                    } else {
+                                        el.classList.add('week-hover-open');
+                                    }
                                 }
                             });
                         });
                         dayElem.addEventListener('mouseleave', () => {
                             fp.calendarContainer.querySelectorAll('.flatpickr-day.week-hover').forEach(el => {
-                                el.classList.remove('week-hover');
+                                el.classList.remove('week-hover', 'week-hover-locked', 'week-hover-open');
                             });
                         });
                     },
@@ -121,8 +146,8 @@
             <span class="min-w-0 truncate tracking-wide leading-none">{{ $weekStart->format('d.m.') }} - {{ $weekEnd->format('d.m.Y') }}</span>
 
             @if($locked)
-                <span class="inline-flex items-center gap-1.5 rounded-md bg-neutral-800 border border-neutral-700 px-2.5 py-1 text-xs font-semibold text-sky-400 shrink-0 shadow-sm">
-                    <i class="fa-solid fa-lock text-xs"></i> Zamknutý
+                <span class="inline-flex items-center gap-1.5 rounded-md bg-amber-600 border-b border-amber-700 px-2.5 py-1 text-xs font-bold text-white shrink-0 shadow-sm">
+                    <i class="fa-solid fa-lock text-xs text-amber-200"></i> Zamknutý
                 </span>
             @endif
 
