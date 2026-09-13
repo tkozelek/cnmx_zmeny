@@ -31,7 +31,8 @@ class PasswordResetController extends Controller
             'password' => ['required', 'confirmed', PasswordRule::min(8)],
         ]);
 
-        $status = Password::reset(
+        // 'add_user' broker: 24h expiry, so the admin-invite link keeps the validity it promises.
+        $status = Password::broker('add_user')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill([
