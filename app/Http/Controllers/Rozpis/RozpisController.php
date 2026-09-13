@@ -82,7 +82,9 @@ class RozpisController extends Controller
             'weekEnd' => $this->weeks->end($weekStart),
             'previousWeek' => $this->weeks->previous($weekStart),
             'nextWeek' => $this->weeks->next($weekStart),
-            'plan' => $this->rozpis->plan($team, $weekStart),
+            // Full position name, not the builder's short code - this is what an employee reads
+            // to find out when they work, same as the printed Excel sheet it mirrors.
+            'plan' => $this->rozpis->plan($team, $weekStart, preferCode: false),
             'publishedAt' => $lock?->rozpis_published_at,
             'canBuild' => $mayBuild,
         ]);
