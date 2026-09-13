@@ -37,6 +37,23 @@ class LayoutTest extends TestCase
             ->assertSee('Používatelia');
     }
 
+    /** These pages share the new <x-page-header> component - a bad div nest would blow up the render. */
+    public function test_pages_using_the_shared_page_header_still_render(): void
+    {
+        $team = $this->tenant();
+        $headManager = $this->member($team, Role::HeadManager);
+
+        foreach ([
+            'team.settings.edit',
+            'positions.index',
+            'admin.users.index',
+            'absences.index',
+            'settings.password.edit',
+        ] as $route) {
+            $this->actingAs($headManager)->get(route($route))->assertOk();
+        }
+    }
+
     /** A guest keeps reading the help page - it documents how to register. */
     public function test_a_guest_may_still_read_the_help_page(): void
     {

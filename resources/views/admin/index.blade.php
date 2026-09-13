@@ -1,7 +1,6 @@
 <x-layout title="POUŽÍVATELIA">
     <div x-data="{ openModal: @js($errors->any()) }" class="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold text-neutral-100">Správa používateľov</h1>
+        <x-page-header icon="fa-users" title="Správa používateľov" subtitle="Zoznam a správa používateľov tohto kina.">
             <button @click="openModal = true"
                     aria-haspopup="dialog"
                     :aria-expanded="openModal.toString()"
@@ -9,7 +8,7 @@
                     type="button">
                 <i class="fa-solid fa-user-plus text-xs" aria-hidden="true"></i> Pridať používateľa
             </button>
-        </div>
+        </x-page-header>
 
         <template x-teleport="body">
             <div
