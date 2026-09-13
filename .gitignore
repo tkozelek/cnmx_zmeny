@@ -38,3 +38,6 @@ satisfiable
 # Claude Code (skills + CLAUDE.md are committed; local state is not)
 /.claude/settings.local.json
 /.claude/scheduled_tasks.lock
+
+# Agents
+/.agents/
