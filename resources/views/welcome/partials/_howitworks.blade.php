@@ -1,26 +1,42 @@
-<section class="py-20 sm:py-28 bg-gray-900">
+@php
+    $steps = [
+        ['icon' => 'fa-user-plus', 'title' => '1. Vytvorenie účtu', 'text' => 'Rýchlo sa zaregistrujte a získajte prístup k plánovaciemu kalendáru vášho kina.'],
+        ['icon' => 'fa-envelope-circle-check', 'title' => '2. Overenie e-mailu', 'text' => 'Potvrďte odkaz, ktorý vám pošleme na e-mail - overíme tak, že účet je naozaj váš.'],
+        ['icon' => 'fa-user-check', 'title' => '3. Schválenie registrácie', 'text' => 'Počkajte, kým vám manažér overí účet. Potom sa môžete prihlásiť.'],
+        ['icon' => 'fa-calendar-days', 'title' => '4. Zapisovanie zmien', 'text' => 'Zapíšte si, ktoré dni ste k dispozícii, a počkajte na finálny rozpis.'],
+    ];
+@endphp
+
+<section id="ako-to-funguje" class="bg-neutral-950 py-20 sm:py-28">
     <div class="container mx-auto px-4 text-center">
         <div class="reveal">
-            <h3 class="text-3xl md:text-4xl font-bold mb-2">Ako to funguje?</h3>
-            <p class="text-gray-400 mb-12 max-w-2xl mx-auto">V troch jednoduchých krokoch si naplánujete svoju dostupnosť.</p>
+            <h2 class="mb-2 text-3xl font-bold text-neutral-100 md:text-4xl">Ako to funguje?</h2>
+            <p class="mx-auto mb-16 max-w-2xl text-neutral-400">Vo štyroch jednoduchých krokoch si naplánujete svoju dostupnosť.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            <div class="reveal flex flex-col items-center" style="transition-delay: 100ms;">
-                <div class="bg-gray-800 rounded-full p-6 mb-4 border-2 border-amber-500"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-                <h4 class="text-xl font-semibold mb-2">1. Vytvorenie účtu</h4>
-                <p class="text-gray-400">Rýchlo sa zaregistrujte a získajte prístup k plánovaciemu kalendáru.</p>
-            </div>
-            <div class="reveal flex flex-col items-center" style="transition-delay: 200ms;">
-                <div class="bg-gray-800 rounded-full p-6 mb-4 border-2 border-amber-500"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-400"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg></div>
-                <h4 class="text-xl font-semibold mb-2">2. Schválenie registrácie</h4>
-                <p class=" text-gray-400">Počkaj kym ti manažér overí účet. Potom sa môžeš prihlásiť.</p>
-            </div>
-            <div class="reveal flex flex-col items-center" style="transition-delay: 300ms;">
-                <div class="bg-gray-800 rounded-full p-6 mb-4 border-2 border-amber-500"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-400"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg></div>
-                <h4 class="text-xl font-semibold mb-2">3. Zapisovanie zmien</h4>
-                <p class="text-gray-400">Zapíš si ktorý deň si k dispozícií a počkaj na finálny rozpis!</p>
-            </div>
+        {{-- Fixed-width connector tracks (not `auto`) so the line divs - which have no
+             intrinsic content width of their own - get a predictable, equal gap instead
+             of collapsing. Row layout waits for `lg` since four columns need more room
+             than three did. --}}
+        <div class="grid grid-cols-1 gap-y-12 lg:grid-cols-[1fr_3rem_1fr_3rem_1fr_3rem_1fr] lg:items-start lg:gap-x-2">
+            @foreach($steps as $i => $step)
+                <div class="reveal relative flex flex-col items-center px-2" style="transition-delay: {{ $i * 120 }}ms;">
+                    <span class="pointer-events-none absolute -top-3 select-none text-6xl font-black text-neutral-900" aria-hidden="true">
+                        0{{ $i + 1 }}
+                    </span>
+                    <div class="relative mb-4 flex h-20 w-20 items-center justify-center rounded-full border-2 border-sky-500/40 bg-neutral-900 text-2xl text-sky-400 shadow-lg shadow-sky-950/20">
+                        <i class="fa-solid {{ $step['icon'] }}"></i>
+                    </div>
+                    <h3 class="mb-2 text-xl font-semibold text-neutral-100">{{ $step['title'] }}</h3>
+                    <p class="max-w-[15rem] text-neutral-400">{{ $step['text'] }}</p>
+                </div>
+
+                @if(! $loop->last)
+                    {{-- Draws in once its step has revealed - a static line would just sit
+                         there; tying it to the same .active toggle makes the flow feel led. --}}
+                    <div class="reveal-line hidden h-0.5 w-full self-center bg-gradient-to-r from-sky-500/50 to-sky-500/10 lg:block" style="transition-delay: {{ $i * 120 + 200 }}ms; margin-top: 2.5rem;"></div>
+                @endif
+            @endforeach
         </div>
     </div>
 </section>
