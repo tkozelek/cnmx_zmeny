@@ -1,4 +1,4 @@
-<x-layout title="POUŽÍVATELIA">
+<x-layout title="Správa používateľov" description="Zoznam a správa používateľov vášho kina.">
     <div x-data="{ openModal: @js($errors->any()) }" class="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
         <x-page-header icon="fa-users" title="Správa používateľov" subtitle="Zoznam a správa používateľov tohto kina.">
             <button @click="openModal = true"

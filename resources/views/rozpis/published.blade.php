@@ -1,4 +1,4 @@
-<x-layout :title="$title">
+<x-layout :title="$title" description="Zverejnený rozpis zmien a pozícií na tento týždeň.">
     {{-- The finished plan, read-only. Deliberately has no drag handles, no selects and no forms:
          everything here is text, so there is nothing to accidentally change. Mirrors the printed
          Excel sheet column for column - meno / pozícia / čas nástupu / náhradníci. --}}

@@ -1,4 +1,7 @@
-<x-layout :title="auth()->id() === $user->id ? 'Môj profil' : 'Profil používateľa'">
+<x-layout
+    :title="auth()->id() === $user->id ? 'Môj profil' : 'Profil používateľa'"
+    description="Prehľad odpracovaných zmien a absencií."
+>
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-3.5 sm:space-y-6"
          x-data="{
              tab: 'stats',

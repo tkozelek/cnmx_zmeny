@@ -1,4 +1,4 @@
-<x-layout :title="$title">
+<x-layout :title="$title" description="Zostavte rozpis zmien a pozícií na tento týždeň.">
     {{-- Desktop-first and deliberately full-bleed: seven columns of drop targets need the width,
          so this page opts out of the app's usual centred container. --}}
     <div class="w-full px-4 py-6 sm:px-6 2xl:px-10">
