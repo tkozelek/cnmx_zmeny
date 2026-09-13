@@ -36,7 +36,7 @@ body {
 }
 
 .gradient-text {
-    background: linear-gradient(90deg, #b58c26, #784c03);
+    background: linear-gradient(90deg, #38bdf8, #a78bfa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -53,13 +53,25 @@ body {
     transform: translateY(0);
 }
 
+/* The line connecting each "how it works" step - scales in from the left once its
+   step has revealed, so the flow reads as drawn rather than just appearing. */
+.reveal-line {
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.8s ease-out 0.3s;
+}
+
+.reveal-line.active {
+    transform: scaleX(1);
+}
+
 .cta-button {
     transition: all 0.3s ease;
 }
 
 .cta-button:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
 }
 
 .hide-names .rows {
