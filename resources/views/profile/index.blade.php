@@ -16,10 +16,12 @@
          }"
          x-init="window.location.href.indexOf('page') > -1 ? tab = 'absences' : tab = 'stats'; $nextTick(() => { if (typeof window.renderProfileChart === 'function') window.renderProfileChart(currentPeriod.counts); })">
 
-        {{-- Top Breadcrumbs & Page Header --}}
-        <div class="flex items-center justify-between gap-3">
-            <div class="min-w-0">
-                <nav class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-medium text-neutral-400 mb-1" aria-label="Navigácia">
+        <x-page-header
+            icon="fa-user"
+            :title="auth()->id() === $user->id ? 'Môj profil' : 'Profil používateľa'"
+        >
+            <x-slot:breadcrumb>
+                <nav class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-medium text-neutral-400" aria-label="Navigácia">
                     <a href="{{ route('calendar.index') }}" class="hover:text-neutral-200 transition">Rozpis</a>
                     <i class="fa-solid fa-chevron-right text-[9px] text-neutral-600"></i>
                     @if(auth()->user()->can('viewAny', \App\Models\User::class))
@@ -28,22 +30,13 @@
                     @endif
                     <span class="text-neutral-300">Profil</span>
                 </nav>
-                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white truncate">
-                    @if(auth()->id() === $user->id)
-                        Môj profil
-                    @else
-                        Profil používateľa
-                    @endif
-                </h1>
-            </div>
+            </x-slot:breadcrumb>
 
-            <div class="shrink-0">
-                <a href="{{ $backUrl }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-semibold text-neutral-400 bg-neutral-900 border border-neutral-800 rounded-lg hover:bg-neutral-800 hover:text-neutral-200 transition shadow-sm">
-                    <i class="fa-solid fa-arrow-left text-[11px]"></i>
-                    <span>Späť</span>
-                </a>
-            </div>
-        </div>
+            <a href="{{ $backUrl }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-semibold text-neutral-400 bg-neutral-900 border border-neutral-800 rounded-lg hover:bg-neutral-800 hover:text-neutral-200 transition shadow-sm">
+                <i class="fa-solid fa-arrow-left text-[11px]"></i>
+                <span>Späť</span>
+            </a>
+        </x-page-header>
 
         {{-- User Identity Card --}}
         @include('profile.partials._user_card')
