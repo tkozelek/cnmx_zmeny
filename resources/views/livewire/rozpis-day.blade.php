@@ -1,13 +1,14 @@
 <div @class([
     'flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm transition',
-    'border-amber-500/40 ring-1 ring-amber-500/20' => $this->isHardToStaff,
-    'border-emerald-500/40 ring-1 ring-emerald-500/20' => $this->isDesirableDay,
-    'border-neutral-800' => ! $this->isHardToStaff && ! $this->isDesirableDay,
+    'border-white ring-2 ring-white/50 shadow-md shadow-white/5' => $this->dayCarbon->isToday(),
+    'border-amber-500/40 ring-1 ring-amber-500/20' => ! $this->dayCarbon->isToday() && $this->isHardToStaff,
+    'border-emerald-500/40 ring-1 ring-emerald-500/20' => ! $this->dayCarbon->isToday() && $this->isDesirableDay,
+    'border-neutral-800' => ! $this->dayCarbon->isToday() && ! $this->isHardToStaff && ! $this->isDesirableDay,
 ])>
     <x-rozpis.day-heading :name="$this->dayName" :date="$this->dayCarbon">
         @if($this->rows)
             <p @class([
-                'mt-1 text-[0.7rem] font-semibold',
+                'mt-1 text-xs font-semibold',
                 'text-emerald-400' => $this->filledCount === count($this->rows),
                 'text-neutral-400' => $this->filledCount < count($this->rows),
             ])>
@@ -16,12 +17,12 @@
         @endif
 
         @if($this->isHardToStaff)
-            <span class="mt-1.5 inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-amber-400"
+            <span class="mt-1.5 inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-amber-400"
                   title="Málokto sa naň hlási dobrovoľne. Zoznam nezaradených je preto zoradený podľa toho, kto je na ťahu.">
-                <i class="fa-solid fa-triangle-exclamation text-[0.55rem]"></i> Neobľúbený deň
+                <i class="fa-solid fa-triangle-exclamation text-xs"></i> Neobľúbený deň
             </span>
         @elseif($this->isDesirableDay)
-            <span class="mt-1.5 inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-emerald-400"
+            <span class="mt-1.5 inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-emerald-400"
                   title="Obľúbený deň. Zoznam nezaradených je preto zoradený tak, aby bol hore ten, kto si ho najviac zaslúži za odrobené neobľúbené dni.">
                 Obľúbený deň
             </span>
@@ -35,21 +36,39 @@
             {{-- Group heading. Sits outside the draggable card so SortableJS never picks it up,
                  and rows sort back into their own group anyway (RozpisService::sortSlots). --}}
             @if($row['startsGroup'])
-                <p class="mt-1 truncate px-0.5 text-[0.6rem] font-bold uppercase tracking-widest text-neutral-500 first:mt-0">
+                <p class="mt-1 truncate px-0.5 text-xs font-bold uppercase tracking-widest text-neutral-400 first:mt-0">
                     {{ $row['group'] }}
                 </p>
             @endif
 
             <div wire:key="slot-{{ $row['slot']->id }}"
                  data-slot-id="{{ $row['slot']->id }}"
-                 class="rounded-md border border-neutral-800 bg-neutral-950/40">
+                 class="group/slot rounded-md border border-neutral-800 bg-neutral-950/40">
                 <div class="flex items-center justify-between gap-2 border-b border-neutral-800/70 px-2 py-1.5">
-                    <span class="flex min-w-0 items-center gap-1.5">
+                    <span class="flex min-w-0 items-center gap-1">
                         @if($this->canBuild)
                             <span data-drag-handle
                                   title="Presuňte pre zmenu poradia"
                                   class="shrink-0 cursor-grab px-0.5 text-neutral-600 transition hover:text-neutral-300 active:cursor-grabbing">
-                                <i class="fa-solid fa-grip-vertical text-[0.7rem]"></i>
+                                <i class="fa-solid fa-grip-vertical text-xs"></i>
+                            </span>
+
+                            {{-- Accessible keyboard and single-pointer slot reordering buttons --}}
+                            <span class="inline-flex items-center sm:opacity-0 sm:group-hover/slot:opacity-100 focus-within:opacity-100 transition-opacity">
+                                <button type="button"
+                                        wire:click="moveSlotUp({{ $row['slot']->id }})"
+                                        aria-label="Posunúť pozíciu {{ $row['label'] }} nahor"
+                                        title="Posunúť nahor"
+                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
+                                    <i class="fa-solid fa-chevron-up text-[0.65rem]"></i>
+                                </button>
+                                <button type="button"
+                                        wire:click="moveSlotDown({{ $row['slot']->id }})"
+                                        aria-label="Posunúť pozíciu {{ $row['label'] }} nadol"
+                                        title="Posunúť nadol"
+                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
+                                    <i class="fa-solid fa-chevron-down text-[0.65rem]"></i>
+                                </button>
                             </span>
                         @endif
 
@@ -77,22 +96,30 @@
                     </span>
 
                     @if($this->canBuild)
-                        <span class="flex shrink-0 items-center gap-0.5">
+                        <span class="flex shrink-0 items-center gap-1">
                             {{-- Copy just this one row onto other days. Alpine holds the checkbox
                                  state, so there is no per-slot array to keep on the server. --}}
                             @if($this->copyTargets)
-                                <div x-data="{ open: false, days: [] }" class="relative">
+                                <div x-data="{ open: false, days: [] }" class="relative" @keydown.escape="open = false">
                                     <button type="button" @click="open = ! open"
                                             title="Skopírovať túto pozíciu do iných dní"
-                                            class="flex h-5 w-5 items-center justify-center rounded text-neutral-500 transition hover:bg-sky-500/20 hover:text-sky-300">
-                                        <i class="fa-solid fa-clone text-[0.65rem]"></i>
+                                            aria-label="Skopírovať pozíciu {{ $row['label'] }} do iných dní"
+                                            class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 transition hover:bg-sky-500/20 hover:text-sky-300">
+                                        <i class="fa-solid fa-clone text-xs"></i>
                                     </button>
 
                                     <div x-show="open" x-cloak @click.outside="open = false"
-                                         class="absolute right-0 z-20 mt-1 w-44 rounded-md border border-neutral-700 bg-neutral-900 p-2 text-left shadow-lg">
-                                        <p class="pb-1 text-[0.65rem] font-semibold uppercase tracking-wider text-neutral-500">
-                                            Kopírovať {{ $row['label'] }} do
-                                        </p>
+                                         class="absolute right-0 z-20 mt-1 w-48 rounded-md border border-neutral-700 bg-neutral-900 p-2 text-left shadow-lg">
+                                        <div class="flex items-center justify-between pb-1.5 border-b border-neutral-800 mb-1">
+                                            <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-neutral-400">
+                                                Kopírovať do
+                                            </p>
+                                            <button type="button"
+                                                    @click="days = days.length === {{ count($this->copyTargets) }} ? [] : @js(collect($this->copyTargets)->pluck('date')->all())"
+                                                    class="text-[0.65rem] font-medium text-sky-400 hover:text-sky-300 focus:outline-none">
+                                                <span x-text="days.length === {{ count($this->copyTargets) }} ? 'Zrušiť výber' : 'Vybrať všetko'"></span>
+                                            </button>
+                                        </div>
 
                                         @foreach($this->copyTargets as $target)
                                             <label class="flex cursor-pointer items-center gap-2 py-0.5 text-xs text-neutral-300 hover:text-white">
@@ -104,7 +131,7 @@
 
                                         <button type="button"
                                                 @click="$wire.copySlot({{ $row['slot']->id }}, days); days = []; open = false"
-                                                class="mt-1.5 w-full rounded border border-sky-500/40 bg-sky-500/10 px-2 py-1 text-[0.7rem] font-semibold text-sky-300 transition hover:bg-sky-500/20">
+                                                class="mt-1.5 w-full rounded border border-sky-500/40 bg-sky-500/10 px-2 py-1 text-xs font-semibold text-sky-300 transition hover:bg-sky-500/20">
                                             Kopírovať
                                         </button>
                                     </div>
@@ -115,8 +142,9 @@
                                     wire:click="removeSlot({{ $row['slot']->id }})"
                                     wire:confirm="Odobrať {{ $row['label'] }} z tohto dňa?"
                                     title="Odobrať pozíciu z dňa"
-                                    class="flex h-5 w-5 items-center justify-center rounded text-neutral-500 transition hover:bg-rose-500/20 hover:text-rose-300">
-                                <i class="fa-solid fa-xmark text-[0.7rem]"></i>
+                                    aria-label="Odobrať pozíciu {{ $row['label'] }} z dňa"
+                                    class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-500/20 hover:text-rose-300">
+                                <i class="fa-solid fa-xmark text-xs"></i>
                             </button>
                         </span>
                     @endif
@@ -137,8 +165,9 @@
                                 <button type="button"
                                         wire:click="unplace({{ $row['occupant']->id }})"
                                         title="Vrátiť do zoznamu"
-                                        class="flex h-5 w-5 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-500/20 hover:text-rose-300 focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
-                                    <i class="fa-solid fa-arrow-turn-down text-[0.65rem]"></i>
+                                        aria-label="Vrátiť {{ $row['occupant']->user }} do zoznamu"
+                                        class="flex h-6 w-6 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-500/20 hover:text-rose-300 focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+                                    <i class="fa-solid fa-arrow-turn-down text-xs"></i>
                                 </button>
                             @endif
                         </div>
@@ -147,15 +176,16 @@
                              written to `assignments` while it looks like this. --}}
                         <div class="flex items-center justify-between gap-1.5 rounded border border-dashed border-violet-500/50 bg-violet-500/5 px-2 py-1 text-sm">
                             <span class="min-w-0 truncate text-violet-300/90" title="AI návrh - nie je uložené">
-                                <i class="fa-solid fa-wand-magic-sparkles text-[0.6rem] opacity-70"></i>
+                                <i class="fa-solid fa-wand-magic-sparkles text-xs opacity-70"></i>
                                 {{ $row['suggestion']->user }}
                             </span>
 
                             <button type="button"
                                     wire:click="acceptSuggestion({{ $row['suggestion']->id }})"
                                     title="Prijať návrh"
-                                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded text-emerald-400 transition hover:bg-emerald-500/20 hover:text-emerald-300">
-                                <i class="fa-solid fa-check text-[0.65rem]"></i>
+                                    aria-label="Prijať návrh: {{ $row['suggestion']->user }}"
+                                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded text-emerald-400 transition hover:bg-emerald-500/20 hover:text-emerald-300">
+                                <i class="fa-solid fa-check text-xs"></i>
                             </button>
                         </div>
                     @elseif($this->canBuild && $row['slot']->position->is_manager && $this->leadershipRoster->isNotEmpty())
@@ -260,7 +290,7 @@
 
     {{-- Unplaced signups --}}
     <div class="border-t border-neutral-800/80 bg-neutral-900/60">
-        <p class="px-2.5 pt-2 text-[0.65rem] font-semibold uppercase tracking-wider text-neutral-500">
+        <p class="px-2.5 pt-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
             Nezaradení ({{ $this->unassignedPool->count() }})
         </p>
 
@@ -280,19 +310,19 @@
                     </span>
 
                     @if($this->isHardToStaff)
-                        <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-[0.65rem] font-semibold text-amber-400"
+                        <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-xs font-semibold text-amber-400"
                               title="Kto je na ťahu - vyššie číslo znamená, že odpracoval menej ťažkých dní, než je v kine zvykom">
                             {{ number_format($this->scoreFor($assignment->user_id), 1) }}
                         </span>
                     @elseif($this->isDesirableDay)
-                        <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-[0.65rem] font-semibold text-emerald-400"
+                        <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-xs font-semibold text-emerald-400"
                               title="Kto si tento deň zaslúži - vyššie číslo znamená viac odpracovaných a ťažších dní">
                             {{ number_format($this->scoreFor($assignment->user_id), 1) }}
                         </span>
                     @endif
                 </div>
             @empty
-                <p class="text-[0.7rem] italic text-neutral-600">Všetci sú zaradení.</p>
+                <p class="text-xs italic text-neutral-500">Všetci sú zaradení.</p>
             @endforelse
         </div>
     </div>
