@@ -32,6 +32,7 @@ class MyAbsencesDataTable extends DataTableComponent
             // chasing every field the trait happens to touch.
             ->setAdditionalSelects(['absences.*'])
             ->setSearchPlaceholder('Vyhľadať v absenciách...')
+            ->setLoadingPlaceholderContent('Načítavam absencie...')
             ->setEmptyMessage('Nemáš evidované žiadne absencie.');
     }
 
@@ -45,6 +46,7 @@ class MyAbsencesDataTable extends DataTableComponent
     {
         return [
             SelectFilter::make('Stav')
+                ->setFilterDefaultValue('active')
                 ->options([
                     '' => 'Všetky absencie',
                     'active' => 'Aktívne',

@@ -39,6 +39,7 @@ class UsersDataTable extends DataTableComponent
             ->setFilterPillsStatus(false)
             ->setFilterLayoutSlideDown()
             ->setSearchPlaceholder('Vyhľadať používateľa...')
+            ->setLoadingPlaceholderContent('Načítavam používateľov...')
             ->setEmptyMessage('Žiadni používatelia neboli nájdení.');
     }
 
@@ -56,8 +57,11 @@ class UsersDataTable extends DataTableComponent
 
         return User::query()
             ->select('users.*')
-            ->whereNotNull('users.email_verified_at')
             ->whereHas('teams', fn (Builder $q) => $q->where('teams.id', $team->id))
+            ->where(function (Builder $query) use ($team) {
+                $query->whereNotNull('users.email_verified_at')
+                    ->orWhereHas('teams', fn ($q) => $q->where('teams.id', $team->id)->whereNotNull('team_user.approved_at'));
+            })
             ->with(['roles', 'teams']);
     }
 
@@ -146,7 +150,7 @@ class UsersDataTable extends DataTableComponent
                 })
                 ->html(),
 
-            Column::make('Posledná aktivita', 'updated_at')
+            Column::make('Naposledy upravený', 'updated_at')
                 ->sortable()
                 ->format(fn ($value) => '<span class="text-neutral-400">'.$value?->format('d.m.Y H:i').'</span>')
                 ->html(),
@@ -156,6 +160,7 @@ class UsersDataTable extends DataTableComponent
                     $team = app(Team::class);
                     $membership = $row->teams->firstWhere('id', $team->id);
                     $isPending = is_null($membership?->pivot?->approved_at);
+                    $fullName = e($row->name.' '.$row->lastname);
 
                     // A denied member keeps a null `approved_at`, so "still waiting" is the
                     // active ones - otherwise a blocked account would be offered for approval.
@@ -165,8 +170,8 @@ class UsersDataTable extends DataTableComponent
                         }
 
                         return '<div class="flex items-center justify-start gap-2">
-                            <button wire:click="accept('.$row->id.')" title="Schváliť" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-check text-sm"></i></button>
-                            <button wire:click="deny('.$row->id.')" title="Zamietnuť" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-xmark text-sm"></i></button>
+                            <button wire:click="accept('.$row->id.')" title="Schváliť" aria-label="Schváliť používateľa '.$fullName.'" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-check text-sm" aria-hidden="true"></i></button>
+                            <button wire:click="deny('.$row->id.')" title="Zamietnuť" aria-label="Zamietnuť používateľa '.$fullName.'" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i></button>
                         </div>';
                     }
 
@@ -177,7 +182,7 @@ class UsersDataTable extends DataTableComponent
                     $editUrl = route('admin.users.edit', ['user' => $row->id]);
 
                     return '<div class="flex items-center justify-start">
-                        <a href="'.$editUrl.'" class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-3.5 py-2 text-xs font-semibold shadow-sm transition"><i class="fa-solid fa-pen-to-square text-xs text-neutral-400"></i> Upraviť</a>
+                        <a href="'.$editUrl.'" aria-label="Upraviť používateľa '.$fullName.'" class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-3.5 py-2 text-xs font-semibold shadow-sm transition"><i class="fa-solid fa-pen-to-square text-xs text-neutral-400" aria-hidden="true"></i> Upraviť</a>
                     </div>';
                 })
                 ->html(),

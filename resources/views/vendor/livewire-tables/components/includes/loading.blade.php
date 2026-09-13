@@ -26,16 +26,11 @@
         @if($this->hasLoadingPlaceholderBlade())
             @include($this->getLoadingPlaceHolderBlade(), ['colCount' => $colCount])
         @else
-            <div class="h-min self-center align-middle text-center">
-                <div class="lds-hourglass"{{
-                        $attributes->merge($loaderIcon)
-                            ->class([
-                                'lds-hourglass' => $isTailwind && ($loaderIcon['default'] ?? true),
-                                'lds-hourglass' => $isBootstrap && ($loaderIcon['default'] ?? true),
-                            ])
-                            ->except(['default','default-styling','default-colors'])
-                }}></div>
-                <div>{!! $this->getLoadingPlaceholderContent() !!}</div>
+            <div class="flex flex-col items-center justify-center py-8 text-neutral-400 gap-2.5">
+                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-sky-400"></i>
+                <span class="text-xs font-medium text-neutral-300 tracking-wide">
+                    {!! $this->getLoadingPlaceholderContent() !!}
+                </span>
             </div>
         @endif
     </td>

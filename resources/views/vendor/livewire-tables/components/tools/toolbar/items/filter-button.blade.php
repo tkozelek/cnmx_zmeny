@@ -14,14 +14,16 @@
             <button
                 type="button"
                 class="inline-flex items-center justify-center gap-2 h-10 rounded-lg border border-neutral-700 shadow-sm px-4 bg-neutral-800 text-sm font-semibold text-neutral-100 hover:bg-neutral-700 transition focus:outline-none"
-                @if ($this->isFilterLayoutPopover()) x-on:click="filterPopoverOpen = !filterPopoverOpen"
+                @if ($this->isFilterLayoutPopover())
+                    x-on:click="filterPopoverOpen = !filterPopoverOpen"
                     aria-haspopup="true"
                     x-bind:aria-expanded="filterPopoverOpen"
                     aria-expanded="true"
                 @endif
                 @if ($this->isFilterLayoutSlideDown()) x-on:click="filtersOpen = !filtersOpen" @endif
             >
-                <i class="fa-solid fa-filter text-xs text-sky-400"></i>
+                <i wire:loading.remove wire:target="filterComponents,setFilter,clearFilter" class="fa-solid fa-filter text-xs text-sky-400"></i>
+                <i wire:loading wire:target="filterComponents,setFilter,clearFilter" class="fa-solid fa-circle-notch fa-spin text-xs text-sky-400"></i>
                 <span>Filtre</span>
 
                 @if ($count = $this->getFilterBadgeCount())
