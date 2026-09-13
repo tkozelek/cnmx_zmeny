@@ -1,4 +1,7 @@
-<x-layout>
+<x-layout
+    title="Plánovanie zmien pre kino"
+    description="Jednoduchý nástroj na plánovanie zmien, ktorý dáva zamestnancom kina flexibilitu a manažérom prehľad nad celým týždňom."
+>
     {{-- Hero Section --}}
     @include('welcome.partials._hero')
 

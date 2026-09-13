@@ -1,4 +1,4 @@
-<x-layout title="POMOC">
+<x-layout title="Pomoc" description="Časté otázky o registrácii, zapisovaní na zmeny a absenciách v Cine-max Zmeny.">
     <div class="container mx-auto px-4 py-12 md:py-16">
 
         <div x-data="{ activeAccordion: null }" class="w-full max-w-4xl mx-auto bg-neutral-900 rounded-lg border border-neutral-800 divide-y divide-neutral-800 shadow-sm overflow-hidden">

@@ -1,4 +1,4 @@
-<x-layout>
+<x-layout title="Registrácia" description="Vytvorte si účet a pridajte sa k tímu Cine-max.">
     <div class="flex-1 min-h-full w-full py-6 md:py-10 flex items-center justify-center px-4 relative overflow-hidden bg-neutral-950">
         <!-- Ambient lighting glows -->
 
