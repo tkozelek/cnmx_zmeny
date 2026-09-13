@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTeam;
+use App\Traits\Loggable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WeekLock extends Model
 {
     use BelongsToTeam;
+    use Loggable;
 
     /** The table has only created_at. */
     public const UPDATED_AT = null;

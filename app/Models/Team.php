@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Role;
+use App\Traits\Loggable;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -20,6 +21,8 @@ class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */
     use HasFactory;
+
+    use Loggable;
 
     protected $fillable = [
         'name',

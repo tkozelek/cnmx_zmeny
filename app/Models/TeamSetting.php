@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTeam;
+use App\Traits\Loggable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 class TeamSetting extends Model
 {
     use BelongsToTeam;
+    use Loggable;
 
     /**
      * Bust Team::cachedSettings() on every save - whatever wrote the change (the settings
