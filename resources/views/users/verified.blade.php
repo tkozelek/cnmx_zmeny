@@ -1,4 +1,4 @@
-<x-layout title="E-mail overený">
+<x-layout title="E-mail overený" description="E-mailová adresa bola úspešne overená.">
     <div class="flex-1 min-h-full w-full py-12 md:py-20 flex items-center justify-center px-4 relative overflow-hidden bg-neutral-950">
         <!-- Ambient lighting glows -->
         <div class="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>

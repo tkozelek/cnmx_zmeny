@@ -1,4 +1,4 @@
-<x-layout>
+<x-layout title="Prihlásenie" description="Prihláste sa do portálu pracovných zmien Cine-max.">
     <div class="flex-1 min-h-full w-full py-12 md:py-20 flex items-center justify-center px-4 relative overflow-hidden bg-neutral-950">
         <!-- Ambient lighting glows -->
 
