@@ -171,28 +171,20 @@ class RozpisPublishTest extends TestCase
         $content = $response->streamedContent();
         $this->assertStringStartsWith('PK', $content);
 
-        // Both sheets, and the flat one actually carrying the week's shifts - the poster alone is
-        // no good for looking anything up.
+        // The one sheet, actually readable as a spreadsheet.
         $path = tempnam(sys_get_temp_dir(), 'rozpis').'.xlsx';
         file_put_contents($path, $content);
 
         try {
             $book = IOFactory::load($path);
 
-            $this->assertSame(['Rozpis', 'Zoznam'], $book->getSheetNames());
+            $this->assertSame(['Rozpis'], $book->getSheetNames());
 
-            $list = $book->getSheetByName('Zoznam');
+            $sheet = $book->getSheetByName('Rozpis');
 
-            $this->assertSame(
-                ['Dátum', 'Deň', 'Skupina', 'Pozícia', 'Meno', 'Čas nástupu'],
-                array_map(
-                    fn (string $cell): mixed => $list->getCell($cell.'1')->getValue(),
-                    ['A', 'B', 'C', 'D', 'E', 'F'],
-                ),
-            );
-
-            $this->assertSame('Bufet', $list->getCell('D2')->getValue());
-            $this->assertSame('16:30', $list->getCell('F2')->getValue());
+            // weekStart->addDay() is day index 1: band 1 (row 20), left side (column B/C).
+            $this->assertSame('Bufet', $sheet->getCell('B22')->getValue());
+            $this->assertSame('16:30', $sheet->getCell('C22')->getValue());
         } finally {
             @unlink($path);
         }

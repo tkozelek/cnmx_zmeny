@@ -19,14 +19,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * The finished rozpis, as two sheets answering two different questions.
- *
- * "Rozpis" is the printed poster the cinema already uses: four day blocks per A4 landscape page
- * in a 2x2 grid, each a little table of meno / pozícia / čas nástupu / náhradníci. Managers print
- * it and pin it up, so the geometry is the deliverable.
- *
- * "Zoznam" is the same week as one flat row per shift, with a filter on every column. A poster
- * cannot answer "when does Kozelek work this week" - that is what the second sheet is for.
+ * The finished rozpis: the printed poster the cinema already uses, four day blocks per A4
+ * landscape page in a 2x2 grid, each a little table of meno / pozícia / čas nástupu / náhradníci.
+ * Managers print it and pin it up, so the geometry is the deliverable.
  *
  * Distinct from WeeklyScheduleExport, which exports the *signup* stage: who put their name down,
  * before anyone was placed on a position.
@@ -150,7 +145,6 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
                 }
 
                 $this->setUpPrinting($sheet);
-                $this->appendListSheet($sheet);
             },
         ];
     }
@@ -310,10 +304,11 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
         $sheet->getStyle($times.($startRow + 2).':'.$times.$endRow)
             ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-        // Substitutes are context, not the plan - quieter than the rows they sit beside.
+        // Substitutes are context, not the plan - italic sets them apart from the rows they sit
+        // beside, but still dark enough to read easily next to the rest of the printed page.
         $spares = $this->columnLetter($column + 3);
         $sheet->getStyle($spares.($startRow + 2).':'.$spares.$endRow)->applyFromArray([
-            'font' => ['size' => 10, 'italic' => true, 'color' => ['argb' => 'FF7F7F7F']],
+            'font' => ['size' => 10, 'italic' => true, 'color' => ['argb' => 'FF404040']],
         ]);
 
         $sheet->getStyle($first.$startRow.':'.$last.$endRow)->applyFromArray([
@@ -339,85 +334,6 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
 
         // Four day blocks per sheet of paper; the second title is the top of page two.
         $sheet->setBreak('A'.self::PAGE_TWO_TITLE_ROW, Worksheet::BREAK_ROW);
-    }
-
-    /**
-     * The same week as one row per shift, filterable and sortable.
-     *
-     * Appended here rather than as a second export class, matching WeeklyScheduleExport - the
-     * sheet is a dozen lines of data and needs none of the concern plumbing.
-     */
-    private function appendListSheet(Worksheet $poster): void
-    {
-        $sheet = $poster->getParent()->createSheet();
-        $sheet->setTitle('Zoznam');
-
-        foreach (['Dátum', 'Deň', 'Skupina', 'Pozícia', 'Meno', 'Čas nástupu'] as $index => $heading) {
-            $sheet->setCellValue($this->columnLetter($index).'1', $heading);
-        }
-
-        $row = 2;
-
-        foreach ($this->plan as $day) {
-            // The vedúci leads the day here even though the poster keeps them out of the body -
-            // a flat list of every shift is exactly where they should still be findable.
-            foreach ([...$day['managerRows'], ...$day['rows']] as $entry) {
-                $this->writeListRow(
-                    $sheet, $row++, $day,
-                    $entry['group'] ?? '', $entry['label'], $this->escapeFormula($entry['name'] ?? null) ?? '-', $entry['time'] ?? '',
-                );
-            }
-
-            // Substitutes belong here too - "who else could have covered Friday" is exactly the
-            // kind of question the poster cannot answer.
-            foreach ($day['substitutes'] as $name) {
-                $this->writeListRow($sheet, $row++, $day, '', 'náhradník', $name, '');
-            }
-        }
-
-        $lastRow = max(2, $row - 1);
-
-        $sheet->getStyle('A1:F1')->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => self::INK]],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-        ]);
-
-        $sheet->getRowDimension(1)->setRowHeight(22);
-
-        $sheet->getStyle('A1:F'.$lastRow)->applyFromArray([
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => self::RULE]]],
-        ]);
-
-        $sheet->getStyle('A2:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('F2:F'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('E2:E'.$lastRow)->getFont()->setBold(true);
-
-        foreach (['A' => 12, 'B' => 14, 'C' => 18, 'D' => 22, 'E' => 24, 'F' => 14] as $column => $width) {
-            $sheet->getColumnDimension($column)->setWidth($width);
-        }
-
-        // The three things that make it usable: a filter on every column - including Skupina, so
-        // "show me the whole bufet this week" is two clicks - and a header that stays put.
-        $sheet->setAutoFilter('A1:F'.$lastRow);
-        $sheet->freezePane('A2');
-
-        $sheet->getPageSetup()->setFitToWidth(1);
-        $sheet->getPageSetup()->setFitToHeight(0);
-        $sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1, 1);
-    }
-
-    /**
-     * @param  array<string, mixed>  $day
-     */
-    private function writeListRow(Worksheet $sheet, int $row, array $day, string $group, string $position, string $name, string $time): void
-    {
-        $sheet->setCellValue('A'.$row, $day['date']->format('d.m.Y'));
-        $sheet->setCellValue('B'.$row, $day['dayName']);
-        $sheet->setCellValue('C'.$row, $group);
-        $sheet->setCellValue('D'.$row, $position);
-        $sheet->setCellValue('E'.$row, $this->escapeFormula($name));
-        $sheet->setCellValue('F'.$row, $time);
     }
 
     private function columnLetter(int $index): string

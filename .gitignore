@@ -41,3 +41,6 @@ satisfiable
 
 # Agents
 /.agents/
+
+# Session handoff notes - local only, several agents write here, not meant for shared history
+/_planning/sessions/
