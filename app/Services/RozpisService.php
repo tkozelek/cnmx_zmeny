@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Role;
 use App\Models\Absence;
 use App\Models\Assignment;
 use App\Models\Position;
@@ -193,12 +194,13 @@ class RozpisService
      * on shift. They stay a real slot in the builder - somebody has to be assignable to it - and
      * `managerRows` keeps them for the places that want every shift, like the flat Zoznam sheet.
      *
-     * `eligible` is the manager-only counterpart of `unfilled`: everybody who signed up for the
-     * day and is not yet on a position, minus anyone with an absence covering it (a defensive
-     * filter - a signed-up absentee should not happen, but an absence can be filed after the
-     * signup), always in rank order: by `hardDayDebt` on a hard-to-staff day, by `earnedCredit`
-     * on a desirable or an ordinary one. It is not gated here - the published view decides who
-     * gets to see it, this just supplies the data.
+     * `eligible` is the manager-only counterpart of `unfilled`: every brigádnik in the team who
+     * could actually take the day - not already placed on a position today, and not covered by an
+     * absence - whether or not they signed up. Wider than `substitutes`/`$pool` on purpose: a
+     * manager drawing for an unfilled slot needs to know who is simply free, not only who
+     * volunteered. Always in rank order: by `hardDayDebt` on a hard-to-staff day, by
+     * `earnedCredit` on a desirable or an ordinary one. It is not gated here - the published view
+     * decides who gets to see it, this just supplies the data.
      *
      * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, rows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, substitutes: list<string>, eligible: list<array{name: string, score: float}>, unfilled: int}>
      */
@@ -223,8 +225,12 @@ class RozpisService
             ->get()
             ->groupBy('user_id');
 
+        // Everyone a manager could actually draw from - computed once for the week, not per day,
+        // since who holds the brigádnik role does not change from one day to the next.
+        $activeEmployees = $team->activeHoldersOf(Role::Employee);
+
         return $this->weeks->days($weekStart)
-            ->map(function (CarbonImmutable $day) use ($team, $slotsByDate, $assignmentsByDate, $fairness, $absencesByUser): array {
+            ->map(function (CarbonImmutable $day) use ($team, $slotsByDate, $assignmentsByDate, $fairness, $absencesByUser, $activeEmployees): array {
                 $key = $day->toDateString();
                 $assignments = $assignmentsByDate->get($key, collect());
 
@@ -255,21 +261,21 @@ class RozpisService
                     ->values();
 
                 // This list exists to rank people, so an unremarkable day falls back to plain
-                // merit rather than to $pool's alphabetical order - which would make the whole
-                // block a verbatim copy of the "Náhradníci" list printed above it.
+                // merit rather than to no order at all.
                 $rankingKey = $this->fairness->rankingKeyOrMerit($team, $day);
 
-                $rankOf = fn (Assignment $assignment): float => $this->fairness->rank(
-                    $fairness, $assignment->user_id, $rankingKey,
-                );
+                $rankOf = fn (int $userId): float => $this->fairness->rank($fairness, $userId, $rankingKey);
 
-                $eligible = $pool
-                    ->reject(fn (Assignment $assignment): bool => ($absencesByUser[$assignment->user_id] ?? collect())
+                $placedUserIds = $assignments->whereNotNull('position_slot_id')->pluck('user_id')->all();
+
+                $eligible = $activeEmployees
+                    ->reject(fn (User $user): bool => in_array($user->id, $placedUserIds, true))
+                    ->reject(fn (User $user): bool => ($absencesByUser[$user->id] ?? collect())
                         ->contains(fn (Absence $absence): bool => $absence->covers($day)))
-                    ->sortByDesc($rankOf)
-                    ->map(fn (Assignment $assignment): array => [
-                        'name' => (string) $assignment->user,
-                        'score' => round($rankOf($assignment), 1),
+                    ->sortByDesc(fn (User $user): float => $rankOf($user->id))
+                    ->map(fn (User $user): array => [
+                        'name' => (string) $user,
+                        'score' => round($rankOf($user->id), 1),
                     ])
                     ->values()
                     ->all();

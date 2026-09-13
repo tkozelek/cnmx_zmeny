@@ -199,6 +199,12 @@ class RozpisDay extends Component
 
         $this->reset(['newPositionId', 'newStartTime']);
         $this->refresh();
+
+        // The time field is a flatpickr instance, not a wire:model input - resetting the
+        // property server-side does not touch what it visibly shows. Without this, the picker
+        // keeps displaying the time from the row just added while the property is actually null,
+        // so the next add silently submits no time despite one being shown.
+        $this->dispatch('rozpis-slot-added');
     }
 
     /**

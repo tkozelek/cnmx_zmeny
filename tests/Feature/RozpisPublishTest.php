@@ -329,11 +329,12 @@ class RozpisPublishTest extends TestCase
     }
 
     /**
-     * The manager-only "vylosovaný" pool: everyone signed up and unplaced, minus anyone with an
-     * absence covering the day, ordered by who is most owed a shift. Employees see the same names
-     * anyway under "Náhradníci" - only the fairness order is manager-only.
+     * The manager-only "vylosovaný" pool: every brigádnik in the team who is not already placed
+     * on a position that day and has no absence covering it - whether or not they signed up -
+     * ordered by who is most owed a shift. Employees see the signed-up subset anyway under
+     * "Náhradníci"; the wider pool and the fairness order are manager-only.
      */
-    public function test_manager_only_eligible_pool_excludes_absentees_and_orders_by_fairness(): void
+    public function test_manager_only_eligible_pool_includes_everyone_free_and_orders_by_fairness(): void
     {
         $team = $this->tenant();
         $manager = $this->member($team, Role::Manager);
@@ -357,7 +358,7 @@ class RozpisPublishTest extends TestCase
             ]);
         }
 
-        // $settled already worked a shift, so their fairness score outranks $owed's untouched one.
+        // $settled already worked a shift, so their fairness score outranks everyone else's untouched one.
         $pastSlot = PositionSlot::factory()->forPosition($position)->on($weekStart->subWeek()->toDateString())->create();
         Assignment::factory()->create([
             'team_id' => $team->id, 'user_id' => $settled->id,
@@ -372,12 +373,13 @@ class RozpisPublishTest extends TestCase
         ]);
 
         $day = app(RozpisService::class)->plan($team, $weekStart)->first();
+        $names = array_column($day['eligible'], 'name');
 
-        $this->assertSame(
-            [(string) $settled, (string) $owed],
-            array_column($day['eligible'], 'name'),
-            'Absent excluded entirely, and the rest ordered by who is most owed a shift.',
-        );
+        $this->assertSame((string) $settled, $names[0], 'Whoever already worked outranks whoever has not.');
+        $this->assertContains((string) $owed, $names, 'Signed up and free that day - still eligible.');
+        $this->assertContains((string) $employee, $names, 'Never signed up, but free and not absent - eligible too.');
+        $this->assertNotContains((string) $absent, $names, 'Absent, excluded even though they signed up.');
+        $this->assertNotContains((string) $manager, $names, 'Not a brigádnik - never drawn.');
 
         $this->actingAs($manager)
             ->get(route('rozpis.published', ['date' => $date]))
