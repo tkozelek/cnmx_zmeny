@@ -53,6 +53,35 @@ class DataTableTest extends TestCase
         }
     }
 
+    public function test_absences_data_table_defaults_to_active_absences(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team, Role::Manager);
+
+        Absence::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'date_from' => CarbonImmutable::now()->toDateString(),
+            'date_to' => CarbonImmutable::now()->addDays(4)->toDateString(),
+            'reason' => 'Dovolenka Aktivna',
+            'status' => AbsenceStatus::Active,
+        ]);
+
+        Absence::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'date_from' => CarbonImmutable::now()->subDays(10)->toDateString(),
+            'date_to' => CarbonImmutable::now()->subDays(5)->toDateString(),
+            'reason' => 'Dovolenka Vyprsana',
+            'status' => AbsenceStatus::Active,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(AbsencesDataTable::class)
+            ->assertSee('Dovolenka Aktivna')
+            ->assertDontSee('Dovolenka Vyprsana');
+    }
+
     /**
      * The Stav/Akcie columns read status/team_id/user_id straight off $row rather than through
      * a registered Column, so the package's column-based SELECT projection silently drops those
@@ -74,6 +103,7 @@ class DataTableTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(AbsencesDataTable::class)
+            ->call('setFilter', 'stav', 'past')
             ->assertSee('Deaktivovaná')
             ->assertDontSee('Aktívna')
             ->assertSeeHtml('fa-trash');

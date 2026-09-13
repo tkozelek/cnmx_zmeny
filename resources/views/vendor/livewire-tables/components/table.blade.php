@@ -14,14 +14,28 @@
         wire:key="{{ $tableName }}-twrap"
         {{ $attributes->merge($customAttributes['wrapper'])
             ->class([
-                'shadow-2xl overflow-x-auto border border-neutral-800 rounded-xl bg-neutral-900' => $customAttributes['wrapper']['default'] ?? true
+                'relative shadow-sm overflow-x-auto border border-neutral-800 rounded-lg bg-neutral-900' => $customAttributes['wrapper']['default'] ?? true
             ])
             ->except(['default','default-styling','default-colors']) }}
     >
+        {{-- Table loading overlay and animated progress bar --}}
+        <div wire:loading class="absolute inset-0 bg-neutral-950/40 backdrop-blur-sm z-20 flex items-center justify-center pointer-events-none transition-all duration-200">
+            <div class="sticky left-1/2 -translate-x-1/2 inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-neutral-900 border border-neutral-700 shadow-xl text-xs font-semibold text-neutral-200 tracking-wide">
+                <i class="fa-solid fa-circle-notch fa-spin text-sky-400 text-sm"></i>
+                <span>Načítavam...</span>
+            </div>
+        </div>
+        <div wire:loading class="sticky left-0 top-0 inset-x-0 h-0.5 bg-neutral-800 overflow-hidden z-30 pointer-events-none">
+            <div class="h-full bg-gradient-to-r from-sky-500 via-sky-300 to-sky-500 animate-pulse w-full"></div>
+        </div>
+
         <table
             wire:key="{{ $tableName }}-table"
+            wire:loading.class="blur-sm pointer-events-none select-none"
             {{ $attributes->merge($customAttributes['table'])
-                ->class(['min-w-full divide-y divide-neutral-800' => $customAttributes['table']['default'] ?? true])
+                ->class([
+                    'min-w-full divide-y divide-neutral-800 transition-[filter] duration-200' => $customAttributes['table']['default'] ?? true
+                ])
                 ->except(['default','default-styling','default-colors']) }}
         >
             <thead wire:key="{{ $tableName }}-thead"

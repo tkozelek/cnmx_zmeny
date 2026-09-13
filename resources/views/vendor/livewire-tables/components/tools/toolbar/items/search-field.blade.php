@@ -2,7 +2,8 @@
 
 <div class="relative flex items-center w-full">
     <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none text-neutral-400">
-        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+        <i wire:loading.remove wire:target="search,clearSearch" class="fa-solid fa-magnifying-glass text-xs"></i>
+        <i wire:loading wire:target="search,clearSearch" class="fa-solid fa-circle-notch fa-spin text-xs text-sky-400"></i>
     </div>
 
     <input
@@ -16,7 +17,8 @@
         <button
             type="button"
             wire:click="clearSearch"
-            class="absolute inset-y-0 end-0 flex items-center pe-3 text-neutral-400 hover:text-white"
+            wire:loading.attr="disabled"
+            class="absolute inset-y-0 end-0 flex items-center pe-3 text-neutral-400 hover:text-white disabled:opacity-50"
             title="Vymazať vyhľadávanie"
         >
             <i class="fa-solid fa-xmark text-xs"></i>
