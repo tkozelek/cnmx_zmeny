@@ -8,15 +8,15 @@
         <div class="w-full max-w-md relative z-10">
             <!-- Brand Badge / Logo -->
             <div class="text-center mb-5">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-neutral-900 border border-neutral-800 text-sky-400 shadow-xl shadow-black/40 text-xl mb-2">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-neutral-900 border border-neutral-800 text-sky-400 shadow-sm text-xl mb-2">
                     <i class="fa-solid fa-user-plus"></i>
                 </div>
-                <h1 class="text-2xl font-black tracking-tight text-white uppercase">Vytvoriť účet</h1>
+                <h1 class="text-2xl font-bold tracking-tight text-white uppercase">Vytvoriť účet</h1>
                 <p class="text-neutral-400 text-xs mt-1">Pridajte sa k tímu a plánujte svoje zmeny</p>
             </div>
 
             <!-- Card container -->
-            <div class="bg-neutral-900/90 backdrop-blur-md rounded-2xl border border-neutral-800 shadow-2xl shadow-black/60 p-6 space-y-4">
+            <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-6 space-y-4">
                 <form class="space-y-3" action="{{ route('register.store') }}" method="POST">
                     @csrf
 

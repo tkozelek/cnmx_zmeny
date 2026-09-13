@@ -1,6 +1,6 @@
 <x-layout title="Overenie e-mailu">
     <div class="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-4 py-12">
-        <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 shadow-xl sm:p-8">
+        <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-6 shadow-sm sm:p-8">
             <h1 class="flex items-center gap-2.5 text-xl font-bold text-white">
                 <i class="fa-solid fa-envelope-circle-check text-sky-400"></i>
                 Over si e-mail

@@ -1,7 +1,7 @@
 <x-layout title="POMOC">
     <div class="container mx-auto px-4 py-12 md:py-16">
 
-        <div x-data="{ activeAccordion: null }" class="w-full max-w-4xl mx-auto bg-neutral-900/80 rounded-2xl border border-neutral-800 divide-y divide-neutral-800 shadow-2xl overflow-hidden">
+        <div x-data="{ activeAccordion: null }" class="w-full max-w-4xl mx-auto bg-neutral-900 rounded-lg border border-neutral-800 divide-y divide-neutral-800 shadow-sm overflow-hidden">
 
             {{-- 1. Registrácia --}}
             <div>
@@ -20,7 +20,7 @@
                 </h2>
                 <div x-show="activeAccordion === 1" style="display: none;">
 
-                    <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800/80 bg-neutral-950/40 space-y-5">
+                    <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800 bg-neutral-950 space-y-5">
                         <div>
                             <h3 class="text-xl font-bold text-neutral-100 mb-2">Krok 1: Vyplnenie registračného formulára</h3>
                             <p class="mb-3 text-sm">Pre registráciu je potrebné vyplniť nasledujúce údaje:</p>
@@ -61,7 +61,7 @@
                     </button>
                 </h2>
                 <div x-show="activeAccordion === 2" style="display: none;">
-                    <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800/80 bg-neutral-950/40 space-y-4 text-sm">
+                    <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800 bg-neutral-950 space-y-4 text-sm">
                         <p>Zapisovanie na zmeny funguje pomocou tlačidla <strong class="font-semibold text-sky-400">"Zapísať"</strong> (prípadne <strong class="font-semibold text-sky-400">"Odpísať"</strong>). Po stlačení sa vaše meno zobrazí pri danom dni.</p>
                         <p>Môžete tiež využiť textové pole <strong class="font-semibold text-white">Extra Info</strong> pre spresnenie vašich časových možností (napr. <em>od 15:00</em> alebo <em>do 22:00</em>).</p>
                         <p>Plánovať a zapisovať sa môžete na viacero týždňov dopredu podľa nastavení kina.</p>
@@ -85,7 +85,7 @@
                     </button>
                 </h2>
                 <div x-show="activeAccordion === 3" style="display: none;">
-                    <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800/80 bg-neutral-950/40 space-y-4 text-sm">
+                    <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800 bg-neutral-950 space-y-4 text-sm">
                         <p>Ak v niektoré dni nemôžete pracovať, nahláste si absenciu v sekcii <strong class="font-semibold text-white">Absencie</strong>.</p>
                         <p>Pre nahlásenie vyberte rozsah dátumov a uveďte dôvod. Počas nahlásenej absencie vás systém nepustí prihlásiť sa na zmeny v dané dni.</p>
                     </div>
@@ -109,7 +109,7 @@
                         </button>
                     </h2>
                     <div x-show="activeAccordion === 4" style="display: none;">
-                        <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800/80 bg-neutral-950/40 space-y-4 text-sm">
+                        <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800 bg-neutral-950 space-y-4 text-sm">
                             <h3 class="text-lg font-bold text-neutral-100">Spravovanie používateľov</h3>
                             <ul class="list-disc list-inside space-y-1.5 text-neutral-300 pl-2">
                                 <li><strong>Vytvorenie používateľa</strong>: Odošle pozvánku / reset hesla na zadaný email.</li>

@@ -5,8 +5,8 @@
         <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="w-full max-w-lg relative z-10">
-            <div class="bg-neutral-900/90 backdrop-blur-md rounded-2xl border border-neutral-800 shadow-2xl shadow-black/60 p-8 sm:p-10 space-y-6 text-center">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-3xl mx-auto shadow-lg">
+            <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-8 sm:p-10 space-y-6 text-center">
+                <div class="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-2xl mx-auto shadow-sm">
                     <i class="fa-solid fa-circle-check"></i>
                 </div>
 

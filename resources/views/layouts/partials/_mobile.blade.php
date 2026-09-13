@@ -9,7 +9,7 @@
      class="fixed inset-0 z-[100] flex h-full w-full flex-col items-center justify-center bg-neutral-950/60 backdrop-blur-xl md:hidden overflow-y-auto p-4"
      style="display: none;">
 
-    <nav @click.stop class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-2xl bg-neutral-900/90 backdrop-blur-md border border-neutral-700/60 p-6 text-center shadow-2xl my-auto">
+    <nav @click.stop class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-lg bg-neutral-900 border border-neutral-800 p-6 text-center shadow-xl my-auto">
 
         <!-- Dedicated Close Button -->
         <button
@@ -39,8 +39,9 @@
                 >
                     Používatelia
                     @if(isset($newUserCount) && $newUserCount > 0)
-                        <span class="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white align-middle">
-                            {{ $newUserCount }}
+                        <span class="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white align-middle" aria-label="Čaká na schválenie: {{ $newUserCount }}">
+                            <span aria-hidden="true">{{ $newUserCount }}</span>
+                            <span class="sr-only">čakajúcich na schválenie</span>
                         </span>
                     @endif
                 </x-nav-link>
@@ -65,6 +66,14 @@
 
         @if(auth()->check() && auth()->user()->hasVerifiedEmail())
             <div class="my-2 w-full border-t border-neutral-800"></div>
+
+            <x-nav-link
+                route="profile.index"
+                :is-mobile="true"
+                icon='<i class="fa-solid fa-user text-indigo-400"></i>'
+            >
+                Môj profil
+            </x-nav-link>
 
             @can('viewSettings', app(\App\Models\Team::class))
                 <x-nav-link

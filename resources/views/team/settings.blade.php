@@ -15,7 +15,7 @@
             </div>
 
             <!-- Form Card -->
-            <div class="bg-neutral-900/90 rounded-2xl border border-neutral-800 shadow-xl p-6 sm:p-8">
+            <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-6 sm:p-8">
                 @if(session('message'))
                     <div class="mb-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-4 text-xs font-semibold text-emerald-400 flex items-center gap-2">
                         <i class="fa-solid fa-circle-check text-sm"></i>
