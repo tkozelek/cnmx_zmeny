@@ -31,8 +31,11 @@ use Throwable;
  * DB_* targets (e.g. beta) without touching prod - pair it with a read-only DB user there too.
  *
  * Not migrated - the new schema has no destination for them:
- * - `shifts` / `rates` (evidencia hodín was dropped from the app entirely)
  * - `bugs`, `file_storage` (bug reporting and per-week file uploads were scrapped in the rewrite)
+ *
+ * `shifts`/`rates` (evidencia hodín) aren't mentioned above because there's nothing left to skip -
+ * both tables are gone from the destination schema entirely (see
+ * 2026_09_12_130000_drop_shifts_and_rates_tables.php).
  */
 class ImportLegacyData extends Command
 {
@@ -89,7 +92,7 @@ class ImportLegacyData extends Command
         });
 
         $this->info('Import dokončený.');
-        $this->line('Preskočené (nová schéma pre ne nemá tabuľku): shifts, rates, bugs, file_storage.');
+        $this->line('Preskočené (nová schéma pre ne nemá tabuľku): bugs, file_storage.');
 
         return self::SUCCESS;
     }
