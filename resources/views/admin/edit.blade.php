@@ -2,10 +2,10 @@
 
 <x-layout title="Upraviť používateľa">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex justify-center">
-        <div class="w-full max-w-lg bg-neutral-900/90 backdrop-blur-md border border-neutral-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
+        <div class="w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-lg shadow-sm p-6 sm:p-8 space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-neutral-800">
                 <div class="flex items-center gap-3">
-                    <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 border border-neutral-700 text-sky-400 text-base">
+                    <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-800 border border-neutral-700 text-sky-400 text-base">
                         <i class="fa-solid fa-user-pen"></i>
                     </div>
                     <div>

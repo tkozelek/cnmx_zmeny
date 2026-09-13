@@ -7,8 +7,9 @@
             >
                 Používatelia
                 @if(isset($newUserCount) && $newUserCount > 0)
-                    <span class="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1.5 text-xs font-bold text-white bg-rose-500 rounded-full align-middle">
-                        {{ $newUserCount }}
+                    <span class="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1.5 text-xs font-bold text-white bg-rose-500 rounded-full align-middle" aria-label="Čaká na schválenie: {{ $newUserCount }}">
+                        <span aria-hidden="true">{{ $newUserCount }}</span>
+                        <span class="sr-only">čakajúcich na schválenie</span>
                     </span>
                 @endif
             </x-nav-link>
@@ -40,16 +41,20 @@
             @mouseenter="openProfile = true"
             @mouseleave="openProfile = false"
             @click.outside="openProfile = false"
+            @keydown.escape.window="openProfile = false"
             class="relative py-1"
         >
             <button
                 type="button"
                 @click="openProfile = !openProfile"
-                class="flex items-center gap-2.5 px-3 py-1.5 text-base font-semibold text-neutral-200 transition hover:text-white focus:outline-none"
+                :aria-expanded="openProfile.toString()"
+                aria-haspopup="menu"
+                aria-label="Používateľské menu"
+                class="group flex items-center gap-2.5 px-3 py-1.5 text-base font-semibold text-neutral-300 transition hover:bg-neutral-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-xl cursor-pointer"
             >
-                <i class="fa-solid fa-user text-sm text-neutral-400"></i>
+                <i class="fa-solid fa-user text-sm text-neutral-400 group-hover:text-neutral-200 transition"></i>
                 <span>{{ auth()->user()->name }} {{ auth()->user()->lastname }}</span>
-                <i class="fa-solid fa-chevron-down text-xs text-neutral-500 transition-transform duration-200" :class="{'rotate-180': openProfile}"></i>
+                <i class="fa-solid fa-chevron-down text-xs text-neutral-500 group-hover:text-neutral-300 transition-transform duration-200" :class="{'rotate-180': openProfile}"></i>
             </button>
 
             {{-- Dropdown Container --}}
@@ -65,11 +70,19 @@
                 class="absolute right-0 top-full pt-1 z-50 w-56"
                 style="display: none;"
             >
-                <div class="rounded-xl border border-neutral-800 bg-neutral-900 p-1.5 shadow-2xl">
+                <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-1.5 shadow-2xl">
                     <div class="px-3 py-2 border-b border-neutral-800 mb-1">
                         <p class="text-xs font-medium text-neutral-400">Prihlásený ako</p>
                         <p class="truncate text-sm font-semibold text-neutral-100">{{ auth()->user()->name }} {{ auth()->user()->lastname }}</p>
                     </div>
+
+                    <a
+                        href="{{ route('profile.index') }}"
+                        class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
+                    >
+                        <i class="fa-solid fa-user text-xs text-indigo-400"></i>
+                        Môj profil
+                    </a>
 
                     @can('viewSettings', app(\App\Models\Team::class))
                         <a

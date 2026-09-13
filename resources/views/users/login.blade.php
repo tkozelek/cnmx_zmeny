@@ -8,15 +8,15 @@
         <div class="w-full max-w-md relative z-10">
             <!-- Brand Badge / Logo -->
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-neutral-900 border border-neutral-800 text-sky-400 shadow-xl shadow-black/40 text-2xl mb-4">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-neutral-900 border border-neutral-800 text-sky-400 shadow-sm text-xl mb-3">
                     <i class="fa-solid fa-film"></i>
                 </div>
-                <h1 class="text-3xl font-black tracking-tight text-white uppercase">Vitajte späť</h1>
-                <p class="text-neutral-400 text-sm mt-2">Prihláste sa do portálu pracovných zmien CNMX</p>
+                <h1 class="text-2xl font-bold tracking-tight text-white uppercase">Vitajte späť</h1>
+                <p class="text-neutral-400 text-sm mt-1">Prihláste sa do portálu pracovných zmien CNMX</p>
             </div>
 
             <!-- Card container -->
-            <div class="bg-neutral-900/90 backdrop-blur-md rounded-2xl border border-neutral-800 shadow-2xl shadow-black/60 p-8 space-y-6">
+            <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-6 sm:p-8 space-y-6">
                 @if(session('error'))
                     <x-alert>{{ session('error') }}</x-alert>
                 @endif
@@ -88,7 +88,7 @@
                 x-transition:leave-end="opacity-0 scale-95"
                 class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
             >
-                <div @click.away="show = false" class="relative w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-900 p-6 sm:p-7 shadow-2xl text-center space-y-4 my-auto">
+                <div @click.away="show = false" class="relative w-full max-w-md rounded-lg border border-neutral-800 bg-neutral-900 p-6 sm:p-7 shadow-xl text-center space-y-4 my-auto">
                     <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 text-2xl mx-auto">
                         <i class="fa-solid fa-envelope-circle-check"></i>
                     </div>
@@ -136,7 +136,7 @@
                 x-transition:leave-end="opacity-0 scale-95"
                 class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
             >
-                <div @click.away="show = false" class="relative w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-900 p-6 sm:p-7 shadow-2xl text-center space-y-4 my-auto">
+                <div @click.away="show = false" class="relative w-full max-w-md rounded-lg border border-neutral-800 bg-neutral-900 p-6 sm:p-7 shadow-xl text-center space-y-4 my-auto">
                     <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-2xl mx-auto">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>

@@ -7,15 +7,15 @@
         <div class="w-full max-w-md relative z-10">
             {{-- Brand Badge / Icon --}}
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-neutral-900 border border-neutral-800 text-sky-400 shadow-xl shadow-black/40 text-2xl mb-4">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-neutral-900 border border-neutral-800 text-sky-400 shadow-sm text-xl mb-3">
                     <i class="fa-solid fa-key"></i>
                 </div>
-                <h1 class="text-3xl font-black tracking-tight text-white uppercase">Zmena hesla</h1>
-                <p class="text-neutral-400 text-sm mt-2">Zadajte svoje aktuálne a nové heslo pre účet</p>
+                <h1 class="text-2xl font-bold tracking-tight text-white uppercase">Zmena hesla</h1>
+                <p class="text-neutral-400 text-sm mt-1">Zadajte svoje aktuálne a nové heslo pre účet</p>
             </div>
 
             {{-- Card container --}}
-            <div class="bg-neutral-900/90 backdrop-blur-md rounded-2xl border border-neutral-800 shadow-2xl shadow-black/60 p-8 space-y-6">
+            <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-6 sm:p-8 space-y-6">
                 @if(session('error'))
                     <x-alert>{{ session('error') }}</x-alert>
                 @endif
