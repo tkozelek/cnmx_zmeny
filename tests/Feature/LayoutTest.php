@@ -49,6 +49,7 @@ class LayoutTest extends TestCase
             'admin.users.index',
             'absences.index',
             'settings.password.edit',
+            'profile.index',
         ] as $route) {
             $this->actingAs($headManager)->get(route($route))->assertOk();
         }

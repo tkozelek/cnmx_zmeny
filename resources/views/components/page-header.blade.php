@@ -1,7 +1,11 @@
-@props(['icon' => null, 'title', 'subtitle' => null])
+@props(['icon' => null, 'title', 'subtitle' => null, 'breadcrumb' => null])
 
 <div class="flex flex-col gap-4 border-b border-neutral-800 pb-5 sm:flex-row sm:items-center sm:justify-between">
-    <div>
+    <div class="min-w-0">
+        @if($breadcrumb)
+            <div class="mb-1">{{ $breadcrumb }}</div>
+        @endif
+
         <h1 class="flex items-center gap-2.5 text-2xl font-bold text-white">
             @if($icon)
                 <i class="fa-solid {{ $icon }} text-sky-400"></i>
@@ -15,7 +19,7 @@
     </div>
 
     @if(trim($slot))
-        <div class="flex items-center gap-2">
+        <div class="flex shrink-0 items-center gap-2">
             {{ $slot }}
         </div>
     @endif
