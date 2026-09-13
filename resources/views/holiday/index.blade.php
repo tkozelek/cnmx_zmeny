@@ -12,6 +12,8 @@
                 <p class="text-sm text-neutral-400">Prehľad a evidencia absencií a dovoleniek.</p>
             </div>
             <button @click="openModal = true"
+                    aria-haspopup="dialog"
+                    :aria-expanded="openModal.toString()"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg text-neutral-900 bg-neutral-100 hover:bg-white transition focus:outline-none shadow-md"
                     type="button">
                 <i class="fa-solid fa-plus text-xs" aria-hidden="true"></i> Pridať absenciu
@@ -23,6 +25,7 @@
             <div
                 x-cloak
                 x-show="openModal"
+                @keydown.escape.window="openModal = false"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 scale-95"
                 x-transition:enter-end="opacity-100 scale-100"
@@ -31,15 +34,19 @@
                 x-transition:leave-end="opacity-0 scale-95"
                 class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
             >
-                <div @click.away="openModal = false" class="relative w-full max-w-lg rounded-2xl border border-neutral-800 bg-neutral-900 shadow-2xl overflow-hidden my-auto">
+                <div @click.away="openModal = false"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="modal-absence-title"
+                     class="relative w-full max-w-lg rounded-lg border border-neutral-800 bg-neutral-900 shadow-xl overflow-hidden my-auto">
 
                 {{-- Header --}}
                 <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-800 bg-neutral-950">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-calendar-plus text-sky-400 text-lg"></i>
-                        <h3 class="text-lg font-bold text-neutral-100">Pridať absenciu</h3>
+                        <h3 id="modal-absence-title" class="text-lg font-bold text-neutral-100">Pridať absenciu</h3>
                     </div>
-                    <button @click="openModal = false" type="button" class="text-neutral-400 hover:text-white rounded-lg p-1.5 transition">
+                    <button @click="openModal = false" type="button" aria-label="Zatvoriť okno" class="text-neutral-400 hover:text-white rounded-lg p-1.5 transition">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
@@ -69,7 +76,7 @@
                             Rozsah dátumov absencie <span class="text-rose-400">*</span>
                         </label>
                         <div class="relative">
-                            <input x-ref="rangeInput" type="text" placeholder="Vyberte rozsah dátumov..." class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none cursor-pointer">
+                            <input x-ref="rangeInput" type="text" placeholder="Vyberte rozsah dátumov..." aria-label="Rozsah dátumov absencie" class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none cursor-pointer">
                             <input type="hidden" name="date_from" :value="dateFrom">
                             <input type="hidden" name="date_to" :value="dateTo">
                         </div>
@@ -87,9 +94,11 @@
                             name="reason"
                             value="{{ old('reason') }}"
                             required
+                            maxlength="255"
                             placeholder="Napr. dovolenka, PN, lekár, atď."
                             class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none"
                         >
+                        <p class="text-xs text-neutral-500 mt-1">Maximálne 255 znakov.</p>
                     </div>
 
                     {{-- Action Buttons --}}

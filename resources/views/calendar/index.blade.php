@@ -15,11 +15,11 @@
                                 @method('DELETE')
                             @endif
                             <button type="submit" @class([
-                                'inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950',
-                                'bg-sky-500/10 text-sky-300 border border-sky-500/40 hover:bg-sky-500/20 focus:ring-sky-400' => $locked,
-                                'bg-neutral-900 text-neutral-300 ring-1 ring-inset ring-neutral-800 hover:bg-neutral-800 hover:text-white focus:ring-neutral-500' => ! $locked,
+                                'inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950 shadow-sm',
+                                'bg-neutral-900 text-sky-300 border border-sky-600 hover:bg-neutral-800 hover:border-sky-500 hover:text-white focus:ring-sky-500' => $locked,
+                                'bg-neutral-900 text-neutral-200 border border-neutral-700 hover:bg-neutral-800 hover:border-neutral-600 hover:text-white focus:ring-neutral-500' => ! $locked,
                             ])>
-                                <i class="fa-solid {{ $locked ? 'fa-lock-open text-sky-400' : 'fa-lock' }}"></i>
+                                <i class="fa-solid {{ $locked ? 'fa-lock-open text-sky-400' : 'fa-lock text-neutral-400' }}"></i>
                                 {{ $locked ? 'Odomknúť týždeň' : 'Zamknúť týždeň' }}
                             </button>
                         </form>
@@ -27,15 +27,15 @@
                         {{-- Only once the week is frozen: the builder needs a settled signup list. --}}
                         @if($locked)
                             <a href="{{ route('rozpis.show', ['date' => $weekStart->toDateString()]) }}"
-                               class="inline-flex min-h-10 items-center gap-2 rounded-md border border-sky-500/40 bg-sky-500/10 px-4 text-sm font-medium text-sky-300 transition hover:bg-sky-500/20 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
-                                <i class="fa-solid fa-table-list"></i>
+                               class="inline-flex min-h-10 items-center gap-2 rounded-md border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 hover:border-neutral-600 px-4 text-sm font-medium text-neutral-200 hover:text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                                <i class="fa-solid fa-table-list text-sky-400"></i>
                                 Rozpis
                             </a>
                         @endif
 
                         <a href="{{ route('schedule.export', ['date' => $weekStart->toDateString()]) }}"
-                           class="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium bg-neutral-900 text-neutral-300 ring-1 ring-inset ring-neutral-800 hover:bg-neutral-800 hover:text-white focus:ring-neutral-500 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950">
-                            <i class="fa-solid fa-file-arrow-down"></i>
+                           class="inline-flex min-h-10 items-center gap-2 rounded-md border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 hover:border-neutral-600 px-4 text-sm font-medium text-neutral-200 hover:text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                            <i class="fa-solid fa-file-arrow-down text-emerald-500"></i>
                             Excel
                         </a>
                     @endcan
@@ -44,7 +44,7 @@
                          a link that bounces with "not published yet" is worse than no link. --}}
                     @if($rozpisPublished)
                         <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}"
-                           class="inline-flex min-h-10 items-center gap-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                           class="inline-flex min-h-10 items-center gap-2 rounded-md border border-emerald-600 bg-emerald-700 hover:bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
                             <i class="fa-solid fa-clipboard-list"></i>
                             Rozpis zmien
                         </a>
@@ -70,26 +70,104 @@
                 @endforeach
             </div>
 
-            {{-- Live updating signup summary table --}}
-            <livewire:signup-summary :week-start="$weekStart->toDateString()" :key="'summary-'.$weekStart->toDateString()" />
+            {{-- Bottom Insights Section (Signup Summary & Absences) --}}
+            @php
+                $canViewSummary = auth()->user()?->hasPermissionInTeam('user.view-any', app(\App\Models\Team::class));
+                $hasAbsences = $absences->isNotEmpty();
+            @endphp
 
-            @if($absences->isNotEmpty())
-                <section class="flex flex-col gap-3">
-                    <h2 class="text-lg font-semibold text-neutral-100">Absencie v tomto týždni</h2>
-                    <x-table :headers="['Meno', 'Začiatok', 'Koniec', 'Nahlásené', 'Dôvod']">
-                        @foreach($absences as $absence)
-                            <x-table-row>
-                                <x-table-cell class="font-medium text-neutral-100">{{ $absence->user }}</x-table-cell>
-                                <x-table-cell class="whitespace-nowrap text-neutral-300">{{ $absence->date_from->format('d.m.') }}</x-table-cell>
-                                <x-table-cell class="whitespace-nowrap text-neutral-300">
-                                    {{ $absence->isOpenEnded() ? 'trvalá' : $absence->date_to->format('d.m.') }}
-                                </x-table-cell>
-                                <x-table-cell class="whitespace-nowrap text-neutral-500">{{ $absence->created_at->format('d.m. H:i') }}</x-table-cell>
-                                <x-table-cell class="text-neutral-300">{{ $absence->reason ?: '-' }}</x-table-cell>
-                            </x-table-row>
-                        @endforeach
-                    </x-table>
-                </section>
+            @if($canViewSummary || $hasAbsences)
+                <div class="grid grid-cols-1 {{ ($canViewSummary && $hasAbsences) ? 'lg:grid-cols-12' : '' }} gap-6 pt-3 items-start">
+                    @if($canViewSummary)
+                        <div class="{{ $hasAbsences ? 'lg:col-span-5 xl:col-span-5' : 'w-full max-w-2xl' }}">
+                            <livewire:signup-summary :week-start="$weekStart->toDateString()" :key="'summary-'.$weekStart->toDateString()" />
+                        </div>
+                    @endif
+
+                    @if($hasAbsences)
+                        <div class="{{ $canViewSummary ? 'lg:col-span-7 xl:col-span-7' : 'w-full' }}">
+                            <section class="rounded-lg border border-neutral-800 bg-neutral-900 shadow-sm overflow-hidden flex flex-col">
+                                {{-- Card Header --}}
+                                <div class="px-4 py-3 border-b border-neutral-800 bg-neutral-950 flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <i class="fa-solid fa-calendar-xmark text-neutral-400 text-xs shrink-0"></i>
+                                        <div>
+                                            <h2 class="text-sm font-semibold text-neutral-100 truncate">Absencie v tomto týždni</h2>
+                                        </div>
+                                    </div>
+
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-800 text-neutral-300 border border-neutral-700 shrink-0">
+                                        {{ $absences->count() }} {{ $absences->count() === 1 ? 'absencia' : ($absences->count() < 5 ? 'absencie' : 'absencií') }}
+                                    </span>
+                                </div>
+
+                                {{-- Scrollable Table with Sticky Header --}}
+                                <div class="relative max-h-[380px] overflow-y-auto custom-scrollbar">
+                                    <table class="w-full text-left text-sm text-neutral-300">
+                                        <thead class="sticky top-0 z-10 border-b border-neutral-800 bg-neutral-950 text-xs font-medium uppercase tracking-wider text-neutral-400">
+                                            <tr>
+                                                <th class="px-4 py-2">Zamestnanec</th>
+                                                <th class="px-4 py-2">Trvanie</th>
+                                                <th class="px-4 py-2 hidden sm:table-cell">Dôvod</th>
+                                                <th class="px-4 py-2 text-right hidden md:table-cell">Nahlásené</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-neutral-800">
+                                            @foreach($absences as $absence)
+                                                @php
+                                                    $isOwn = auth()->id() === $absence->user_id;
+                                                @endphp
+                                                <tr @class([
+                                                    'transition-colors duration-150',
+                                                    'bg-neutral-800/40' => $isOwn,
+                                                    'hover:bg-neutral-800/60' => true,
+                                                ])>
+                                                    <td class="px-4 py-2.5 min-w-0">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="truncate text-sm {{ $isOwn ? 'text-white font-semibold' : 'text-neutral-200' }}">
+                                                                {{ $absence->user }}
+                                                            </span>
+                                                            @if($isOwn)
+                                                                <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold uppercase tracking-wider bg-neutral-700 text-neutral-200">Ja</span>
+                                                            @endif
+                                                        </div>
+                                                        @if($absence->reason)
+                                                            <p class="sm:hidden text-xs text-neutral-400 mt-0.5 truncate">
+                                                                {{ $absence->reason }}
+                                                            </p>
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-4 py-2.5 whitespace-nowrap">
+                                                        <span class="text-xs text-neutral-200 font-medium">
+                                                            {{ $absence->date_from->format('d.m.') }}
+                                                            @if($absence->isOpenEnded())
+                                                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium text-amber-300 bg-neutral-800 border border-neutral-700 ml-1">trvalá</span>
+                                                            @elseif($absence->date_to && ! $absence->date_to->equalTo($absence->date_from))
+                                                                – {{ $absence->date_to->format('d.m.') }}
+                                                            @endif
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-2.5 hidden sm:table-cell max-w-xs">
+                                                        @if($absence->reason)
+                                                            <span class="text-xs text-neutral-300 truncate block" title="{{ $absence->reason }}">
+                                                                {{ $absence->reason }}
+                                                            </span>
+                                                        @else
+                                                            <span class="text-xs text-neutral-500">–</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-4 py-2.5 text-right whitespace-nowrap hidden md:table-cell text-xs text-neutral-400">
+                                                        {{ $absence->created_at->format('d.m. H:i') }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        </div>
+                    @endif
+                </div>
             @endif
         </div>
     </div>
