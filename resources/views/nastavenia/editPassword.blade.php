@@ -1,18 +1,7 @@
 <x-layout title="ZMENA HESLA">
-    <div class="flex-1 min-h-full w-full py-12 md:py-20 flex items-center justify-center px-4 relative overflow-hidden bg-neutral-950">
-        {{-- Ambient lighting glows --}}
-        <div class="absolute -top-40 -left-40 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="w-full max-w-md relative z-10">
-            {{-- Brand Badge / Icon --}}
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-neutral-900 border border-neutral-800 text-sky-400 shadow-sm text-xl mb-3">
-                    <i class="fa-solid fa-key"></i>
-                </div>
-                <h1 class="text-2xl font-bold tracking-tight text-white uppercase">Zmena hesla</h1>
-                <p class="text-neutral-400 text-sm mt-1">Zadajte svoje aktuálne a nové heslo pre účet</p>
-            </div>
+    <div class="container mx-auto max-w-lg px-4 py-8">
+        <div class="flex flex-col gap-6">
+            <x-page-header icon="fa-key" title="Zmena hesla" subtitle="Zadajte svoje aktuálne a nové heslo pre účet" />
 
             {{-- Card container --}}
             <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-6 sm:p-8 space-y-6">
@@ -62,12 +51,6 @@
                         <i class="fa-solid fa-check text-xs text-sky-400 group-hover:scale-110 transition-transform"></i>
                     </button>
                 </form>
-
-                <div class="pt-4 border-t border-neutral-800 text-center">
-                    <a class="text-xs text-neutral-400 hover:text-slate-300 font-semibold inline-flex items-center gap-1.5 transition duration-150" href="{{ route('welcome.index') }}">
-                        <i class="fa-solid fa-arrow-left text-[10px] text-sky-400"></i> Späť na prehľad
-                    </a>
-                </div>
             </div>
         </div>
     </div>

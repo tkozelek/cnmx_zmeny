@@ -2,17 +2,11 @@
     <div class="container mx-auto px-4 py-8 max-w-3xl">
         <div class="flex flex-col gap-6">
 
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-800 pb-5">
-                <div>
-                    <h1 class="text-2xl font-bold text-white flex items-center gap-2.5">
-                        <i class="fa-solid fa-sliders text-sky-400"></i>
-                        Správa kina - {{ $team->name }}
-                    </h1>
-
-                    <p class="text-xs text-neutral-400 mt-1">Konfigurácia parametrov týždňa, absencií a nastavení prevádzky</p>
-                </div>
-            </div>
+            <x-page-header
+                icon="fa-sliders"
+                :title="'Správa kina - '.$team->name"
+                subtitle="Konfigurácia parametrov týždňa, absencií a nastavení prevádzky"
+            />
 
             <!-- Form Card -->
             <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-6 sm:p-8">

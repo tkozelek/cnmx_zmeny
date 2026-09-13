@@ -5,12 +5,7 @@
         class="container mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-8"
     >
 
-        {{-- Page Header --}}
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-neutral-100">Správa absencií</h1>
-                <p class="text-sm text-neutral-400">Prehľad a evidencia absencií a dovoleniek.</p>
-            </div>
+        <x-page-header icon="fa-calendar-days" title="Správa absencií" subtitle="Prehľad a evidencia absencií a dovoleniek.">
             <button @click="openModal = true"
                     aria-haspopup="dialog"
                     :aria-expanded="openModal.toString()"
@@ -18,7 +13,7 @@
                     type="button">
                 <i class="fa-solid fa-plus text-xs" aria-hidden="true"></i> Pridať absenciu
             </button>
-        </div>
+        </x-page-header>
 
         {{-- Add Absence Alpine Modal Component with x-teleport to body --}}
         <template x-teleport="body">
