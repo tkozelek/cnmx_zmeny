@@ -307,6 +307,40 @@ class RozpisDay extends Component
         $this->refresh();
     }
 
+    /**
+     * Move a slot one position up (accessible single-pointer / keyboard alternative to dragging).
+     */
+    public function moveSlotUp(int $slotId): void
+    {
+        $this->authorize('create', [PositionSlot::class, $this->dayCarbon]);
+
+        $ids = $this->slots->pluck('id')->all();
+        $index = array_search($slotId, $ids, true);
+        if ($index !== false && $index > 0) {
+            $prev = $ids[$index - 1];
+            $ids[$index - 1] = $ids[$index];
+            $ids[$index] = $prev;
+            $this->reorderSlots($ids);
+        }
+    }
+
+    /**
+     * Move a slot one position down (accessible single-pointer / keyboard alternative to dragging).
+     */
+    public function moveSlotDown(int $slotId): void
+    {
+        $this->authorize('create', [PositionSlot::class, $this->dayCarbon]);
+
+        $ids = $this->slots->pluck('id')->all();
+        $index = array_search($slotId, $ids, true);
+        if ($index !== false && $index < count($ids) - 1) {
+            $next = $ids[$index + 1];
+            $ids[$index + 1] = $ids[$index];
+            $ids[$index] = $next;
+            $this->reorderSlots($ids);
+        }
+    }
+
     public function removeSlot(int $slotId): void
     {
         $slot = PositionSlot::findOrFail($slotId);

@@ -73,12 +73,14 @@
                             $isMyRow = fn (array $row): bool => $row['user_id'] !== null && $row['user_id'] === auth()->id();
                             $isMyDay = collect($day['rows'])->contains($isMyRow)
                                 || collect($day['managerRows'])->contains($isMyRow);
+                            $isToday = $day['date']->isToday();
                         @endphp
 
                         <section id="day-{{ $day['date']->toDateString() }}" @class([
-                            'flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm',
-                            'border-sky-500/40 ring-1 ring-sky-500/20' => $isMyDay,
-                            'border-neutral-800' => ! $isMyDay,
+                            'flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm transition',
+                            'border-white ring-2 ring-white/50 shadow-md shadow-white/5' => $isToday,
+                            'border-sky-500/40 ring-1 ring-sky-500/20' => ! $isToday && $isMyDay,
+                            'border-neutral-800' => ! $isToday && ! $isMyDay,
                         ])>
                             <x-rozpis.day-heading :name="$day['dayName']" :date="$day['date']">
                                 @if($day['manager'])
@@ -95,8 +97,8 @@
                                 {{-- Manager slots are not counted - the vedúci is arranged apart
                                      from the rest and would otherwise flag every day. --}}
                                 @if($day['unfilled'] > 0)
-                                    <p class="mt-1.5 inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-amber-400">
-                                        <i class="fa-solid fa-triangle-exclamation text-[0.6rem]"></i>
+                                    <p class="mt-1.5 inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-xs font-semibold text-amber-400">
+                                        <i class="fa-solid fa-triangle-exclamation text-xs"></i>
                                         {{ $day['unfilled'] }}x neobsadené
                                     </p>
                                 @endif
@@ -108,7 +110,7 @@
                             <div class="flex flex-col">
                                 @forelse($day['rows'] as $row)
                                     @if($row['startsGroup'])
-                                        <p class="bg-neutral-950/50 px-3 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-neutral-500">
+                                        <p class="bg-neutral-950/50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-neutral-400">
                                             <span class="truncate">{{ $row['group'] }}</span>
                                         </p>
                                     @endif
@@ -153,7 +155,7 @@
 
                             @if($day['substitutes'])
                                 <div class="border-t border-neutral-800/80 bg-neutral-900/60 px-3 py-2">
-                                    <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-neutral-500">
+                                    <p class="text-xs font-semibold uppercase tracking-wider text-neutral-400">
                                         Náhradníci
                                     </p>
                                     <p class="mt-1 text-xs leading-relaxed text-neutral-400">
@@ -171,7 +173,7 @@
                                  needs and a regular employee does not. --}}
                             @if($canBuild && $day['unfilled'] > 0 && $day['eligible'])
                                 <div class="border-t border-neutral-800/80 bg-emerald-500/[0.04] px-3 py-2">
-                                    <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-emerald-500"
+                                    <p class="text-xs font-semibold uppercase tracking-wider text-emerald-500"
                                        title="Zapísaní, bez absencie tento deň, ešte nezaradení - zoradení podľa spravodlivosti: v neobľúbený deň je hore ten, kto ich odrobil najmenej, v obľúbený ten, kto si ho najviac zaslúžil.">
                                         Kto môže byť vylosovaný
                                     </p>

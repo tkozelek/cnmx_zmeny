@@ -390,6 +390,25 @@ class RozpisPublishTest extends TestCase
             ->assertDontSee('Kto môže byť vylosovaný');
     }
 
+    public function test_current_day_is_highlighted_on_published_rozpis_view(): void
+    {
+        $team = $this->tenant();
+        $employee = $this->member($team);
+        $weekStart = $this->weekStart($team);
+
+        $this->lockWeek($team, $weekStart, published: true);
+        $this->placeSomeone($team, $employee, $weekStart->addDay()->toDateString(), 'Bufet', '16:30:00');
+
+        $today = CarbonImmutable::now()->toDateString();
+
+        $this->actingAs($employee)
+            ->get(route('rozpis.published', ['date' => $weekStart->toDateString()]))
+            ->assertOk()
+            ->assertSee('id="day-'.$today.'"', false)
+            ->assertSee('border-white')
+            ->assertSee('Dnes');
+    }
+
     private function weekStart(Team $team): CarbonImmutable
     {
         return app(WeekService::class)->start($team, CarbonImmutable::now());

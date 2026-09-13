@@ -134,7 +134,7 @@
                     </summary>
 
                     <div class="overflow-x-auto border-t border-neutral-800/80 px-4 py-3">
-                        <p class="mb-2.5 text-[0.7rem] leading-relaxed text-neutral-500">
+                        <p class="mb-2.5 text-xs leading-relaxed text-neutral-400">
                             Vychádza z toho, na koľko dní sa človek zapísal - kto je k dispozícii viac, dostane viac -
                             a zo zásluh, ktoré rozdiel medzi rovnako dostupnými ľuďmi nakloní v prospech toho,
                             kto pre kino odrobil viac: viac dní a viac tých neobľúbených. Nikdy neodporučí viac
@@ -143,14 +143,21 @@
 
                         <table class="w-full min-w-[28rem] text-xs">
                             <thead>
-                                <tr class="text-left text-[0.65rem] uppercase tracking-wider text-neutral-500">
+                                <tr class="text-left text-xs uppercase tracking-wider text-neutral-400">
                                     <th class="pb-1.5 pr-3 font-semibold">Meno</th>
                                     <th class="pb-1.5 pr-3 text-center font-semibold">Zapísaný</th>
                                     <th class="pb-1.5 pr-3 text-center font-semibold">Odporúčame</th>
                                     <th class="pb-1.5 pr-3 text-center font-semibold">Zaradený</th>
-                                    <th class="pb-1.5 text-center font-semibold"
-                                        title="Zásluhy: súčet váh odpracovaných dní za sledované obdobie. Vyššie číslo znamená viac odrobených dní a viac tých neobľúbených (piatok 1,6, bežný deň 1, víkend 0,8) - takže väčší nárok na zmeny aj na obľúbené dni.">
-                                        Zásluhy
+                                    <th class="pb-1.5 text-center font-semibold">
+                                        <span class="inline-flex items-center justify-center gap-1">
+                                            Zásluhy
+                                            <button type="button" onclick="document.getElementById('rozpis-guide').showModal()"
+                                                    title="Zásluhy: súčet váh odpracovaných dní. Kliknutím otvoríte sprievodcu."
+                                                    aria-label="Vysvetlenie zásluh v sprievodcovi"
+                                                    class="text-neutral-400 hover:text-sky-400 focus:outline-none focus:text-sky-300">
+                                                <i class="fa-solid fa-circle-info text-xs"></i>
+                                            </button>
+                                        </span>
                                     </th>
                                 </tr>
                             </thead>

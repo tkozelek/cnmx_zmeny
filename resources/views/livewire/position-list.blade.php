@@ -2,7 +2,7 @@
 
     @if($this->canCreate)
         {{-- One form serves create and edit: editingId decides which. --}}
-        <div class="rounded-2xl border border-neutral-800 bg-neutral-900/90 p-5 shadow-xl sm:p-6">
+        <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-5 shadow-sm sm:p-6">
             <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-sky-400">
                 <i class="fa-solid {{ $editingId ? 'fa-pen-to-square' : 'fa-plus' }} text-xs"></i>
                 {{ $editingId ? 'Upraviť pozíciu' : 'Nová pozícia' }}
@@ -73,7 +73,7 @@
     {{-- Groups. Their order is the order the rozpis and the Excel print them in, which is why
          they get arrows of their own rather than being sorted alphabetically. --}}
     @if($this->canCreate)
-        <div class="rounded-2xl border border-neutral-800 bg-neutral-900/90 p-5 shadow-xl sm:p-6">
+        <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-5 shadow-sm sm:p-6">
             <h2 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-sky-400">
                 <i class="fa-solid fa-layer-group text-xs"></i>
                 Skupiny pozícií

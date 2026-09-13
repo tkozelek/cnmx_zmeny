@@ -21,7 +21,7 @@
 <dialog id="{{ $id }}"
         onclick="if (event.target === this) this.close()"
         style="--dialog-width: {{ $width }}"
-        class="w-[min(var(--dialog-width),92vw)] rounded-2xl border border-neutral-800 bg-neutral-900 p-0 text-neutral-200 shadow-2xl backdrop:bg-neutral-950/80 backdrop:backdrop-blur-sm">
+        class="w-[min(var(--dialog-width),92vw)] rounded-lg border border-neutral-800 bg-neutral-900 p-0 text-neutral-200 shadow-xl backdrop:bg-neutral-950/80 backdrop:backdrop-blur-sm">
     <form method="dialog" class="flex items-start justify-between gap-4 border-b border-neutral-800 px-6 py-4">
         <div>
             <h2 class="flex items-center gap-2 text-lg font-bold text-white">
