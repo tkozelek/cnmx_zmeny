@@ -313,9 +313,10 @@ function renderProfileChart(newData) {
         return;
     }
 
-    const isMobile = window.innerWidth < 640;
     const shortLabels = ['Pon', 'Uto', 'Str', 'Štv', 'Pia', 'Sob', 'Ned'];
     const fullLabels = ['Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota', 'Nedeľa'];
+    const isMobileNow = () => window.innerWidth < 640;
+    let isMobile = isMobileNow();
 
     const ctx = canvas.getContext('2d');
     canvas._chartInstance = new Chart(ctx, {
@@ -395,6 +396,22 @@ function renderProfileChart(newData) {
                 }
             }
         }
+    });
+
+    // Chart.js's own `responsive: true` already rescales the canvas itself on resize; this
+    // only swaps the mobile/desktop label set, tick font size and bar thickness once the
+    // viewport actually crosses the 640px breakpoint, since those aren't part of Chart.js's
+    // own resize handling and were otherwise frozen at whatever size the page first loaded at.
+    window.addEventListener('resize', () => {
+        const nowMobile = isMobileNow();
+        if (nowMobile === isMobile) return;
+        isMobile = nowMobile;
+
+        const chart = canvas._chartInstance;
+        chart.data.labels = isMobile ? shortLabels : fullLabels;
+        chart.data.datasets[0].maxBarThickness = isMobile ? 32 : 44;
+        chart.options.scales.x.ticks.font.size = isMobile ? 11 : 12;
+        chart.update();
     });
 }
 window.renderProfileChart = renderProfileChart;
