@@ -206,6 +206,19 @@ class LoginTest extends TestCase
             ->assertSee('schválenie vedúcim kina (manažérom)');
     }
 
+    /** Logged in but unverified: not the real app nav, and not the guest login/register links either. */
+    public function test_an_unverified_user_sees_neither_the_app_nav_nor_guest_links(): void
+    {
+        $team = $this->tenant();
+        $user = User::factory()->unverified()->memberOf($team)->create();
+
+        $this->actingAs($user)
+            ->get(route('verification.notice'))
+            ->assertOk()
+            ->assertDontSee('Registrácia')
+            ->assertDontSee(route('admin.users.index'));
+    }
+
     public function test_guest_can_resend_verification_email(): void
     {
         Notification::fake();

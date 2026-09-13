@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTeam;
+use App\Traits\Loggable;
 use Database\Factories\PositionGroupFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +23,8 @@ class PositionGroup extends Model
 
     /** @use HasFactory<PositionGroupFactory> */
     use HasFactory;
+
+    use Loggable;
 
     protected $fillable = [
         'team_id',

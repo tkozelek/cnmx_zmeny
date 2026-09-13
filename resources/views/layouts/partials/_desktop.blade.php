@@ -120,7 +120,7 @@
                 </div>
             </div>
         </div>
-    @else
+    @elseif(! auth()->check())
         <div class="flex items-center gap-2 ml-2">
             <a
                 href="{{ route('login') }}"

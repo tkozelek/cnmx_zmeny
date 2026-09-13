@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\AbsenceStatus;
 use App\Traits\BelongsToTeam;
+use App\Traits\Loggable;
 use Carbon\CarbonInterface;
 use Database\Factories\AbsenceFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,6 +25,8 @@ class Absence extends Model
 
     /** @use HasFactory<AbsenceFactory> */
     use HasFactory;
+
+    use Loggable;
 
     /**
      * Sentinel for an open-ended absence. `date_to` is NOT NULL so the overlap query

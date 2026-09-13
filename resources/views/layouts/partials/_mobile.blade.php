@@ -99,7 +99,7 @@
             >
                 Odhlásiť sa
             </x-logout-button>
-        @else
+        @elseif(! auth()->check())
             <div class="my-2 w-full border-t border-neutral-800"></div>
             <a class="w-full rounded-lg bg-neutral-900 border border-neutral-800 py-3 text-base font-semibold text-neutral-200 transition hover:bg-neutral-800" href="{{ route('login') }}">Prihlásenie</a>
             <a class="w-full rounded-lg bg-neutral-100 py-3 text-base font-semibold text-neutral-900 transition hover:bg-white" href="{{ route('register') }}">Registrácia</a>
