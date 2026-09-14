@@ -8,7 +8,7 @@
     {{-- Loading overlay with solid badge --}}
     <div wire:loading class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-neutral-950/70 pointer-events-none transition-all duration-200">
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-700 shadow-2xl text-xs font-semibold text-neutral-200">
-            <i class="fa-solid fa-circle-notch fa-spin text-sky-400 text-sm"></i>
+            <i class="fa-solid fa-circle-notch fa-spin text-brand-400 text-sm"></i>
             <span>Ukladám...</span>
         </div>
     </div>
@@ -31,7 +31,7 @@
                 @else
                     {{-- Locked and not signed up: clear neutral lock status --}}
                     <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-neutral-950 text-xs font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-800">
-                        <i class="fa-solid fa-lock text-xs text-neutral-500"></i>
+                        <i class="fa-solid fa-lock text-xs text-neutral-400"></i>
                         <span>Zamknutý</span>
                     </div>
                 @endif
@@ -62,11 +62,11 @@
                     wire:click="signUp"
                     wire:loading.attr="disabled"
                     wire:target="signUp"
-                    class="flex min-h-11 w-full items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 border-b-2 border-sky-700 hover:border-sky-600 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white transition focus:outline-none disabled:opacity-50 cursor-pointer shadow-sm"
+                    class="flex min-h-11 w-full items-center justify-center gap-2 bg-brand-600 hover:bg-brand-500 border-b-2 border-brand-700 hover:border-brand-600 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white transition focus:outline-none disabled:opacity-50 cursor-pointer shadow-sm"
                     title="Kliknutím sa zapíšete na tento deň"
                 >
                     <span wire:loading.remove wire:target="signUp" class="flex items-center justify-center gap-1.5 w-full">
-                        <i class="fa-solid fa-plus text-xs text-sky-200"></i> Zapísať sa
+                        <i class="fa-solid fa-plus text-xs text-brand-200"></i> Zapísať sa
                     </span>
                     <span wire:loading wire:target="signUp"><i class="fa-solid fa-circle-notch fa-spin text-xs"></i></span>
                 </button>
@@ -102,7 +102,7 @@
                      @class([
                         'rows group flex items-center justify-between gap-2 border-b border-neutral-800/60 py-1.5 text-sm leading-snug last:border-b-0 cursor-default',
                         'font-semibold text-white' => $assignment->user_id === auth()->id(),
-                        'text-neutral-500 line-through' => ! $assignment->user->is_active,
+                        'text-neutral-400 line-through' => ! $assignment->user->is_active,
                         'text-neutral-200' => $assignment->user->is_active,
                     ])>
                     <div class="flex min-w-0 items-center gap-1.5 text-left">
@@ -139,7 +139,7 @@
                     @endif
                 </div>
             @empty
-                <p class="rows py-3 text-center text-xs italic text-neutral-500 font-medium">
+                <p class="rows py-3 text-center text-xs italic text-neutral-400 font-medium">
                     Nikto nie je zapísaný.
                 </p>
             @endforelse
@@ -149,7 +149,7 @@
         <div class="day-card-footer border-t border-neutral-800 px-3 py-1.5 text-center bg-neutral-950 mt-auto">
             <span @class([
                 'text-xs font-semibold',
-                'text-neutral-500' => $this->assignments->count() === 0,
+                'text-neutral-400' => $this->assignments->count() === 0,
                 'text-neutral-400' => $this->assignments->count() > 0,
             ])>
                 <i class="fa-solid fa-user-group text-[0.65rem] mr-1 opacity-70"></i>

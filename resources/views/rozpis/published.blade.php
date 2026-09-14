@@ -79,7 +79,7 @@
                         <section id="day-{{ $day['date']->toDateString() }}" @class([
                             'flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm transition',
                             'border-white ring-2 ring-white/50 shadow-md shadow-white/5' => $isToday,
-                            'border-sky-500/40 ring-1 ring-sky-500/20' => ! $isToday && $isMyDay,
+                            'border-brand-500/60 ring-1 ring-brand-500/60' => ! $isToday && $isMyDay,
                             'border-neutral-800' => ! $isToday && ! $isMyDay,
                         ])>
                             <x-rozpis.day-heading :name="$day['dayName']" :date="$day['date']">
@@ -88,7 +88,7 @@
                                         manažér:
                                         <span @class([
                                             'font-semibold',
-                                            'text-sky-300' => $isMyRow($day['managerRows'][0] ?? ['user_id' => null]),
+                                            'text-brand-300' => $isMyRow($day['managerRows'][0] ?? ['user_id' => null]),
                                             'text-neutral-300' => ! $isMyRow($day['managerRows'][0] ?? ['user_id' => null]),
                                         ])>{{ $day['manager'] }}</span>
                                     </p>
@@ -126,14 +126,14 @@
                                         'flex items-center justify-between gap-2 px-3 py-2',
                                         'bg-neutral-950/25' => $loop->index % 2 === 1 && $row['name'] !== null && ! $isMyRow($row),
                                         'bg-amber-500/[0.07]' => $row['name'] === null,
-                                        'bg-sky-500/10' => $isMyRow($row),
+                                        'bg-brand-500/10' => $isMyRow($row),
                                     ])>
                                         <span class="min-w-0">
                                             <span @class([
                                                 'block truncate text-sm font-semibold',
                                                 'text-neutral-100' => $row['name'] !== null && ! $isMyRow($row),
                                                 'text-amber-400/80 italic' => $row['name'] === null,
-                                                'text-sky-300' => $isMyRow($row),
+                                                'text-brand-300' => $isMyRow($row),
                                             ])>
                                                 {{ $row['name'] ?? 'neobsadené' }}
                                             </span>
@@ -147,7 +147,7 @@
                                         @endif
                                     </div>
                                 @empty
-                                    <p class="px-3 py-3 text-center text-xs italic text-neutral-500">
+                                    <p class="px-3 py-3 text-center text-xs italic text-neutral-400">
                                         Žiadne pozície.
                                     </p>
                                 @endforelse

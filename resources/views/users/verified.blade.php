@@ -2,7 +2,7 @@
     <div class="flex-1 min-h-full w-full py-12 md:py-20 flex items-center justify-center px-4 relative overflow-hidden bg-neutral-950">
         <!-- Ambient lighting glows -->
         <div class="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="w-full max-w-lg relative z-10">
             <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-8 sm:p-10 space-y-6 text-center">
@@ -18,7 +18,7 @@
                 </div>
 
                 <div class="p-4 rounded-xl bg-neutral-950/60 border border-neutral-800 text-left space-y-2">
-                    <div class="flex items-center gap-2 text-sky-400 font-semibold text-xs uppercase tracking-wider">
+                    <div class="flex items-center gap-2 text-brand-400 font-semibold text-xs uppercase tracking-wider">
                         <i class="fa-solid fa-user-clock text-xs"></i>
                         <span>Čo nasleduje ďalej?</span>
                     </div>

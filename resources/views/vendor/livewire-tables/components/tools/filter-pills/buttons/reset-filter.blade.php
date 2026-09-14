@@ -7,7 +7,7 @@
 
 @if ($isTailwind)
     <button
-        class="flex-shrink-0 ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center text-sky-400 hover:text-white focus:outline-none transition"
+        class="flex-shrink-0 ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center text-brand-400 hover:text-white focus:outline-none transition"
         title="Odstrániť filter"
         {{
             $attributes->merge($filterButtonAttributes)

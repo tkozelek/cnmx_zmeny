@@ -33,7 +33,7 @@
                         </span>
                         <span
                             class="text-xs sm:text-base font-bold text-neutral-200 mt-0.5"
-                            :class="currentPeriod.counts[{{ $idx }}] > 0 && currentPeriod.counts[{{ $idx }}] === currentPeriod.max ? 'text-white' : (currentPeriod.counts[{{ $idx }}] > 0 ? 'text-neutral-200' : 'text-neutral-500')"
+                            :class="currentPeriod.counts[{{ $idx }}] > 0 && currentPeriod.counts[{{ $idx }}] === currentPeriod.max ? 'text-white' : (currentPeriod.counts[{{ $idx }}] > 0 ? 'text-neutral-200' : 'text-neutral-400')"
                             x-text="currentPeriod.counts[{{ $idx }}]"
                         >
                             {{ $arr[$idx] ?? 0 }}

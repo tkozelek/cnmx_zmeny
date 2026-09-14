@@ -49,7 +49,7 @@
                         @if($this->canBuild)
                             <span data-drag-handle
                                   title="Presuňte pre zmenu poradia"
-                                  class="shrink-0 cursor-grab px-0.5 text-neutral-600 transition hover:text-neutral-300 active:cursor-grabbing">
+                                  class="shrink-0 cursor-grab px-0.5 text-neutral-400 transition hover:text-neutral-300 active:cursor-grabbing">
                                 <i class="fa-solid fa-grip-vertical text-xs"></i>
                             </span>
 
@@ -59,14 +59,14 @@
                                         wire:click="moveSlotUp({{ $row['slot']->id }})"
                                         aria-label="Posunúť pozíciu {{ $row['label'] }} nahor"
                                         title="Posunúť nahor"
-                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
+                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
                                     <i class="fa-solid fa-chevron-up text-[0.65rem]"></i>
                                 </button>
                                 <button type="button"
                                         wire:click="moveSlotDown({{ $row['slot']->id }})"
                                         aria-label="Posunúť pozíciu {{ $row['label'] }} nadol"
                                         title="Posunúť nadol"
-                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
+                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
                                     <i class="fa-solid fa-chevron-down text-[0.65rem]"></i>
                                 </button>
                             </span>
@@ -86,7 +86,7 @@
                             <div x-data="slotTimePicker({{ $row['slot']->id }}, @js($row['time']))" class="shrink-0">
                                 <input x-ref="input" type="text" readonly
                                        placeholder="+ čas" title="Čas nástupu - kliknutím zmeníte"
-                                       class="w-[3.75rem] cursor-pointer rounded bg-neutral-800/80 px-1.5 py-0.5 text-center text-[0.7rem] font-semibold tabular-nums text-neutral-300 transition hover:bg-neutral-700 hover:text-white focus:outline-none focus:ring-1 focus:ring-sky-500">
+                                       class="w-[3.75rem] cursor-pointer rounded bg-neutral-800/80 px-1.5 py-0.5 text-center text-[0.7rem] font-semibold tabular-nums text-neutral-300 transition hover:bg-neutral-700 hover:text-white focus:outline-none focus:ring-1 focus:ring-brand-500">
                             </div>
                         @elseif($row['time'])
                             <span class="shrink-0 rounded bg-neutral-800/80 px-1.5 py-0.5 text-[0.7rem] font-semibold tabular-nums text-neutral-300">
@@ -104,7 +104,7 @@
                                     <button type="button" @click="open = ! open"
                                             title="Skopírovať túto pozíciu do iných dní"
                                             aria-label="Skopírovať pozíciu {{ $row['label'] }} do iných dní"
-                                            class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 transition hover:bg-sky-500/20 hover:text-sky-300">
+                                            class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 transition hover:bg-brand-500/20 hover:text-brand-300">
                                         <i class="fa-solid fa-clone text-xs"></i>
                                     </button>
 
@@ -116,7 +116,7 @@
                                             </p>
                                             <button type="button"
                                                     @click="days = days.length === {{ count($this->copyTargets) }} ? [] : @js(collect($this->copyTargets)->pluck('date')->all())"
-                                                    class="text-[0.65rem] font-medium text-sky-400 hover:text-sky-300 focus:outline-none">
+                                                    class="text-[0.65rem] font-medium text-brand-400 hover:text-brand-300 focus:outline-none">
                                                 <span x-text="days.length === {{ count($this->copyTargets) }} ? 'Zrušiť výber' : 'Vybrať všetko'"></span>
                                             </button>
                                         </div>
@@ -124,14 +124,14 @@
                                         @foreach($this->copyTargets as $target)
                                             <label class="flex cursor-pointer items-center gap-2 py-0.5 text-xs text-neutral-300 hover:text-white">
                                                 <input type="checkbox" x-model="days" value="{{ $target['date'] }}"
-                                                       class="h-3.5 w-3.5 rounded border-neutral-600 bg-neutral-800 text-sky-500 focus:ring-0">
+                                                       class="h-3.5 w-3.5 rounded border-neutral-600 bg-neutral-800 text-brand-500 focus:ring-0">
                                                 {{ $target['label'] }}
                                             </label>
                                         @endforeach
 
                                         <button type="button"
                                                 @click="$wire.copySlot({{ $row['slot']->id }}, days); days = []; open = false"
-                                                class="mt-1.5 w-full rounded border border-sky-500/40 bg-sky-500/10 px-2 py-1 text-xs font-semibold text-sky-300 transition hover:bg-sky-500/20">
+                                                class="mt-1.5 w-full rounded border border-brand-500/60 bg-brand-500/10 px-2 py-1 text-xs font-semibold text-brand-300 transition hover:bg-brand-500/20">
                                             Kopírovať
                                         </button>
                                     </div>
@@ -192,7 +192,7 @@
                         {{-- The vedúci row picks from who may lead a shift, not from who signed
                              up: leadership does not write itself into the daily pool. --}}
                         <select wire:change="placeLeader($event.target.value, {{ $row['slot']->id }})"
-                                class="w-full rounded border border-violet-500/30 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-sky-500 focus:outline-none">
+                                class="w-full rounded border border-violet-500/30 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
                             <option value="">- vybrať vedúceho -</option>
                             @foreach($this->leadershipRoster as $leader)
                                 <option value="{{ $leader->id }}">{{ $leader }}</option>
@@ -210,7 +210,7 @@
                                 @elseif($this->isDesirableDay)
                                     title="Zoradené podľa spravodlivosti - vyššie číslo znamená viac odpracovaných a ťažších dní, takže si tento deň zaslúži viac."
                                 @endif
-                                class="w-full rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-sky-500 focus:outline-none">
+                                class="w-full rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
                             <option value="">- priradiť -</option>
                             @foreach($this->unassignedPool as $candidate)
                                 <option value="{{ $candidate->id }}">
@@ -222,12 +222,12 @@
                             @endforeach
                         </select>
                     @else
-                        <p class="px-1 text-[0.7rem] italic text-neutral-600">Prázdne</p>
+                        <p class="px-1 text-[0.7rem] italic text-neutral-400">Prázdne</p>
                     @endif
                 </div>
             </div>
         @empty
-            <p class="py-2 text-center text-xs italic text-neutral-500">
+            <p class="py-2 text-center text-xs italic text-neutral-400">
                 Žiadne pozície pre tento deň.
             </p>
         @endforelse
@@ -264,7 +264,7 @@
     @if($this->canBuild && $this->availablePositions->isNotEmpty())
         <form wire:submit="addSlot" class="flex items-center gap-1 border-t border-neutral-800/80 px-2.5 py-2">
             <select wire:model="newPositionId"
-                    class="min-w-0 flex-1 rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-300 focus:border-sky-500 focus:outline-none">
+                    class="min-w-0 flex-1 rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-300 focus:border-brand-500 focus:outline-none">
                 <option value="">+ pozícia</option>
                 @foreach($this->availablePositions as $position)
                     <option value="{{ $position->id }}">{{ $position->label() }}</option>
@@ -275,7 +275,7 @@
                  locale and no HTML attribute can force 24-hour. --}}
             <div x-data="timePicker('newStartTime', @js($newStartTime))" x-on:rozpis-slot-added.window="clear()" class="shrink-0">
                 <input x-ref="input" type="text" readonly placeholder="čas" title="Čas nástupu"
-                       class="w-[5rem] cursor-pointer rounded border border-neutral-800 bg-neutral-900 px-2 py-1.5 text-center text-xs tabular-nums text-neutral-300 focus:border-sky-500 focus:outline-none">
+                       class="w-[5rem] cursor-pointer rounded border border-neutral-800 bg-neutral-900 px-2 py-1.5 text-center text-xs tabular-nums text-neutral-300 focus:border-brand-500 focus:outline-none">
             </div>
 
             <button type="submit" wire:loading.attr="disabled" title="Pridať pozíciu"
@@ -305,7 +305,7 @@
                     <span class="min-w-0 truncate">
                         {{ $assignment->user }}
                         @if($assignment->note)
-                            <span class="text-xs text-neutral-500">({{ $assignment->note }})</span>
+                            <span class="text-xs text-neutral-400">({{ $assignment->note }})</span>
                         @endif
                     </span>
 
@@ -322,7 +322,7 @@
                     @endif
                 </div>
             @empty
-                <p class="text-xs italic text-neutral-500">Všetci sú zaradení.</p>
+                <p class="text-xs italic text-neutral-400">Všetci sú zaradení.</p>
             @endforelse
         </div>
     </div>
@@ -334,7 +334,7 @@
               class="flex items-center gap-1 border-t border-neutral-800/80 px-2.5 py-2">
             @csrf
             <select name="source_date"
-                    class="min-w-0 flex-1 rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-sky-500 focus:outline-none">
+                    class="min-w-0 flex-1 rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
                 <option value="">kopírovať celý deň z…</option>
                 @foreach($this->copySources as $source)
                     <option value="{{ $source['date'] }}">{{ $source['label'] }}</option>

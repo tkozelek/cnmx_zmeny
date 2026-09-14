@@ -9,7 +9,7 @@
                     $role = \App\Enums\Role::tryFrom($user->getRoleNames()->first() ?? '');
                     [$roleBg, $roleText, $roleBorder] = match($role) {
                         \App\Enums\Role::HeadManager => ['bg-indigo-500/10', 'text-indigo-400', 'border-indigo-500/20'],
-                        \App\Enums\Role::Manager => ['bg-sky-500/10', 'text-sky-400', 'border-sky-500/20'],
+                        \App\Enums\Role::Manager => ['bg-brand-500/10', 'text-brand-400', 'border-brand-500/60'],
                         default => ['bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20'],
                     };
                 @endphp
@@ -51,7 +51,7 @@
                             {{ $user->last_login_at->format('d.m.Y H:i') }}
                         </span>
                     @else
-                        <span class="text-neutral-500">Zatiaľ neprihlásený</span>
+                        <span class="text-neutral-400">Zatiaľ neprihlásený</span>
                     @endif
                 </span>
             </div>

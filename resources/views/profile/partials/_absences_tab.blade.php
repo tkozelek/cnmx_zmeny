@@ -22,10 +22,10 @@
                             {{ $absence->reason ?: 'Bez udaného dôvodu' }}
                         </p>
                         <div class="flex items-center gap-2 text-xs text-neutral-400 mt-0.5 sm:mt-1">
-                            <i class="fa-regular fa-calendar text-neutral-500 text-[10px]"></i>
+                            <i class="fa-regular fa-calendar text-neutral-400 text-[10px]"></i>
                             <span>{{ $absence->date_from->format('d.m.Y') }} &ndash; {{ $absence->isOpenEnded() ? 'Neurčito' : $absence->date_to->format('d.m.Y') }}</span>
                             @if($absence->isRecurring())
-                                <span class="text-neutral-600">&bull;</span>
+                                <span class="text-neutral-400">&bull;</span>
                                 <span class="text-indigo-400 font-medium">Opakujúca sa</span>
                             @endif
                         </div>
@@ -59,8 +59,8 @@
                         <p class="font-medium text-neutral-300 text-xs sm:text-sm truncate">
                             {{ $absence->reason ?: 'Bez udaného dôvodu' }}
                         </p>
-                        <div class="flex items-center gap-2 text-xs text-neutral-500 mt-0.5 sm:mt-1">
-                            <i class="fa-regular fa-calendar text-neutral-600 text-[10px]"></i>
+                        <div class="flex items-center gap-2 text-xs text-neutral-400 mt-0.5 sm:mt-1">
+                            <i class="fa-regular fa-calendar text-neutral-400 text-[10px]"></i>
                             <span>{{ $absence->date_from->format('d.m.Y') }} &ndash; {{ $absence->date_to->format('d.m.Y') }}</span>
                         </div>
                     </div>
@@ -75,7 +75,7 @@
                     @endif
                 </div>
             @empty
-                <p class="text-xs sm:text-sm text-neutral-500 py-3 text-center">Žiadna história predchádzajúcich absencií.</p>
+                <p class="text-xs sm:text-sm text-neutral-400 py-3 text-center">Žiadna história predchádzajúcich absencií.</p>
             @endforelse
 
             @if ($inactiveAbsences->hasPages())

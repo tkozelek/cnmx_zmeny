@@ -6,7 +6,7 @@
             {{-- Mobile pagination --}}
             <div class="flex justify-between w-full sm:hidden">
                 @if ($paginator->onFirstPage())
-                    <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-neutral-600 bg-neutral-950 border border-neutral-800 rounded-lg cursor-default">
+                    <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-neutral-400 bg-neutral-950 border border-neutral-800 rounded-lg cursor-default">
                         Predchádzajúca
                     </span>
                 @else
@@ -20,7 +20,7 @@
                         Nasledujúca
                     </button>
                 @else
-                    <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-neutral-600 bg-neutral-950 border border-neutral-800 rounded-lg cursor-default">
+                    <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-neutral-400 bg-neutral-950 border border-neutral-800 rounded-lg cursor-default">
                         Nasledujúca
                     </span>
                 @endif
@@ -31,7 +31,7 @@
                 <div class="inline-flex items-center justify-center gap-1.5 p-1 bg-neutral-900 border border-neutral-800 rounded-xl shadow-xl">
                     {{-- Previous Page Button --}}
                     @if ($paginator->onFirstPage())
-                        <span class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 bg-neutral-950 border border-neutral-800/80 cursor-default">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-400 bg-neutral-950 border border-neutral-800/80 cursor-default">
                             <i class="fa-solid fa-chevron-left text-xs"></i>
                         </span>
                     @else
@@ -44,7 +44,7 @@
                     @if ($elements ?? null)
                         @foreach ($elements as $element)
                             @if (is_string($element))
-                                <span class="flex h-9 min-w-9 px-2 items-center justify-center text-xs font-semibold text-neutral-500">
+                                <span class="flex h-9 min-w-9 px-2 items-center justify-center text-xs font-semibold text-neutral-400">
                                     {{ $element }}
                                 </span>
                             @endif
@@ -53,7 +53,7 @@
                                 @foreach ($element as $page => $url)
                                     <span wire:key="paginator-{{ $paginator->getPageName() }}-{{ $this->numberOfPaginatorsRendered[$paginator->getPageName()] }}-page{{ $page }}">
                                         @if ($page == $paginator->currentPage())
-                                            <span class="flex h-9 min-w-9 px-3 items-center justify-center rounded-lg text-xs font-bold text-sky-300 bg-sky-500/20 border border-sky-500/40 shadow">
+                                            <span class="flex h-9 min-w-9 px-3 items-center justify-center rounded-lg text-xs font-bold text-brand-300 bg-brand-500/20 border border-brand-500/60 shadow">
                                                 {{ $page }}
                                             </span>
                                         @else
@@ -73,7 +73,7 @@
                             <i class="fa-solid fa-chevron-right text-xs"></i>
                         </button>
                     @else
-                        <span class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 bg-neutral-950 border border-neutral-800/80 cursor-default">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-400 bg-neutral-950 border border-neutral-800/80 cursor-default">
                             <i class="fa-solid fa-chevron-right text-xs"></i>
                         </span>
                     @endif

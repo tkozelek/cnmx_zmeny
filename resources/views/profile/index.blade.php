@@ -26,10 +26,10 @@
             <x-slot:breadcrumb>
                 <nav class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-medium text-neutral-400" aria-label="Navigácia">
                     <a href="{{ route('calendar.index') }}" class="hover:text-neutral-200 transition">Rozpis</a>
-                    <i class="fa-solid fa-chevron-right text-[9px] text-neutral-600"></i>
+                    <i class="fa-solid fa-chevron-right text-[9px] text-neutral-400"></i>
                     @if(auth()->user()->can('viewAny', \App\Models\User::class))
                         <a href="{{ route('admin.users.index') }}" class="hover:text-neutral-200 transition">Používatelia</a>
-                        <i class="fa-solid fa-chevron-right text-[9px] text-neutral-600"></i>
+                        <i class="fa-solid fa-chevron-right text-[9px] text-neutral-400"></i>
                     @endif
                     <span class="text-neutral-300">Profil</span>
                 </nav>

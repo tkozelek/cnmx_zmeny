@@ -12,7 +12,7 @@
                         class="group flex items-center justify-between w-full p-6 font-semibold text-neutral-100 hover:bg-neutral-800/60 focus:outline-none transition-colors duration-200"
                     >
                         <span class="flex items-center gap-3 text-lg">
-                            <i class="fa-solid fa-user-plus text-sky-400"></i>
+                            <i class="fa-solid fa-user-plus text-brand-400"></i>
                             Registrácia
                         </span>
                         <i class="fa-solid fa-chevron-down text-neutral-400 transition-transform duration-200" :class="{ 'rotate-180': activeAccordion === 1 }"></i>
@@ -54,7 +54,7 @@
                         class="group flex items-center justify-between w-full p-6 font-semibold text-neutral-100 hover:bg-neutral-800/60 focus:outline-none transition-colors duration-200"
                     >
                         <span class="flex items-center gap-3 text-lg">
-                            <i class="fa-solid fa-calendar-days text-sky-400"></i>
+                            <i class="fa-solid fa-calendar-days text-brand-400"></i>
                             Zapisovanie na zmeny
                         </span>
                         <i class="fa-solid fa-chevron-down text-neutral-400 transition-transform duration-200" :class="{ 'rotate-180': activeAccordion === 2 }"></i>
@@ -62,7 +62,7 @@
                 </h2>
                 <div x-show="activeAccordion === 2" style="display: none;">
                     <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800 bg-neutral-950 space-y-4 text-sm">
-                        <p>Zapisovanie na zmeny funguje pomocou tlačidla <strong class="font-semibold text-sky-400">"Zapísať"</strong> (prípadne <strong class="font-semibold text-sky-400">"Odpísať"</strong>). Po stlačení sa vaše meno zobrazí pri danom dni.</p>
+                        <p>Zapisovanie na zmeny funguje pomocou tlačidla <strong class="font-semibold text-brand-400">"Zapísať"</strong> (prípadne <strong class="font-semibold text-brand-400">"Odpísať"</strong>). Po stlačení sa vaše meno zobrazí pri danom dni.</p>
                         <p>Môžete tiež využiť textové pole <strong class="font-semibold text-white">Extra Info</strong> pre spresnenie vašich časových možností (napr. <em>od 15:00</em> alebo <em>do 22:00</em>).</p>
                         <p>Plánovať a zapisovať sa môžete na viacero týždňov dopredu podľa nastavení kina.</p>
                     </div>
@@ -78,7 +78,7 @@
                         class="group flex items-center justify-between w-full p-6 font-semibold text-neutral-100 hover:bg-neutral-800/60 focus:outline-none transition-colors duration-200"
                     >
                         <span class="flex items-center gap-3 text-lg">
-                            <i class="fa-solid fa-umbrella-beach text-sky-400"></i>
+                            <i class="fa-solid fa-umbrella-beach text-brand-400"></i>
                             Absencie a dovolenky
                         </span>
                         <i class="fa-solid fa-chevron-down text-neutral-400 transition-transform duration-200" :class="{ 'rotate-180': activeAccordion === 3 }"></i>
@@ -102,7 +102,7 @@
                             class="group flex items-center justify-between w-full p-6 font-semibold text-neutral-100 hover:bg-neutral-800/60 focus:outline-none transition-colors duration-200"
                         >
                             <span class="flex items-center gap-3 text-lg">
-                                <i class="fa-solid fa-shield-halved text-sky-400"></i>
+                                <i class="fa-solid fa-shield-halved text-brand-400"></i>
                                 Administrácia kina
                             </span>
                             <i class="fa-solid fa-chevron-down text-neutral-400 transition-transform duration-200" :class="{ 'rotate-180': activeAccordion === 4 }"></i>

@@ -7,12 +7,12 @@
             <header class="flex flex-col gap-4 border-b border-neutral-800 pb-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h1 class="flex items-center gap-2.5 text-2xl font-bold text-white">
-                        <i class="fa-solid fa-table-list text-sky-400"></i>
+                        <i class="fa-solid fa-table-list text-brand-400"></i>
                         Rozpis zmien
 
                         <button type="button" onclick="document.getElementById('rozpis-guide').showModal()"
                                 title="Ako sa rozpis zostavuje a čo sa dá nastaviť"
-                                class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900 text-sm text-neutral-400 transition hover:border-sky-500/50 hover:text-sky-300">
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900 text-sm text-neutral-400 transition hover:border-brand-500/60 hover:text-brand-300">
                             <i class="fa-solid fa-question text-xs"></i>
                         </button>
                     </h1>
@@ -48,7 +48,7 @@
                             class="inline-flex h-11 items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-5 text-base font-bold tracking-wide text-neutral-100 transition hover:border-neutral-700 hover:text-white">
                         <i class="fa-regular fa-calendar text-neutral-400"></i>
                         <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} - {{ $weekEnd->format('d.m.Y') }}</span>
-                        <i class="fa-solid fa-chevron-down text-xs text-neutral-500"></i>
+                        <i class="fa-solid fa-chevron-down text-xs text-neutral-400"></i>
                     </button>
                     <input x-ref="input" type="text" class="sr-only" tabindex="-1" aria-hidden="true">
 
@@ -83,7 +83,7 @@
                         <button type="submit"
                                 title="Skopírovať rozloženie pozícií z minulého týždňa"
                                 class="inline-flex h-11 items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm font-semibold text-neutral-300 transition hover:border-neutral-700 hover:text-white">
-                            <i class="fa-solid fa-copy text-xs text-sky-400"></i>
+                            <i class="fa-solid fa-copy text-xs text-brand-400"></i>
                             Kopírovať z minulého týždňa
                         </button>
                     </form>
@@ -127,10 +127,10 @@
             @if($workload)
                 <details class="group rounded-lg border border-neutral-800 bg-neutral-900">
                     <summary class="flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-xs font-semibold text-neutral-300 transition hover:text-white">
-                        <i class="fa-solid fa-chevron-right text-[0.6rem] text-neutral-500 transition-transform group-open:rotate-90"></i>
-                        <i class="fa-solid fa-scale-balanced text-[0.7rem] text-sky-400"></i>
+                        <i class="fa-solid fa-chevron-right text-[0.6rem] text-neutral-400 transition-transform group-open:rotate-90"></i>
+                        <i class="fa-solid fa-scale-balanced text-[0.7rem] text-brand-400"></i>
                         Odporúčané rozdelenie dní
-                        <span class="font-normal text-neutral-500">- koľko zmien by mal tento týždeň dostať kto</span>
+                        <span class="font-normal text-neutral-400">- koľko zmien by mal tento týždeň dostať kto</span>
                     </summary>
 
                     <div class="overflow-x-auto border-t border-neutral-800/80 px-4 py-3">
@@ -154,7 +154,7 @@
                                             <button type="button" onclick="document.getElementById('rozpis-guide').showModal()"
                                                     title="Zásluhy: súčet váh odpracovaných dní. Kliknutím otvoríte sprievodcu."
                                                     aria-label="Vysvetlenie zásluh v sprievodcovi"
-                                                    class="text-neutral-400 hover:text-sky-400 focus:outline-none focus:text-sky-300">
+                                                    class="text-neutral-400 hover:text-brand-400 focus:outline-none focus:text-brand-300">
                                                 <i class="fa-solid fa-circle-info text-xs"></i>
                                             </button>
                                         </span>
@@ -166,7 +166,7 @@
                                     <tr @class(['border-t border-neutral-800/60', 'bg-neutral-950/25' => $loop->index % 2 === 1])>
                                         <td class="py-1.5 pr-3 font-semibold text-neutral-100">{{ $row['name'] }}</td>
                                         <td class="py-1.5 pr-3 text-center tabular-nums text-neutral-400">{{ $row['signups'] }}</td>
-                                        <td class="py-1.5 pr-3 text-center font-bold tabular-nums text-sky-300">{{ $row['target'] }}</td>
+                                        <td class="py-1.5 pr-3 text-center font-bold tabular-nums text-brand-300">{{ $row['target'] }}</td>
                                         {{-- Under target is the actionable state; the count is from
                                              page load, so reload after a round of dragging. --}}
                                         <td @class([
@@ -174,7 +174,7 @@
                                             'text-amber-400' => $row['placed'] < $row['target'],
                                             'text-neutral-400' => $row['placed'] >= $row['target'],
                                         ])>{{ $row['placed'] }}</td>
-                                        <td class="py-1.5 text-center tabular-nums text-neutral-500">{{ number_format($row['earnedCredit'], 1) }}</td>
+                                        <td class="py-1.5 text-center tabular-nums text-neutral-400">{{ number_format($row['earnedCredit'], 1) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -185,7 +185,7 @@
 
             @if($positions->isEmpty())
                 <x-empty-state message="Kino nemá zatiaľ žiadne aktívne pozície." icon="fa-list-check">
-                    Najprv si <a href="{{ route('positions.index') }}" class="font-semibold text-sky-400 hover:underline">definujte pozície</a>, potom sa dá zostaviť rozpis.
+                    Najprv si <a href="{{ route('positions.index') }}" class="font-semibold text-brand-400 hover:underline">definujte pozície</a>, potom sa dá zostaviť rozpis.
                 </x-empty-state>
             @else
                 {{-- Seven across from lg up: the full-width shell above is what makes the columns

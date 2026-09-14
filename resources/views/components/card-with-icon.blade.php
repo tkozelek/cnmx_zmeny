@@ -7,7 +7,7 @@
 --}}
 @php
     $accents = [
-        'sky' => 'border-sky-500/30 bg-sky-500/10 text-sky-400',
+        'sky' => 'border-brand-500/60 bg-brand-500/10 text-brand-400',
         'emerald' => 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
         'amber' => 'border-amber-500/30 bg-amber-500/10 text-amber-400',
         'rose' => 'border-rose-500/30 bg-rose-500/10 text-rose-400',

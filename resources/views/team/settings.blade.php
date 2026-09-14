@@ -43,7 +43,7 @@
                     <div class="my-6 border-t border-neutral-800"></div>
 
                     <div class="space-y-4">
-                        <h2 class="text-sm font-semibold uppercase tracking-wider text-sky-400 flex items-center gap-2">
+                        <h2 class="text-sm font-semibold uppercase tracking-wider text-brand-400 flex items-center gap-2">
                             <i class="fa-solid fa-calendar-week text-xs"></i>
                             Plánovanie & Týždne
                         </h2>
@@ -53,7 +53,7 @@
                             <div>
                                 <label for="week_start_day" class="block mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">Začiatok týždňa</label>
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-neutral-500">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-neutral-400">
                                         <i class="fa-solid fa-play"></i>
                                     </div>
                                     <select
@@ -61,7 +61,7 @@
                                         id="week_start_day"
                                         @disabled(! $canEdit)
                                         required
-                                        class="w-full px-4 py-3 pl-11 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 transition-all duration-200 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500/60 focus:border-sky-500 hover:border-neutral-700 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                        class="w-full px-4 py-3 pl-11 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 transition-all duration-200 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500 hover:border-neutral-700 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         @foreach($weekDays as $dayValue => $dayName)
                                             <option value="{{ $dayValue }}" @selected(old('week_start_day', $settings->week_start_day) == $dayValue)>
@@ -69,11 +69,11 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-neutral-500">
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-neutral-400">
                                         <i class="fa-solid fa-chevron-down text-xs"></i>
                                     </div>
                                 </div>
-                                <p class="text-[11px] text-neutral-500 mt-1">Deň, ktorým sa začína nový pracovný týždeň.</p>
+                                <p class="text-[11px] text-neutral-400 mt-1">Deň, ktorým sa začína nový pracovný týždeň.</p>
                                 @error('week_start_day')
                                     <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -93,7 +93,7 @@
                                     :disabled="!$canEdit"
                                     required
                                 />
-                                <p class="text-[11px] text-neutral-500 mt-1">Koľko týždňov do budúcna môžu zamestnanci vidieť a zapisovať sa na zmeny.</p>
+                                <p class="text-[11px] text-neutral-400 mt-1">Koľko týždňov do budúcna môžu zamestnanci vidieť a zapisovať sa na zmeny.</p>
                             </div>
                         </div>
                     </div>
@@ -102,7 +102,7 @@
                     <div class="my-6 border-t border-neutral-800"></div>
 
                     <div class="space-y-4">
-                        <h2 class="text-sm font-semibold uppercase tracking-wider text-sky-400 flex items-center gap-2">
+                        <h2 class="text-sm font-semibold uppercase tracking-wider text-brand-400 flex items-center gap-2">
                             <i class="fa-solid fa-user-clock text-xs"></i>
                             Absencie & Uzávierky
                         </h2>
@@ -144,12 +144,12 @@
                     <div class="my-6 border-t border-neutral-800"></div>
 
                     <div class="space-y-4">
-                        <h2 class="text-sm font-semibold uppercase tracking-wider text-sky-400 flex items-center gap-2">
+                        <h2 class="text-sm font-semibold uppercase tracking-wider text-brand-400 flex items-center gap-2">
                             <i class="fa-solid fa-scale-balanced text-xs"></i>
                             Spravodlivosť rozpisu
                         </h2>
 
-                        <p class="text-[11px] text-neutral-500">
+                        <p class="text-[11px] text-neutral-400">
                             Koľko „váži“ odpracovaný deň. Vyššia váha = deň, na ktorý sa málokto hlási
                             dobrovoľne - kto ho odpracuje, má to započítané viac. Nižšia váha ako
                             <strong>1,0</strong> = deň, o ktorý je záujem (typicky víkend) - ten sa počíta za menej,
@@ -179,7 +179,7 @@
                                         @disabled(! $canEdit)
                                         required
                                         title="{{ $dayName }}"
-                                        class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-3 text-sm text-white shadow-inner transition hover:border-neutral-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60 disabled:cursor-not-allowed disabled:opacity-60"
+                                        class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-3 text-sm text-white shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                     @error('fairness_day_weights.'.$dayIndex)
                                         <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
@@ -206,16 +206,16 @@
                                     :disabled="!$canEdit"
                                     required
                                 />
-                                <p class="text-[11px] text-neutral-500 mt-1">Ako ďaleko do minulosti sa počítajú odpracované dni.</p>
+                                <p class="text-[11px] text-neutral-400 mt-1">Ako ďaleko do minulosti sa počítajú odpracované dni.</p>
                             </div>
                         </div>
                     </div>
 
                     @if($canEdit)
                         <div class="pt-4 flex justify-end">
-                            <button type="submit" class="py-3 px-6 bg-neutral-800 hover:bg-neutral-750 active:bg-neutral-850 text-white font-bold rounded-xl text-sm tracking-widest uppercase border border-neutral-700 hover:border-sky-500/50 shadow-lg transition duration-200 flex items-center gap-2 group">
+                            <button type="submit" class="py-3 px-6 bg-neutral-800 hover:bg-neutral-750 active:bg-neutral-850 text-white font-bold rounded-xl text-sm tracking-widest uppercase border border-neutral-700 hover:border-brand-500/60 shadow-lg transition duration-200 flex items-center gap-2 group">
                                 <span>Uložiť nastavenia</span>
-                                <i class="fa-solid fa-floppy-disk text-xs text-sky-400"></i>
+                                <i class="fa-solid fa-floppy-disk text-xs text-brand-400"></i>
                             </button>
                         </div>
                     @endif

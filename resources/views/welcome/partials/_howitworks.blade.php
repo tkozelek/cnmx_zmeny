@@ -1,17 +1,17 @@
 @php
     $steps = [
-        ['icon' => 'fa-user-plus', 'title' => '1. Vytvorenie účtu', 'text' => 'Rýchlo sa zaregistrujte a získajte prístup k plánovaciemu kalendáru vášho kina.'],
-        ['icon' => 'fa-envelope-circle-check', 'title' => '2. Overenie e-mailu', 'text' => 'Potvrďte odkaz, ktorý vám pošleme na e-mail - overíme tak, že účet je naozaj váš.'],
-        ['icon' => 'fa-user-check', 'title' => '3. Schválenie registrácie', 'text' => 'Počkajte, kým vám manažér overí účet. Potom sa môžete prihlásiť.'],
-        ['icon' => 'fa-calendar-days', 'title' => '4. Zapisovanie zmien', 'text' => 'Zapíšte si, ktoré dni ste k dispozícii, a počkajte na finálny rozpis.'],
+        ['icon' => 'fa-user-plus', 'title' => '1. Založíš si účet', 'text' => 'Vyplníš krátky formulár - meno, e-mail, heslo.'],
+        ['icon' => 'fa-envelope-circle-check', 'title' => '2. Potvrdíš e-mail', 'text' => 'Klikneš na odkaz, ktorý ti pošleme, aby sme vedeli, že účet je tvoj.'],
+        ['icon' => 'fa-user-check', 'title' => '3. Počkáš na schválenie', 'text' => 'Manažér kina ti účet potvrdí, potom sa už len prihlásiš.'],
+        ['icon' => 'fa-calendar-days', 'title' => '4. Zapíšeš si zmeny', 'text' => 'Označíš dni, kedy môžeš pracovať, a sleduješ, ako to manažér rozpísal.'],
     ];
 @endphp
 
 <section id="ako-to-funguje" class="bg-neutral-950 py-20 sm:py-28">
     <div class="container mx-auto px-4 text-center">
         <div class="reveal">
-            <h2 class="mb-2 text-3xl font-bold text-neutral-100 md:text-4xl">Ako to funguje?</h2>
-            <p class="mx-auto mb-16 max-w-2xl text-neutral-400">Vo štyroch jednoduchých krokoch si naplánujete svoju dostupnosť.</p>
+            <h2 class="mb-2 text-3xl font-bold text-neutral-100 md:text-4xl">Ako to funguje</h2>
+            <p class="mx-auto mb-16 max-w-2xl text-neutral-400">Štyri kroky od registrácie po prvú zmenu v rozpise.</p>
         </div>
 
         {{-- Fixed-width connector tracks (not `auto`) so the line divs - which have no
@@ -24,7 +24,7 @@
                     <span class="pointer-events-none absolute -top-3 select-none text-6xl font-black text-neutral-900" aria-hidden="true">
                         0{{ $i + 1 }}
                     </span>
-                    <div class="relative mb-4 flex h-20 w-20 items-center justify-center rounded-full border-2 border-sky-500/40 bg-neutral-900 text-2xl text-sky-400 shadow-lg shadow-sky-950/20">
+                    <div class="relative mb-4 flex h-20 w-20 items-center justify-center rounded-full border-2 border-brand-500/60 bg-neutral-900 text-2xl text-brand-400 shadow-lg shadow-brand-950/20">
                         <i class="fa-solid {{ $step['icon'] }}"></i>
                     </div>
                     <h3 class="mb-2 text-xl font-semibold text-neutral-100">{{ $step['title'] }}</h3>
@@ -34,7 +34,7 @@
                 @if(! $loop->last)
                     {{-- Draws in once its step has revealed - a static line would just sit
                          there; tying it to the same .active toggle makes the flow feel led. --}}
-                    <div class="reveal-line hidden h-0.5 w-full self-center bg-gradient-to-r from-sky-500/50 to-sky-500/10 lg:block" style="transition-delay: {{ $i * 120 + 200 }}ms; margin-top: 2.5rem;"></div>
+                    <div class="reveal-line hidden h-0.5 w-full self-center bg-brand-500/30 lg:block" style="transition-delay: {{ $i * 120 + 200 }}ms; margin-top: 2.5rem;"></div>
                 @endif
             @endforeach
         </div>

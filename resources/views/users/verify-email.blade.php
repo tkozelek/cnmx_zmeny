@@ -2,7 +2,7 @@
     <div class="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-4 py-12">
         <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-6 shadow-sm sm:p-8">
             <h1 class="flex items-center gap-2.5 text-xl font-bold text-white">
-                <i class="fa-solid fa-envelope-circle-check text-sky-400"></i>
+                <i class="fa-solid fa-envelope-circle-check text-brand-400"></i>
                 Over si e-mail
             </h1>
 
@@ -11,7 +11,7 @@
                 overovací odkaz. Klikni naň a vráť sa sem.
             </p>
 
-            <p class="mt-2 text-xs leading-relaxed text-neutral-500">
+            <p class="mt-2 text-xs leading-relaxed text-neutral-400">
                 Po overení ťa ešte musí schváliť vedúci kina. Ak e-mail nevidíš, pozri sa do spamu alebo si
                 ho nechaj poslať znova.
             </p>
@@ -26,7 +26,7 @@
                 <form method="POST" action="{{ route('verification.send') }}">
                     @csrf
                     <button type="submit"
-                            class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-sky-500/40 bg-sky-500/10 px-4 text-sm font-semibold text-sky-300 transition hover:bg-sky-500/20">
+                            class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-brand-500/60 bg-brand-500/10 px-4 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/20">
                         <i class="fa-solid fa-paper-plane text-xs"></i>
                         Poslať znova
                     </button>

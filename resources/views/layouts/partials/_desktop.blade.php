@@ -61,7 +61,7 @@
             >
                 <i class="fa-solid fa-user text-sm text-neutral-400 group-hover:text-neutral-200 transition"></i>
                 <span>{{ auth()->user()->name }} {{ auth()->user()->lastname }}</span>
-                <i class="fa-solid fa-chevron-down text-xs text-neutral-500 group-hover:text-neutral-300 transition-transform duration-200" :class="{'rotate-180': openProfile}"></i>
+                <i class="fa-solid fa-chevron-down text-xs text-neutral-400 group-hover:text-neutral-300 transition-transform duration-200" :class="{'rotate-180': openProfile}"></i>
             </button>
 
             {{-- Dropdown Container --}}
@@ -96,7 +96,7 @@
                             href="{{ route('team.settings.edit') }}"
                             class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
                         >
-                            <i class="fa-solid fa-sliders text-xs text-sky-400"></i>
+                            <i class="fa-solid fa-sliders text-xs text-brand-400"></i>
                             Správa kina
                         </a>
                     @endcan
@@ -106,7 +106,7 @@
                             href="{{ route('positions.index') }}"
                             class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
                         >
-                            <i class="fa-solid fa-list-check text-xs text-sky-400"></i>
+                            <i class="fa-solid fa-list-check text-xs text-brand-400"></i>
                             Pozície
                         </a>
                     @endcan

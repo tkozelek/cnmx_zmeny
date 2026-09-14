@@ -44,7 +44,7 @@
                 </span>
             @endif
 
-            <i class="fa-solid fa-chevron-down text-[10px] sm:text-xs text-neutral-500 shrink-0"></i>
+            <i class="fa-solid fa-chevron-down text-[10px] sm:text-xs text-neutral-400 shrink-0"></i>
         </button>
 
         <input x-ref="pickerInput" type="text" class="sr-only" />

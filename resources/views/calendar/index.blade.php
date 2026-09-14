@@ -153,7 +153,7 @@
                                                                 {{ $absence->reason }}
                                                             </span>
                                                         @else
-                                                            <span class="text-xs text-neutral-500">–</span>
+                                                            <span class="text-xs text-neutral-400">–</span>
                                                         @endif
                                                     </td>
                                                     <td class="px-4 py-2.5 text-right whitespace-nowrap hidden md:table-cell text-xs text-neutral-400">

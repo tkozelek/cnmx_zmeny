@@ -3,7 +3,7 @@
         <div>
             {{-- Previous Page Link --}}
             @if ($paginator->onFirstPage())
-                <span class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-neutral-600 bg-neutral-900 border border-neutral-800 cursor-default leading-5 rounded-md">
+                <span class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-neutral-400 bg-neutral-900 border border-neutral-800 cursor-default leading-5 rounded-md">
                     {!! __('pagination.previous') !!}
                 </span>
             @else
@@ -37,7 +37,7 @@
                     {!! __('pagination.next') !!}
                 </a>
             @else
-                <span class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-neutral-600 bg-neutral-900 border border-neutral-800 cursor-default leading-5 rounded-md">
+                <span class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-neutral-400 bg-neutral-900 border border-neutral-800 cursor-default leading-5 rounded-md">
                     {!! __('pagination.next') !!}
                 </span>
             @endif

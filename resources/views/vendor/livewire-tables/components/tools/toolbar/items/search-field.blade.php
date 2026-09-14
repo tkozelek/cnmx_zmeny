@@ -3,7 +3,7 @@
 <div class="relative flex items-center w-full">
     <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none text-neutral-400">
         <i wire:loading.remove wire:target="search,clearSearch" class="fa-solid fa-magnifying-glass text-xs"></i>
-        <i wire:loading wire:target="search,clearSearch" class="fa-solid fa-circle-notch fa-spin text-xs text-sky-400"></i>
+        <i wire:loading wire:target="search,clearSearch" class="fa-solid fa-circle-notch fa-spin text-xs text-brand-400"></i>
     </div>
 
     <input

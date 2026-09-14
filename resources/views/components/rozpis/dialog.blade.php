@@ -25,7 +25,7 @@
     <form method="dialog" class="flex items-start justify-between gap-4 border-b border-neutral-800 px-6 py-4">
         <div>
             <h2 class="flex items-center gap-2 text-lg font-bold text-white">
-                <i class="fa-solid {{ $icon }} text-sky-400"></i>
+                <i class="fa-solid {{ $icon }} text-brand-400"></i>
                 {{ $title }}
             </h2>
 
@@ -35,7 +35,7 @@
         </div>
 
         <button type="submit" aria-label="Zavrieť"
-                class="shrink-0 rounded-lg p-2 text-neutral-500 transition hover:bg-neutral-800 hover:text-white">
+                class="shrink-0 rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-800 hover:text-white">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </form>

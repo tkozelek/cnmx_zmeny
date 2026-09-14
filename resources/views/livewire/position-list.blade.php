@@ -3,7 +3,7 @@
     @if($this->canCreate)
         {{-- One form serves create and edit: editingId decides which. --}}
         <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-5 shadow-sm sm:p-6">
-            <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-sky-400">
+            <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-brand-400">
                 <i class="fa-solid {{ $editingId ? 'fa-pen-to-square' : 'fa-plus' }} text-xs"></i>
                 {{ $editingId ? 'Upraviť pozíciu' : 'Nová pozícia' }}
             </h2>
@@ -13,21 +13,21 @@
                     <div>
                         <label for="position-name" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">Názov</label>
                         <input id="position-name" type="text" wire:model="name" placeholder="Bufet"
-                               class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 shadow-inner transition hover:border-neutral-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60">
+                               class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
                         @error('name') <p class="mt-1.5 text-xs font-medium text-rose-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="position-code" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">Skratka</label>
                         <input id="position-code" type="text" wire:model="code" placeholder="BUF" maxlength="10"
-                               class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 shadow-inner transition hover:border-neutral-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60">
+                               class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
                         @error('code') <p class="mt-1.5 text-xs font-medium text-rose-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="position-group" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">Skupina</label>
                         <select id="position-group" wire:model="groupId"
-                                class="h-[46px] w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm text-white shadow-inner transition hover:border-neutral-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60">
+                                class="h-[46px] w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm text-white shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
                             <option value="">- bez skupiny -</option>
                             @foreach($this->groups as $group)
                                 <option value="{{ $group->id }}">{{ $group->name }}</option>
@@ -46,7 +46,7 @@
                     <div class="flex items-end">
                         <label class="flex min-h-[46px] w-full cursor-pointer items-center gap-2.5 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm text-neutral-200">
                             <input type="checkbox" wire:model="isManager"
-                                   class="h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-sky-500 focus:ring-0">
+                                   class="h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-brand-500 focus:ring-0">
                             Vedúci zmeny
                         </label>
                     </div>
@@ -61,9 +61,9 @@
                     @endif
 
                     <button type="submit" wire:loading.attr="disabled"
-                            class="flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-lg transition hover:border-sky-500/50 disabled:opacity-50">
+                            class="flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-lg transition hover:border-brand-500/60 disabled:opacity-50">
                         <span>{{ $editingId ? 'Uložiť' : 'Pridať' }}</span>
-                        <i class="fa-solid fa-floppy-disk text-xs text-sky-400"></i>
+                        <i class="fa-solid fa-floppy-disk text-xs text-brand-400"></i>
                     </button>
                 </div>
             </form>
@@ -74,7 +74,7 @@
          they get arrows of their own rather than being sorted alphabetically. --}}
     @if($this->canCreate)
         <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-5 shadow-sm sm:p-6">
-            <h2 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-sky-400">
+            <h2 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-brand-400">
                 <i class="fa-solid fa-layer-group text-xs"></i>
                 Skupiny pozícií
             </h2>
@@ -86,7 +86,7 @@
             <form wire:submit="saveGroup" class="flex flex-col gap-2 sm:flex-row sm:items-start">
                 <div class="flex-1">
                     <input type="text" wire:model="groupName" placeholder="Názov skupiny (napr. Bufet)"
-                           class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 shadow-inner transition hover:border-neutral-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60">
+                           class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
                     @error('groupName') <p class="mt-1.5 text-xs font-medium text-rose-400">{{ $message }}</p> @enderror
                 </div>
 
@@ -98,9 +98,9 @@
                 @endif
 
                 <button type="submit" wire:loading.attr="disabled"
-                        class="flex items-center justify-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 px-5 py-3 text-xs font-bold uppercase tracking-widest text-white shadow-lg transition hover:border-sky-500/50 disabled:opacity-50">
+                        class="flex items-center justify-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 px-5 py-3 text-xs font-bold uppercase tracking-widest text-white shadow-lg transition hover:border-brand-500/60 disabled:opacity-50">
                     <span>{{ $editingGroupId ? 'Premenovať' : 'Pridať skupinu' }}</span>
-                    <i class="fa-solid {{ $editingGroupId ? 'fa-pen-to-square' : 'fa-plus' }} text-xs text-sky-400"></i>
+                    <i class="fa-solid {{ $editingGroupId ? 'fa-pen-to-square' : 'fa-plus' }} text-xs text-brand-400"></i>
                 </button>
             </form>
 
@@ -173,7 +173,7 @@
                             {{ $position->group->name }}
                         </span>
                     @else
-                        <span class="text-neutral-600">-</span>
+                        <span class="text-neutral-400">-</span>
                     @endif
                 </x-table-cell>
 
@@ -182,7 +182,7 @@
                         @if($position->color)
                             <span class="h-3 w-3 shrink-0 rounded-full border border-neutral-700" style="background-color: {{ $position->color }}"></span>
                         @endif
-                        <span @class(['text-neutral-500 line-through' => ! $position->is_active])>{{ $position->name }}</span>
+                        <span @class(['text-neutral-400 line-through' => ! $position->is_active])>{{ $position->name }}</span>
                     </span>
                 </x-table-cell>
 
@@ -194,7 +194,7 @@
                             <i class="fa-solid fa-star text-[0.6rem]"></i> Vedúci
                         </span>
                     @else
-                        <span class="text-neutral-600">-</span>
+                        <span class="text-neutral-400">-</span>
                     @endif
                 </x-table-cell>
 
