@@ -6,6 +6,7 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\HtmlString;
 
 /**
  * Laravel's verification mail, in Slovak and off the request thread.
@@ -21,10 +22,12 @@ class VerifyEmailAddress extends VerifyEmail implements ShouldQueue
     protected function buildMailMessage($url): MailMessage
     {
         return (new MailMessage)
-            ->subject('Overenie e-mailovej adresy')
+            ->subject('Cine-max zmeny | Overenie e-mailovej adresy')
+            ->greeting('Ahoj!')
             ->line('Klikni na tlačidlo nižšie a over svoju e-mailovú adresu.')
             ->action('Overiť e-mail', $url)
             ->line('Po overení ťa ešte musí schváliť vedúci kina - dovtedy sa do aplikácie neprihlásiš.')
-            ->line('Ak si účet nevytváral/a ty, tento e-mail ignoruj.');
+            ->line('Ak si účet nevytváral/a ty, tento e-mail ignoruj.')
+            ->salutation(new HtmlString('S pozdravom,<br><strong>'.config('app.name').'</strong>'));
     }
 }

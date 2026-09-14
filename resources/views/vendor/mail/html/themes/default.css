@@ -105,17 +105,20 @@ img {
 /* Header */
 
 .header {
-    padding: 24px 0;
+    padding: 28px 0 22px;
     text-align: center;
 }
 
 .header a {
+    display: inline-block;
     color: #ffffff;
     font-size: 22px;
     font-weight: 800;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     text-decoration: none;
+    padding-bottom: 16px;
+    border-bottom: 3px solid #0284c7;
 }
 
 /* Logo */
@@ -175,8 +178,9 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 570px;
-    margin: 0 auto;
-    padding: 24px 0;
+    margin: 24px auto 0;
+    padding: 24px 0 0;
+    border-top: 1px solid #27272a;
     text-align: center;
     width: 570px;
 }
@@ -188,7 +192,7 @@ img {
 }
 
 .footer a {
-    color: #a1a1aa;
+    color: #38bdf8;
     text-decoration: underline;
 }
 
@@ -250,11 +254,11 @@ img {
 
 .button-blue,
 .button-primary {
-    background-color: #2563eb;
-    border-bottom: 10px solid #2563eb;
-    border-left: 24px solid #2563eb;
-    border-right: 24px solid #2563eb;
-    border-top: 10px solid #2563eb;
+    background-color: #0284c7;
+    border-bottom: 10px solid #0284c7;
+    border-left: 24px solid #0284c7;
+    border-right: 24px solid #0284c7;
+    border-top: 10px solid #0284c7;
 }
 
 .button-green,
