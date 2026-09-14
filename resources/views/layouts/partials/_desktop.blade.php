@@ -1,5 +1,12 @@
 <nav class="hidden md:flex items-center gap-2">
     @if(auth()->check() && auth()->user()->hasVerifiedEmail())
+        <x-nav-link
+            route="calendar.index"
+            icon='<i class="fa-solid fa-calendar-week text-sm"></i>'
+        >
+            Týždne
+        </x-nav-link>
+
         @can('viewAny', \App\Models\User::class)
             <x-nav-link
                 route="admin.users.index"

@@ -39,7 +39,11 @@ use Illuminate\Support\Facades\Route;
 | is one instead of demanding it.
 */
 Route::middleware(SetCurrentTeam::class.':optional')->group(function () {
-    Route::view('/welcome', 'welcome.welcome')->name('welcome.index');
+    // The landing page for a signed-out visitor. A signed-in user lands on their calendar
+    // instead - `/` is never a dead end, it always resolves to whatever "home" means for them.
+    Route::get('/', fn () => auth()->check() ? to_route('calendar.index') : view('welcome.welcome'))
+        ->name('welcome.index');
+
     Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
 });
 
@@ -102,7 +106,7 @@ Route::post('/odhlasenie', LogoutController::class)->middleware('auth')->name('l
 
 Route::middleware('tenant')->group(function () {
     // A week is identified by any date inside it — never a week id, there is no weeks table.
-    Route::get('/', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/tyzdne', [CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/week/{date}', [CalendarController::class, 'show'])->name('calendar.show');
 
     Route::post('/zapis', [AssignmentController::class, 'store'])->name('assignments.store');

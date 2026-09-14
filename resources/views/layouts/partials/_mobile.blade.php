@@ -31,6 +31,14 @@
                 <x-team-switcher />
             </div>
 
+            <x-nav-link
+                route="calendar.index"
+                :is-mobile="true"
+                icon='<i class="fa-solid fa-calendar-week"></i>'
+            >
+                Týždne
+            </x-nav-link>
+
             @can('viewAny', \App\Models\User::class)
                 <x-nav-link
                     route="admin.users.index"
