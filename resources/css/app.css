@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Brand accent, as CSS variables so it lives in one place instead of being
+ * spelled out as a Tailwind palette name (`sky-*`) in hundreds of class
+ * strings. `brand-600` (2 132 199) is a near-exact match for cine-max.sk's
+ * own accent blue (#018ed2) - re-point these RGB triplets to rebrand.
+ * Consumed via tailwind.config.js as `rgb(var(--color-brand-500) / <alpha-value>)`,
+ * so `bg-brand-500/20` etc. still work with Tailwind's opacity modifiers.
+ */
+:root {
+    --color-brand-50: 240 249 255;
+    --color-brand-100: 224 242 254;
+    --color-brand-200: 186 230 253;
+    --color-brand-300: 125 211 252;
+    --color-brand-400: 56 189 248;
+    --color-brand-500: 14 165 233;
+    --color-brand-600: 2 132 199;
+    --color-brand-700: 3 105 161;
+    --color-brand-800: 7 89 133;
+    --color-brand-900: 12 74 110;
+    --color-brand-950: 8 47 73;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -35,12 +57,6 @@ body {
     @apply bg-slate-900/50;
 }
 
-.gradient-text {
-    background: linear-gradient(90deg, #38bdf8, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
 .reveal {
     opacity: 0;
     transform: translateY(30px);
@@ -71,7 +87,6 @@ body {
 
 .cta-button:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
 }
 
 .hide-names .rows {

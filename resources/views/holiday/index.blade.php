@@ -38,7 +38,7 @@
                 {{-- Header --}}
                 <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-800 bg-neutral-950">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-plus text-sky-400 text-lg"></i>
+                        <i class="fa-solid fa-calendar-plus text-brand-400 text-lg"></i>
                         <h3 id="modal-absence-title" class="text-lg font-bold text-neutral-100">Pridať absenciu</h3>
                     </div>
                     <button @click="openModal = false" type="button" aria-label="Zatvoriť okno" class="text-neutral-400 hover:text-white rounded-lg p-1.5 transition">
@@ -93,7 +93,7 @@
                             placeholder="Napr. dovolenka, PN, lekár, atď."
                             class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none"
                         >
-                        <p class="text-xs text-neutral-500 mt-1">Maximálne 255 znakov.</p>
+                        <p class="text-xs text-neutral-400 mt-1">Maximálne 255 znakov.</p>
                     </div>
 
                     {{-- Action Buttons --}}
@@ -115,7 +115,7 @@
         @can('viewAny', App\Models\Absence::class)
             <div class="space-y-3">
                 <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-users text-sky-400 text-base"></i>
+                    <i class="fa-solid fa-users text-brand-400 text-base"></i>
                     <h2 class="text-lg font-bold text-neutral-100">Všetky absencie zamestnancov</h2>
                 </div>
                 <livewire:absences-data-table />
@@ -125,7 +125,7 @@
         {{-- 2. Table visible to EVERYONE: Moje absencie --}}
         <div class="space-y-3 @can('viewAny', App\Models\Absence::class) pt-6 border-t border-neutral-800 @endcan">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-user-clock text-sky-400 text-base"></i>
+                <i class="fa-solid fa-user-clock text-brand-400 text-base"></i>
                 <h2 class="text-lg font-bold text-neutral-100">Moje absencie</h2>
             </div>
             <livewire:my-absences-data-table />

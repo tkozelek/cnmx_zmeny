@@ -8,9 +8,9 @@
                 <input type="hidden" name="week_start" value="{{ $weekStart->toDateString() }}">
                 <div class="dz-message">
                     <div class="flex flex-col items-center justify-center">
-                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-neutral-500 mb-4"></i>
+                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-neutral-400 mb-4"></i>
                         <span class="block text-lg font-medium text-neutral-300">Sem presuňte súbory, alebo kliknite pre nahratie.</span>
-                        <span class="block text-sm text-neutral-500 mt-1">Maximálna veľkosť súboru: 2MB</span>
+                        <span class="block text-sm text-neutral-400 mt-1">Maximálna veľkosť súboru: 2MB</span>
                     </div>
                 </div>
             </form>
@@ -81,10 +81,10 @@
             </div>
         @else
             <div class="text-center py-10 bg-neutral-950 rounded-lg border border-neutral-800">
-                <i class="fa-solid fa-folder-open text-5xl text-neutral-600 mb-4"></i>
+                <i class="fa-solid fa-folder-open text-5xl text-neutral-400 mb-4"></i>
                 <h3 class="text-xl font-medium text-neutral-400">Žiadne súbory neboli pridané.</h3>
                 @can('create', \App\Models\Media::class)
-                    <p class="text-neutral-500 mt-2">Súbory môžete pridať pomocou formulára vyššie.</p>
+                    <p class="text-neutral-400 mt-2">Súbory môžete pridať pomocou formulára vyššie.</p>
                 @endcan
             </div>
         @endif

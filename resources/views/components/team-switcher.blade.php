@@ -19,9 +19,9 @@
                 class="flex items-center gap-2 rounded-lg bg-neutral-800/80 border border-neutral-700/80 px-3 py-1.5 text-sm font-semibold text-neutral-200 transition hover:bg-neutral-800 hover:text-white focus:outline-none"
                 title="Prepnutie kina"
             >
-                <i class="fa-solid fa-film text-xs text-sky-400"></i>
+                <i class="fa-solid fa-film text-xs text-brand-400"></i>
                 <span class="truncate max-w-[130px] sm:max-w-[160px]">{{ $currentTeam?->name ?? 'Kino' }}</span>
-                <i class="fa-solid fa-chevron-down text-xs text-neutral-500 transition-transform duration-200" :class="{'rotate-180': openTeam}"></i>
+                <i class="fa-solid fa-chevron-down text-xs text-neutral-400 transition-transform duration-200" :class="{'rotate-180': openTeam}"></i>
             </button>
 
             <div
@@ -45,7 +45,7 @@
                 <div class="rounded-xl border border-neutral-800 bg-neutral-900 p-1.5 shadow-2xl">
                     <div class="px-3 py-2 border-b border-neutral-800 mb-1">
                         <p class="text-xs font-medium text-neutral-400">Aktívne kino</p>
-                        <p class="truncate text-sm font-semibold text-sky-400">{{ $currentTeam?->name }}</p>
+                        <p class="truncate text-sm font-semibold text-brand-400">{{ $currentTeam?->name }}</p>
                     </div>
 
                     <div class="flex flex-col gap-0.5 max-h-60 overflow-y-auto">
@@ -58,13 +58,13 @@
                                         class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
                                     >
                                         <span class="truncate">{{ $team->name }}</span>
-                                        <i class="fa-solid fa-arrow-right-to-bracket text-xs text-neutral-500"></i>
+                                        <i class="fa-solid fa-arrow-right-to-bracket text-xs text-neutral-400"></i>
                                     </button>
                                 </form>
                             @else
-                                <div class="flex w-full items-center justify-between rounded-lg bg-sky-500/10 px-3 py-2 text-sm font-semibold text-sky-300 border border-sky-500/30">
+                                <div class="flex w-full items-center justify-between rounded-lg bg-brand-500/10 px-3 py-2 text-sm font-semibold text-brand-300 border border-brand-500/60">
                                     <span class="truncate">{{ $team->name }}</span>
-                                    <i class="fa-solid fa-check text-xs text-sky-400"></i>
+                                    <i class="fa-solid fa-check text-xs text-brand-400"></i>
                                 </div>
                             @endif
                         @endforeach

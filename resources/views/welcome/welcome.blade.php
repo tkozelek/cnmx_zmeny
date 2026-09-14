@@ -1,6 +1,6 @@
 <x-layout
     title="Plánovanie zmien pre kino"
-    description="Jednoduchý nástroj na plánovanie zmien, ktorý dáva zamestnancom kina flexibilitu a manažérom prehľad nad celým týždňom."
+    description="Napíš si dni, kedy môžeš pracovať, a sleduj rozpis zmien v kine odkiaľkoľvek."
 >
     {{-- Hero Section --}}
     @include('welcome.partials._hero')
@@ -16,7 +16,7 @@
 
     {{-- Footer --}}
     <footer class="border-t border-neutral-800 bg-neutral-950">
-        <div class="container mx-auto px-4 py-6 text-center text-sm text-neutral-500">
+        <div class="container mx-auto px-4 py-6 text-center text-sm text-neutral-400">
             <p>&copy; {{ now()->year }} Cinemax Zmeny. Všetky práva vyhradené.</p>
         </div>
     </footer>

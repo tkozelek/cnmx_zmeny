@@ -16,7 +16,7 @@
                 </div>
 
                 <div class="flex items-center gap-2 shrink-0">
-                    <i wire:loading class="fa-solid fa-circle-notch fa-spin text-sky-400 text-xs"></i>
+                    <i wire:loading class="fa-solid fa-circle-notch fa-spin text-brand-400 text-xs"></i>
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-800 text-neutral-300 border border-neutral-700">
                         {{ $userCount }} {{ $userCount === 1 ? 'človek' : ($userCount < 5 ? 'ľudia' : 'ľudí') }} · {{ $totalSignups }} {{ $totalSignups === 1 ? 'zmena' : ($totalSignups < 5 ? 'zmeny' : 'zmien') }}
                     </span>
@@ -43,7 +43,7 @@
                                 'bg-neutral-800/40' => $isCurrentUser,
                                 'hover:bg-neutral-800/60' => true,
                             ])>
-                                <td class="px-4 py-2.5 text-center text-xs text-neutral-500 font-medium">
+                                <td class="px-4 py-2.5 text-center text-xs text-neutral-400 font-medium">
                                     {{ $index + 1 }}
                                 </td>
                                 <td class="px-4 py-2.5 min-w-0">
@@ -69,10 +69,10 @@
         </section>
     @else
         <div class="rounded-lg border border-neutral-800 bg-neutral-900 shadow-sm p-6 text-center">
-            <div class="flex flex-col items-center justify-center py-4 text-neutral-500">
-                <i class="fa-solid fa-user-clock text-xl text-neutral-600 mb-1.5"></i>
+            <div class="flex flex-col items-center justify-center py-4 text-neutral-400">
+                <i class="fa-solid fa-user-clock text-xl text-neutral-400 mb-1.5"></i>
                 <p class="text-xs font-medium text-neutral-300">Žiadne zápisy na tento týždeň</p>
-                <p class="text-xs text-neutral-500 mt-0.5">Akonáhle sa niekto zapíše, prehľad sa tu zobrazí.</p>
+                <p class="text-xs text-neutral-400 mt-0.5">Akonáhle sa niekto zapíše, prehľad sa tu zobrazí.</p>
             </div>
         </div>
     @endif

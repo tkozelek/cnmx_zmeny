@@ -87,7 +87,7 @@
                 <x-nav-link
                     route="team.settings.edit"
                     :is-mobile="true"
-                    icon='<i class="fa-solid fa-sliders text-sky-400"></i>'
+                    icon='<i class="fa-solid fa-sliders text-brand-400"></i>'
                 >
                     Správa kina
                 </x-nav-link>

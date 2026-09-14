@@ -9,17 +9,17 @@
 
     <div id="hero-content" class="container relative mx-auto px-4">
         <h1 class="text-4xl font-extrabold leading-tight text-neutral-50 md:text-6xl">
-            Vaša práca, váš čas. <span class="gradient-text">Váš rozvrh.</span>
+            Rozpis zmien v kine, bez skupiny na WhatsAppe.
         </h1>
         <p class="mx-auto mb-8 mt-4 max-w-2xl text-lg text-neutral-300 md:text-xl">
-            Jednoduchý nástroj na plánovanie zmien, ktorý dáva zamestnancom kina flexibilitu
-            a manažérom prehľad nad celým týždňom.
+            Napíš si dni, kedy môžeš pracovať, a sleduj rozpis odkiaľkoľvek.
+            Manažér ti schváli účet a odtiaľ si to riadiš sám.
         </p>
 
         <div class="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a href="#registracia" class="cta-button inline-flex items-center gap-2 rounded-lg bg-neutral-100 px-6 py-3 text-base font-semibold text-neutral-900 transition hover:bg-white">
                 <i class="fa-solid fa-user-plus text-sm"></i>
-                Začať s plánovaním
+                Zaregistrovať sa
             </a>
             <a href="#ako-to-funguje" class="inline-flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-900/60 px-6 py-3 text-base font-semibold text-neutral-200 backdrop-blur transition hover:border-neutral-600 hover:text-white">
                 Ako to funguje

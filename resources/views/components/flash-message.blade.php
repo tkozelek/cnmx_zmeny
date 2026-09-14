@@ -12,7 +12,7 @@
                     type === 'success' ? 'fa-solid fa-circle-check text-emerald-400' :
                     type === 'error' ? 'fa-solid fa-circle-xmark text-rose-400' :
                     type === 'warning' ? 'fa-solid fa-triangle-exclamation text-amber-400' :
-                    'fa-solid fa-circle-info text-sky-400'
+                    'fa-solid fa-circle-info text-brand-400'
                 )
             });
             setTimeout(() => {
@@ -69,7 +69,7 @@
                 'border-emerald-500/50': toast.type === 'success',
                 'border-rose-500/50': toast.type === 'error',
                 'border-amber-500/50': toast.type === 'warning',
-                'border-sky-500/50': toast.type === 'info' || toast.type === 'status'
+                'border-brand-500/60': toast.type === 'info' || toast.type === 'status'
             }"
         >
             <i class="shrink-0 text-sm" :class="toast.icon"></i>
@@ -78,7 +78,7 @@
             <button
                 type="button"
                 @click="removeToast(toast.id)"
-                class="shrink-0 text-neutral-500 hover:text-white transition-colors focus:outline-none ml-2"
+                class="shrink-0 text-neutral-400 hover:text-white transition-colors focus:outline-none ml-2"
                 aria-label="Zavrieť oznam"
             >
                 <i class="fa-solid fa-xmark text-xs"></i>

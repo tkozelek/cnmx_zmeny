@@ -15,14 +15,14 @@
 
                     <span
                         wire:key="{{ $tableName }}-sorting-pill-{{ $columnSelectName }}"
-                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/30"
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-300 border border-brand-500/60"
                     >
                         <span>{{ $column->getSortingPillTitle() }}: {{ $direction === 'asc' ? 'A-Z (vzostupne)' : 'Z-A (zostupne)' }}</span>
 
                         <button
                             wire:click="clearSort('{{ $columnSelectName }}')"
                             type="button"
-                            class="flex-shrink-0 h-4 w-4 rounded-full inline-flex items-center justify-center text-sky-400 hover:text-white focus:outline-none"
+                            class="flex-shrink-0 h-4 w-4 rounded-full inline-flex items-center justify-center text-brand-400 hover:text-white focus:outline-none"
                             title="Zrušiť zoradenie"
                         >
                             <i class="fa-solid fa-xmark text-xs"></i>

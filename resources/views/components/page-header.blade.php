@@ -8,7 +8,7 @@
 
         <h1 class="flex items-center gap-2.5 text-2xl font-bold text-white">
             @if($icon)
-                <i class="fa-solid {{ $icon }} text-sky-400"></i>
+                <i class="fa-solid {{ $icon }} text-brand-400"></i>
             @endif
             {{ $title }}
         </h1>

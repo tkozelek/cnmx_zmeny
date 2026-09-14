@@ -28,9 +28,9 @@
                         </span>
                     @endif
 
-                    <span class="text-[0.7rem] text-neutral-500">{{ count($batch['changes']) }}x</span>
+                    <span class="text-[0.7rem] text-neutral-400">{{ count($batch['changes']) }}x</span>
 
-                    <span class="ml-auto shrink-0 tabular-nums text-[0.7rem] text-neutral-500">
+                    <span class="ml-auto shrink-0 tabular-nums text-[0.7rem] text-neutral-400">
                         {{ $batch['at']->format('d.m.Y H:i') }}
                     </span>
                 </div>
@@ -38,7 +38,7 @@
                 <ul class="mt-1.5 flex flex-col gap-1">
                     @foreach($batch['changes'] as $change)
                         <li class="flex gap-2 text-xs leading-relaxed text-neutral-400">
-                            <i class="fa-solid fa-angle-right mt-1 text-[0.6rem] text-neutral-600"></i>
+                            <i class="fa-solid fa-angle-right mt-1 text-[0.6rem] text-neutral-400"></i>
                             <span>{{ $change }}</span>
                         </li>
                     @endforeach

@@ -46,9 +46,9 @@
                         required
                     />
 
-                    <button type="submit" class="w-full py-3.5 px-5 bg-neutral-800 hover:bg-neutral-750 active:bg-neutral-850 text-white font-bold rounded-xl text-sm tracking-widest uppercase border border-neutral-700 hover:border-sky-500/50 shadow-lg shadow-black/40 transition duration-200 flex items-center justify-center gap-2 group">
+                    <button type="submit" class="w-full py-3.5 px-5 bg-neutral-800 hover:bg-neutral-750 active:bg-neutral-850 text-white font-bold rounded-xl text-sm tracking-widest uppercase border border-neutral-700 hover:border-brand-500/60 shadow-lg shadow-black/40 transition duration-200 flex items-center justify-center gap-2 group">
                         <span>Uložiť nové heslo</span>
-                        <i class="fa-solid fa-check text-xs text-sky-400 group-hover:scale-110 transition-transform"></i>
+                        <i class="fa-solid fa-check text-xs text-brand-400 group-hover:scale-110 transition-transform"></i>
                     </button>
                 </form>
             </div>

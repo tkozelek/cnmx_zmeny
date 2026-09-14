@@ -6,7 +6,7 @@
             :class="tab === 'stats' ? 'bg-neutral-800 text-white font-semibold' : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900 font-medium'"
             class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:py-1.5 rounded-md text-xs sm:text-sm transition focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer text-center"
         >
-            <i class="fa-solid fa-chart-column text-xs" :class="tab === 'stats' ? 'text-indigo-400' : 'text-neutral-500'"></i>
+            <i class="fa-solid fa-chart-column text-xs" :class="tab === 'stats' ? 'text-indigo-400' : 'text-neutral-400'"></i>
             <span>Frekvencia zmien</span>
         </button>
         <button
@@ -15,7 +15,7 @@
             :class="tab === 'absences' ? 'bg-neutral-800 text-white font-semibold' : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900 font-medium'"
             class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:py-1.5 rounded-md text-xs sm:text-sm transition focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer text-center"
         >
-            <i class="fa-solid fa-calendar-xmark text-xs" :class="tab === 'absences' ? 'text-indigo-400' : 'text-neutral-500'"></i>
+            <i class="fa-solid fa-calendar-xmark text-xs" :class="tab === 'absences' ? 'text-indigo-400' : 'text-neutral-400'"></i>
             <span>Absencie</span>
             @if($activeAbsences->count() > 0)
                 <span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">

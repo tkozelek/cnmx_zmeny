@@ -5,7 +5,7 @@
         <div class="w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-lg shadow-sm p-6 sm:p-8 space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-neutral-800">
                 <div class="flex items-center gap-3">
-                    <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-800 border border-neutral-700 text-sky-400 text-base">
+                    <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-800 border border-neutral-700 text-brand-400 text-base">
                         <i class="fa-solid fa-user-pen"></i>
                     </div>
                     <div>
@@ -60,13 +60,13 @@
                 <div class="relative">
                     <label for="roles" class="block mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">Rola</label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-neutral-500">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-neutral-400">
                             <i class="fa-solid fa-id-badge"></i>
                         </div>
                         <select
                             name="role"
                             id="roles"
-                            class="w-full px-4 py-3 pl-11 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 transition-all duration-200 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500/60 focus:border-sky-500 hover:border-neutral-700 appearance-none cursor-pointer"
+                            class="w-full px-4 py-3 pl-11 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 transition-all duration-200 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500 hover:border-neutral-700 appearance-none cursor-pointer"
                         >
                             @isset($roles)
                                 @foreach($roles as $role)
@@ -74,7 +74,7 @@
                                 @endforeach
                             @endisset
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-neutral-500">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-neutral-400">
                             <i class="fa-solid fa-chevron-down text-xs"></i>
                         </div>
                     </div>

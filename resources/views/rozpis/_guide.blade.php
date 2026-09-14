@@ -12,12 +12,12 @@
                  subtitle="Ako sa rozpis zostavuje a čo sa kde dá nastaviť.">
     <x-slot:footer>
         <button type="submit"
-                class="inline-flex min-h-10 items-center gap-2 rounded-md border border-sky-500/40 bg-sky-500/10 px-4 text-sm font-semibold text-sky-300 transition hover:bg-sky-500/20">
+                class="inline-flex min-h-10 items-center gap-2 rounded-md border border-brand-500/60 bg-brand-500/10 px-4 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/20">
             Rozumiem
         </button>
     </x-slot:footer>
 
-    <h3 class="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-400">
+    <h3 class="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-400">
         <i class="fa-solid fa-list-ol text-[0.7rem]"></i>
         Postup
     </h3>
@@ -36,7 +36,7 @@
             ['fa-file-excel', 'Stiahnite Excel', 'Tlačidlom <strong>Excel</strong> získate rozpis vo formáte na tlač - štyri dni na stranu, papier A4 naležato. Druhý hárok <em>Zoznam</em> je ten istý týždeň ako plochý zoznam zmien s filtrom na každom stĺpci.'],
         ] as $step)
             <li class="flex gap-3">
-                <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-neutral-800 bg-neutral-950 text-sky-400">
+                <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-neutral-800 bg-neutral-950 text-brand-400">
                     <i class="fa-solid {{ $step[0] }} text-xs"></i>
                 </span>
                 <div class="min-w-0">
@@ -49,7 +49,7 @@
 
     {{-- The number beside each unplaced name is the one thing on this page whose direction
          nobody can guess, so it gets a block of its own rather than a tooltip. --}}
-    <h3 class="mb-3 mt-7 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-400">
+    <h3 class="mb-3 mt-7 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-400">
         <i class="fa-solid fa-hashtag text-[0.7rem]"></i>
         Čo znamená číslo pri mene
     </h3>
@@ -85,13 +85,13 @@
             rade Janka, ale na najbližšiu sobotu má naopak prednosť Peter, ktorý si ju "odrobil".
         </p>
 
-        <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-500">
+        <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-400">
             Počíta sa z priradení za posledných {{ $team->fairnessWindowWeeks() }} týždňov a z váh
             jednotlivých dní - obe hodnoty nastavíte v správe kina.
         </p>
     </div>
 
-    <h3 class="mb-3 mt-7 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-400">
+    <h3 class="mb-3 mt-7 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-400">
         <i class="fa-solid fa-scale-balanced text-[0.7rem]"></i>
         Odporúčané rozdelenie dní
     </h3>
@@ -104,12 +104,12 @@
 
         <ul class="mt-2.5 flex flex-col gap-1.5 text-xs leading-relaxed text-neutral-400">
             <li class="flex gap-2">
-                <i class="fa-solid fa-1 mt-0.5 text-[0.6rem] text-neutral-500"></i>
+                <i class="fa-solid fa-1 mt-0.5 text-[0.6rem] text-neutral-400"></i>
                 <span><strong class="text-neutral-200">Počet zapísaných dní</strong> - kto je k dispozícii viac,
                     dostane viac. Voľné pozície týždňa sa rozdelia v tomto pomere.</span>
             </li>
             <li class="flex gap-2">
-                <i class="fa-solid fa-2 mt-0.5 text-[0.6rem] text-neutral-500"></i>
+                <i class="fa-solid fa-2 mt-0.5 text-[0.6rem] text-neutral-400"></i>
                 <span><strong class="text-neutral-200">Zásluhy</strong> - medzi dvoma rovnako dostupnými ľuďmi
                     nakloní rozdelenie o max. ±25 % v prospech toho, kto pre kino odrobil viac - viac dní
                     a viac tých neobľúbených (piatok sa počíta za 1,6 dňa, víkend za 0,8).</span>
@@ -122,14 +122,14 @@
             panel odporučí o niečo viac zmien než Petrovi - najviac o štvrtinu.
         </p>
 
-        <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-500">
+        <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-400">
             Nikdy neodporučí viac dní, než na koľko sa človek zapísal. <strong>0</strong> znamená, že týždeň má
             viac dobrovoľníkov než pozícií. Stĺpec <em>Zaradený</em> je stav pri načítaní stránky - po dávke
             priraďovania obnovte stránku. Je to odporúčanie, priraďujete stále vy.
         </p>
     </div>
 
-    <h3 class="mb-3 mt-7 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-400">
+    <h3 class="mb-3 mt-7 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-400">
         <i class="fa-solid fa-sliders text-[0.7rem]"></i>
         Nastavenia a kde ich zmeniť
     </h3>
@@ -139,9 +139,9 @@
     <div class="flex flex-col gap-4">
         <section class="rounded-lg border border-neutral-800 bg-neutral-950/50 px-4 py-3">
             <p class="flex flex-wrap items-center gap-2 text-xs font-semibold text-neutral-200">
-                <i class="fa-solid fa-calendar-week text-[0.7rem] text-neutral-500"></i>
+                <i class="fa-solid fa-calendar-week text-[0.7rem] text-neutral-400"></i>
                 Týždeň, zapisovanie a absencie
-                <a href="{{ route('team.settings.edit') }}" class="text-[0.7rem] font-semibold text-sky-400 underline hover:text-sky-300">
+                <a href="{{ route('team.settings.edit') }}" class="text-[0.7rem] font-semibold text-brand-400 underline hover:text-brand-300">
                     správa kina
                 </a>
             </p>
@@ -156,9 +156,9 @@
                     ['Obdobie hodnotenia', $team->fairnessWindowWeeks().' týž.', 'Ako ďaleko do minulosti sa počítajú odpracované dni pre zásluhy aj pre poradie na neobľúbené dni.'],
                 ] as [$label, $value, $note])
                     <div>
-                        <dt class="text-[0.7rem] font-semibold uppercase tracking-wider text-neutral-500">{{ $label }}</dt>
+                        <dt class="text-[0.7rem] font-semibold uppercase tracking-wider text-neutral-400">{{ $label }}</dt>
                         <dd class="text-xs font-bold text-neutral-100">{{ $value }}</dd>
-                        <dd class="text-[0.7rem] leading-relaxed text-neutral-500">{{ $note }}</dd>
+                        <dd class="text-[0.7rem] leading-relaxed text-neutral-400">{{ $note }}</dd>
                     </div>
                 @endforeach
             </dl>
@@ -166,9 +166,9 @@
 
         <section class="rounded-lg border border-neutral-800 bg-neutral-950/50 px-4 py-3">
             <p class="flex flex-wrap items-center gap-2 text-xs font-semibold text-neutral-200">
-                <i class="fa-solid fa-scale-balanced text-[0.7rem] text-neutral-500"></i>
+                <i class="fa-solid fa-scale-balanced text-[0.7rem] text-neutral-400"></i>
                 Váhy dní
-                <a href="{{ route('team.settings.edit') }}" class="text-[0.7rem] font-semibold text-sky-400 underline hover:text-sky-300">
+                <a href="{{ route('team.settings.edit') }}" class="text-[0.7rem] font-semibold text-brand-400 underline hover:text-brand-300">
                     správa kina
                 </a>
             </p>
@@ -191,7 +191,7 @@
                         'border-amber-500/40 bg-amber-500/10' => $weight > $averageWeight,
                         'border-neutral-800 bg-neutral-900' => $weight <= $averageWeight,
                     ])>
-                        <p class="text-[0.6rem] font-semibold uppercase tracking-wider text-neutral-500">
+                        <p class="text-[0.6rem] font-semibold uppercase tracking-wider text-neutral-400">
                             {{ Str::substr($weekDayNames[$index], 0, 3) }}.
                         </p>
                         <p @class([
@@ -206,9 +206,9 @@
 
         <section class="rounded-lg border border-neutral-800 bg-neutral-950/50 px-4 py-3">
             <p class="flex flex-wrap items-center gap-2 text-xs font-semibold text-neutral-200">
-                <i class="fa-solid fa-list-check text-[0.7rem] text-neutral-500"></i>
+                <i class="fa-solid fa-list-check text-[0.7rem] text-neutral-400"></i>
                 Pozície a skupiny
-                <a href="{{ route('positions.index') }}" class="text-[0.7rem] font-semibold text-sky-400 underline hover:text-sky-300">
+                <a href="{{ route('positions.index') }}" class="text-[0.7rem] font-semibold text-brand-400 underline hover:text-brand-300">
                     správa pozícií
                 </a>
             </p>
@@ -223,7 +223,7 @@
                     ['Aktívna / neaktívna', 'Neaktívna pozícia sa už nedá pridať do nového dňa, ale historické priradenia zostávajú. Pozície sa preto nemažú, iba deaktivujú.'],
                 ] as [$label, $note])
                     <li class="flex gap-2">
-                        <i class="fa-solid fa-angle-right mt-1 text-[0.6rem] text-neutral-600"></i>
+                        <i class="fa-solid fa-angle-right mt-1 text-[0.6rem] text-neutral-400"></i>
                         <span><strong class="text-neutral-200">{{ $label }}</strong> - {{ $note }}</span>
                     </li>
                 @endforeach
