@@ -48,14 +48,19 @@ class ImportLegacyData extends Command
 
     /**
      * Fixed test accounts, exempt from clearSeededData()'s wipe (see there) so they survive
-     * every re-run instead of being treated as demo data.
+     * every re-run instead of being treated as demo data. Email/password come from config
+     * (services.test_users, backed by TEST_USER_* in .env) rather than being hardcoded, since
+     * this repo is public.
+     *
+     * @return list<array{email: string, name: string, lastname: string, role: RoleEnum}>
      */
-    private const TEST_USERS = [
-        ['email' => 'brigadnik@test.sk', 'name' => 'Test', 'lastname' => 'Brigádnik', 'role' => RoleEnum::Employee],
-        ['email' => 'admin@test.sk', 'name' => 'Test', 'lastname' => 'Admin', 'role' => RoleEnum::HeadManager],
-    ];
-
-    private const TEST_PASSWORD = 'test1234';
+    private function testUsers(): array
+    {
+        return [
+            ['email' => config('services.test_users.brigadnik_email'), 'name' => 'Test', 'lastname' => 'Brigádnik', 'role' => RoleEnum::Employee],
+            ['email' => config('services.test_users.admin_email'), 'name' => 'Test', 'lastname' => 'Admin', 'role' => RoleEnum::HeadManager],
+        ];
+    }
 
     public function handle(): int
     {
@@ -106,7 +111,7 @@ class ImportLegacyData extends Command
 
         $this->info('Import dokončený.');
         $this->line('Preskočené (nová schéma pre ne nemá tabuľku): bugs, file_storage.');
-        $this->line('Testovacie účty: brigadnik@test.sk / admin@test.sk (heslo: '.self::TEST_PASSWORD.')');
+        $this->line('Testovacie účty: '.implode(' / ', array_column($this->testUsers(), 'email')));
 
         return self::SUCCESS;
     }
@@ -128,7 +133,7 @@ class ImportLegacyData extends Command
         Absence::query()->delete();
 
         $keepEmails = $legacy->table('users')->pluck('email')
-            ->merge(array_column(self::TEST_USERS, 'email'));
+            ->merge(array_column($this->testUsers(), 'email'));
 
         $demoUsers = $team->users()->whereNotIn('users.email', $keepEmails)->get();
 
@@ -179,16 +184,16 @@ class ImportLegacyData extends Command
         return $map;
     }
 
-    /** Creates or refreshes the fixed test accounts (see TEST_USERS) for this team. */
+    /** Creates or refreshes the fixed test accounts (see testUsers()) for this team. */
     private function ensureTestUsers(Team $team): void
     {
-        foreach (self::TEST_USERS as $data) {
+        foreach ($this->testUsers() as $data) {
             $user = User::updateOrCreate(
                 ['email' => $data['email']],
                 [
                     'name' => $data['name'],
                     'lastname' => $data['lastname'],
-                    'password' => Hash::make(self::TEST_PASSWORD),
+                    'password' => Hash::make(config('services.test_users.password')),
                     'current_team_id' => $team->id,
                     'is_active' => true,
                     'email_verified_at' => now(),
