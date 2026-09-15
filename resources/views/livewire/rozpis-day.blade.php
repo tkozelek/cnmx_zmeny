@@ -53,21 +53,23 @@
                                 <i class="fa-solid fa-grip-vertical text-xs"></i>
                             </span>
 
-                            {{-- Accessible keyboard and single-pointer slot reordering buttons --}}
-                            <span class="inline-flex items-center sm:opacity-0 sm:group-hover/slot:opacity-100 focus-within:opacity-100 transition-opacity">
+                            {{-- Accessible keyboard/single-pointer alternative to the drag handle
+                                 (WCAG 2.5.7 Dragging Movements) - stacked into one narrow stepper
+                                 so it stays out of the way of the drag handle it backs up. --}}
+                            <span class="flex flex-col sm:opacity-0 sm:group-hover/slot:opacity-100 focus-within:opacity-100 transition-opacity">
                                 <button type="button"
                                         wire:click="moveSlotUp({{ $row['slot']->id }})"
                                         aria-label="Posunúť pozíciu {{ $row['label'] }} nahor"
                                         title="Posunúť nahor"
-                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
-                                    <i class="fa-solid fa-chevron-up text-[0.65rem]"></i>
+                                        class="flex h-4 w-5 items-center justify-center rounded-t text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
+                                    <i class="fa-solid fa-chevron-up text-[0.55rem]"></i>
                                 </button>
                                 <button type="button"
                                         wire:click="moveSlotDown({{ $row['slot']->id }})"
                                         aria-label="Posunúť pozíciu {{ $row['label'] }} nadol"
                                         title="Posunúť nadol"
-                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
-                                    <i class="fa-solid fa-chevron-down text-[0.65rem]"></i>
+                                        class="flex h-4 w-5 items-center justify-center rounded-b text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
+                                    <i class="fa-solid fa-chevron-down text-[0.55rem]"></i>
                                 </button>
                             </span>
                         @endif

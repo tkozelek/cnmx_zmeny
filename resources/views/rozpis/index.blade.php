@@ -37,8 +37,9 @@
                     @endif
                 </div>
 
-                {{-- Own week nav: x-date links to calendar.show, which would leave the builder. --}}
-                <div class="flex items-center gap-2"
+                {{-- Own week nav: x-date links to calendar.show, which would leave the builder.
+                     flex-wrap: this row has ~9 buttons, too many to fit one line under lg. --}}
+                <div class="flex flex-wrap items-center gap-2"
                      x-data="weekJump(@js($weekStart->toDateString()), @js(route('rozpis.show', ['date' => '__DATE__'])))">
                     <x-rozpis.week-arrow direction="previous"
                                         :href="route('rozpis.show', ['date' => $previousWeek->toDateString()])" />
