@@ -44,8 +44,11 @@
             <div wire:key="slot-{{ $row['slot']->id }}"
                  data-slot-id="{{ $row['slot']->id }}"
                  class="group/slot rounded-md border border-neutral-800 bg-neutral-950/40">
-                <div class="flex items-center justify-between gap-2 border-b border-neutral-800/70 px-2 py-1.5">
-                    <span class="flex min-w-0 items-center gap-1">
+                <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-b border-neutral-800/70 px-2 py-1.5">
+                    {{-- flex-1 + min-w-0: this span always claims the row's full first line, so the
+                         label truncates instead of being squeezed to nothing - the time picker and
+                         action buttons are shrink-0 and wrap to their own line first. --}}
+                    <span class="flex min-w-0 flex-1 items-center gap-1">
                         @if($this->canBuild)
                             <span data-drag-handle
                                   title="Presuňte pre zmenu poradia"
@@ -78,10 +81,14 @@
                             <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: {{ $row['slot']->position->color }}"></span>
                         @endif
 
-                        <span class="truncate text-sm font-semibold text-neutral-200" title="{{ $row['slot']->position->name }}">
+                        <span class="min-w-0 truncate text-sm font-semibold text-neutral-200" title="{{ $row['slot']->position->name }}">
                             {{ $row['label'] }}
                         </span>
+                    </span>
 
+                    {{-- ml-auto: keeps this pinned to the right whether it shares the first line
+                         with the label or, once too tight, wraps onto a line of its own. --}}
+                    <span class="ml-auto flex shrink-0 items-center gap-1">
                         @if($this->canBuild)
                             {{-- Editable in place: the schedule moves and the bufet opens later.
                                  Saves on change, so there is no form and no submit button. --}}
@@ -95,10 +102,8 @@
                                 {{ $row['time'] }}
                             </span>
                         @endif
-                    </span>
 
-                    @if($this->canBuild)
-                        <span class="flex shrink-0 items-center gap-1">
+                        @if($this->canBuild)
                             {{-- Copy just this one row onto other days. Alpine holds the checkbox
                                  state, so there is no per-slot array to keep on the server. --}}
                             @if($this->copyTargets)
@@ -148,8 +153,8 @@
                                     class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-500/20 hover:text-rose-300">
                                 <i class="fa-solid fa-xmark text-xs"></i>
                             </button>
-                        </span>
-                    @endif
+                        @endif
+                    </span>
                 </div>
 
                 {{-- Drop zone. The minimum height keeps an empty row a visible target. --}}

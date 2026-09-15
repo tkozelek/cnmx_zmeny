@@ -189,9 +189,10 @@
                     Najprv si <a href="{{ route('positions.index') }}" class="font-semibold text-brand-400 hover:underline">definujte pozície</a>, potom sa dá zostaviť rozpis.
                 </x-empty-state>
             @else
-                {{-- Seven across from lg up: the full-width shell above is what makes the columns
-                     wide enough to drop into comfortably. --}}
-                <div class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 2xl:gap-4">
+                {{-- Seven across only from 2xl up: each day's slot row packs a drag handle, a
+                     time picker and two action buttons, which don't fit seven columns until
+                     there is genuinely enough width for them - xl squeezed them into overlapping. --}}
+                <div class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7 2xl:gap-4">
                     @foreach($days as $day)
                         <livewire:rozpis-day :date="$day->toDateString()"
                                              :initial-slots="$weekSlots->get($day->toDateString(), collect())"
