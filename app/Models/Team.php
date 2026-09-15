@@ -143,6 +143,12 @@ class Team extends Model
         return $this->cachedSettings()?->fairness_window_weeks ?? TeamSetting::DEFAULT_FAIRNESS_WINDOW_WEEKS;
     }
 
+    /** How hard a Slovak public holiday is to staff, in place of its weekday's weight. */
+    public function holidayWeight(): float
+    {
+        return $this->cachedSettings()?->holiday_weight ?? TeamSetting::DEFAULT_HOLIDAY_WEIGHT;
+    }
+
     /**
      * Quick-pick chips offered by the rozpis builder's time picker (see resources/js/app.js).
      *

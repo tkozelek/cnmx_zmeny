@@ -208,6 +208,26 @@
                                 />
                                 <p class="text-[11px] text-neutral-400 mt-1">Ako ďaleko do minulosti sa počítajú odpracované dni.</p>
                             </div>
+
+                            <div>
+                                <x-form-input
+                                    type="number"
+                                    step="0.1"
+                                    name="holiday_weight"
+                                    label="Váha sviatku"
+                                    placeholder="1.6"
+                                    :value="old('holiday_weight', $team->holidayWeight())"
+                                    icon="fa-star"
+                                    min="0.1"
+                                    max="10"
+                                    :disabled="!$canEdit"
+                                    required
+                                />
+                                <p class="text-[11px] text-neutral-400 mt-1">
+                                    Váha slovenského štátneho sviatku - platí namiesto váhy jeho dňa v týždni,
+                                    nech vyjde na ktorýkoľvek deň.
+                                </p>
+                            </div>
                         </div>
                     </div>
 

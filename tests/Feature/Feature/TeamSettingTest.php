@@ -37,6 +37,7 @@ class TeamSettingTest extends TestCase
                 'stale_absence_deletion_days' => 45,
                 'fairness_day_weights' => [1, 1, 1, 1, 1.5, 2, 2],
                 'fairness_window_weeks' => 8,
+                'holiday_weight' => 1.8,
             ])
             ->assertRedirect()
             ->assertSessionHas('message');
@@ -46,6 +47,7 @@ class TeamSettingTest extends TestCase
             'team_id' => $team->id,
             'stale_absence_deletion_days' => 45,
             'fairness_window_weeks' => 8,
+            'holiday_weight' => 1.8,
         ]);
 
         // Stored as numbers, not the strings a form posts - FairnessService indexes straight

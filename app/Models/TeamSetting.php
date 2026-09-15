@@ -55,6 +55,12 @@ class TeamSetting extends Model
      */
     public const array DEFAULT_QUICK_TIMES = ['12:00', '12:30', '14:00', '14:30', '15:00', '17:00'];
 
+    /**
+     * Same weight as Friday's default: a Slovak public holiday (sviatok) is priced hard-to-staff
+     * by default, regardless of which weekday it falls on. See App\Services\SlovakHolidays.
+     */
+    public const float DEFAULT_HOLIDAY_WEIGHT = 1.6;
+
     protected $fillable = [
         'team_id',
         'week_start_day',
@@ -64,6 +70,7 @@ class TeamSetting extends Model
         'fairness_day_weights',
         'fairness_window_weeks',
         'quick_times',
+        'holiday_weight',
         'timezone',
         'locale',
     ];
@@ -78,6 +85,7 @@ class TeamSetting extends Model
             'fairness_day_weights' => 'array',
             'fairness_window_weeks' => 'integer',
             'quick_times' => 'array',
+            'holiday_weight' => 'float',
         ];
     }
 }
