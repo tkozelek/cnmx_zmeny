@@ -6,10 +6,10 @@
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
      @click="openn = false"
-     class="fixed inset-0 z-[100] flex h-full w-full flex-col items-center justify-center bg-neutral-950/60 backdrop-blur-xl md:hidden overflow-y-auto p-4"
+     class="fixed inset-0 z-[100] grid h-full w-full place-items-center bg-neutral-950/60 backdrop-blur-xl md:hidden overflow-y-auto p-4"
      style="display: none;">
 
-    <nav @click.stop class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-lg bg-neutral-900 border border-neutral-800 p-6 text-center shadow-xl my-auto">
+    <nav @click.stop class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-lg bg-neutral-900 border border-neutral-800 p-6 text-center shadow-xl">
 
         <!-- Dedicated Close Button -->
         <button
