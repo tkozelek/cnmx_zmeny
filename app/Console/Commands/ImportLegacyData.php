@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
@@ -44,6 +45,17 @@ class ImportLegacyData extends Command
         {--force : Preskočiť potvrdzovaciu otázku}';
 
     protected $description = 'Nahradí demo dáta daného tímu reálnymi dátami z legacy databázy (LEGACY_DB_* v .env)';
+
+    /**
+     * Fixed test accounts, exempt from clearSeededData()'s wipe (see there) so they survive
+     * every re-run instead of being treated as demo data.
+     */
+    private const TEST_USERS = [
+        ['email' => 'brigadnik@test.sk', 'name' => 'Test', 'lastname' => 'Brigádnik', 'role' => RoleEnum::Employee],
+        ['email' => 'admin@test.sk', 'name' => 'Test', 'lastname' => 'Admin', 'role' => RoleEnum::HeadManager],
+    ];
+
+    private const TEST_PASSWORD = 'test1234';
 
     public function handle(): int
     {
@@ -86,6 +98,7 @@ class ImportLegacyData extends Command
             activity()->withoutLogging(function () use ($team, $legacy): void {
                 $this->clearSeededData($team, $legacy);
                 $userMap = $this->importUsers($team, $legacy);
+                $this->ensureTestUsers($team);
                 $this->importAssignments($legacy, $userMap);
                 $this->importAbsences($legacy, $userMap);
             });
@@ -93,6 +106,7 @@ class ImportLegacyData extends Command
 
         $this->info('Import dokončený.');
         $this->line('Preskočené (nová schéma pre ne nemá tabuľku): bugs, file_storage.');
+        $this->line('Testovacie účty: brigadnik@test.sk / admin@test.sk (heslo: '.self::TEST_PASSWORD.')');
 
         return self::SUCCESS;
     }
@@ -113,9 +127,10 @@ class ImportLegacyData extends Command
         WeekLock::query()->delete();
         Absence::query()->delete();
 
-        $legacyEmails = $legacy->table('users')->pluck('email');
+        $keepEmails = $legacy->table('users')->pluck('email')
+            ->merge(array_column(self::TEST_USERS, 'email'));
 
-        $demoUsers = $team->users()->whereNotIn('users.email', $legacyEmails)->get();
+        $demoUsers = $team->users()->whereNotIn('users.email', $keepEmails)->get();
 
         foreach ($demoUsers as $user) {
             $user->teams()->detach($team->id);
@@ -162,6 +177,27 @@ class ImportLegacyData extends Command
         }
 
         return $map;
+    }
+
+    /** Creates or refreshes the fixed test accounts (see TEST_USERS) for this team. */
+    private function ensureTestUsers(Team $team): void
+    {
+        foreach (self::TEST_USERS as $data) {
+            $user = User::updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'lastname' => $data['lastname'],
+                    'password' => Hash::make(self::TEST_PASSWORD),
+                    'current_team_id' => $team->id,
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            $user->teams()->syncWithoutDetaching([$team->id => ['approved_at' => now()]]);
+            $user->syncRoles([$data['role']->value]);
+        }
     }
 
     /**
