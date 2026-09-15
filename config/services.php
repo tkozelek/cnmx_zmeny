@@ -41,4 +41,17 @@ return [
     | rozpis builder works fully without it.
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Test accounts (app:import-legacy-data)
+    |--------------------------------------------------------------------------
+    | Kept out of the codebase since this repo is public - see
+    | App\Console\Commands\ImportLegacyData::ensureTestUsers().
+    */
+    'test_users' => [
+        'brigadnik_email' => env('TEST_USER_BRIGADNIK_EMAIL', 'brigadnik@test.sk'),
+        'admin_email' => env('TEST_USER_ADMIN_EMAIL', 'admin@test.sk'),
+        'password' => env('TEST_USER_PASSWORD'),
+    ],
+
 ];
