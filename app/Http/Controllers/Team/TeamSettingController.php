@@ -40,6 +40,11 @@ class TeamSettingController extends Controller
         $team = app(Team::class);
         $data = $request->validated();
 
+        // Removing every row in the editor submits no quick_times[] input at all, which would
+        // otherwise leave a previously-saved list untouched instead of clearing it back to
+        // TeamSetting::DEFAULT_QUICK_TIMES (see Team::quickTimes()'s empty-array fallback).
+        $data['quick_times'] ??= [];
+
         $team->update(['name' => $data['name']]);
         $team->settings()->updateOrCreate([], $data);
 

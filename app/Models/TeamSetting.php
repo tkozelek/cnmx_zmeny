@@ -47,6 +47,14 @@ class TeamSetting extends Model
 
     public const int DEFAULT_FAIRNESS_WINDOW_WEEKS = 12;
 
+    /**
+     * Shown as quick-pick chips in the rozpis builder's time picker until a cinema defines
+     * its own list on the settings page.
+     *
+     * @var list<string>
+     */
+    public const array DEFAULT_QUICK_TIMES = ['12:00', '12:30', '14:00', '14:30', '15:00', '17:00'];
+
     protected $fillable = [
         'team_id',
         'week_start_day',
@@ -55,6 +63,7 @@ class TeamSetting extends Model
         'stale_absence_deletion_days',
         'fairness_day_weights',
         'fairness_window_weeks',
+        'quick_times',
         'timezone',
         'locale',
     ];
@@ -68,6 +77,7 @@ class TeamSetting extends Model
             'stale_absence_deletion_days' => 'integer',
             'fairness_day_weights' => 'array',
             'fairness_window_weeks' => 'integer',
+            'quick_times' => 'array',
         ];
     }
 }
