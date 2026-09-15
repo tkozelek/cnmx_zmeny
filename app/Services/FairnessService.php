@@ -73,7 +73,6 @@ class FairnessService
      */
     public function scores(Team $team, CarbonImmutable $asOf): Collection
     {
-        $weights = $team->fairnessDayWeights();
         $since = $asOf->subWeeks($team->fairnessWindowWeeks());
 
         // Team passed explicitly, so the tenant scope is dropped - same reasoning as
@@ -85,7 +84,10 @@ class FairnessService
             ->whereBetween('date', [$since->toDateString(), $asOf->toDateString()])
             ->get(['user_id', 'date']);
 
-        $weightOf = fn (Assignment $assignment): float => $weights[$assignment->date->dayOfWeekIso - 1];
+        // Routed through dayWeight() rather than indexing $team->fairnessDayWeights() directly,
+        // so a worked Slovak public holiday counts at holiday_weight instead of its weekday's -
+        // same rule isHardToStaffDay()/isDesirableDay() already apply.
+        $weightOf = fn (Assignment $assignment): float => $this->dayWeight($team, $assignment->date);
 
         // The team's own typical day mix as actually worked, not a hand-tuned constant and not
         // the mean of the configured weights: "under-carrying" has to mean under-carrying
@@ -208,9 +210,19 @@ class FairnessService
         ])->all();
     }
 
-    /** What one worked day on this date is worth to the team. */
+    /**
+     * What one worked day on this date is worth to the team.
+     *
+     * A Slovak public holiday is priced by holiday_weight regardless of which weekday it falls
+     * on that year - the weekday grid on the settings page has no way to express "this specific
+     * Tuesday", so the holiday calendar overrides it instead of averaging into it.
+     */
     public function dayWeight(Team $team, CarbonInterface $date): float
     {
+        if (SlovakHolidays::isHoliday($date)) {
+            return $team->holidayWeight();
+        }
+
         return $team->fairnessDayWeights()[$date->dayOfWeekIso - 1];
     }
 

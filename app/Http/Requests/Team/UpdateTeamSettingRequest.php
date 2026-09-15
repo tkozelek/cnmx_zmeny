@@ -36,6 +36,10 @@ class UpdateTeamSettingRequest extends FormRequest
             'fairness_day_weights.*' => ['required', 'numeric', 'between:0.1,10'],
             'fairness_window_weeks' => ['required', 'integer', 'between:1,52'],
 
+            // How hard a Slovak public holiday is to staff, independent of its weekday - see
+            // FairnessService::dayWeight() and App\Services\SlovakHolidays.
+            'holiday_weight' => ['required', 'numeric', 'between:0.1,10'],
+
             // Optional: an empty/missing list means "use TeamSetting::DEFAULT_QUICK_TIMES". The
             // editor (quickTimesEditor in app.js) already dedupes and sorts client-side, so
             // there's nothing left to normalise here.
@@ -76,6 +80,9 @@ class UpdateTeamSettingRequest extends FormRequest
             'fairness_day_weights.*.between' => 'Váha dňa musí byť medzi 0,1 a 10.',
             'fairness_window_weeks.required' => 'Obdobie hodnotenia je povinné.',
             'fairness_window_weeks.between' => 'Obdobie hodnotenia musí byť medzi 1 a 52 týždňami.',
+            'holiday_weight.required' => 'Váha sviatku je povinná.',
+            'holiday_weight.numeric' => 'Váha sviatku musí byť číslo.',
+            'holiday_weight.between' => 'Váha sviatku musí byť medzi 0,1 a 10.',
             'quick_times.*.date_format' => 'Čas musí byť v tvare HH:MM.',
         ];
     }
