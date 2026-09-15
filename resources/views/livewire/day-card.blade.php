@@ -2,7 +2,8 @@
     'relative flex flex-col overflow-hidden rounded-lg border bg-neutral-900 shadow-sm transition',
     'border-emerald-500/70 ring-1 ring-emerald-500/30' => $this->mine && ! $this->isToday,
     'border-indigo-500 ring-2 ring-indigo-500/40' => $this->isToday,
-    'border-neutral-800 hover:border-neutral-700' => ! $this->mine && ! $this->isToday,
+    'border-amber-500/70' => $this->isHoliday && ! $this->mine && ! $this->isToday,
+    'border-neutral-800 hover:border-neutral-700' => ! $this->mine && ! $this->isToday && ! $this->isHoliday,
     'opacity-75' => $locked && ! $this->mine,
 ])>
     {{-- Loading overlay with solid badge --}}
@@ -146,7 +147,12 @@
         </div>
 
         {{-- Count Footer --}}
-        <div class="day-card-footer border-t border-neutral-800 px-3 py-1.5 text-center bg-neutral-950 mt-auto">
+        <div class="day-card-footer border-t border-neutral-800 px-3 py-1.5 flex flex-col items-center gap-1 bg-neutral-950 mt-auto">
+            @if($this->isHoliday)
+                <span class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/15 border border-amber-500/30">
+                    <i class="fa-solid fa-star text-[0.6rem]"></i> Sviatok
+                </span>
+            @endif
             <span @class([
                 'text-xs font-semibold',
                 'text-neutral-400' => $this->assignments->count() === 0,

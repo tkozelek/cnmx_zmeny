@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\BelongsToTeam;
 use App\Traits\LogsRozpisActivity;
+use App\Traits\NotifiesRozpisChange;
 use Carbon\CarbonInterface;
 use Database\Factories\PositionSlotFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,6 +33,7 @@ class PositionSlot extends Model
     use HasFactory;
 
     use LogsRozpisActivity;
+    use NotifiesRozpisChange;
 
     protected $fillable = [
         'team_id',

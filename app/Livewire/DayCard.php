@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Assignment;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\SlovakHolidays;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -121,6 +122,12 @@ class DayCard extends Component
     public function isToday(): bool
     {
         return $this->day()->isToday();
+    }
+
+    #[Computed]
+    public function isHoliday(): bool
+    {
+        return SlovakHolidays::isHoliday($this->dayCarbon);
     }
 
     #[Computed]

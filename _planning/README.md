@@ -39,6 +39,7 @@
 | [21-backend-rewrite-progress.md](21-backend-rewrite-progress.md) | As-built backend, Livewire components, routes, and test status |
 | [22-ui-tables-permissions-handoff.md](22-ui-tables-permissions-handoff.md) | Detailed handoff document for UI DataTables, Spatie dot-notation permissions, team policies, and absence modal |
 | [24-manager-analytics-audit.md](24-manager-analytics-audit.md) | Manager analytics audit against the current schema — easy wins, harder wins, and what's missing. Supersedes doc 16 |
+| [25-bufet-inventory.md](25-bufet-inventory.md) | Daily buffet stock count — opening/receiving/deductions/closing, computed difference, A4 print |
 
 ---
 
