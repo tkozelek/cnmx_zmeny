@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Rozpis;
 use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Models\WeekLock;
+use App\Services\RozpisNotificationService;
 use App\Services\WeekService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,10 @@ use Illuminate\Http\Request;
  */
 class RozpisPublishController extends Controller
 {
-    public function __construct(private readonly WeekService $weeks) {}
+    public function __construct(
+        private readonly WeekService $weeks,
+        private readonly RozpisNotificationService $notifications,
+    ) {}
 
     public function store(Request $request, Team $team, string $date): RedirectResponse
     {
@@ -31,6 +35,8 @@ class RozpisPublishController extends Controller
             'rozpis_published_at' => now(),
             'published_by' => $request->user()->id,
         ]);
+
+        $this->notifications->notifyPublished($team, $lock->week_start);
 
         return $this->back(
             $lock->week_start->toDateString(),

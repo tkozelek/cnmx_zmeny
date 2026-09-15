@@ -5,31 +5,22 @@ namespace App\Services;
 use App\Models\Team;
 use App\Models\WeekLock;
 use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
 
 class WeekLockPolicy
 {
     public function __construct(private readonly WeekService $weeks) {}
 
+    /**
+     * Steps at most one week past the current one - if that's locked too, lands back on the
+     * (locked) current week rather than hunting further into the team's full week_lookahead.
+     */
     public function defaultUnlockedWeek(Team $team): CarbonImmutable
     {
         $currentWeek = $this->weeks->start($team, CarbonImmutable::now());
-        $maxWeek = $currentWeek->addWeeks($team->weekLookahead());
+        $nextWeek = $currentWeek->addWeek();
 
-        $lockedWeekStarts = WeekLock::withoutGlobalScope('team')
-            ->where('team_id', $team->id)
-            ->whereBetween('week_start', [$currentWeek->toDateString(), $maxWeek->toDateString()])
-            ->pluck('week_start')
-            ->map(fn ($ws) => $ws instanceof CarbonInterface ? $ws->toDateString() : (string) $ws)
-            ->toArray();
-
-        $cursor = $currentWeek;
-
-        while ($cursor->lte($maxWeek)) {
-            if (! in_array($cursor->toDateString(), $lockedWeekStarts, true)) {
-                return $cursor;
-            }
-            $cursor = $cursor->addWeek();
+        if (WeekLock::locked($team->id, $currentWeek) && ! WeekLock::locked($team->id, $nextWeek)) {
+            return $nextWeek;
         }
 
         return $currentWeek;
