@@ -211,6 +211,54 @@
                         </div>
                     </div>
 
+                    <div class="my-6 border-t border-neutral-800"></div>
+
+                    <div class="space-y-4" x-data="quickTimesEditor(@js($team->quickTimes()))">
+                        <h2 class="text-sm font-semibold uppercase tracking-wider text-brand-400 flex items-center gap-2">
+                            <i class="fa-solid fa-clock text-xs"></i>
+                            Časy nástupu
+                        </h2>
+                        <p class="text-[11px] text-neutral-400">
+                            Rýchle tlačidlá pri zadávaní času nástupu v rozpise, aby ste nemuseli čas vždy vypisovať ručne.
+                        </p>
+
+                        <table class="w-full text-sm text-left text-neutral-300">
+                            <tbody class="divide-y divide-neutral-800">
+                                <template x-for="(time, index) in times" :key="time">
+                                    <tr>
+                                        <td class="py-2 font-semibold tabular-nums text-white" x-text="time"></td>
+                                        <td class="py-2 text-right">
+                                            <input type="hidden" name="quick_times[]" :value="time">
+                                            @if($canEdit)
+                                                <button type="button" @click="remove(index)" title="Odstrániť čas"
+                                                        class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-300 transition hover:bg-rose-500/20">
+                                                    <i class="fa-solid fa-trash text-[0.65rem]"></i>
+                                                </button>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </template>
+                                <tr x-show="times.length === 0">
+                                    <td colspan="2" class="py-3 text-center text-neutral-500">Žiadne časy - použijú sa predvolené.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        @if($canEdit)
+                            <div class="flex items-center gap-2">
+                                <input x-ref="newTimeInput" type="text" readonly placeholder="čas"
+                                       class="w-24 cursor-pointer rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-center text-sm tabular-nums text-white shadow-inner focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
+                                <button type="button" @click="add()"
+                                        class="inline-flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition hover:border-brand-500/50">
+                                    <i class="fa-solid fa-plus text-[0.7rem] text-brand-400"></i> Pridať
+                                </button>
+                            </div>
+                        @endif
+
+                        @error('quick_times') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
+                        @error('quick_times.*') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
+                    </div>
+
                     @if($canEdit)
                         <div class="pt-4 flex justify-end">
                             <button type="submit" class="py-3 px-6 bg-neutral-800 hover:bg-neutral-750 active:bg-neutral-850 text-white font-bold rounded-xl text-sm tracking-widest uppercase border border-neutral-700 hover:border-brand-500/60 shadow-lg transition duration-200 flex items-center gap-2 group">

@@ -35,6 +35,12 @@ class UpdateTeamSettingRequest extends FormRequest
             'fairness_day_weights' => ['required', 'array', 'size:7'],
             'fairness_day_weights.*' => ['required', 'numeric', 'between:0.1,10'],
             'fairness_window_weeks' => ['required', 'integer', 'between:1,52'],
+
+            // Optional: an empty/missing list means "use TeamSetting::DEFAULT_QUICK_TIMES". The
+            // editor (quickTimesEditor in app.js) already dedupes and sorts client-side, so
+            // there's nothing left to normalise here.
+            'quick_times' => ['sometimes', 'array'],
+            'quick_times.*' => ['date_format:H:i'],
         ];
     }
 
@@ -70,6 +76,7 @@ class UpdateTeamSettingRequest extends FormRequest
             'fairness_day_weights.*.between' => 'Váha dňa musí byť medzi 0,1 a 10.',
             'fairness_window_weeks.required' => 'Obdobie hodnotenia je povinné.',
             'fairness_window_weeks.between' => 'Obdobie hodnotenia musí byť medzi 1 a 52 týždňami.',
+            'quick_times.*.date_format' => 'Čas musí byť v tvare HH:MM.',
         ];
     }
 }

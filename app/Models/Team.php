@@ -144,6 +144,18 @@ class Team extends Model
     }
 
     /**
+     * Quick-pick chips offered by the rozpis builder's time picker (see resources/js/app.js).
+     *
+     * @return list<string>
+     */
+    public function quickTimes(): array
+    {
+        $times = $this->cachedSettings()?->quick_times;
+
+        return is_array($times) && $times !== [] ? array_values($times) : TeamSetting::DEFAULT_QUICK_TIMES;
+    }
+
+    /**
      * Everybody in this cinema who holds $role and can actually use it: approved membership and
      * an active account.
      *

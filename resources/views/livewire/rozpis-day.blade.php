@@ -83,7 +83,7 @@
                         @if($this->canBuild)
                             {{-- Editable in place: the schedule moves and the bufet opens later.
                                  Saves on change, so there is no form and no submit button. --}}
-                            <div x-data="slotTimePicker({{ $row['slot']->id }}, @js($row['time']))" class="shrink-0">
+                            <div x-data="slotTimePicker({{ $row['slot']->id }}, @js($row['time']), @js($this->team()->quickTimes()))" class="shrink-0">
                                 <input x-ref="input" type="text" readonly
                                        placeholder="+ čas" title="Čas nástupu - kliknutím zmeníte"
                                        class="w-[3.75rem] cursor-pointer rounded bg-neutral-800/80 px-1.5 py-0.5 text-center text-[0.7rem] font-semibold tabular-nums text-neutral-300 transition hover:bg-neutral-700 hover:text-white focus:outline-none focus:ring-1 focus:ring-brand-500">
@@ -273,7 +273,7 @@
 
             {{-- flatpickr, not <input type="time">: the native control renders AM/PM from the OS
                  locale and no HTML attribute can force 24-hour. --}}
-            <div x-data="timePicker('newStartTime', @js($newStartTime))" x-on:rozpis-slot-added.window="clear()" class="shrink-0">
+            <div x-data="timePicker('newStartTime', @js($newStartTime), @js($this->team()->quickTimes()))" x-on:rozpis-slot-added.window="clear()" class="shrink-0">
                 <input x-ref="input" type="text" readonly placeholder="čas" title="Čas nástupu"
                        class="w-[5rem] cursor-pointer rounded border border-neutral-800 bg-neutral-900 px-2 py-1.5 text-center text-xs tabular-nums text-neutral-300 focus:border-brand-500 focus:outline-none">
             </div>

@@ -337,6 +337,15 @@ span.flatpickr-weekday {
     @apply rounded-r-md border-r-2 border-amber-300 !important;
 }
 
+/* Quick-pick chips injected above the time spinner - see timeFieldOptions() in app.js */
+.flatpickr-quick-times {
+    @apply flex flex-wrap gap-1.5 border-b border-neutral-800 pb-3 mb-1 !important;
+}
+
+.flatpickr-quick-time {
+    @apply rounded-lg border border-neutral-700 bg-neutral-800 px-2 py-1 text-xs font-semibold tabular-nums text-neutral-300 transition hover:border-brand-500/50 hover:text-white !important;
+}
+
 /* Custom subtle scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;

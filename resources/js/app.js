@@ -89,8 +89,27 @@ document.addEventListener('alpine:init', () => {
         defaultDate: initial,
     });
 
+    /** Renders the quick-pick row into an open flatpickr time popup. */
+    function addQuickTimes(fp, times, onPick) {
+        if (!times || !times.length) return;
+
+        const row = document.createElement('div');
+        row.className = 'flatpickr-quick-times';
+
+        times.forEach((time) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = time;
+            button.className = 'flatpickr-quick-time';
+            button.addEventListener('click', () => onPick(time));
+            row.appendChild(button);
+        });
+
+        fp.calendarContainer.prepend(row);
+    }
+
     /** Writes into a Livewire property — for a field that is part of a form. */
-    Alpine.data('timePicker', (property, initial = null) => ({
+    Alpine.data('timePicker', (property, initial = null, quickTimes = []) => ({
         init() {
             if (typeof window.flatpickr !== 'function') return;
 
@@ -98,6 +117,10 @@ document.addEventListener('alpine:init', () => {
                 ...timeFieldOptions(initial),
                 // Third arg false: don't re-render the component on every keystroke.
                 onChange: (dates, value) => this.$wire.set(property, value, false),
+                onReady: (_selectedDates, _dateStr, fp) => addQuickTimes(fp, quickTimes, (time) => {
+                    fp.setDate(time, true);
+                    fp.close();
+                }),
             });
         },
         clear() {
@@ -111,14 +134,47 @@ document.addEventListener('alpine:init', () => {
      * submit. Separate from timePicker because that one fills in a property to be submitted
      * later, while this one persists on change.
      */
-    Alpine.data('slotTimePicker', (slotId, initial = null) => ({
+    Alpine.data('slotTimePicker', (slotId, initial = null, quickTimes = []) => ({
         init() {
             if (typeof window.flatpickr !== 'function') return;
 
             window.flatpickr(this.$refs.input, {
                 ...timeFieldOptions(initial),
                 onChange: (dates, value) => this.$wire.updateSlotTime(slotId, value || null),
+                onReady: (_selectedDates, _dateStr, fp) => addQuickTimes(fp, quickTimes, (time) => {
+                    fp.setDate(time, true);
+                    fp.close();
+                }),
             });
+        },
+    }));
+
+    /**
+     * The editable "Časy nástupu" list on the team settings page. Plain array in Alpine state,
+     * serialized to `quick_times[]` hidden inputs so it rides along with the rest of that
+     * page's normal (non-Livewire) form submit.
+     */
+    Alpine.data('quickTimesEditor', (initial = []) => ({
+        times: [...initial],
+        newTime: '',
+        picker: null,
+        init() {
+            if (typeof window.flatpickr !== 'function') return;
+
+            this.picker = window.flatpickr(this.$refs.newTimeInput, {
+                ...timeFieldOptions(null),
+                onChange: (dates, value) => { this.newTime = value; },
+            });
+        },
+        add() {
+            if (!this.newTime || this.times.includes(this.newTime)) return;
+            this.times.push(this.newTime);
+            this.times.sort();
+            this.newTime = '';
+            this.picker?.clear();
+        },
+        remove(index) {
+            this.times.splice(index, 1);
         },
     }));
 
