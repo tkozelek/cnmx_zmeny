@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\WeekLock;
 use App\Services\RozpisNotificationService;
 use App\Services\WeekService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -36,7 +37,7 @@ class RozpisPublishController extends Controller
             'published_by' => $request->user()->id,
         ]);
 
-        $this->notifications->notifyPublished($team, $lock->week_start);
+        $this->notifications->notifyPublished($team, CarbonImmutable::parse($lock->week_start));
 
         return $this->back(
             $lock->week_start->toDateString(),
