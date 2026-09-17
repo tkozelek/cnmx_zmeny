@@ -25,14 +25,12 @@
                 @if($this->mine)
                     {{-- Locked but signed up: clear green status indicator --}}
                     <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-emerald-700 text-xs font-bold uppercase tracking-wider text-white border-b-2 border-emerald-800 shadow-sm">
-                        <i class="fa-solid fa-check text-xs"></i>
                         <span>Zapísaný</span>
                         <span class="text-emerald-200 text-[10px] font-semibold tracking-wide">(Zamknuté)</span>
                     </div>
                 @else
                     {{-- Locked and not signed up: clear neutral lock status --}}
                     <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-neutral-950 text-xs font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-800">
-                        <i class="fa-solid fa-lock text-xs text-neutral-400"></i>
                         <span>Zamknutý</span>
                     </div>
                 @endif
@@ -47,12 +45,8 @@
                     title="Kliknutím sa odpíšete z tohto dňa"
                 >
                     <span wire:loading.remove wire:target="withdraw" class="flex items-center justify-center gap-1.5 w-full">
-                        <span class="inline-flex items-center gap-1.5 group-hover/btn:hidden">
-                            <i class="fa-solid fa-check text-xs"></i> Zapísaný
-                        </span>
-                        <span class="hidden group-hover/btn:inline-flex items-center gap-1.5 text-white">
-                            <i class="fa-solid fa-xmark text-xs"></i> Odpísať sa
-                        </span>
+                        <span class="group-hover/btn:hidden">Zapísaný</span>
+                        <span class="hidden group-hover/btn:inline text-white">Odpísať sa</span>
                     </span>
                     <span wire:loading wire:target="withdraw"><i class="fa-solid fa-circle-notch fa-spin text-xs"></i></span>
                 </button>
@@ -67,7 +61,7 @@
                     title="Kliknutím sa zapíšete na tento deň"
                 >
                     <span wire:loading.remove wire:target="signUp" class="flex items-center justify-center gap-1.5 w-full">
-                        <i class="fa-solid fa-plus text-xs text-brand-200"></i> Zapísať sa
+                        Zapísať sa
                     </span>
                     <span wire:loading wire:target="signUp"><i class="fa-solid fa-circle-notch fa-spin text-xs"></i></span>
                 </button>
@@ -149,16 +143,11 @@
         {{-- Count Footer --}}
         <div class="day-card-footer border-t border-neutral-800 px-3 py-1.5 flex flex-col items-center gap-1 bg-neutral-950 mt-auto">
             @if($this->isHoliday)
-                <span class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/15 border border-amber-500/30">
-                    <i class="fa-solid fa-star text-[0.6rem]"></i> Sviatok
+                <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/15 border border-amber-500/30">
+                    Sviatok
                 </span>
             @endif
-            <span @class([
-                'text-xs font-semibold',
-                'text-neutral-400' => $this->assignments->count() === 0,
-                'text-neutral-400' => $this->assignments->count() > 0,
-            ])>
-                <i class="fa-solid fa-user-group text-[0.65rem] mr-1 opacity-70"></i>
+            <span class="text-xs font-semibold text-neutral-400">
                 {{ $this->assignments->count() }} {{ $this->countLabel }}
             </span>
         </div>
