@@ -2,8 +2,8 @@
     'relative flex flex-col overflow-hidden rounded-lg border bg-neutral-900 shadow-sm transition',
     'border-emerald-500/70 ring-1 ring-emerald-500/30' => $this->mine && ! $this->isToday,
     'border-indigo-500 ring-2 ring-indigo-500/40' => $this->isToday,
-    'border-amber-500/70' => $this->isHoliday && ! $this->mine && ! $this->isToday,
-    'border-neutral-800 hover:border-neutral-700' => ! $this->mine && ! $this->isToday && ! $this->isHoliday,
+    'border-neutral-800 hover:border-neutral-700' => ! $this->mine && ! $this->isToday,
+    'outline outline-2 outline-offset-1 outline-amber-500/60' => $this->isHoliday,
     'opacity-75' => $locked && ! $this->mine,
 ])>
     {{-- Loading overlay with solid badge --}}
