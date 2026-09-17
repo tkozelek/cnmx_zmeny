@@ -189,10 +189,14 @@
                     Najprv si <a href="{{ route('positions.index') }}" class="font-semibold text-brand-400 hover:underline">definujte pozície</a>, potom sa dá zostaviť rozpis.
                 </x-empty-state>
             @else
-                {{-- Seven across only from 2xl up: each day's slot row packs a drag handle, a
-                     time picker and two action buttons, which don't fit seven columns until
-                     there is genuinely enough width for them - xl squeezed them into overlapping. --}}
-                <div class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7 2xl:gap-4">
+                {{-- Auto-fit rather than fixed breakpoints: each day's slot row packs a drag
+                     handle, a time picker and two action buttons that need ~240px to lay out on
+                     one line (the row itself still wraps gracefully below that - see
+                     rozpis-day.blade.php). A fixed xl/2xl breakpoint guesses a physical monitor
+                     width, which OS display scaling (125%/150%, the Windows default on most
+                     laptops) quietly shrinks the real CSS viewport under - this reacts to
+                     whatever width is actually available instead. --}}
+                <div class="grid items-start gap-3 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] 2xl:gap-4">
                     @foreach($days as $day)
                         <livewire:rozpis-day :date="$day->toDateString()"
                                              :initial-slots="$weekSlots->get($day->toDateString(), collect())"
