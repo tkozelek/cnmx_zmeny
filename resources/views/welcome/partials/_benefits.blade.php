@@ -2,7 +2,7 @@
     $benefits = [
         ['icon' => 'fa-calendar-check', 'accent' => 'sky', 'title' => 'Píšeš si dni sám', 'text' => 'Vyznač, kedy môžeš pracovať okolo školy či brigády, a manažér z toho poskladá rozpis.'],
         ['icon' => 'fa-mobile-screen-button', 'accent' => 'emerald', 'title' => 'Vždy v telefóne', 'text' => 'Rozpis máš na mobile aj počítači, kedykoľvek si ho potrebuješ pozrieť.'],
-        ['icon' => 'fa-comment-slash', 'accent' => 'amber', 'title' => 'Bez skupinových správ', 'text' => 'Kto môže kedy sa rieši v appke, nie v desiatich SMS-kách naraz.'],
+        ['icon' => 'fa-envelope', 'accent' => 'amber', 'title' => 'Vieš o zmenách hneď', 'text' => 'Keď manažér zverejní alebo upraví rozpis, príde ti e-mail.'],
         ['icon' => 'fa-eye', 'accent' => 'rose', 'title' => 'Rovnaký rozpis pre všetkých', 'text' => 'Celý tím vidí to isté, takže nikto sa nemusí pýtať, čo platí.'],
     ];
 @endphp

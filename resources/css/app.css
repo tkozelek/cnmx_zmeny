@@ -37,22 +37,6 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.hero-section {
-    background-image: url("../css/images/cinemax_landing_page_upscaled_1600.webp");
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-}
-
-@media (max-width: 768px) {
-    .hero-section {
-        background-image: url("../css/images/cinemax_landing_page_upscaled_720.webp");
-        background-attachment: scroll;
-        background-position: center;
-    }
-}
-
 [data-accordion-target][aria-expanded="true"] {
     @apply bg-slate-900/50;
 }
