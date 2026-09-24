@@ -7,10 +7,12 @@
     ];
 @endphp
 
-<section id="vyhody" class="bg-neutral-900/40 py-20 sm:py-28">
+<section id="vyhody" class="bg-neutral-950 pb-24 sm:pb-32">
     <div class="container mx-auto px-4">
         <div class="reveal mb-12 text-center">
-            <h2 class="mb-2 text-3xl font-bold text-neutral-100 md:text-4xl">Čo z toho máš</h2>
+            <h2 class="mb-3 text-3xl font-bold text-neutral-100 md:text-4xl">
+                <span class="split-word"><span class="split-word-inner">Čo z toho máš</span></span>
+            </h2>
             <p class="mx-auto max-w-2xl text-neutral-400">Menej dohadovania okolo zmien, viac istoty, kedy naozaj robíš.</p>
         </div>
 
@@ -21,6 +23,7 @@
                     :accent="$benefit['accent']"
                     :title="$benefit['title']"
                     :text="$benefit['text']"
+                    data-tilt
                     style="transition-delay: {{ $i * 100 }}ms;"
                 />
             @endforeach

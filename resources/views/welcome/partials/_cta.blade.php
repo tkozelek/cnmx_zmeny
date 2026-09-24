@@ -1,7 +1,9 @@
-<section id="registracia" class="relative overflow-hidden bg-neutral-950 pt-20 sm:pt-28">
+<section id="registracia" class="relative overflow-hidden bg-neutral-950 pt-12 sm:pt-16">
     <div class="container relative z-10 mx-auto px-4 text-center">
         <div class="reveal">
-            <h2 class="mb-4 text-3xl font-bold text-neutral-100 md:text-4xl">Poď na to</h2>
+            <h2 class="mb-4 text-3xl font-bold text-neutral-100 md:text-4xl">
+                <span class="split-word"><span class="split-word-inner">Poď na to</span></span>
+            </h2>
             <p class="mx-auto mb-8 max-w-xl text-neutral-400">Zaregistruj sa alebo sa prihlás a zapíš si prvé zmeny.</p>
         </div>
 

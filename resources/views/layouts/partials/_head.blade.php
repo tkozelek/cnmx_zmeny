@@ -1,4 +1,6 @@
 <head>
+    {{-- Lets CSS hide scroll-reveal content only when JS is there to reveal it again. --}}
+    <script>document.documentElement.classList.add('js')</script>
     <title>{{ $title ? "{$title} | Cine-max Zmeny" : 'Cine-max Zmeny' }}</title>
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
