@@ -24,11 +24,6 @@
     <div class="absolute inset-0 bg-neutral-950/55"></div>
 
     <div id="hero-content" class="container relative mx-auto px-4 pb-24 pt-16 sm:pb-32">
-        <p class="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-400/30 bg-neutral-950/60 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
-            <i class="fa-solid fa-film text-[0.7rem]" aria-hidden="true"></i>
-            Plánovanie zmien pre kino
-        </p>
-
         <h1 class="mx-auto max-w-4xl text-4xl font-extrabold leading-[1.1] tracking-tight text-neutral-50 sm:text-5xl md:text-6xl">
             Tvoje zmeny v kine, <span class="text-brand-400">prehľadne na jednom mieste.</span>
         </h1>
