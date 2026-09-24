@@ -19,6 +19,9 @@ const NEAREST_DEPTH = 5;
 const INFLUENCE_RADIUS = 2.6;
 const MAX_LIFT = 0.55;
 const IDLE_AFTER_MS = 3500;
+/** Rows rise in front-to-back the first time the room scrolls into view. */
+const ENTRANCE_MS = 900;
+const ENTRANCE_ROW_STAGGER_MS = 70;
 
 /** Palette read from the same CSS variables Tailwind's `brand-*` classes use. */
 function readPalette(el) {
@@ -34,6 +37,7 @@ function readPalette(el) {
     };
 }
 
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
 const css = (c) => `rgb(${c[0]} ${c[1]} ${c[2]})`;
 
@@ -58,6 +62,7 @@ export function mountSeatField(canvas) {
     let pointer = null;
     let lastPointerAt = -Infinity;
     let running = false;
+    let enteredAt = null;
     let frame = 0;
 
     /**
@@ -75,7 +80,7 @@ export function mountSeatField(canvas) {
         for (let row = 0; row < rows; row++) {
             let x = 0;
             for (let col = 0; col < columns; col++) {
-                seats.push({ row, x, z: NEAREST_DEPTH + (rows - 1 - row) * ROW_SPACING, glow: 0, lift: 0, taken: false });
+                seats.push({ row, x, z: NEAREST_DEPTH + (rows - 1 - row) * ROW_SPACING, glow: 0, lift: 0, enter: reducedMotion ? 1 : 0, taken: false });
                 x += SEAT_SPACING + (aisleAfter.includes(col) ? SEAT_SPACING * 0.9 : 0);
             }
         }
@@ -125,12 +130,14 @@ export function mountSeatField(canvas) {
         ctx.fillRect(left.x, screenY, right.x - left.x, 3);
 
         for (const seat of seats) {
+            if (seat.enter <= 0) continue;
             const b = seatBox(seat);
+            b.y += (1 - seat.enter) * b.scale * 1.2;
             const fill = seat.taken ? palette.taken : mix(palette.seat, palette.brand, seat.glow);
             const edge = seat.taken ? palette.brandLight : mix(palette.seatEdge, palette.brandLight, seat.glow);
 
             // Back rows fade into the dark like a real auditorium; lit seats punch through.
-            ctx.globalAlpha = Math.min(1, 0.3 + 0.7 * ((seat.row + 1) / rows) + seat.glow * 0.6);
+            ctx.globalAlpha = Math.min(1, 0.3 + 0.7 * ((seat.row + 1) / rows) + seat.glow * 0.6) * seat.enter;
             ctx.fillStyle = css(fill);
             ctx.strokeStyle = css(edge);
             ctx.lineWidth = Math.max(0.6, b.scale * 0.05);
@@ -179,10 +186,13 @@ export function mountSeatField(canvas) {
         }
 
         camX += (targetCamX - camX) * 0.06;
+        enteredAt ??= time;
 
         for (const seat of seats) {
             const dist = Math.hypot(seat.x - focus.x, (seat.z - focus.z) * 0.9);
             const influence = Math.max(0, 1 - dist / INFLUENCE_RADIUS) ** 2;
+            const entranceT = clamp01((time - enteredAt - (rows - 1 - seat.row) * ENTRANCE_ROW_STAGGER_MS) / ENTRANCE_MS);
+            seat.enter = 1 - (1 - entranceT) ** 4;
             seat.glow += (influence - seat.glow) * 0.12;
             seat.lift += ((seat.taken ? 0.18 : 0) + influence * MAX_LIFT - seat.lift) * 0.12;
         }

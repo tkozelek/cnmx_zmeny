@@ -7,32 +7,34 @@
     ];
 @endphp
 
-<section id="ako-to-funguje" class="bg-neutral-950 py-20 sm:py-28">
-    <div class="container mx-auto px-4 text-center">
-        <div class="reveal">
-            <h2 class="mb-2 text-3xl font-bold text-neutral-100 md:text-4xl">Ako to funguje</h2>
-            <p class="mx-auto mb-16 max-w-2xl text-neutral-400">Štyri kroky od registrácie po prvú zmenu v rozpise.</p>
+<section id="ako-to-funguje" class="bg-neutral-950 py-24 sm:py-32">
+    <div class="container mx-auto px-4">
+        <div class="reveal mb-16 text-center lg:mb-20">
+            <h2 class="mb-3 text-3xl font-bold text-neutral-100 md:text-4xl">
+                <span class="split-word"><span class="split-word-inner">Ako to funguje</span></span>
+            </h2>
+            <p class="mx-auto max-w-2xl text-neutral-400">Štyri kroky od registrácie po prvú zmenu v rozpise.</p>
         </div>
 
-        {{-- Fixed-width connector tracks (not `auto`) so the line divs - which have no
-             intrinsic content width of their own - get a predictable, equal gap instead
-             of collapsing. Row layout waits for `lg` since four columns need more room
-             than three did. --}}
-        <div class="grid grid-cols-1 gap-y-12 lg:grid-cols-[1fr_3rem_1fr_3rem_1fr_3rem_1fr] lg:items-start lg:gap-x-2">
-            @foreach($steps as $i => $step)
-                <div class="reveal relative flex flex-col items-center px-2" style="transition-delay: {{ $i * 120 }}ms;">
-                    <div class="relative mb-4 flex h-20 w-20 items-center justify-center rounded-full border-2 border-brand-500/60 bg-neutral-900 text-2xl text-brand-400 shadow-lg shadow-brand-950/20">
-                        <i class="fa-solid {{ $step['icon'] }}"></i>
-                    </div>
-                    <h3 class="mb-2 text-xl font-semibold text-neutral-100">{{ $step['title'] }}</h3>
-                    <p class="max-w-[15rem] text-neutral-400">{{ $step['text'] }}</p>
-                </div>
+        {{-- One track runs through every icon's center - vertical on phones (steps stacked
+             beside it), horizontal from `lg`. welcome.js measures the first and last icon to
+             place it, then fills it as the section scrolls through the viewport and lights
+             each step once the fill reaches it. --}}
+        <div data-steps class="relative mx-auto grid max-w-md grid-cols-1 gap-12 lg:max-w-none lg:grid-cols-4 lg:gap-8">
+            <div data-steps-track class="pointer-events-none absolute bg-neutral-800" aria-hidden="true">
+                <div data-steps-fill class="h-full w-full origin-top bg-brand-400 lg:origin-left"></div>
+            </div>
 
-                @if(! $loop->last)
-                    {{-- Draws in once its step has revealed - a static line would just sit
-                         there; tying it to the same .active toggle makes the flow feel led. --}}
-                    <div class="reveal-line hidden h-0.5 w-full self-center bg-brand-500/30 lg:block" style="transition-delay: {{ $i * 120 + 200 }}ms; margin-top: 2.5rem;"></div>
-                @endif
+            @foreach($steps as $i => $step)
+                <div class="step relative flex items-start gap-5 lg:flex-col lg:items-center lg:text-center">
+                    <div data-step-icon class="step-icon relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-brand-500/60 bg-neutral-900 text-2xl text-brand-400">
+                        <i class="fa-solid {{ $step['icon'] }}" aria-hidden="true"></i>
+                    </div>
+                    <div class="step-copy pt-3 lg:pt-0">
+                        <h3 class="mb-2 text-xl font-semibold text-neutral-100">{{ $step['title'] }}</h3>
+                        <p class="text-neutral-400 lg:mx-auto lg:max-w-[15rem]">{{ $step['text'] }}</p>
+                    </div>
+                </div>
             @endforeach
         </div>
     </div>

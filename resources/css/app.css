@@ -41,28 +41,91 @@ body {
     @apply bg-slate-900/50;
 }
 
-.reveal {
+/*
+ * Welcome-page motion. Everything is gated on `html.js` (set inline in the <head>) so a
+ * visitor without JavaScript - or a crawler - gets the finished, fully visible page instead
+ * of content stuck at opacity 0. One shared easing curve (a soft expo-out) keeps every
+ * reveal feeling like part of the same system.
+ */
+:root {
+    --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.js .reveal {
     opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.8s ease-out, transform 0.6s ease-out;
-    will-change: opacity, transform;
+    transform: translateY(24px);
+    transition: opacity 0.9s var(--ease-out-soft), transform 1.1s var(--ease-out-soft);
 }
 
-.reveal.active {
+.js .reveal.active {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
 }
 
-/* The line connecting each "how it works" step - scales in from the left once its
-   step has revealed, so the flow reads as drawn rather than just appearing. */
-.reveal-line {
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.8s ease-out 0.3s;
+/* Masked text: each word slides up from behind its own overflow-hidden line. The padding
+   and matching negative margin leave room for descenders without shifting the layout. */
+.split-word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
 }
 
-.reveal-line.active {
-    transform: scaleX(1);
+.split-word-inner {
+    display: inline-block;
+}
+
+.js .split-word-inner {
+    transform: translateY(110%);
+    transition: transform 1.1s var(--ease-out-soft);
+    transition-delay: calc(var(--i, 0) * 70ms);
+}
+
+.js .is-ready .split-word-inner,
+.js .reveal.active .split-word-inner {
+    transform: none;
+}
+
+/* Hero copy below the headline follows the words in rather than racing them. */
+.js .hero-follow {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 1s var(--ease-out-soft), transform 1.1s var(--ease-out-soft);
+    transition-delay: var(--delay, 600ms);
+}
+
+.js .is-ready .hero-follow {
+    opacity: 1;
+    transform: none;
+}
+
+/* "How it works" steps light up as the scroll-driven track reaches them. */
+.step-icon {
+    transition: border-color 0.5s ease, background-color 0.5s ease, color 0.5s ease, transform 0.6s var(--ease-out-soft);
+}
+
+.js .step:not(.is-lit) .step-icon {
+    @apply border-neutral-800 bg-neutral-950 text-neutral-600;
+    transform: scale(0.92);
+}
+
+.js .step:not(.is-lit) .step-copy {
+    @apply opacity-40;
+}
+
+.step-copy {
+    transition: opacity 0.6s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .js .reveal,
+    .js .split-word-inner,
+    .js .hero-follow {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
 }
 
 .cta-button {

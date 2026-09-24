@@ -493,8 +493,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Welcome-page auditorium. Dynamic import so the canvas code is its own chunk and only the
-// one page that renders a [data-seat-field] ever downloads it.
+// Welcome-page scroll choreography and auditorium. Dynamic imports so both are their own
+// chunks and only the welcome page ever downloads them.
+if (document.querySelector('[data-scroll-progress]')) {
+    import('./welcome.js').then(({ mountWelcome }) => mountWelcome());
+}
+
 const seatFieldCanvas = document.querySelector('[data-seat-field]');
 if (seatFieldCanvas) {
     import('./seat-field.js').then(({ mountSeatField }) => mountSeatField(seatFieldCanvas));
