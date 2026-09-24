@@ -492,3 +492,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Welcome-page auditorium. Dynamic import so the canvas code is its own chunk and only the
+// one page that renders a [data-seat-field] ever downloads it.
+const seatFieldCanvas = document.querySelector('[data-seat-field]');
+if (seatFieldCanvas) {
+    import('./seat-field.js').then(({ mountSeatField }) => mountSeatField(seatFieldCanvas));
+}
