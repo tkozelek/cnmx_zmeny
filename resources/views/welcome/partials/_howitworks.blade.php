@@ -21,9 +21,6 @@
         <div class="grid grid-cols-1 gap-y-12 lg:grid-cols-[1fr_3rem_1fr_3rem_1fr_3rem_1fr] lg:items-start lg:gap-x-2">
             @foreach($steps as $i => $step)
                 <div class="reveal relative flex flex-col items-center px-2" style="transition-delay: {{ $i * 120 }}ms;">
-                    <span class="pointer-events-none absolute -top-3 select-none text-6xl font-black text-neutral-900" aria-hidden="true">
-                        0{{ $i + 1 }}
-                    </span>
                     <div class="relative mb-4 flex h-20 w-20 items-center justify-center rounded-full border-2 border-brand-500/60 bg-neutral-900 text-2xl text-brand-400 shadow-lg shadow-brand-950/20">
                         <i class="fa-solid {{ $step['icon'] }}"></i>
                     </div>
