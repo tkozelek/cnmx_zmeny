@@ -5,7 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 
 /**
- * The one "Extra info" field above the week grid.
+ * The one "Poznámka" field above the week grid.
  *
  * Whatever is typed here is attached to every subsequent signup, and it **stays** until the
  * user clears it - signing up for six days with "od 15:00" means typing it once.
@@ -29,8 +29,8 @@ class ExtraNote extends Component
     }
 
     /**
-     * Persist on every keystroke the front end sends. `wire:model.blur` keeps that to one
-     * request per field exit rather than one per character.
+     * Persist on every typing pause (`wire:model.live.debounce`), quietly. Saving only on blur
+     * would race the "Zapísať sa" tap that causes the blur - the signup could read the old note.
      */
     public function updatedNote(string $value): void
     {
@@ -45,7 +45,6 @@ class ExtraNote extends Component
         $this->note = mb_substr($trimmed, 0, self::MAX_LENGTH);
 
         session([self::SESSION_KEY => $this->note]);
-        $this->dispatch('toast', message: 'Extra info poznámka uložená.', type: 'info');
     }
 
     public function clear(): void
@@ -53,7 +52,7 @@ class ExtraNote extends Component
         $this->note = '';
 
         session()->forget(self::SESSION_KEY);
-        $this->dispatch('toast', message: 'Extra info poznámka vymazaná.', type: 'info');
+        $this->dispatch('toast', message: 'Poznámka vymazaná.', type: 'info');
     }
 
     public function render()

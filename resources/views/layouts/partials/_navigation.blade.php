@@ -4,17 +4,18 @@
 >
     <div class="container mx-auto px-4 md:px-6 lg:px-8 flex items-center justify-between">
         <!-- Logo and hamburger toggle -->
-        <div class="flex items-center justify-between w-full md:w-auto py-1">
+        <div class="flex items-center justify-between w-full lg:w-auto py-1">
             <x-application-logo />
 
             <button
                 type="button"
                 @click.stop="openn = !openn"
-                class="md:hidden relative z-[60] p-2 rounded-lg text-neutral-300 hover:text-white hover:bg-neutral-800 focus:outline-none transition"
-                aria-label="Toggle menu"
+                class="lg:hidden relative z-[60] p-2 rounded-lg text-neutral-300 hover:text-white hover:bg-neutral-800 transition"
+                aria-label="Otvoriť menu"
+                :aria-expanded="openn.toString()"
             >
-                <i class="fa-solid fa-bars text-xl" x-show="!openn"></i>
-                <i class="fa-solid fa-xmark text-xl" x-show="openn"></i>
+                <i class="fa-solid fa-bars text-xl" x-show="!openn" aria-hidden="true"></i>
+                <i class="fa-solid fa-xmark text-xl" x-show="openn" x-cloak aria-hidden="true"></i>
             </button>
         </div>
 

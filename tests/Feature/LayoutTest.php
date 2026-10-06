@@ -33,7 +33,6 @@ class LayoutTest extends TestCase
             ->get(route('help'))
             ->assertOk()
             ->assertSee('Správa kina')
-            ->assertSee('Pozície')
             ->assertSee('Používatelia');
     }
 
@@ -45,7 +44,6 @@ class LayoutTest extends TestCase
 
         foreach ([
             'team.settings.edit',
-            'positions.index',
             'admin.users.index',
             'absences.index',
             'settings.password.edit',

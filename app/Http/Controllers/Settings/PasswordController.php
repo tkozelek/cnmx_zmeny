@@ -21,6 +21,6 @@ class PasswordController extends Controller
         // Invalidate the other sessions this password could still be used on.
         auth()->logoutOtherDevices($request->string('new_password')->value());
 
-        return back()->with(['message' => 'Heslo zmenené.']);
+        return back()->with(['message' => 'Heslo bolo zmenené.']);
     }
 }

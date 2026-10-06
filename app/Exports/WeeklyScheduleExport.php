@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Assignment;
 use App\Models\Team;
+use App\Traits\EscapesSpreadsheetFormulas;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -19,7 +20,6 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use App\Traits\EscapesSpreadsheetFormulas;
 
 /**
  * One week's plan: a column per day, the people signed up listed underneath, plus a second
@@ -38,7 +38,7 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
         private readonly Team $team,
         private readonly CarbonImmutable $weekStart,
     ) {
-        $this->byDate = Assignment::with(['user', 'position'])
+        $this->byDate = Assignment::with('user')
             ->betweenDates($this->weekStart, $this->weekEnd())
             ->get()
             ->groupBy(fn (Assignment $assignment): string => $assignment->date->toDateString());
@@ -125,16 +125,14 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
         return 'Zapísaní ľudia';
     }
 
-    /** "Kozelek T. (RN)" - surname, initial, position code. */
+    /** "Kozelek T. (môže až od 18:00)" - surname, initial, the signup note. */
     private function cellsFor(CarbonImmutable $date): array
     {
         return $this->byDate->get($date->toDateString(), collect())
-            ->sortBy(fn (Assignment $a): int => $a->position?->sort_order ?? 0)
-            ->map(function (Assignment $assignment): string {
-                $code = $assignment->position?->label();
-
-                return $this->escapeFormula(trim($assignment->user.($code ? " ({$code})" : '')));
-            })
+            ->sortBy(fn (Assignment $a): string => (string) $a->user)
+            ->map(fn (Assignment $assignment): string => (string) $this->escapeFormula(
+                $assignment->user.($assignment->note ? " ({$assignment->note})" : '')
+            ))
             ->values()
             ->all();
     }

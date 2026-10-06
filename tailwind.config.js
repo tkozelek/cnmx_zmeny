@@ -13,6 +13,11 @@ function cssVarColorScale(name) {
 }
 
 module.exports = {
+    // hover: styles only where a real pointer hovers - on touch a tapped button would otherwise
+    // keep its hover look (a fresh "Zapísaný" showing rose "Odpísať sa").
+    future: {
+        hoverOnlyWhenSupported: true,
+    },
     content: [
         "./resources/**/*.blade.php",
         "./resources/**/*.js",
@@ -27,6 +32,11 @@ module.exports = {
                 // generic Tailwind `sky` palette. Same values today (see app.css), now
                 // themeable from one place.
                 brand: cssVarColorScale('brand'),
+                // In-between steps already used by hover/active states across the views.
+                neutral: {
+                    750: '#333333',
+                    850: '#1f1f1f',
+                },
             },
         },
     },

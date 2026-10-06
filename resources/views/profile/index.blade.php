@@ -2,7 +2,7 @@
     :title="auth()->id() === $user->id ? 'Môj profil' : 'Profil používateľa'"
     description="Prehľad odpracovaných zmien a absencií."
 >
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-3.5 sm:space-y-6"
+    <div class="w-full min-w-0 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-3.5 sm:space-y-6"
          x-data="{
              tab: 'stats',
              period: @js($activePeriod),
@@ -24,8 +24,8 @@
             :title="auth()->id() === $user->id ? 'Môj profil' : 'Profil používateľa'"
         >
             <x-slot:breadcrumb>
-                <nav class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-medium text-neutral-400" aria-label="Navigácia">
-                    <a href="{{ route('calendar.index') }}" class="hover:text-neutral-200 transition">Rozpis</a>
+                <nav class="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-neutral-400" aria-label="Navigácia">
+                    <a href="{{ route('calendar.index') }}" class="hover:text-neutral-200 transition">Týždne</a>
                     <i class="fa-solid fa-chevron-right text-[9px] text-neutral-400"></i>
                     @if(auth()->user()->can('viewAny', \App\Models\User::class))
                         <a href="{{ route('admin.users.index') }}" class="hover:text-neutral-200 transition">Používatelia</a>

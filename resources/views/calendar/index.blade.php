@@ -4,59 +4,51 @@
 
             {{-- Centered Header & Week Selector --}}
             <header class="flex flex-col items-center justify-center gap-3 text-center">
+                <h1 class="sr-only">Týždeň {{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}</h1>
+
                 <x-date :week-start="$weekStart" :week-end="$weekEnd" :previous="$previousWeek" :next="$nextWeek" :locked="$locked" :locked-week-starts="$lockedWeekStarts ?? []" />
 
+                @if($locked)
+                    @cannot('lock', \App\Models\Assignment::class)
+                        <p class="text-sm text-neutral-300"><i class="fa-solid fa-lock mr-1.5 text-xs text-rose-400" aria-hidden="true"></i>Týždeň je zamknutý – zápisy sa už nedajú meniť.</p>
+                    @endcannot
+                @endif
+
                 {{-- Action Buttons Under Week Selector --}}
-                <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
-                    @can('lock', \App\Models\Assignment::class)
+                @can('lock', \App\Models\Assignment::class)
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
                         <form method="POST" action="{{ route($locked ? 'weeks.unlock' : 'weeks.lock', ['date' => $weekStart->toDateString()]) }}">
                             @csrf
                             @if($locked)
                                 @method('DELETE')
                             @endif
                             <button type="submit" @class([
-                                'inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-950 shadow-sm',
-                                'bg-amber-600 hover:bg-amber-500 text-white border-b-2 border-amber-700 focus:ring-amber-400' => $locked,
-                                'bg-rose-600 hover:bg-rose-500 text-white border-b-2 border-rose-700 hover:text-white focus:ring-rose-500' => ! $locked,
+                                'inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-sm font-semibold text-white transition',
+                                'bg-brand-700 hover:bg-brand-800' => $locked,
+                                'bg-rose-700 hover:bg-rose-800' => ! $locked,
                             ])>
-                                <i class="fa-solid {{ $locked ? 'fa-lock-open text-amber-200' : 'fa-lock text-rose-200' }}"></i>
+                                <i class="fa-solid {{ $locked ? 'fa-lock-open' : 'fa-lock' }}" aria-hidden="true"></i>
                                 {{ $locked ? 'Odomknúť týždeň' : 'Zamknúť týždeň' }}
                             </button>
                         </form>
 
-                        {{-- Only once the week is frozen: the builder needs a settled signup list. --}}
-                        @if($locked)
-                            <a href="{{ route('rozpis.show', ['date' => $weekStart->toDateString()]) }}"
-                               class="inline-flex min-h-10 items-center gap-2 rounded-md border-b-2 border-indigo-700 bg-indigo-600 hover:bg-indigo-500 px-4 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
-                                <i class="fa-solid fa-table-list text-indigo-200"></i>
-                                Rozpis
-                            </a>
-                        @endif
-
                         <a href="{{ route('schedule.export', ['date' => $weekStart->toDateString()]) }}"
-                           class="inline-flex min-h-10 items-center gap-2 rounded-md border-b-2 border-emerald-800 bg-emerald-700 hover:bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-neutral-950">
-                            <i class="fa-solid fa-file-arrow-down text-emerald-200"></i>
+                           class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800">
+                            <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i>
                             Excel
                         </a>
-                    @endcan
-
-                    {{-- Everyone's way into the finished plan. Only offered once it is published:
-                         a link that bounces with "not published yet" is worse than no link. --}}
-                    @if($rozpisPublished)
-                        <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}"
-                           class="inline-flex min-h-10 items-center gap-2 rounded-md border-b-2 border-emerald-700 bg-emerald-600 hover:bg-emerald-500 px-4 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
-                            <i class="fa-solid fa-clipboard-list text-emerald-200"></i>
-                            Rozpis zmien
-                        </a>
-                    @endif
-
-                    @include('partials._fileuploadmodal')
-                </div>
+                    </div>
+                @endcan
             </header>
 
-            {{-- Controls row: Names toggle on left, Extra info note on right --}}
+            {{-- Controls row: toggles on the left, the shared signup note on the right --}}
             <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-2">
-                <x-names-toggle />
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <x-names-toggle />
+                    @can('lock', \App\Models\Assignment::class)
+                        <x-names-toggle id="draw_checkbox" label="Zobraziť voľných na losovanie" :checked="false" />
+                    @endcan
+                </div>
                 <livewire:extra-note />
             </div>
 
@@ -66,6 +58,7 @@
                     <livewire:day-card :date="$day->toDateString()"
                                        :locked="$locked"
                                        :initial-assignments="$weekAssignments->get($day->toDateString(), collect())"
+                                       :available="$available[$day->toDateString()] ?? []"
                                        :key="'day-'.$day->toDateString()" />
                 @endforeach
             </div>
@@ -96,17 +89,17 @@
                                         </div>
                                     </div>
 
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-800 text-neutral-300 border border-neutral-700 shrink-0">
+                                    <span class="text-xs text-neutral-400 shrink-0">
                                         {{ $absences->count() }} {{ $absences->count() === 1 ? 'absencia' : ($absences->count() < 5 ? 'absencie' : 'absencií') }}
                                     </span>
                                 </div>
 
                                 {{-- Scrollable Table with Sticky Header --}}
-                                <div class="relative max-h-[380px] overflow-y-auto custom-scrollbar">
+                                <div class="relative lg:max-h-[380px] lg:overflow-y-auto custom-scrollbar">
                                     <table class="w-full text-left text-sm text-neutral-300">
                                         <thead class="sticky top-0 z-10 border-b border-neutral-800 bg-neutral-950 text-xs font-medium uppercase tracking-wider text-neutral-400">
                                             <tr>
-                                                <th class="px-4 py-2">Zamestnanec</th>
+                                                <th class="px-4 py-2">Meno</th>
                                                 <th class="px-4 py-2">Trvanie</th>
                                                 <th class="px-4 py-2 hidden sm:table-cell">Dôvod</th>
                                                 <th class="px-4 py-2 text-right hidden md:table-cell">Nahlásené</th>
@@ -128,7 +121,7 @@
                                                                 {{ $absence->user }}
                                                             </span>
                                                             @if($isOwn)
-                                                                <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold uppercase tracking-wider bg-neutral-700 text-neutral-200">Ja</span>
+                                                                <span class="text-xs text-neutral-400">(ja)</span>
                                                             @endif
                                                         </div>
                                                         @if($absence->reason)
@@ -141,7 +134,7 @@
                                                         <span class="text-xs text-neutral-200 font-medium">
                                                             {{ $absence->date_from->format('d.m.') }}
                                                             @if($absence->isOpenEnded())
-                                                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium text-amber-300 bg-neutral-800 border border-neutral-700 ml-1">trvalá</span>
+                                                                <span class="ml-1 text-neutral-400">– trvalá</span>
                                                             @elseif($absence->date_to && ! $absence->date_to->equalTo($absence->date_from))
                                                                 – {{ $absence->date_to->format('d.m.') }}
                                                             @endif

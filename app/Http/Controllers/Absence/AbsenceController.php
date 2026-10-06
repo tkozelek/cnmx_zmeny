@@ -25,7 +25,7 @@ class AbsenceController extends Controller
     {
         $request->user()->absences()->create($request->safe()->except('open_ended'));
 
-        return back()->with(['message' => 'Absencia vytvorená.']);
+        return back()->with(['message' => 'Absencia nahlásená.']);
     }
 
     public function destroy(Absence $absence): RedirectResponse
@@ -44,6 +44,6 @@ class AbsenceController extends Controller
 
         $this->absences->end($absence);
 
-        return back()->with(['message' => 'Absencia ukončená.']);
+        return back()->with(['message' => 'Absencia deaktivovaná.']);
     }
 }

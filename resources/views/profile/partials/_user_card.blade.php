@@ -5,28 +5,17 @@
             <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                 <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">{{ $user->name }} {{ $user->lastname }}</h2>
 
-                @php
-                    $role = \App\Enums\Role::tryFrom($user->getRoleNames()->first() ?? '');
-                    [$roleBg, $roleText, $roleBorder] = match($role) {
-                        \App\Enums\Role::HeadManager => ['bg-indigo-500/10', 'text-indigo-400', 'border-indigo-500/20'],
-                        \App\Enums\Role::Manager => ['bg-brand-500/10', 'text-brand-400', 'border-brand-500/60'],
-                        default => ['bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20'],
-                    };
-                @endphp
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $roleBg }} {{ $roleText }} {{ $roleBorder }}">
-                    {{ $role?->label() ?? 'Brigádnik' }}
+                @php $role = \App\Enums\Role::tryFrom($user->getRoleNames()->first() ?? '') ?? \App\Enums\Role::Employee; @endphp
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $role->badgeClasses() }}">
+                    {{ $role->label() }}
                 </span>
 
-                @if($user->is_active ?? true)
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                        Aktívny
-                    </span>
-                @else
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-neutral-800 text-neutral-400 border-neutral-700">
+                {{-- Active is the normal state - only the exception gets a badge. --}}
+                @unless($user->is_active ?? true)
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-rose-500/10 text-rose-300 border-rose-500/30">
                         Neaktívny
                     </span>
-                @endif
+                @endunless
             </div>
 
             <div class="flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-1 text-xs text-neutral-400">
@@ -61,17 +50,17 @@
         @if(auth()->id() === $user->id || auth()->user()->can('update', $user))
             <div class="grid grid-cols-2 md:flex md:items-center gap-2 pt-1 md:pt-0 shrink-0 w-full md:w-auto">
                 @if(auth()->id() === $user->id)
-                    <a href="{{ route('settings.password.edit') }}" class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-750 text-neutral-200 hover:text-white border border-neutral-700/60 px-3 py-2 text-xs font-semibold transition text-center">
-                        <i class="fa-solid fa-key text-[11px] text-neutral-400"></i>
+                    <a href="{{ route('settings.password.edit') }}" class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-3 py-2 text-sm font-semibold transition text-center">
+                        <i class="fa-solid fa-key text-xs text-neutral-400" aria-hidden="true"></i>
                         <span>Zmeniť heslo</span>
                     </a>
-                    <a href="{{ route('absences.index') }}" class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 text-xs font-semibold transition shadow-sm text-center">
-                        <i class="fa-solid fa-plus text-[11px]"></i>
-                        <span>Absencia</span>
+                    <a href="{{ route('absences.index') }}" class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-3 py-2 text-sm font-semibold transition text-center">
+                        <i class="fa-solid fa-calendar-xmark text-xs text-neutral-400" aria-hidden="true"></i>
+                        <span>Absencie</span>
                     </a>
                 @elseif(auth()->user()->can('update', $user))
-                    <a href="{{ route('admin.users.edit', $user) }}" class="col-span-2 md:col-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 text-xs font-semibold transition shadow-sm text-center">
-                        <i class="fa-solid fa-user-pen text-[11px]"></i>
+                    <a href="{{ route('admin.users.edit', $user) }}" class="col-span-2 md:col-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-neutral-100 hover:bg-white text-neutral-900 px-3.5 py-2 text-sm font-semibold transition text-center">
+                        <i class="fa-solid fa-user-pen text-xs" aria-hidden="true"></i>
                         <span>Upraviť používateľa</span>
                     </a>
                 @endif

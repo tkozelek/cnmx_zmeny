@@ -33,6 +33,8 @@ class UsersDataTable extends DataTableComponent
         $this->setPrimaryKey('id')
             ->setTheme('tailwind')
             ->setDefaultSort('lastname', 'asc')
+            // The sort is already visible on the column header; a pill for it was just noise.
+            ->setSortingPillsDisabled()
             ->setPerPageAccepted([10, 25, 50, 100])
             ->setPerPage(10)
             ->setColumnSelectStatus(false)
@@ -70,7 +72,7 @@ class UsersDataTable extends DataTableComponent
         return [
             SelectFilter::make('Rola / Stav')
                 ->options([
-                    '' => 'Všetky role',
+                    '' => 'Všetky roly',
                     RoleEnum::Employee->value => RoleEnum::Employee->label(),
                     RoleEnum::Manager->value => RoleEnum::Manager->label(),
                     RoleEnum::HeadManager->value => RoleEnum::HeadManager->label(),
@@ -95,18 +97,19 @@ class UsersDataTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make('Meno a Priezvisko', 'lastname')
+            Column::make('Meno a priezvisko', 'lastname')
                 ->sortable()
                 ->searchable(fn (Builder $query, string $term) => $query->whereAny(['name', 'lastname'], 'LIKE', "%{$term}%"))
                 ->format(function ($value, $row) {
                     $profileUrl = route('profile.show', ['user' => $row->id]);
                     $fullName = trim(($row->name ?? '').' '.($row->lastname ?? ''));
 
-                    return '<a href="'.$profileUrl.'" class="font-bold text-white hover:text-sky-400 transition">'.e($fullName ?: $row->email).'</a>';
+                    return '<a href="'.$profileUrl.'" class="font-bold text-white hover:text-brand-300 transition">'.e($fullName ?: $row->email).'</a>';
                 })
                 ->html(),
 
             Column::make('E-mail', 'email')
+                ->collapseOnMobile()
                 ->sortable()
                 ->searchable()
                 // e(), because Laravel's `email` rule uses RFCValidation, which accepts quoted
@@ -116,6 +119,7 @@ class UsersDataTable extends DataTableComponent
                 ->html(),
 
             Column::make('Rola', 'id')
+                ->collapseOnMobile()
                 ->sortable(function (Builder $query, string $direction) {
                     return $query->orderBy(
                         Role::select('name')
@@ -134,23 +138,23 @@ class UsersDataTable extends DataTableComponent
                     // Blocked first: a denied member is both inactive *and* unapproved, and
                     // "zablokovaný" is the state that actually explains why they cannot get in.
                     if (! $row->is_active) {
-                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-neutral-800 text-neutral-400 border border-neutral-700">Zablokovaný</span>';
+                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/30">Zablokovaný</span>';
                     }
 
                     if ($isPending) {
-                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">Čaká na schválenie</span>';
+                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">Čaká na schválenie</span>';
                     }
 
-                    if ($roleName === RoleEnum::HeadManager->value) {
-                        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30">'.RoleEnum::HeadManager->label().'</span>';
-                    }
+                    $role = RoleEnum::tryFrom((string) $roleName);
 
-                    return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">'.(RoleEnum::tryFrom($roleName)?->label() ?? '-').'</span>';
-
+                    return $role
+                        ? '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full border '.$role->badgeClasses().'">'.$role->label().'</span>'
+                        : '<span class="text-neutral-400">-</span>';
                 })
                 ->html(),
 
             Column::make('Naposledy upravený', 'updated_at')
+                ->collapseOnTablet()
                 ->sortable()
                 ->format(fn ($value) => '<span class="text-neutral-400">'.$value?->format('d.m.Y H:i').'</span>')
                 ->html(),
@@ -171,7 +175,7 @@ class UsersDataTable extends DataTableComponent
 
                         return '<div class="flex items-center justify-start gap-2">
                             <button wire:click="accept('.$row->id.')" title="Schváliť" aria-label="Schváliť používateľa '.$fullName.'" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-check text-sm" aria-hidden="true"></i></button>
-                            <button wire:click="deny('.$row->id.')" title="Zamietnuť" aria-label="Zamietnuť používateľa '.$fullName.'" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i></button>
+                            <button wire:click="deny('.$row->id.')" wire:confirm="Zamietnuť registráciu – '.$fullName.'? Účet sa zablokuje a nebude sa môcť prihlásiť." title="Zamietnuť" aria-label="Zamietnuť používateľa '.$fullName.'" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i></button>
                         </div>';
                     }
 

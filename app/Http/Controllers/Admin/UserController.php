@@ -58,10 +58,10 @@ class UserController extends Controller
             $user->teams()->detach();
             $user->delete();
 
-            return back()->with(['error' => 'Nastala chyba, kontaktujte administrátora.']);
+            return back()->with(['error' => 'Pozvánku sa nepodarilo odoslať, účet nebol vytvorený. Skontrolujte e-mail a skúste to znova.']);
         }
 
-        return back()->with(['success' => 'Používateľ bol úspešne vytvorený.', 'message' => 'Používateľ bol úspešne vytvorený.']);
+        return back()->with(['success' => 'Používateľ bol vytvorený. Odkaz na nastavenie hesla platí 24 hodín.', 'message' => 'Používateľ bol vytvorený. Odkaz na nastavenie hesla platí 24 hodín.']);
     }
 
     public function edit(User $user): View

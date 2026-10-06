@@ -3,7 +3,7 @@
         ['icon' => 'fa-user-plus', 'title' => '1. Založíš si účet', 'text' => 'Vyplníš krátky formulár - meno, e-mail, heslo.'],
         ['icon' => 'fa-envelope-circle-check', 'title' => '2. Potvrdíš e-mail', 'text' => 'Klikneš na odkaz, ktorý ti pošleme, aby sme vedeli, že účet je tvoj.'],
         ['icon' => 'fa-user-check', 'title' => '3. Počkáš na schválenie', 'text' => 'Manažér kina ti účet potvrdí, potom sa už len prihlásiš.'],
-        ['icon' => 'fa-calendar-days', 'title' => '4. Zapíšeš si zmeny', 'text' => 'Označíš dni, kedy môžeš pracovať, a sleduješ, ako to manažér rozpísal.'],
+        ['icon' => 'fa-calendar-days', 'title' => '4. Zapíšeš si zmeny', 'text' => 'Označíš dni, kedy môžeš pracovať, a vidíš, kto ďalší je zapísaný.'],
     ];
 @endphp
 

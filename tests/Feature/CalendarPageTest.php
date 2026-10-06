@@ -3,9 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Models\Absence;
 use App\Models\Assignment;
-use App\Models\Media;
-use App\Models\Position;
 use App\Services\WeekService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,7 +27,7 @@ class CalendarPageTest extends TestCase
         }
 
         $response->assertSee('Zapísať');
-        $response->assertSee('Extra info');
+        $response->assertSee('Poznámka');
     }
 
     public function test_an_admin_sees_the_week_controls(): void
@@ -94,14 +93,12 @@ class CalendarPageTest extends TestCase
     public function test_signed_up_people_are_listed_on_their_day(): void
     {
         $team = $this->tenant();
-        $position = Position::factory()->create(['team_id' => $team->id, 'name' => 'Pokladňa', 'code' => 'POK']);
         $user = $this->member($team);
         $weekStart = app(WeekService::class)->start($team, CarbonImmutable::now());
 
         Assignment::factory()->create([
             'team_id' => $team->id,
             'user_id' => $user->id,
-            'position_id' => $position->id,
             'date' => $weekStart->addDay()->toDateString(),
             'note' => 'od 15:00',
         ]);
@@ -113,73 +110,33 @@ class CalendarPageTest extends TestCase
             ->assertSee('od 15:00');
     }
 
-    public function test_subory_button_is_hidden_for_employee_when_no_visible_media(): void
-    {
-        $team = $this->tenant();
-        $user = $this->member($team);
-        $weekStart = app(WeekService::class)->start($team, CarbonImmutable::now());
-
-        // 1. No media at all
-        $this->actingAs($user)
-            ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
-            ->assertOk()
-            ->assertDontSee('Súbory');
-
-        // 2. Media exists but is hidden
-        Media::create([
-            'team_id' => $team->id,
-            'user_id' => $user->id,
-            'week_start' => $weekStart->toDateString(),
-            'disk' => 'local',
-            'path' => 'media/hidden.pdf',
-            'filename' => 'hidden.pdf',
-            'original_name' => 'hidden.pdf',
-            'mime_type' => 'application/pdf',
-            'size' => 1024,
-            'is_visible' => false,
-        ]);
-
-        $this->actingAs($user)
-            ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
-            ->assertOk()
-            ->assertDontSee('Súbory');
-    }
-
-    public function test_subory_button_is_visible_for_employee_when_visible_media_exists(): void
-    {
-        $team = $this->tenant();
-        $user = $this->member($team);
-        $weekStart = app(WeekService::class)->start($team, CarbonImmutable::now());
-
-        Media::create([
-            'team_id' => $team->id,
-            'user_id' => $user->id,
-            'week_start' => $weekStart->toDateString(),
-            'disk' => 'local',
-            'path' => 'media/visible.pdf',
-            'filename' => 'visible.pdf',
-            'original_name' => 'visible.pdf',
-            'mime_type' => 'application/pdf',
-            'size' => 1024,
-            'is_visible' => true,
-        ]);
-
-        $this->actingAs($user)
-            ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
-            ->assertOk()
-            ->assertSee('Súbory');
-    }
-
-    public function test_subory_button_is_always_visible_for_manager(): void
+    /** The losovanie pool: active brigádnici minus whoever is absent that day. Managers only. */
+    public function test_managers_get_who_is_free_to_be_drawn_each_day(): void
     {
         $team = $this->tenant();
         $manager = $this->member($team, Role::Manager);
+        $free = $this->member($team);
+        $absent = $this->member($team);
         $weekStart = app(WeekService::class)->start($team, CarbonImmutable::now());
+        $friday = $weekStart->addDay()->toDateString();
 
-        // No media exists, but manager can upload files
+        Absence::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $absent->id,
+            'date_from' => $friday,
+            'date_to' => $friday,
+        ]);
+
         $this->actingAs($manager)
             ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
             ->assertOk()
-            ->assertSee('Súbory');
+            ->assertSee('Zobraziť voľných na losovanie')
+            ->assertViewHas('available', fn (array $available): bool => $available[$friday] === [$free->id => (string) $free]
+                && array_key_exists($absent->id, $available[$weekStart->toDateString()]));
+
+        $this->actingAs($free)
+            ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
+            ->assertDontSee('Zobraziť voľných na losovanie')
+            ->assertViewHas('available', []);
     }
 }

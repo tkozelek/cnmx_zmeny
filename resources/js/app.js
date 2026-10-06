@@ -3,7 +3,6 @@ import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/themes/dark.css";
 import { Slovak } from "flatpickr/dist/l10n/sk.js";
 import { Chart, registerables } from "chart.js";
-import Sortable from "sortablejs";
 
 flatpickr.localize(Slovak);
 window.flatpickr = flatpickr;
@@ -13,204 +12,26 @@ function toIsoDate(date) {
 }
 
 document.addEventListener('alpine:init', () => {
-    /**
-     * Drag a card between lists and tell Livewire where it landed.
-     *
-     * `x-sortable="place"` names the Livewire method; the element's data attributes carry the
-     * rest. `sortable-group` decides which lists exchange cards (scoped per day, so a person can
-     * never be dragged into another day), and `sortable-target` — the id of the slot this list
-     * belongs to — is passed as the second argument alongside the dropped card's `sortable-id`.
-     * A list with no target sends null: that is the unassigned pool, and null is exactly what
-     * "not placed anywhere" means server-side.
-     *
-     * Only onAdd fires a request: reordering inside one list changes nothing that is stored.
-     */
-    Alpine.directive('sortable', (el, { expression }, { evaluate, cleanup }) => {
-        const sortable = Sortable.create(el, {
-            group: el.dataset.sortableGroup ?? 'sortable',
-            animation: 150,
-            ghostClass: 'opacity-40',
-            onAdd: (event) => {
-                const id = event.item.dataset.sortableId;
-                if (!id) return;
-
-                const target = el.dataset.sortableTarget ?? 'null';
-
-                // `$wire.` is not optional: Livewire exposes the component to Alpine as the
-                // $wire magic and does NOT put component methods in Alpine's scope, so a bare
-                // `place(...)` throws "place is not defined" — which Alpine swallows, leaving a
-                // drag that silently does nothing.
-                //
-                // Livewire re-renders from server state right after, repainting the card
-                // wherever the server says it belongs.
-                evaluate(`$wire.${expression}(${id}, ${target})`);
-            },
-        });
-
-        cleanup(() => sortable.destroy());
-    });
-
-    /**
-     * Reorder rows within one list and persist the new order.
-     *
-     * Only the grip icon drags (`handle`), because each row *contains* another sortable list —
-     * without that, grabbing a person card would pick up the whole row. Reads `el.children`
-     * rather than a query selector for the same reason: nested cards must not be collected.
-     */
-    Alpine.directive('sortable-order', (el, { expression }, { evaluate, cleanup }) => {
-        const sortable = Sortable.create(el, {
-            animation: 150,
-            handle: '[data-drag-handle]',
-            draggable: '[data-slot-id]',
-            ghostClass: 'opacity-40',
-            onEnd: () => {
-                const ids = Array.from(el.children)
-                    .map((node) => node.dataset.slotId)
-                    .filter(Boolean);
-
-                // `$wire.` prefix required — see the note in x-sortable above.
-                if (ids.length) evaluate(`$wire.${expression}([${ids.join(',')}])`);
-            },
-        });
-
-        cleanup(() => sortable.destroy());
-    });
-
-    /**
-     * 24-hour time field. `<input type="time">` renders AM/PM purely from the OS locale and
-     * there is no HTML attribute to force 24-hour, so the picker has to own the format.
-     */
-    const timeFieldOptions = (initial) => ({
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: 'H:i',
-        time_24hr: true,
-        minuteIncrement: 15,
-        defaultDate: initial,
-    });
-
-    /** Renders the quick-pick row into an open flatpickr time popup. */
-    function addQuickTimes(fp, times, onPick) {
-        if (!times || !times.length) return;
-
-        const row = document.createElement('div');
-        row.className = 'flatpickr-quick-times';
-
-        times.forEach((time) => {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.textContent = time;
-            button.className = 'flatpickr-quick-time';
-            button.addEventListener('click', () => onPick(time));
-            row.appendChild(button);
-        });
-
-        fp.calendarContainer.prepend(row);
-    }
-
-    /** Writes into a Livewire property — for a field that is part of a form. */
-    Alpine.data('timePicker', (property, initial = null, quickTimes = []) => ({
-        init() {
-            if (typeof window.flatpickr !== 'function') return;
-
-            this.picker = window.flatpickr(this.$refs.input, {
-                ...timeFieldOptions(initial),
-                // Third arg false: don't re-render the component on every keystroke.
-                onChange: (dates, value) => this.$wire.set(property, value, false),
-                onReady: (_selectedDates, _dateStr, fp) => addQuickTimes(fp, quickTimes, (time) => {
-                    fp.setDate(time, true);
-                    fp.close();
-                }),
-            });
-        },
-        clear() {
-            this.picker?.clear();
-            this.$wire.set(property, null, false);
-        },
-    }));
-
-    /**
-     * Saves straight to one existing slot — there is no form around it, the change *is* the
-     * submit. Separate from timePicker because that one fills in a property to be submitted
-     * later, while this one persists on change.
-     */
-    Alpine.data('slotTimePicker', (slotId, initial = null, quickTimes = []) => ({
-        init() {
-            if (typeof window.flatpickr !== 'function') return;
-
-            window.flatpickr(this.$refs.input, {
-                ...timeFieldOptions(initial),
-                onChange: (dates, value) => this.$wire.updateSlotTime(slotId, value || null),
-                onReady: (_selectedDates, _dateStr, fp) => addQuickTimes(fp, quickTimes, (time) => {
-                    fp.setDate(time, true);
-                    fp.close();
-                }),
-            });
-        },
-    }));
-
-    /**
-     * The editable "Časy nástupu" list on the team settings page. Plain array in Alpine state,
-     * serialized to `quick_times[]` hidden inputs so it rides along with the rest of that
-     * page's normal (non-Livewire) form submit.
-     */
-    Alpine.data('quickTimesEditor', (initial = []) => ({
-        times: [...initial],
-        newTime: '',
-        picker: null,
-        init() {
-            if (typeof window.flatpickr !== 'function') return;
-
-            this.picker = window.flatpickr(this.$refs.newTimeInput, {
-                ...timeFieldOptions(null),
-                onChange: (dates, value) => { this.newTime = value; },
-            });
-        },
-        add() {
-            if (!this.newTime || this.times.includes(this.newTime)) return;
-            this.times.push(this.newTime);
-            this.times.sort();
-            this.newTime = '';
-            this.picker?.clear();
-        },
-        remove(index) {
-            this.times.splice(index, 1);
-        },
-    }));
-
-    /** Jump straight to a week instead of clicking the arrows repeatedly. */
-    Alpine.data('weekJump', (current, urlTemplate) => ({
-        init() {
-            if (typeof window.flatpickr !== 'function') return;
-
-            window.flatpickr(this.$refs.input, {
-                dateFormat: 'Y-m-d',
-                defaultDate: current,
-                positionElement: this.$refs.trigger,
-                position: 'below center',
-                onChange: (dates, value) => {
-                    if (value) window.location.href = urlTemplate.replace('__DATE__', value);
-                },
-            });
-        },
-        open() {
-            this.$refs.input._flatpickr?.open();
-        },
-    }));
-
     Alpine.data('absenceRangePicker', (dateFrom, dateTo, openModal = false) => ({
         openModal,
         dateFrom,
         dateTo,
+        sending: false,
         initFlatpickr() {
             if (typeof window.flatpickr !== 'function') return;
             window.flatpickr(this.$refs.rangeInput, {
                 mode: 'range',
                 dateFormat: 'Y-m-d',
                 altInput: true,
-                altInputClass: 'w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none cursor-pointer',
+                altInputClass: 'w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer',
                 altFormat: 'j. n. Y',
                 defaultDate: [this.dateFrom, this.dateTo],
+                // The visible field is flatpickr's altInput; the <label for> and the hint point at it.
+                onReady: (_dates, _str, fp) => {
+                    if (!fp.altInput) return;
+                    fp.altInput.id = 'absence-range';
+                    fp.altInput.setAttribute('aria-describedby', 'absence-range-hint');
+                },
                 onChange: (selectedDates) => {
                     if (!selectedDates.length) return;
                     this.dateFrom = toIsoDate(selectedDates[0]);
@@ -249,6 +70,9 @@ document.addEventListener('alpine:init', () => {
             const self = this;
             this.currentWeekRange = this.getWeekRange(currentWeekStart);
             this.picker = window.flatpickr(this.$refs.pickerInput, {
+                // On phones flatpickr would swap in the native date input: no week colouring,
+                // and opening it from the trigger button is unreliable.
+                disableMobile: true,
                 dateFormat: 'Y-m-d',
                 defaultDate: currentWeekStart,
                 position: 'below center',
@@ -318,16 +142,64 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 
+/**
+ * A phone left open overnight comes back with an expired session; Livewire's own prompt for
+ * that is an English "This page has expired" confirm.
+ */
+document.addEventListener('livewire:init', () => {
+    Livewire.hook('request', ({ fail }) => {
+        fail(({ status, preventDefault }) => {
+            if (status !== 419) return;
+
+            preventDefault();
+            if (confirm('Stránka bola dlho nečinná. Načítať ju znova?')) window.location.reload();
+        });
+    });
+});
+
 function showToast(message, type = 'success', icon = '') {
     window.dispatchEvent(new CustomEvent('toast', {
         detail: { message, type, icon }
     }));
 }
 
-document.addEventListener('change', function (event) {
-    if (event.target.id === 'names_checkbox') {
-        document.documentElement.classList.toggle('hide-names', !event.target.checked);
+/**
+ * The calendar's two switches drive a class on <html> (see app.css). Each is remembered per
+ * browser, so a manager doesn't switch losovanie back on for every week, and re-synced on
+ * pageshow because a back navigation restores the checkbox but not the class.
+ */
+const calendarToggles = [
+    ['names_checkbox', 'hide-names', false],
+    ['draw_checkbox', 'show-draw', true],
+];
+
+function syncCalendarToggles(restoreSaved) {
+    for (const [id, cssClass, classWhenChecked] of calendarToggles) {
+        const input = document.getElementById(id);
+        if (!input) continue;
+
+        if (restoreSaved) {
+            try {
+                const saved = localStorage.getItem(id);
+                if (saved !== null) input.checked = saved === '1';
+            } catch (e) { /* storage blocked - keep the default */ }
+        }
+
+        document.documentElement.classList.toggle(cssClass, input.checked === classWhenChecked);
     }
+}
+
+document.addEventListener('DOMContentLoaded', () => syncCalendarToggles(true));
+window.addEventListener('pageshow', () => syncCalendarToggles(false));
+
+document.addEventListener('change', function (event) {
+    if (!calendarToggles.some(([id]) => id === event.target.id)) return;
+
+    try {
+        localStorage.setItem(event.target.id, event.target.checked ? '1' : '0');
+    } catch (e) { /* storage blocked - the switch still works for this page */ }
+
+    syncCalendarToggles(false);
 });
 
 function togglePasswordVisibility(inputId) {
@@ -380,10 +252,11 @@ function renderProfileChart(newData) {
         data: {
             labels: isMobile ? shortLabels : fullLabels,
             datasets: [{
-                label: 'Odpracované dni',
+                label: 'Zapísané dni',
                 data: data,
-                backgroundColor: 'rgba(99, 102, 241, 0.85)',
-                hoverBackgroundColor: 'rgba(129, 140, 248, 1)',
+                // brand-500 / brand-400 (see the --color-brand-* tokens in app.css)
+                backgroundColor: 'rgba(14, 165, 233, 0.85)',
+                hoverBackgroundColor: 'rgba(56, 189, 248, 1)',
                 borderRadius: 6,
                 borderSkipped: false,
                 maxBarThickness: isMobile ? 32 : 44,
@@ -442,7 +315,7 @@ function renderProfileChart(newData) {
                     },
                     ticks: {
                         precision: 0,
-                        color: '#737373',
+                        color: '#a3a3a3',
                         font: {
                             family: 'inherit',
                             size: 11
@@ -474,23 +347,6 @@ window.renderProfileChart = renderProfileChart;
 
 document.addEventListener('DOMContentLoaded', function() {
     renderProfileChart();
-
-    const element = document.getElementById('my-dropzone');
-
-    if (element) {
-        const myDropzone = new Dropzone("#my-dropzone", {
-            url: window.appRoutes.fileUpload,
-            paramName: "file",
-            maxFilesize: 2,
-        });
-
-        myDropzone.on('queuecomplete', function () {
-            showToast('Nahrávanie dokončené.')
-            setTimeout(function () {
-                window.location.search += '&show=files';
-            }, 1000);
-        });
-    }
 });
 
 // Welcome-page scroll choreography and auditorium. Dynamic imports so both are their own

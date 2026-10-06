@@ -106,8 +106,7 @@ class ProfileController extends Controller
     /**
      * How many days this person worked on each weekday, Monday first.
      *
-     * Counts distinct dates, not assignment rows: working two positions on one Friday is
-     * still one Friday. MySQL's WEEKDAY() is already 0=Mon..6=Sun.
+     * Counts distinct dates, not assignment rows. MySQL's WEEKDAY() is already 0=Mon..6=Sun.
      *
      * @return array<int, int>
      */

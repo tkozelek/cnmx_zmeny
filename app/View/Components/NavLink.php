@@ -10,7 +10,7 @@ class NavLink extends Component
     public function __construct(
         public string $route,
         public ?string $icon = null,
-        public string $activeClass = 'bg-blue-700',
+        public string $activeClass = 'bg-neutral-800 text-white',
         public bool $isMobile = false
     ) {}
 

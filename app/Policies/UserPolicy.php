@@ -66,7 +66,7 @@ class UserPolicy
             return true;
         }
 
-        return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina - najprv vymenujte ďalšieho, potom mu môžete zmeniť rolu.');
+        return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina – najprv vymenujte ďalšieho, potom mu môžete zmeniť rolu.');
     }
 
     public function delete(User $user, User $model): bool|Response
@@ -84,7 +84,7 @@ class UserPolicy
         }
 
         if ($this->isLastHeadManager($model)) {
-            return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina - jeho deaktiváciou by kino zostalo bez správcu.');
+            return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina – jeho deaktiváciou by kino zostalo bez správcu.');
         }
 
         return true;
@@ -111,7 +111,7 @@ class UserPolicy
         }
 
         if ($this->isLastHeadManager($model)) {
-            return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina - nemožno mu odobrať prístup.');
+            return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina – nemožno mu odobrať prístup.');
         }
 
         return true;

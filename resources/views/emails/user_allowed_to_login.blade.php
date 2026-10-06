@@ -2,11 +2,11 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Účet overený</title>
+    <title>Účet schválený</title>
 </head>
 <body>
-<h1>Ahoj {{ $user->name }},</h1>
-<p>Tvoj účet bol overený! Teraz sa môžeš prihlásiť do aplikácie.</p>
+<h1>Dobrý deň, {{ $user->name }},</h1>
+<p>Manažér kina schválil váš účet. Môžete sa prihlásiť.</p>
 
 <a href="{{ route('login') }}" style="
         display: inline-block;
@@ -15,8 +15,8 @@
         background-color: #1a73e8;
         text-decoration: none;
         border-radius: 5px;
-    ">Prihlás sa</a>
+    ">Prihlásiť sa</a>
 
-<p>S pozdravom,<br>{{ config('app.name') }}</p>
+<p>S pozdravom,<br>Cine-max Zmeny</p>
 </body>
 </html>

@@ -6,9 +6,10 @@ use App\Models\Assignment;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WeekLock;
-use App\Traits\GuardsCurrentTeam;
 use App\Services\WeekService;
+use App\Traits\GuardsCurrentTeam;
 use Carbon\CarbonInterface;
+use Illuminate\Auth\Access\Response;
 
 /**
  * Who may put someone on the plan, and take them off again.
@@ -20,6 +21,8 @@ class AssignmentPolicy
 {
     use GuardsCurrentTeam;
 
+    public const string LOCKED_MESSAGE = 'Týždeň je zamknutý – zápisy sa už nedajú meniť.';
+
     public function __construct(private readonly WeekService $weeks) {}
 
     /**
@@ -29,7 +32,7 @@ class AssignmentPolicy
      * may sign somebody else up. The absence check has to be about *them* - refusing the manager
      * their own day off while happily booking an absent brigádnik is exactly backwards.
      */
-    public function create(User $user, Team $team, CarbonInterface $date, ?User $targetUser = null): bool
+    public function create(User $user, Team $team, CarbonInterface $date, ?User $targetUser = null): Response
     {
         $forUser = $targetUser ?? $user;
 
@@ -41,18 +44,24 @@ class AssignmentPolicy
             ->contains(fn ($absence) => $absence->covers($date));
 
         if ($hasAbsence) {
-            return false;
+            return Response::deny($forUser->is($user)
+                ? 'Na tento deň máte nahlásenú absenciu.'
+                : 'Na tento deň má nahlásenú absenciu.');
         }
 
         if ($user->hasPermissionInTeam('assignment.create', $team)) {
-            return true;
+            return Response::allow();
         }
 
-        return $user->isApprovedIn($team) && ! $this->weekLocked($team, $date);
+        if (! $user->isApprovedIn($team)) {
+            return Response::deny();
+        }
+
+        return $this->weekLocked($team, $date) ? Response::deny(self::LOCKED_MESSAGE) : Response::allow();
     }
 
     /** Remove a row: your own, from an unlocked week. Admins may remove anyone's. */
-    public function delete(User $user, Assignment $assignment): bool
+    public function delete(User $user, Assignment $assignment): Response|bool
     {
         $team = app(Team::class);
 
@@ -64,30 +73,13 @@ class AssignmentPolicy
             return true;
         }
 
-        return $assignment->user_id === $user->id
-            && ! $this->weekLocked($assignment->team, $assignment->date);
-    }
-
-    /**
-     * Place someone on a position (or take them off it) in the rozpis builder.
-     *
-     * Requires the week to be *locked* - the inverse of create()/delete(). Self-signup and
-     * position assignment are two consecutive phases of the same week, and locking is the
-     * switch between them: employees stop editing, the manager starts.
-     */
-    public function assignPosition(User $user, Assignment $assignment): bool
-    {
-        $team = app(Team::class);
-
-        if (! $this->belongsToCurrentTeam($assignment)) {
+        if ($assignment->user_id !== $user->id) {
             return false;
         }
 
-        if (! $this->weekLocked($team, $assignment->date)) {
-            return false;
-        }
-
-        return $user->hasPermissionInTeam('assignment.assign-position', $team);
+        return $this->weekLocked($assignment->team, $assignment->date)
+            ? Response::deny(self::LOCKED_MESSAGE)
+            : Response::allow();
     }
 
     /** Only authorized roles freeze and unfreeze a week. */

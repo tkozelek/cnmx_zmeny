@@ -16,21 +16,21 @@
                 </div>
 
                 <div class="flex items-center gap-2 shrink-0">
-                    <i wire:loading class="fa-solid fa-circle-notch fa-spin text-brand-400 text-xs"></i>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-800 text-neutral-300 border border-neutral-700">
-                        {{ $userCount }} {{ $userCount === 1 ? 'človek' : ($userCount < 5 ? 'ľudia' : 'ľudí') }} · {{ $totalSignups }} {{ $totalSignups === 1 ? 'zmena' : ($totalSignups < 5 ? 'zmeny' : 'zmien') }}
+                    <i wire:loading class="fa-solid fa-circle-notch fa-spin text-neutral-400 text-xs" aria-hidden="true"></i>
+                    <span class="text-xs text-neutral-400">
+                        {{ $userCount }} {{ $userCount === 1 ? 'človek' : ($userCount < 5 ? 'ľudia' : 'ľudí') }} · {{ $totalSignups }} {{ $totalSignups === 1 ? 'deň' : ($totalSignups < 5 ? 'dni' : 'dní') }}
                     </span>
                 </div>
             </div>
 
             {{-- Table Container with custom scrollbar and sticky header --}}
-            <div wire:loading.class="blur-sm opacity-60 pointer-events-none" class="relative max-h-[380px] overflow-y-auto custom-scrollbar transition-[filter,opacity] duration-200">
+            <div wire:loading.class="blur-sm opacity-60 pointer-events-none" class="relative lg:max-h-[380px] lg:overflow-y-auto custom-scrollbar transition-[filter,opacity] duration-200">
                 <table class="w-full text-left text-sm text-neutral-300">
                     <thead class="sticky top-0 z-10 border-b border-neutral-800 bg-neutral-950 text-xs font-medium uppercase tracking-wider text-neutral-400">
                         <tr>
                             <th class="px-4 py-2 w-10 text-center">#</th>
-                            <th class="px-4 py-2">Zamestnanec</th>
-                            <th class="px-4 py-2 text-right w-28">Zmeny</th>
+                            <th class="px-4 py-2">Meno</th>
+                            <th class="px-4 py-2 text-right w-28">Dni</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-neutral-800">
@@ -52,12 +52,12 @@
                                             {{ $row->lastname }} {{ Str::substr($row->name, 0, 1) }}.
                                         </span>
                                         @if($isCurrentUser)
-                                            <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold uppercase tracking-wider bg-neutral-700 text-neutral-200">Ja</span>
+                                            <span class="text-xs text-neutral-400">(ja)</span>
                                         @endif
                                     </div>
                                 </td>
                                 <td class="px-4 py-2.5 text-right">
-                                    <span class="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-semibold tabular-nums bg-neutral-800 text-neutral-200 border border-neutral-700">
+                                    <span class="text-sm font-semibold tabular-nums text-neutral-200">
                                         {{ $row->count }} {{ $row->count === 1 ? 'deň' : ($row->count < 5 ? 'dni' : 'dní') }}
                                     </span>
                                 </td>
@@ -72,7 +72,7 @@
             <div class="flex flex-col items-center justify-center py-4 text-neutral-400">
                 <i class="fa-solid fa-user-clock text-xl text-neutral-400 mb-1.5"></i>
                 <p class="text-xs font-medium text-neutral-300">Žiadne zápisy na tento týždeň</p>
-                <p class="text-xs text-neutral-400 mt-0.5">Akonáhle sa niekto zapíše, prehľad sa tu zobrazí.</p>
+                <p class="text-xs text-neutral-400 mt-0.5">Hneď ako sa niekto zapíše, prehľad sa zobrazí tu.</p>
             </div>
         </div>
     @endif

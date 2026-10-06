@@ -102,7 +102,7 @@
                     <button
                         type="submit"
                         class="w-full py-2.5 px-4 text-rose-400 hover:text-white bg-rose-500/10 hover:bg-rose-600/20 border border-rose-500/30 rounded-xl text-xs font-semibold tracking-wide transition flex items-center justify-center gap-2"
-                        onclick="return confirm('Určite chceš deaktivovať tento účet?');"
+                        onclick="return confirm(@js('Deaktivovať účet – '.$user->name.' '.$user->lastname.'? Nebude sa môcť prihlásiť.'));"
                     >
                         <i class="fa-solid fa-user-slash text-xs"></i>
                         <span>Deaktivovať účet</span>

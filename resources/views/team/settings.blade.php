@@ -43,15 +43,15 @@
                     <div class="my-6 border-t border-neutral-800"></div>
 
                     <div class="space-y-4">
-                        <h2 class="text-sm font-semibold uppercase tracking-wider text-brand-400 flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-week text-xs"></i>
-                            Plánovanie & Týždne
+                        <h2 class="text-base font-semibold text-neutral-100 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-week text-xs text-neutral-400" aria-hidden="true"></i>
+                            Plánovanie a týždne
                         </h2>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <!-- Week Start Day -->
                             <div>
-                                <label for="week_start_day" class="block mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">Začiatok týždňa</label>
+                                <label for="week_start_day" class="block mb-2 text-sm font-medium text-neutral-300">Začiatok týždňa</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-neutral-400">
                                         <i class="fa-solid fa-play"></i>
@@ -61,7 +61,7 @@
                                         id="week_start_day"
                                         @disabled(! $canEdit)
                                         required
-                                        class="w-full px-4 py-3 pl-11 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 transition-all duration-200 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500 hover:border-neutral-700 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                        class="w-full px-4 py-3 pl-11 rounded-xl bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-400 transition-all duration-200 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500 hover:border-neutral-700 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         @foreach($weekDays as $dayValue => $dayName)
                                             <option value="{{ $dayValue }}" @selected(old('week_start_day', $settings->week_start_day) == $dayValue)>
@@ -73,7 +73,7 @@
                                         <i class="fa-solid fa-chevron-down text-xs"></i>
                                     </div>
                                 </div>
-                                <p class="text-[11px] text-neutral-400 mt-1">Deň, ktorým sa začína nový pracovný týždeň.</p>
+                                <p class="text-xs text-neutral-400 mt-1">Deň, ktorým sa začína nový pracovný týždeň.</p>
                                 @error('week_start_day')
                                     <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -93,7 +93,7 @@
                                     :disabled="!$canEdit"
                                     required
                                 />
-                                <p class="text-[11px] text-neutral-400 mt-1">Koľko týždňov do budúcna môžu zamestnanci vidieť a zapisovať sa na zmeny.</p>
+                                <p class="text-xs text-neutral-400 mt-1">Koľko týždňov dopredu sa dá v kalendári pozerať a zapisovať.</p>
                             </div>
                         </div>
                     </div>
@@ -102,188 +102,56 @@
                     <div class="my-6 border-t border-neutral-800"></div>
 
                     <div class="space-y-4">
-                        <h2 class="text-sm font-semibold uppercase tracking-wider text-brand-400 flex items-center gap-2">
-                            <i class="fa-solid fa-user-clock text-xs"></i>
-                            Absencie & Uzávierky
+                        <h2 class="text-base font-semibold text-neutral-100 flex items-center gap-2">
+                            <i class="fa-solid fa-user-clock text-xs text-neutral-400" aria-hidden="true"></i>
+                            Absencie a uzávierky
                         </h2>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <!-- Absence Deadline Days -->
-                            <x-form-input
-                                type="number"
-                                name="absence_deadline_days"
-                                label="Uzávierka absencií (dni dopredu)"
-                                placeholder="2"
-                                :value="old('absence_deadline_days', $settings->absence_deadline_days)"
-                                icon="fa-hourglass-half"
-                                min="0"
-                                max="30"
-                                :disabled="!$canEdit"
-                                required
-                            />
+                            <div>
+                                <x-form-input
+                                    type="number"
+                                    name="absence_deadline_days"
+                                    label="Uzávierka absencií (dni)"
+                                    placeholder="2"
+                                    :value="old('absence_deadline_days', $settings->absence_deadline_days)"
+                                    icon="fa-hourglass-half"
+                                    min="0"
+                                    max="30"
+                                    :disabled="!$canEdit"
+                                    required
+                                />
+                                <p class="text-xs text-neutral-400 mt-1">Koľko dní vopred musia brigádnici nahlásiť absenciu. Manažérov sa to netýka.</p>
+                            </div>
 
                             <!-- Stale Absence Deletion Window Days -->
-                            <x-form-input
-                                type="number"
-                                name="stale_absence_deletion_days"
-                                label="Uchovanie neaktívnej absencie pred vymazaním (dní, 0 = bez čakania)"
-                                placeholder="30"
-                                :value="old('stale_absence_deletion_days', $team->staleAbsenceDeletionDays())"
-                                icon="fa-trash-can"
-                                min="0"
-                                max="365"
-                                :disabled="!$canEdit"
-                                required
-                            />
-
-                        </div>
-
-
-                    </div>
-
-                    <div class="my-6 border-t border-neutral-800"></div>
-
-                    <div class="space-y-4">
-                        <h2 class="text-sm font-semibold uppercase tracking-wider text-brand-400 flex items-center gap-2">
-                            <i class="fa-solid fa-scale-balanced text-xs"></i>
-                            Spravodlivosť rozpisu
-                        </h2>
-
-                        <p class="text-[11px] text-neutral-400">
-                            Koľko „váži“ odpracovaný deň. Vyššia váha = deň, na ktorý sa málokto hlási
-                            dobrovoľne - kto ho odpracuje, má to započítané viac. Nižšia váha ako
-                            <strong>1,0</strong> = deň, o ktorý je záujem (typicky víkend) - ten sa počíta za menej,
-                            lebo ho netreba nikomu nanútiť.
-                            Ako <strong>neobľúbený</strong> sa označí deň s váhou nad priemerom týždňa: v ňom sa
-                            zoznam nezaradených zoradí podľa toho, kto takých dní odrobil najmenej - ten je na rade.
-                            Ako <strong>obľúbený</strong> sa označí deň s váhou pod 1,0: v ňom sa zoradí podľa zásluh,
-                            teda kto pre kino odrobil najviac dní a najviac tých neobľúbených. Pri menách sa v oboch
-                            prípadoch zobrazí príslušné číslo, vyššie je vždy vyššie v poradí. Ak sú všetky váhy
-                            rovnaké, neoznačí sa žiadny deň.
-                        </p>
-
-                        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-                            @foreach($weekDays as $dayIndex => $dayName)
-                                <div>
-                                    <label for="fairness_day_weights_{{ $dayIndex }}" class="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-                                        {{ Str::substr($dayName, 0, 3) }}.
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.1"
-                                        min="0.1"
-                                        max="10"
-                                        name="fairness_day_weights[{{ $dayIndex }}]"
-                                        id="fairness_day_weights_{{ $dayIndex }}"
-                                        value="{{ old('fairness_day_weights.'.$dayIndex, $team->fairnessDayWeights()[$dayIndex]) }}"
-                                        @disabled(! $canEdit)
-                                        required
-                                        title="{{ $dayName }}"
-                                        class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-3 text-sm text-white shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60 disabled:cursor-not-allowed disabled:opacity-60"
-                                    >
-                                    @error('fairness_day_weights.'.$dayIndex)
-                                        <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                            @endforeach
-                        </div>
-
-                        @error('fairness_day_weights')
-                            <p class="text-xs text-rose-400">{{ $message }}</p>
-                        @enderror
-
-                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <div>
                                 <x-form-input
                                     type="number"
-                                    name="fairness_window_weeks"
-                                    label="Obdobie hodnotenia (týždne dozadu)"
-                                    placeholder="12"
-                                    :value="old('fairness_window_weeks', $team->fairnessWindowWeeks())"
-                                    icon="fa-clock-rotate-left"
-                                    min="1"
-                                    max="52"
+                                    name="stale_absence_deletion_days"
+                                    label="Vymazanie skončenej absencie (dni)"
+                                    placeholder="30"
+                                    :value="old('stale_absence_deletion_days', $team->staleAbsenceDeletionDays())"
+                                    icon="fa-trash-can"
+                                    min="0"
+                                    max="365"
                                     :disabled="!$canEdit"
                                     required
                                 />
-                                <p class="text-[11px] text-neutral-400 mt-1">Ako ďaleko do minulosti sa počítajú odpracované dni.</p>
+                                <p class="text-xs text-neutral-400 mt-1">Po koľkých dňoch si brigádnik môže vymazať skončenú absenciu. 0 = hneď.</p>
                             </div>
 
-                            <div>
-                                <x-form-input
-                                    type="number"
-                                    step="0.1"
-                                    name="holiday_weight"
-                                    label="Váha sviatku"
-                                    placeholder="1.6"
-                                    :value="old('holiday_weight', $team->holidayWeight())"
-                                    icon="fa-star"
-                                    min="0.1"
-                                    max="10"
-                                    :disabled="!$canEdit"
-                                    required
-                                />
-                                <p class="text-[11px] text-neutral-400 mt-1">
-                                    Váha slovenského štátneho sviatku - platí namiesto váhy jeho dňa v týždni,
-                                    nech vyjde na ktorýkoľvek deň.
-                                </p>
-                            </div>
                         </div>
-                    </div>
 
-                    <div class="my-6 border-t border-neutral-800"></div>
 
-                    <div class="space-y-4" x-data="quickTimesEditor(@js($team->quickTimes()))">
-                        <h2 class="text-sm font-semibold uppercase tracking-wider text-brand-400 flex items-center gap-2">
-                            <i class="fa-solid fa-clock text-xs"></i>
-                            Časy nástupu
-                        </h2>
-                        <p class="text-[11px] text-neutral-400">
-                            Rýchle tlačidlá pri zadávaní času nástupu v rozpise, aby ste nemuseli čas vždy vypisovať ručne.
-                        </p>
-
-                        <table class="w-full text-sm text-left text-neutral-300">
-                            <tbody class="divide-y divide-neutral-800">
-                                <template x-for="(time, index) in times" :key="time">
-                                    <tr>
-                                        <td class="py-2 font-semibold tabular-nums text-white" x-text="time"></td>
-                                        <td class="py-2 text-right">
-                                            <input type="hidden" name="quick_times[]" :value="time">
-                                            @if($canEdit)
-                                                <button type="button" @click="remove(index)" title="Odstrániť čas"
-                                                        class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-300 transition hover:bg-rose-500/20">
-                                                    <i class="fa-solid fa-trash text-[0.65rem]"></i>
-                                                </button>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                </template>
-                                <tr x-show="times.length === 0">
-                                    <td colspan="2" class="py-3 text-center text-neutral-500">Žiadne časy - použijú sa predvolené.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        @if($canEdit)
-                            <div class="flex items-center gap-2">
-                                <input x-ref="newTimeInput" type="text" readonly placeholder="čas"
-                                       class="w-24 cursor-pointer rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-center text-sm tabular-nums text-white shadow-inner focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
-                                <button type="button" @click="add()"
-                                        class="inline-flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition hover:border-brand-500/50">
-                                    <i class="fa-solid fa-plus text-[0.7rem] text-brand-400"></i> Pridať
-                                </button>
-                            </div>
-                        @endif
-
-                        @error('quick_times') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
-                        @error('quick_times.*') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
                     </div>
 
                     @if($canEdit)
                         <div class="pt-4 flex justify-end">
-                            <button type="submit" class="py-3 px-6 bg-neutral-800 hover:bg-neutral-750 active:bg-neutral-850 text-white font-bold rounded-xl text-sm tracking-widest uppercase border border-neutral-700 hover:border-brand-500/60 shadow-lg transition duration-200 flex items-center gap-2 group">
+                            <button type="submit" class="py-2.5 px-5 bg-neutral-100 hover:bg-white text-neutral-900 font-semibold rounded-lg text-sm transition flex items-center gap-2">
+                                <i class="fa-solid fa-floppy-disk text-xs" aria-hidden="true"></i>
                                 <span>Uložiť nastavenia</span>
-                                <i class="fa-solid fa-floppy-disk text-xs text-brand-400"></i>
                             </button>
                         </div>
                     @endif

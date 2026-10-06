@@ -42,6 +42,8 @@ class SignupSummary extends Component
             ->join('users', 'users.id', '=', 'assignments.user_id')
             ->groupBy('users.id', 'users.name', 'users.lastname')
             ->orderByDesc('count')
+            ->orderBy('users.lastname')
+            ->orderBy('users.name')
             ->get([
                 'users.id as user_id',
                 'users.name',

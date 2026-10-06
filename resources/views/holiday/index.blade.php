@@ -1,11 +1,17 @@
+@php
+    // Managers are exempt from the deadline (StoreAbsenceRequest::after). For everyone else the
+    // picker opens on the first day they may still report, instead of a today that always fails.
+    $deadlineDays = auth()->user()->hasPermissionInTeam('absence.manage') ? 0 : $currentTeam->absenceDeadlineDays();
+    $firstAllowedDay = now()->addDays($deadlineDays)->format('Y-m-d');
+@endphp
 <x-layout title="Absencie" description="Nahláste a spravujte svoje absencie a dovolenky.">
     <div
-        x-data="absenceRangePicker('{{ old('date_from', now()->format('Y-m-d')) }}', '{{ old('date_to', now()->format('Y-m-d')) }}', @js($errors->any()))"
+        x-data="absenceRangePicker('{{ old('date_from', $firstAllowedDay) }}', '{{ old('date_to', $firstAllowedDay) }}', @js($errors->any() || request()->boolean('nova')))"
         x-init="$nextTick(() => initFlatpickr())"
         class="container mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-8"
     >
 
-        <x-page-header icon="fa-calendar-days" title="Správa absencií" subtitle="Prehľad a evidencia absencií a dovoleniek.">
+        <x-page-header icon="fa-calendar-days" title="Absencie" subtitle="Dni, kedy nemôžete pracovať.">
             <button @click="openModal = true"
                     aria-haspopup="dialog"
                     :aria-expanded="openModal.toString()"
@@ -28,8 +34,11 @@
                 x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95"
                 class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+                {{-- .self, not .away on the dialog: the date picker lives outside the dialog in the DOM, so
+                     changing its month counted as an outside click and closed the whole form. --}}
+                @click.self="openModal = false"
             >
-                <div @click.away="openModal = false"
+                <div x-trap="openModal"
                      role="dialog"
                      aria-modal="true"
                      aria-labelledby="modal-absence-title"
@@ -47,12 +56,12 @@
                 </div>
 
                 {{-- Form --}}
-                <form action="{{ route('absences.store') }}" method="POST" class="p-6 space-y-5">
+                <form action="{{ route('absences.store') }}" method="POST" class="p-6 space-y-5" @submit="sending = true">
                     @csrf
 
                     {{-- Error Alert --}}
                     @if($errors->any())
-                        <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm space-y-1">
+                        <div role="alert" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm space-y-1">
                             <p class="font-bold flex items-center gap-2">
                                 <i class="fa-solid fa-circle-exclamation text-rose-400"></i>
                                 Chyba pri ukladaní absencie:
@@ -67,21 +76,26 @@
 
                     {{-- Flatpickr Range Select --}}
                     <div>
-                        <label class="block mb-2 text-sm font-semibold text-neutral-200">
-                            Rozsah dátumov absencie <span class="text-rose-400">*</span>
+                        <label for="absence-range" class="block mb-2 text-sm font-semibold text-neutral-200">
+                            Rozsah dátumov absencie <span class="text-rose-400" aria-hidden="true">*</span>
                         </label>
                         <div class="relative">
-                            <input x-ref="rangeInput" type="text" placeholder="Vyberte rozsah dátumov..." aria-label="Rozsah dátumov absencie" class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none cursor-pointer">
+                            <input x-ref="rangeInput" type="text" placeholder="Vyberte rozsah dátumov…" aria-label="Rozsah dátumov absencie" class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer">
                             <input type="hidden" name="date_from" :value="dateFrom">
                             <input type="hidden" name="date_to" :value="dateTo">
                         </div>
-                        <p class="text-xs text-neutral-400 mt-1">Vyberte 1 alebo viac dní trvania absencie.</p>
+                        <p id="absence-range-hint" class="text-xs text-neutral-400 mt-1">
+                            Kliknite na prvý a posledný deň (pri jednom dni dvakrát na ten istý).
+                            @if($deadlineDays > 0)
+                                Absenciu treba nahlásiť aspoň {{ $deadlineDays }} {{ $deadlineDays === 1 ? 'deň' : ($deadlineDays <= 4 ? 'dni' : 'dní') }} vopred.
+                            @endif
+                        </p>
                     </div>
 
                     {{-- Required Reason --}}
                     <div>
                         <label for="reason" class="block mb-2 text-sm font-semibold text-neutral-200">
-                            Dôvod absencie <span class="text-rose-400">*</span>
+                            Dôvod absencie <span class="text-rose-400" aria-hidden="true">*</span>
                         </label>
                         <input
                             type="text"
@@ -89,11 +103,12 @@
                             name="reason"
                             value="{{ old('reason') }}"
                             required
-                            maxlength="255"
-                            placeholder="Napr. dovolenka, PN, lekár, atď."
-                            class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none"
+                            maxlength="500"
+                            aria-describedby="reason-hint"
+                            placeholder="Napr. dovolenka, PN, lekár…"
+                            class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none"
                         >
-                        <p class="text-xs text-neutral-400 mt-1">Maximálne 255 znakov.</p>
+                        <p id="reason-hint" class="text-xs text-neutral-400 mt-1">Maximálne 500 znakov.</p>
                     </div>
 
                     {{-- Action Buttons --}}
@@ -101,8 +116,8 @@
                         <button @click="openModal = false" type="button" class="px-4 py-2.5 text-sm font-semibold text-neutral-300 hover:text-white rounded-lg hover:bg-neutral-800 transition">
                             Zrušiť
                         </button>
-                        <button type="submit" class="px-5 py-2.5 text-sm font-semibold text-neutral-900 bg-neutral-100 hover:bg-white rounded-lg transition shadow-md">
-                            Odoslať žiadosť
+                        <button type="submit" :disabled="sending" class="px-5 py-2.5 text-sm font-semibold text-neutral-900 bg-neutral-100 hover:bg-white rounded-lg transition disabled:opacity-60">
+                            Nahlásiť absenciu
                         </button>
                     </div>
                 </form>

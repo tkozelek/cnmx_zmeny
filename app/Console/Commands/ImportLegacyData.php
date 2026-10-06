@@ -6,7 +6,6 @@ use App\Enums\AbsenceStatus;
 use App\Enums\Role as RoleEnum;
 use App\Models\Absence;
 use App\Models\Assignment;
-use App\Models\Media;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WeekLock;
@@ -21,11 +20,8 @@ use Throwable;
 /**
  * Repeatable import from the legacy production schema (see the `legacy` connection in
  * config/database.php - LEGACY_DB_* in .env) into the rewritten schema. Safe to cron: users
- * and absences are fully replaced from legacy, but assignments are diff-merged rather than
- * wiped, so a position placement made in the rozpis builder (position_id/position_slot_id/
- * start_time/end_time - set by RozpisDay::place() onto the same assignment row) survives a
- * re-run as long as the person is still signed up for that date in legacy. `position_slots`
- * (the day's offered positions) are never touched here at all.
+ * and absences are fully replaced from legacy, while assignments are diff-merged rather than
+ * wiped.
  *
  * Read-only against `legacy`: every call against that connection is a SELECT. This is what
  * makes it safe to point LEGACY_DB_* at a real production database and import prod -> whatever
@@ -90,7 +86,7 @@ class ImportLegacyData extends Command
 
         if (! $this->option('force') && ! $this->confirm(
             "Toto nahradí zamestnancov a absencie tímu '{$team->name}' reálnymi dátami z legacy databázy. ".
-            'Zapísané zmeny sa zlúčia a rozpis pozícií zostane zachovaný. Pokračovať?'
+            'Zapísané zmeny sa zlúčia. Pokračovať?'
         )) {
             return self::SUCCESS;
         }
@@ -98,15 +94,11 @@ class ImportLegacyData extends Command
         DB::transaction(function () use ($team, $legacy): void {
             setPermissionsTeamId($team->id);
 
-            // A few thousand historical rows landing in the activity log would bury the real
-            // edits the rozpis history panel exists to show - same reasoning as SampleAssignmentsSeeder.
-            activity()->withoutLogging(function () use ($team, $legacy): void {
-                $this->clearSeededData($team, $legacy);
-                $userMap = $this->importUsers($team, $legacy);
-                $this->ensureTestUsers($team);
-                $this->importAssignments($legacy, $userMap);
-                $this->importAbsences($legacy, $userMap);
-            });
+            $this->clearSeededData($team, $legacy);
+            $userMap = $this->importUsers($team, $legacy);
+            $this->ensureTestUsers($team);
+            $this->importAssignments($legacy, $userMap);
+            $this->importAbsences($legacy, $userMap);
         });
 
         $this->info('Import dokončený.');
@@ -117,18 +109,16 @@ class ImportLegacyData extends Command
     }
 
     /**
-     * Wipes this team's media/week-locks/absences outright (scoped by the
+     * Wipes this team's week-locks/absences outright (scoped by the
      * setPermissionsTeamId() global scope, see BelongsToTeam), then drops every member who has
      * no counterpart in the legacy data - unless they also belong to another team, in which
      * case only this team's membership goes.
      *
-     * Assignments and position_slots are deliberately NOT cleared here - importAssignments()
-     * diff-merges them instead, so a position placement already made in the rozpis builder
-     * survives a re-run.
+     * Assignments are deliberately NOT cleared here - importAssignments() diff-merges them
+     * instead.
      */
     private function clearSeededData(Team $team, Connection $legacy): void
     {
-        Media::query()->delete();
         WeekLock::query()->delete();
         Absence::query()->delete();
 
@@ -211,12 +201,9 @@ class ImportLegacyData extends Command
      * SQL join, since `legacy` may be a genuinely separate database server that a cross-table
      * join can't reach.
      *
-     * Legacy owns only the signup itself (who, which date, the free-text `popis` note) - never
-     * a position. So on a row that already exists, only `note` is refreshed; `position_id`,
-     * `position_slot_id`, `start_time` and `end_time` (written onto this same row by
-     * RozpisDay::place() in the builder) are left exactly as they were. A signup missing from
-     * this legacy pull gets deleted, since nobody keeps a position they are no longer signed up
-     * for; a new signup is inserted bare, same as before ("admin fills in the position later").
+     * Legacy owns the signup itself (who, which date, the free-text `popis` note). On a row that
+     * already exists only `note` is refreshed, a signup missing from this legacy pull gets
+     * deleted, and a new signup is inserted.
      *
      * @param  array<int, int>  $userMap
      */

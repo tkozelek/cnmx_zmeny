@@ -1,4 +1,4 @@
-<nav class="hidden md:flex items-center gap-2">
+<nav class="hidden lg:flex items-center gap-2">
     @if(auth()->check() && auth()->user()->hasVerifiedEmail())
         <x-nav-link
             route="calendar.index"
@@ -45,8 +45,6 @@
 
         <div
             x-data="{ openProfile: false }"
-            @mouseenter="openProfile = true"
-            @mouseleave="openProfile = false"
             @click.outside="openProfile = false"
             @keydown.escape.window="openProfile = false"
             class="relative py-1"
@@ -101,15 +99,6 @@
                         </a>
                     @endcan
 
-                    @can('viewAny', \App\Models\Position::class)
-                        <a
-                            href="{{ route('positions.index') }}"
-                            class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
-                        >
-                            <i class="fa-solid fa-list-check text-xs text-brand-400"></i>
-                            Pozície
-                        </a>
-                    @endcan
 
                     <a
                         href="{{ route('settings.password.edit') }}"

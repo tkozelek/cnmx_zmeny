@@ -35,7 +35,6 @@ class AssignmentSignupTest extends TestCase
         $this->assertDatabaseHas('assignments', [
             'team_id' => $team->id,
             'user_id' => $user->id,
-            'position_id' => null,
             'date' => $date,
             // Null created_by is what marks this as self-signup rather than an admin placing them.
             'created_by' => null,

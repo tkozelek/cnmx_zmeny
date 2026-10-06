@@ -8,9 +8,7 @@ use Carbon\CarbonInterface;
 /**
  * Slovak statutory public holidays (štátne sviatky a dni pracovného pokoja).
  *
- * Feeds FairnessService::dayWeight(): a holiday is priced by the team's configured
- * holiday_weight regardless of which weekday it falls on that year, instead of its usual
- * weekday weight. No ext-calendar dependency (not declared in composer.json, and not
+ * Flags a day card as a sviatok. No ext-calendar dependency (not declared in composer.json, and not
  * guaranteed enabled in production) - Easter Sunday is computed with the standard Anonymous
  * Gregorian algorithm instead of PHP's easter_date().
  */

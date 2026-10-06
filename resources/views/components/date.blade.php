@@ -4,7 +4,7 @@
     $navBtnStyle = 'inline-flex h-11 sm:h-12 w-11 sm:w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-600 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink-0 leading-none';
 
     $triggerStyle = $locked
-        ? 'border-amber-500/80 bg-neutral-900 ring-1 ring-amber-500/30 hover:border-amber-400 text-white'
+        ? 'border-rose-500/80 bg-neutral-900 hover:border-rose-400 text-white'
         : 'border-neutral-700 bg-neutral-900 hover:border-neutral-600 hover:text-white';
 @endphp
 
@@ -34,13 +34,13 @@
         >
             <i class="fa-regular fa-calendar text-xs sm:text-base text-neutral-400 shrink-0"></i>
             <span class="truncate tracking-wide font-bold">
-                {{ $weekStart->format('d.m.') }} - {{ $weekEnd->format('d.m.Y') }}
+                {{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}
             </span>
 
             @if($locked)
-                <span class="inline-flex items-center gap-1 rounded bg-amber-600/90 border border-amber-500/40 px-1.5 py-0.5 text-[10px] sm:text-xs font-bold text-amber-100 shrink-0 shadow-sm">
-                    <i class="fa-solid fa-lock text-[10px]"></i>
-                    <span class="hidden sm:inline">Zamknutý</span>
+                <span class="inline-flex items-center gap-1 rounded bg-rose-700 px-1.5 py-0.5 text-xs font-semibold text-white shrink-0">
+                    <i class="fa-solid fa-lock text-[10px]" aria-hidden="true"></i>
+                    <span class="sr-only sm:not-sr-only">Zamknutý</span>
                 </span>
             @endif
 
@@ -59,7 +59,7 @@
             <i class="fa-solid fa-chevron-right text-sm sm:text-base leading-none m-auto"></i>
         </a>
     @else
-        <span class="{{ $navBtnStyle }} cursor-not-allowed opacity-30" aria-hidden="true">
+        <span class="{{ $navBtnStyle }} cursor-not-allowed opacity-30" aria-hidden="true" title="Ďalšie týždne ešte nie sú otvorené.">
             <i class="fa-solid fa-chevron-right text-sm sm:text-base leading-none m-auto"></i>
         </span>
     @endif

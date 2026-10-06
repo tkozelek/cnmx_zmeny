@@ -16,9 +16,9 @@ return [
         // Shared by every form that takes a person's name - see the NO_FORMULA_PREFIX rule.
         'name.not_regex' => 'Meno nesmie začínať znakom =, +, - ani @.',
         'lastname.not_regex' => 'Priezvisko nesmie začínať znakom =, +, - ani @.',
-        'email.required' => 'Emailová adresa je potrebná.',
-        'email.email' => 'Emailová adresa nie je platná.',
-        'email.unique' => 'Emailová adresa už bola použitá.',
+        'email.required' => 'E-mailová adresa je potrebná.',
+        'email.email' => 'E-mailová adresa nie je platná.',
+        'email.unique' => 'E-mailová adresa už bola použitá.',
         'password.required' => 'Heslo je potrebné.',
         'password.confirmed' => 'Heslá sa nezhodujú.',
         'password.min' => 'Heslo je príliš krátke. Musí mať aspoň 8 znakov.',
@@ -28,7 +28,7 @@ return [
         'new_password.required' => 'Nové heslo je potrebné.',
         'new_password.confirmed' => 'Heslá sa nezhodujú.',
         'new_password.min' => 'Heslo je príliš krátke. Musí mať aspoň 8 znakov.',
-        'role.required' => 'Vyber rolu.',
+        'role.required' => 'Vyberte rolu.',
         'role.in' => 'Neznáma rola.',
     ],
 ];

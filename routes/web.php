@@ -13,12 +13,7 @@ use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Calendar\ScheduleExportController;
 use App\Http\Controllers\Calendar\WeekLockController;
 use App\Http\Controllers\HelpController;
-use App\Http\Controllers\Media\MediaController;
-use App\Http\Controllers\Position\PositionController;
 use App\Http\Controllers\Profile\ProfileController;
-use App\Http\Controllers\Rozpis\RozpisController;
-use App\Http\Controllers\Rozpis\RozpisExportController;
-use App\Http\Controllers\Rozpis\RozpisPublishController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Team\TeamSettingController;
@@ -129,15 +124,13 @@ Route::middleware('tenant')->group(function () {
 
     Route::post('/kino/{team}', TeamSwitchController::class)->name('teams.switch');
 
-    Route::get('/subor/{media}/download', [MediaController::class, 'download'])->name('media.download');
-
     /*
     |----------------------------------------------------------------------
     | Admin
     |----------------------------------------------------------------------
-    | Authorized in the controller, not by `role:admin` middleware - same reasoning as the
-    | rozpis/positions routes below. There is no single "admin" role any more: Manager and
-    | HeadManager both reach these, gated by the permission each one actually holds.
+    | Authorized in the controller, not by `role:admin` middleware. There is no single "admin"
+    | role any more: Manager and HeadManager both reach these, gated by the permission each one
+    | actually holds.
     */
     Route::prefix('/admin/pouzivatelia')->name('admin.users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
@@ -156,37 +149,6 @@ Route::middleware('tenant')->group(function () {
         Route::get('/{user}', 'show')->name('profile.show');
     });
 
-    Route::post('/subory', [MediaController::class, 'store'])->name('media.store');
-    Route::delete('/subor/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
-    Route::patch('/subor/{media}/visibility', [MediaController::class, 'toggleVisibility'])
-        ->name('media.visibility');
-
     Route::get('/sprava-kina', [TeamSettingController::class, 'edit'])->name('team.settings.edit');
     Route::put('/sprava-kina', [TeamSettingController::class, 'update'])->name('team.settings.update');
-
-    /*
-    |----------------------------------------------------------------------
-    | Positions & the rozpis builder
-    |----------------------------------------------------------------------
-    | Authorized in the controller rather than by `role:admin` middleware — same as
-    | /sprava-kina above. The middleware form would lock out the `manager` role even
-    | though the policies already grant it these permissions.
-    */
-    Route::get('/admin/pozicie', [PositionController::class, 'index'])->name('positions.index');
-
-    Route::get('/tyzden/{date}/rozpis', [RozpisController::class, 'show'])->name('rozpis.show');
-    Route::post('/tyzden/{date}/rozpis/kopirovat', [RozpisController::class, 'copy'])->name('rozpis.copy');
-    Route::post('/tyzden/{date}/rozpis/kopirovat-tyzden', [RozpisController::class, 'copyWeek'])->name('rozpis.copy-week');
-
-    /*
-    | The published rozpis. Open to every member — the controller decides whether this week is
-    | released yet, because "not published" is a redirect with an explanation, not a 403.
-    */
-    Route::get('/tyzden/{date}/rozpis/zmeny', [RozpisController::class, 'published'])->name('rozpis.published');
-
-    Route::post('/tyzden/{date}/rozpis/zverejnit', [RozpisPublishController::class, 'store'])->name('rozpis.publish');
-    Route::delete('/tyzden/{date}/rozpis/zverejnit', [RozpisPublishController::class, 'destroy'])->name('rozpis.unpublish');
-
-    Route::get('/tyzden/{date}/rozpis/export', RozpisExportController::class)->name('rozpis.export');
-
 });
