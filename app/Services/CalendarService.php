@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\Role;
 use App\Models\Absence;
 use App\Models\Assignment;
-use App\Models\Media;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WeekLock;
@@ -28,7 +28,7 @@ class CalendarService
         $canViewAbsences = $viewer->hasPermissionInTeam('absence.view', $team);
 
         // Preload all assignments for the week in 1 query to prevent N+1 queries across the 7 DayCards.
-        $weekAssignments = Assignment::with(['user', 'position'])
+        $weekAssignments = Assignment::with('user')
             ->betweenDates($from, $to)
             ->get()
             ->groupBy(fn (Assignment $a): string => $a->date->toDateString());
@@ -38,22 +38,46 @@ class CalendarService
             ->map(fn ($ws) => $ws instanceof CarbonInterface ? $ws->toDateString() : (string) $ws)
             ->toArray();
 
-        // One row answers both questions: a week is locked when it exists, and published when it
-        // also carries a timestamp. Publication only ever happens to a locked week.
-        $lock = WeekLock::forWeek($team->getKey(), $weekStart);
-
         return [
             'weekStart' => $weekStart,
             'weekEnd' => $to,
             'days' => $this->weeks->days($weekStart),
             'weekAssignments' => $weekAssignments,
-            'locked' => $lock !== null,
-            'rozpisPublished' => (bool) $lock?->isRozpisPublished(),
+            'locked' => WeekLock::locked($team->getKey(), $weekStart),
             'lockedWeekStarts' => $lockedWeekStarts,
-            'media' => $this->media($weekStart, $canViewAbsences),
             'absences' => $canViewAbsences ? $this->absences($from, $to) : collect(),
+            'available' => $viewer->hasPermissionInTeam('assignment.lock', $team) ? $this->available($team, $weekStart) : [],
         ];
 
+    }
+
+    /**
+     * Per day, every active brigádnik with no absence covering it - the pool a manager draws
+     * from (losovanie). Who already signed up is subtracted by DayCard, so it stays current
+     * as people sign up and withdraw.
+     *
+     * @return array<string, array<int, string>> Y-m-d => [user id => "Priezvisko M."]
+     */
+    private function available(Team $team, CarbonImmutable $weekStart): array
+    {
+        [$from, $to] = $this->weeks->range($weekStart);
+
+        $employees = $team->activeHoldersOf(Role::Employee);
+
+        $absencesByUser = Absence::whereIn('user_id', $employees->modelKeys())
+            ->overlapping($from, $to)
+            ->get()
+            ->groupBy('user_id');
+
+        return $this->weeks->days($weekStart)
+            ->mapWithKeys(fn (CarbonImmutable $day): array => [
+                $day->toDateString() => $employees
+                    ->reject(fn (User $user): bool => ($absencesByUser[$user->id] ?? collect())
+                        ->contains(fn (Absence $absence): bool => $absence->covers($day)))
+                    ->mapWithKeys(fn (User $user): array => [$user->id => (string) $user])
+                    ->all(),
+            ])
+            ->all();
     }
 
     /**
@@ -68,16 +92,5 @@ class CalendarService
                 fn (CarbonImmutable $day): bool => $absence->covers($day)
             ))
             ->values();
-    }
-
-    /**
-     * @return Collection<int, Media>
-     */
-    private function media(CarbonImmutable $weekStart, bool $isAdmin): Collection
-    {
-        return Media::forWeek($weekStart)
-            ->unless($isAdmin, fn ($query) => $query->visible())
-            ->latest()
-            ->get();
     }
 }

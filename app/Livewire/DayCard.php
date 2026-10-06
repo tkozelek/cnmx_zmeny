@@ -5,9 +5,13 @@ namespace App\Livewire;
 use App\Models\Assignment;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\WeekLock;
 use App\Services\SlovakHolidays;
+use App\Services\WeekService;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -25,13 +29,25 @@ class DayCard extends Component
     public bool $locked = false;
 
     /** Preloaded assignments passed from parent page on initial load to eliminate N+1 queries. */
+    #[Locked]
     public ?Collection $initialAssignments = null;
+
+    /**
+     * Managers only: active brigádnici with no absence on this day, user id => name. Empty for
+     * everyone else. See CalendarService::available().
+     *
+     * @var array<int, string>
+     */
+    #[Locked]
+    public array $available = [];
 
     public function signUp(): void
     {
         $team = app(Team::class);
 
-        $this->authorize('create', [Assignment::class, $team, $this->day()]);
+        if (! $this->allowed(Gate::inspect('create', [Assignment::class, $team, $this->day()]))) {
+            return;
+        }
 
         Assignment::firstOrCreate(
             [
@@ -47,7 +63,7 @@ class DayCard extends Component
         unset($this->assignments, $this->mine);
 
         $this->dispatch('assignment-updated')->to(SignupSummary::class);
-        $this->dispatch('toast', message: 'Úspešne zapísaný na zmenu.', type: 'success');
+        $this->dispatch('toast', message: 'Zapísali ste sa na '.$this->dayCarbon->format('d.m.'), type: 'success');
     }
 
     public function withdraw(): void
@@ -61,10 +77,11 @@ class DayCard extends Component
 
     public function remove(Assignment $assignment): void
     {
-        $this->authorize('delete', $assignment);
+        if (! $this->allowed(Gate::inspect('delete', $assignment))) {
+            return;
+        }
 
         $isOwn = $assignment->user_id === auth()->id();
-        $targetName = $assignment->user ? trim($assignment->user->name.' '.$assignment->user->lastname) : 'Používateľ';
 
         $assignment->delete();
 
@@ -72,11 +89,34 @@ class DayCard extends Component
 
         $this->dispatch('assignment-updated')->to(SignupSummary::class);
 
-        if ($isOwn) {
-            $this->dispatch('toast', message: 'Úspešne odpísaný zo zmeny.', type: 'info');
-        } else {
-            $this->dispatch('toast', message: "Používateľ {$targetName} bol odpísaný.", type: 'info');
+        $day = $this->dayCarbon->format('d.m.');
+
+        $this->dispatch('toast', type: 'info', message: $isOwn
+            ? "Odpísali ste sa z {$day}"
+            : "Zápis zrušený: {$assignment->user}, {$day}");
+    }
+
+    /**
+     * A refusal the card can explain (an absence, a week locked after the page loaded) becomes a
+     * toast instead of Livewire's full-page 403 modal. One without a message is tampering - a
+     * request the UI never offers - and still throws.
+     */
+    private function allowed(Response $response): bool
+    {
+        if ($response->allowed()) {
+            return true;
         }
+
+        if ($response->message() === null) {
+            $response->authorize();
+        }
+
+        $team = app(Team::class);
+        $this->locked = WeekLock::locked($team->getKey(), app(WeekService::class)->start($team, $this->day()));
+
+        $this->dispatch('toast', message: $response->message(), type: 'error');
+
+        return false;
     }
 
     /**
@@ -89,13 +129,35 @@ class DayCard extends Component
             $assignments = $this->initialAssignments;
             $this->initialAssignments = null;
 
-            return $assignments->sortBy(fn (Assignment $a): string => (string) $a->user);
+            return $this->sortedByName($assignments);
         }
 
-        return Assignment::with(['user', 'position'])
-            ->where('date', $this->date)
-            ->get()
-            ->sortBy(fn (Assignment $a): string => (string) $a->user);
+        return $this->sortedByName(Assignment::with('user')->where('date', $this->date)->get());
+    }
+
+    /**
+     * Slovak alphabetical order - a byte sort puts "Ďurčová" after "Zeman".
+     *
+     * @param  Collection<int, Assignment>  $assignments
+     * @return Collection<int, Assignment>
+     */
+    private function sortedByName(Collection $assignments): Collection
+    {
+        // ponytail: falls back to a byte sort on a server without ext-intl.
+        $compare = class_exists(\Collator::class) ? (new \Collator('sk_SK'))->compare(...) : strcmp(...);
+
+        return $assignments->sort(fn (Assignment $a, Assignment $b): int => $compare((string) $a->user, (string) $b->user));
+    }
+
+    /**
+     * Who could still be drawn for this day: available and not signed up yet.
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function drawable(): array
+    {
+        return array_diff_key($this->available, array_flip($this->assignments->pluck('user_id')->all()));
     }
 
     #[Computed]
@@ -148,9 +210,10 @@ class DayCard extends Component
         };
     }
 
+    /** The × next to a name: a manager taking somebody else off the day. Your own row has the big button. */
     public function canRemove(Assignment $assignment): bool
     {
-        return ! $this->locked && ($assignment->user_id === auth()->id() || $this->isAdmin);
+        return ! $this->locked && $this->isAdmin && $assignment->user_id !== auth()->id();
     }
 
     public function render()

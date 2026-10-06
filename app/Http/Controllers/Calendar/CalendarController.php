@@ -38,7 +38,7 @@ class CalendarController extends Controller
         return view('calendar.index', array_merge(
             $this->calendar->forWeek($team, $weekStart, $request->user()),
             [
-                'title' => 'ZAPISOVANIE',
+                'title' => 'Týždeň '.$weekStart->format('d.m.').' – '.$this->weeks->end($weekStart)->format('d.m.Y'),
                 'previousWeek' => $this->weeks->previous($weekStart),
 
                 // Null past the team's week_lookahead, so the view simply hides the arrow

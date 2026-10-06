@@ -50,7 +50,7 @@ class RegisterController extends Controller
         return to_route('login')->with([
             'registered_email' => $user->email,
             'show_registration_modal' => true,
-            'message' => 'Účet vytvorený. Poslali sme ti overovací e-mail - potvrď ho a potom ťa schváli vedúci.',
+            'message' => 'Účet bol vytvorený. Poslali sme vám overovací e-mail – po overení vás ešte schváli manažér kina.',
         ]);
     }
 

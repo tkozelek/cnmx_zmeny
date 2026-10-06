@@ -37,7 +37,7 @@ class LoginTest extends TestCase
         $this->from(route('login'))
             ->post(route('login.auth'), ['email' => $user->email, 'password' => 'wrong-password'])
             ->assertRedirect(route('login'))
-            ->assertSessionHasErrors(['email' => 'Nesprávny email alebo heslo.']);
+            ->assertSessionHasErrors(['email' => 'Nesprávny e-mail alebo heslo.']);
 
         $this->assertGuest();
     }
@@ -64,7 +64,7 @@ class LoginTest extends TestCase
         // Not merely flashed - actually visible when the page comes back.
         $this->get(route('login'))
             ->assertOk()
-            ->assertSee('Nesprávny email alebo heslo.');
+            ->assertSee('Nesprávny e-mail alebo heslo.');
     }
 
     /**
@@ -96,7 +96,7 @@ class LoginTest extends TestCase
         $this->get(route('calendar.index'))->assertRedirect(route('login'));
         $this->assertGuest();
 
-        $this->get(route('login'))->assertOk()->assertSee('čaká sa na schválenie vedúcim', false);
+        $this->get(route('login'))->assertOk()->assertSee('čaká na schválenie manažérom kina', false);
     }
 
     /**
@@ -203,7 +203,7 @@ class LoginTest extends TestCase
         $this->get(route('verification.verified'))
             ->assertOk()
             ->assertSee('E-mail bol úspešne overený')
-            ->assertSee('schválenie vedúcim kina (manažérom)');
+            ->assertSee('čaká na schválenie manažérom kina');
     }
 
     /** Logged in but unverified: not the real app nav, and not the guest login/register links either. */

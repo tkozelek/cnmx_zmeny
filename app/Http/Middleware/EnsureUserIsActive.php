@@ -37,7 +37,7 @@ class EnsureUserIsActive
         }
 
         if ($user->approvedTeams()->isEmpty()) {
-            return $this->reject($request, 'E-mail máš overený, čaká sa na schválenie vedúcim.');
+            return $this->reject($request, 'E-mail máte overený, účet ešte čaká na schválenie manažérom kina.');
         }
 
         return $next($request);

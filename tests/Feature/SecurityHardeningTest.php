@@ -6,13 +6,9 @@ use App\Enums\Role;
 use App\Http\Kernel;
 use App\Http\Middleware\TrustHosts;
 use App\Livewire\UsersDataTable;
-use App\Models\Media;
 use App\Models\User;
-use App\Services\MediaService;
 use App\Traits\EscapesSpreadsheetFormulas;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -133,23 +129,6 @@ class SecurityHardeningTest extends TestCase
         );
     }
 
-    /** storage:link exposes the whole `public` disk at /storage, bypassing MediaPolicy entirely. */
-    public function test_uploads_land_on_a_private_disk_and_start_hidden(): void
-    {
-        $team = $this->tenant();
-        $this->actingAs($this->member($team, Role::Manager));
-
-        Storage::fake('local');
-        Storage::fake('public');
-
-        $media = app(MediaService::class)->store(UploadedFile::fake()->create('rozpis.pdf', 10, 'application/pdf'));
-
-        $this->assertSame('local', $media->disk, 'The public disk is web-reachable once linked.');
-        $this->assertFalse($media->is_visible, 'A new attachment is manager-only until shared.');
-        Storage::disk('local')->assertExists($media->path);
-        Storage::disk('public')->assertMissing($media->path);
-    }
-
     /** A blocked account could still authenticate and use the auth-only verification endpoints. */
     public function test_a_blocked_account_cannot_use_the_verification_endpoints(): void
     {
@@ -162,38 +141,6 @@ class SecurityHardeningTest extends TestCase
         $this->actingAs(User::factory()->unverified()->create())
             ->get(route('verification.notice'))
             ->assertOk();
-    }
-
-    /**
-     * The data migration that moves the already-uploaded files across.
-     *
-     * Worth a test because it moves bytes, not rows: a mistake here loses a cinema's
-     * attachments. Covers both shapes it will meet in production - a row with a real file
-     * behind it, and a row whose file has already gone missing.
-     */
-    public function test_the_migration_moves_existing_files_off_the_public_disk(): void
-    {
-        $team = $this->tenant();
-        $user = $this->member($team);
-
-        Storage::fake('local');
-        Storage::fake('public');
-        Storage::disk('public')->put('uploads/legacy.pdf', 'PDF-BYTES');
-
-        $moved = $this->legacyMedia($team->id, $user->id, 'uploads/legacy.pdf');
-        $orphan = $this->legacyMedia($team->id, $user->id, 'uploads/already-gone.pdf');
-
-        $this->runMediaDiskMigration();
-
-        $this->assertSame('local', $moved->fresh()->disk);
-        $this->assertSame('PDF-BYTES', Storage::disk('local')->get('uploads/legacy.pdf'));
-        $this->assertFalse(
-            Storage::disk('public')->exists('uploads/legacy.pdf'),
-            'The point of the migration is that nothing is left on the web-reachable disk.',
-        );
-
-        // A missing file must not stop the run, and the row must stop naming the old disk.
-        $this->assertSame('local', $orphan->fresh()->disk);
     }
 
     /**
@@ -255,26 +202,5 @@ class SecurityHardeningTest extends TestCase
         }
 
         return $changes;
-    }
-
-    private function legacyMedia(int $teamId, int $userId, string $path): Media
-    {
-        return Media::create([
-            'team_id' => $teamId,
-            'user_id' => $userId,
-            'disk' => 'public',
-            'path' => $path,
-            'filename' => basename($path),
-            'original_name' => basename($path),
-            'mime_type' => 'application/pdf',
-            'size' => 9,
-        ]);
-    }
-
-    private function runMediaDiskMigration(): void
-    {
-        $migration = require database_path('migrations/2026_09_11_120000_move_media_off_the_public_disk.php');
-
-        $migration->up();
     }
 }

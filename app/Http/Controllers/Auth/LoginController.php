@@ -28,7 +28,7 @@ class LoginController extends Controller
     {
         if (! auth()->attempt($request->validated(), $request->boolean('remember'))) {
             return back()
-                ->withErrors(['email' => 'Nesprávny email alebo heslo.'])
+                ->withErrors(['email' => 'Nesprávny e-mail alebo heslo.'])
                 ->onlyInput('email');
         }
 
@@ -53,6 +53,6 @@ class LoginController extends Controller
             $user->forceFill(['password' => $request->string('password')->value()])->save();
         }
 
-        return to_route('calendar.index')->with('message', 'Úspešne prihlásený.');
+        return to_route('calendar.index')->with('message', 'Prihlásenie prebehlo úspešne.');
     }
 }

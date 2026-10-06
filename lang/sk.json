@@ -1,13 +1,18 @@
 {
-    "The :attribute must contain at least one letter.": ":attribute musí obsahovať minimálne jedno písmeno.",
-    "The :attribute must contain at least one number.": ":attribute musí obsahovať minimálne jedno číslo.",
-    "The :attribute must contain at least one symbol.": ":attribute musí obsahovať minimálne jeden znak.",
-    "The :attribute must contain at least one uppercase and one lowercase letter.": ":attribute musí obsahovať minimálne jedno veľké a jedno malé písmeno.",
-    "The given :attribute has appeared in a data leak. Please choose a different :attribute.": ":attribute nie je bezpečné. Prosím zvoľte iné heslo.",
+    "The :attribute must contain at least one letter.": ":attribute musí obsahovať aspoň jedno písmeno.",
+    "The :attribute must contain at least one number.": ":attribute musí obsahovať aspoň jedno číslo.",
+    "The :attribute must contain at least one symbol.": ":attribute musí obsahovať aspoň jeden špeciálny znak.",
+    "The :attribute must contain at least one uppercase and one lowercase letter.": ":attribute musí obsahovať aspoň jedno veľké a jedno malé písmeno.",
+    "The given :attribute has appeared in a data leak. Please choose a different :attribute.": ":attribute sa objavilo v úniku údajov. Zvoľte iné heslo.",
 
-    "Hello!": "Ahoj!",
+    "Hello!": "Dobrý deň,",
     "Whoops!": "Pozor!",
     "Regards,": "S pozdravom,",
-    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Ak sa ti tlačidlo \":actionText\" nedarí kliknúť, skopíruj a vlož odkaz nižšie\npriamo do prehliadača:",
-    "All rights reserved.": "Všetky práva vyhradené."
+    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Ak tlačidlo „:actionText“ nefunguje, skopírujte odkaz nižšie\na vložte ho do prehliadača:",
+    "All rights reserved.": "Všetky práva vyhradené.",
+
+    "Payment Required": "Vyžaduje sa platba",
+    "Page Expired": "Platnosť stránky vypršala",
+    "Server Error": "Chyba servera",
+    "Service Unavailable": "Aplikácia je dočasne nedostupná"
 }

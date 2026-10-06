@@ -5,13 +5,11 @@ namespace App\Providers;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\SetCurrentTeam;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pulse\Facades\Pulse;
 use Livewire\Livewire;
-use Spatie\Activitylog\Models\Activity;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,7 +21,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->persistTenantMiddlewareThroughLivewire();
-        $this->stampActivityWithTeamAndDay();
 
         Builder::macro('search', function ($field, $string) {
             return $string ? $this->where($field, 'like', '%'.$string.'%') : $this;
@@ -49,37 +46,6 @@ class AppServiceProvider extends ServiceProvider
      * `app(Team::class)` builds an empty model. That fails open - a component would read and
      * write across every cinema - so it has to be registered explicitly.
      */
-    /**
-     * Record which cinema an activity belongs to, and which day of the plan it touched.
-     *
-     * Copied onto the activity rather than read back off the subject, because the edits most worth
-     * auditing are the deletions - by the time anyone reads the history, that row is gone. The
-     * subject is still in memory here, which is the whole reason this hangs off `creating`.
-     *
-     * Registered once for every logged model rather than per model: activitylog v5 has no
-     * per-model hook into `properties`, and team scoping is an application-wide concern anyway.
-     */
-    private function stampActivityWithTeamAndDay(): void
-    {
-        Activity::creating(function (Activity $activity): void {
-            $subject = $activity->subject;
-
-            if (! $subject instanceof Model) {
-                return;
-            }
-
-            $activity->properties = collect($activity->properties ?? [])->merge(array_filter([
-                'team_id' => $subject->team_id ?? null,
-                // Y-m-d, so filtering a week is one whereBetween. Null on a model with no day.
-                'date' => $subject->date?->toDateString(),
-                // Who the row is about. Not derivable from the diff: logOnlyDirty strips every
-                // column that did not change, so moving somebody between slots records the slot
-                // and not the person - and a deleted row has no subject left to ask afterwards.
-                'user_id' => $subject->user_id ?? null,
-            ], fn (mixed $value): bool => $value !== null));
-        });
-    }
-
     private function persistTenantMiddlewareThroughLivewire(): void
     {
         Livewire::addPersistentMiddleware([

@@ -33,7 +33,7 @@ class SetCurrentTeam
         $user = $request->user();
 
         if (! $user) {
-            abort_if(! $optional, 403, 'Nepatríš do žiadneho kina.');
+            abort_if(! $optional, 403, 'Nie ste členom žiadneho kina.');
 
             return $next($request);
         }
@@ -51,7 +51,7 @@ class SetCurrentTeam
         }
 
         if (! $team instanceof Team) {
-            abort_if(! $optional, 403, 'Nepatríš do žiadneho kina.');
+            abort_if(! $optional, 403, 'Nie ste členom žiadneho kina.');
 
             return $next($request);
         }

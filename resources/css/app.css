@@ -28,9 +28,28 @@ html {
     scroll-behavior: smooth;
 }
 
-.dz-success-mark svg g path{
-    fill: #198754 !important;
+/*
+ * One visible keyboard-focus style everywhere. Many controls carry `focus:outline-none`
+ * with nothing in its place - hence !important, which a `focus-visible:outline-offset-*`
+ * utility can still tune (e.g. inside an overflow-hidden card).
+ */
+:where(a, button, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid rgb(var(--color-brand-400)) !important;
+    outline-offset: 2px;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
 
 body {
     font-family: 'Inter', sans-serif;
@@ -148,6 +167,14 @@ body {
     border-top: none !important;
 }
 
+.draw-list {
+    display: none;
+}
+
+.show-draw .draw-list {
+    display: block;
+}
+
 /* Custom Flatpickr Neutral Dark Styling */
 .flatpickr-calendar {
     @apply bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl text-neutral-200 !important;
@@ -173,6 +200,26 @@ body {
     max-width: 308px !important;
 }
 
+/* At 320px the fixed 334px calendar would widen the page - let it take the screen width.
+   After the fixed widths above on purpose: same specificity, so the later rule wins. */
+@media (max-width: 359px) {
+    .flatpickr-calendar {
+        width: calc(100vw - 1rem) !important;
+        min-width: 0 !important;
+        padding: 8px !important;
+    }
+
+    .flatpickr-innerContainer,
+    .flatpickr-rContainer,
+    .flatpickr-days,
+    .dayContainer,
+    .flatpickr-weekdays {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+}
+
 .flatpickr-calendar.arrowTop:before,
 .flatpickr-calendar.arrowTop:after {
     border-bottom-color: #171717 !important;
@@ -188,6 +235,14 @@ body {
     @apply flex items-center justify-between mb-3 px-1 bg-transparent border-b border-neutral-800 pb-2 relative !important;
     width: 308px !important;
     margin: 0 auto !important;
+}
+
+/* The 320px override for the month header - see the flatpickr-calendar one above. */
+@media (max-width: 359px) {
+    .flatpickr-months,
+    .flatpickr-weekdaycontainer {
+        width: 100% !important;
+    }
 }
 
 .flatpickr-months .flatpickr-month {
@@ -302,17 +357,17 @@ span.flatpickr-weekday {
 
 /* 2. Locked Weeks (closed signups) */
 .flatpickr-day.is-locked-week-day {
-    @apply bg-amber-950/40 text-amber-300/90 font-medium border-y border-amber-500/30 rounded-none !important;
+    @apply bg-rose-950/40 text-rose-300/90 font-medium border-y border-rose-500/30 rounded-none !important;
 }
 
 .flatpickr-day.is-locked-week-day.is-locked-week-start,
 .flatpickr-day.is-locked-week-day:first-child {
-    @apply rounded-l-md border-l border-amber-500/30 !important;
+    @apply rounded-l-md border-l border-rose-500/30 !important;
 }
 
 .flatpickr-day.is-locked-week-day.is-locked-week-end,
 .flatpickr-day.is-locked-week-day:last-child {
-    @apply rounded-r-md border-r border-amber-500/30 !important;
+    @apply rounded-r-md border-r border-rose-500/30 !important;
 }
 
 /* 3. Hovering over weeks */
@@ -337,19 +392,19 @@ span.flatpickr-weekday {
 }
 
 .flatpickr-day.week-hover-locked {
-    @apply bg-amber-900/60 text-amber-100 border-y border-amber-400/60 !important;
+    @apply bg-rose-900/60 text-rose-100 border-y border-rose-400/60 !important;
 }
 
 .flatpickr-day.week-hover-locked.is-week-start,
 .flatpickr-day.week-hover-locked.is-locked-week-start,
 .flatpickr-day.week-hover-locked:first-child {
-    @apply rounded-l-md border-l border-amber-400/60 !important;
+    @apply rounded-l-md border-l border-rose-400/60 !important;
 }
 
 .flatpickr-day.week-hover-locked.is-week-end,
 .flatpickr-day.week-hover-locked.is-locked-week-end,
 .flatpickr-day.week-hover-locked:last-child {
-    @apply rounded-r-md border-r border-amber-400/60 !important;
+    @apply rounded-r-md border-r border-rose-400/60 !important;
 }
 
 /* 4. Currently Viewed Active Week */
@@ -369,29 +424,21 @@ span.flatpickr-weekday {
 
 /* Currently Viewed Active Week if also locked */
 .flatpickr-day.is-active-week-day.is-locked-week-day {
-    @apply bg-amber-600 text-white font-bold rounded-none border-y-2 border-amber-300 shadow-md !important;
+    @apply bg-rose-700 text-white font-bold rounded-none border-y-2 border-rose-300 shadow-md !important;
 }
 
 .flatpickr-day.is-active-week-day.is-locked-week-day.is-week-start,
 .flatpickr-day.is-active-week-day.is-locked-week-day.is-locked-week-start,
 .flatpickr-day.is-active-week-day.is-locked-week-day:first-child {
-    @apply rounded-l-md border-l-2 border-amber-300 !important;
+    @apply rounded-l-md border-l-2 border-rose-300 !important;
 }
 
 .flatpickr-day.is-active-week-day.is-locked-week-day.is-week-end,
 .flatpickr-day.is-active-week-day.is-locked-week-day.is-locked-week-end,
 .flatpickr-day.is-active-week-day.is-locked-week-day:last-child {
-    @apply rounded-r-md border-r-2 border-amber-300 !important;
+    @apply rounded-r-md border-r-2 border-rose-300 !important;
 }
 
-/* Quick-pick chips injected above the time spinner - see timeFieldOptions() in app.js */
-.flatpickr-quick-times {
-    @apply flex flex-wrap gap-1.5 border-b border-neutral-800 pb-3 mb-1 !important;
-}
-
-.flatpickr-quick-time {
-    @apply rounded-lg border border-neutral-700 bg-neutral-800 px-2 py-1 text-xs font-semibold tabular-nums text-neutral-300 transition hover:border-brand-500/50 hover:text-white !important;
-}
 
 /* Custom subtle scrollbar */
 .custom-scrollbar::-webkit-scrollbar {

@@ -40,13 +40,13 @@ class ResetPasswordNotification extends ResetPassword
         ], false));
 
         return (new MailMessage)
-            ->subject('Cine-max zmeny | Žiadosť o zmenu hesla')
-            ->greeting('Ahoj!')
-            ->line('Zaevidovali sme žiadosť o zmenu hesla pre tvoj účet v Cine-max zmeny.')
-            ->action('Resetovať heslo', $url)
-            ->line('Tento odkaz má obmedzenú časovú platnosť.')
-            ->line('Ak si si túto žiadosť nevyžiadal/a, žiadne ďalšie kroky nie sú potrebné.')
-            ->salutation(new HtmlString('S pozdravom,<br><strong>'.config('app.name').'</strong>'));
+            ->subject('Cine-max Zmeny | Zmena hesla')
+            ->greeting('Dobrý deň,')
+            ->line('Dostali sme žiadosť o zmenu hesla k vášmu účtu v Cine-max Zmeny.')
+            ->action('Nastaviť nové heslo', $url)
+            ->line('Odkaz platí '.config('auth.passwords.users.expire').' minút.')
+            ->line('Ak ste o zmenu nežiadali, tento e-mail ignorujte.')
+            ->salutation(new HtmlString('S pozdravom,<br><strong>Cine-max Zmeny</strong>'));
     }
 
     /**

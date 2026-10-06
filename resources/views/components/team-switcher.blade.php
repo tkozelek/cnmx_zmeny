@@ -8,8 +8,6 @@
     @if($teams->count() > 1)
         <div
             x-data="{ openTeam: false }"
-            @mouseenter="openTeam = true"
-            @mouseleave="openTeam = false"
             @click.outside="openTeam = false"
             class="relative py-1"
         >

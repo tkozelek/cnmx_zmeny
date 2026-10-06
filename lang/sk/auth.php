@@ -13,9 +13,9 @@ return [
     |
     */
 
-    'failed' => 'Zadané údaje nespĺňajú požadované kritéria.',
+    'failed' => 'Zadané údaje nespĺňajú požadované kritériá.',
     'password' => 'Nesprávne heslo.',
-    'throttle' => 'Príliž veľa pokusov. Prosím opakujte znova o :seconds sekúnd.',
+    'throttle' => 'Príliš veľa pokusov. Skúste to znova o :seconds s.',
     'attributes' => [
         'email' => 'E-mailová adresa',
         'password' => 'Heslo',

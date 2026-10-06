@@ -21,19 +21,21 @@ class MyAbsencesDataTable extends DataTableComponent
         $this->setPrimaryKey('id')
             ->setTheme('tailwind')
             ->setDefaultSort('date_from', 'desc')
+            // The sort is already visible on the column header; a pill for it was just noise.
+            ->setSortingPillsDisabled()
             ->setPerPageAccepted([5, 10, 25])
             ->setPerPage(5)
             ->setColumnSelectStatus(false)
-            ->setFilterPillsStatus(false)
+            ->setFilterPillsStatus(true)
             ->setFilterLayoutSlideDown()
             // The Stav/Akcie columns read fields (status, team_id, user_id, updated_at, ...) off
             // $row directly rather than through a registered Column, so the package's column-based
             // SELECT projection would otherwise drop them - select the whole row instead of
             // chasing every field the trait happens to touch.
             ->setAdditionalSelects(['absences.*'])
-            ->setSearchPlaceholder('Vyhľadať v absenciách...')
+            ->setSearchPlaceholder('Vyhľadať v absenciách…')
             ->setLoadingPlaceholderContent('Načítavam absencie...')
-            ->setEmptyMessage('Nemáš evidované žiadne absencie.');
+            ->setEmptyMessage('Nemáte evidované žiadne absencie.');
     }
 
     public function builder(): Builder
@@ -123,6 +125,6 @@ class MyAbsencesDataTable extends DataTableComponent
 
         $absence->delete();
 
-        $this->dispatch('toast', message: 'Absencia vymazaná.', type: 'error');
+        $this->dispatch('toast', message: 'Absencia vymazaná.', type: 'info');
     }
 }

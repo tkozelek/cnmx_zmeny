@@ -14,7 +14,7 @@
         {{
             $attributes->merge($customAttributes)
                 ->class([
-                    'px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-100' => $isTailwind,
+                    'px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-100' => $isTailwind,
                     'hidden' =>  $isTailwind && $column && $column->shouldCollapseAlways(),
                     'hidden md:table-cell' => $isTailwind && $column && $column->shouldCollapseOnMobile(),
                     'hidden lg:table-cell' => $isTailwind && $column && $column->shouldCollapseOnTablet(),

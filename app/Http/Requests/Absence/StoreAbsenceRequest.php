@@ -56,7 +56,7 @@ class StoreAbsenceRequest extends FormRequest
                     };
                     $validator->errors()->add(
                         'date_from',
-                        "Absenciu v kine {$team->name} je potrebné nahlásiť minimálne {$days} {$unit} vopred."
+                        "Absenciu v kine {$team->name} je potrebné nahlásiť minimálne {$days} {$unit} vopred. Na skoršie dni sa dohodnite s manažérom."
                     );
                 }
             },
@@ -80,10 +80,10 @@ class StoreAbsenceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'date_from.required' => 'Zadaj odkedy budeš chýbať.',
-            'date_to.required' => 'Zadaj dokedy budeš chýbať.',
+            'date_from.required' => 'Zadajte, odkedy budete chýbať.',
+            'date_to.required' => 'Zadajte, dokedy budete chýbať.',
             'date_to.after_or_equal' => 'Koniec absencie nemôže byť pred jej začiatkom.',
-            'reason.required' => 'Uveď dôvod absencie.',
+            'reason.required' => 'Uveďte dôvod absencie.',
         ];
     }
 }

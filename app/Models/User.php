@@ -85,11 +85,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Absence::class);
     }
 
-    public function media(): HasMany
-    {
-        return $this->hasMany(Media::class);
-    }
-
     /**
      * Cached across requests (see CACHING.md, key `user:{id}:approved-teams`) - re-queried
      * independently by middleware, every permission check, the team switcher (rendered twice,
@@ -135,18 +130,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isMemberOf(Team $team): bool
     {
         return $this->teams()->whereKey($team->getKey())->exists();
-    }
-
-    /**
-     * May turn this cinema's signups into a shift plan - the rozpis builder, its slots, its
-     * exports and its AI draft all hang off this one permission.
-     *
-     * A method rather than the raw check because two Livewire components and five controllers
-     * ask the same question, and "who may build" is a fact about a user, not about a component.
-     */
-    public function canBuildRozpis(): bool
-    {
-        return $this->hasPermissionInTeam('assignment.assign-position', app(Team::class));
     }
 
     /**

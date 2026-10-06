@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Stránka sa nenašla</title>
+    <title>404 – Stránka sa nenašla</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
@@ -21,7 +21,7 @@
         Prejsť na domovskú stránku
     </a>
     <p class="mt-6 text-sm text-slate-400/80">
-        Ak si myslíte, že ide o chybu, prosím, <a href="{{ route('help') }}" class="text-red-300 hover:text-red-400 underline transition-colors duration-150">kontaktujte podporu</a>.
+        Ak si myslíte, že ide o chybu, obráťte sa na manažéra kina.
     </p>
 </div>
 </body>

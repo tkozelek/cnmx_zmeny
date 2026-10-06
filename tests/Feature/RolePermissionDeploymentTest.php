@@ -27,12 +27,9 @@ class RolePermissionDeploymentTest extends TestCase
         'user.create',
         'user.update',
         'user.approve',
-        'assignment.assign-position',
         'assignment.lock',
-        'position.view-any',
         'team.view',
         'team.update',
-        'media.create',
         'absence.view',
     ];
 
@@ -71,7 +68,7 @@ class RolePermissionDeploymentTest extends TestCase
 
         $this->assertTrue($employee->hasPermissionInTeam('absence.create', $team));
         $this->assertFalse($employee->hasPermissionInTeam('user.view-any', $team));
-        $this->assertFalse($employee->hasPermissionInTeam('assignment.assign-position', $team));
+        $this->assertFalse($employee->hasPermissionInTeam('assignment.lock', $team));
     }
 
     /**

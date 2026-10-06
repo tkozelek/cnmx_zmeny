@@ -6,7 +6,6 @@ use App\Enums\AbsenceStatus;
 use App\Enums\Role;
 use App\Models\Absence;
 use App\Models\Assignment;
-use App\Models\Position;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,19 +35,17 @@ class ProfileTest extends TestCase
         $team = $this->tenant();
         $user = $this->member($team, Role::Employee);
 
-        $position = Position::factory()->create(['team_id' => $team->id]);
         Assignment::factory()->create([
             'team_id' => $team->id,
             'user_id' => $user->id,
-            'position_id' => $position->id,
             'date' => now()->toDateString(),
         ]);
 
         $this->actingAs($user)
             ->get(route('profile.index', ['date' => 'month']))
             ->assertOk()
-            ->assertSee('Tento mesiac')
-            ->assertSee('Odpracované dni');
+            ->assertSee('Posledný mesiac')
+            ->assertSee('Zapísané dni');
     }
 
     public function test_user_can_view_another_member_profile_in_same_team(): void

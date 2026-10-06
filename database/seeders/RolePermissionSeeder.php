@@ -49,31 +49,10 @@ class RolePermissionSeeder extends Seeder
             'team.update',
         ];
 
-        /**
-         * `assignment.lead-shift` is who may be put on a position flagged `is_manager` - the
-         * vedúci row. A permission rather than a hard-coded list of role names, so a cinema can
-         * hand it to one trusted brigádnik without promoting them.
-         */
         $assignmentPermissions = [
             'assignment.create',
             'assignment.delete',
             'assignment.lock',
-            'assignment.assign-position',
-            'assignment.lead-shift',
-        ];
-
-        $mediaPermissions = [
-            'media.view',
-            'media.create',
-            'media.update',
-            'media.delete',
-        ];
-
-        $positionPermissions = [
-            'position.view-any',
-            'position.create',
-            'position.update',
-            'position.delete',
         ];
 
         $allPermissions = array_merge(
@@ -81,8 +60,6 @@ class RolePermissionSeeder extends Seeder
             $userPermissions,
             $teamPermissions,
             $assignmentPermissions,
-            $mediaPermissions,
-            $positionPermissions,
         );
 
         foreach ($allPermissions as $permissionName) {

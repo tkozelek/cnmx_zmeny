@@ -54,7 +54,7 @@
         @endif
     "
     @toast.window="handleToastEvent($event)"
-    class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full px-4 sm:px-0 pointer-events-none"
+    role="status" aria-live="polite" class="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-4 z-[110] flex flex-col gap-2 sm:w-full sm:max-w-sm pointer-events-none"
 >
     <template x-for="toast in toasts" :key="toast.id">
         <div

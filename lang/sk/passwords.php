@@ -15,8 +15,8 @@ return [
 
     'reset' => 'Vaše heslo bolo obnovené!',
     'sent' => 'Bol vám zaslaný e-mail na obnovu hesla!',
-    'throttled' => 'Prosím čakajte pred ďalším pokusom.',
-    'token' => 'Neplatný pokus na obnovu hesla.',
-    'user' => 'Používateľ s danou e-mail adresou neexistuje.',
+    'throttled' => 'Pred ďalším pokusom chvíľu počkajte.',
+    'token' => 'Odkaz na obnovu hesla je neplatný alebo už vypršal.',
+    'user' => 'Používateľ s touto e-mailovou adresou neexistuje.',
 
 ];

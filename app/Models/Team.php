@@ -67,11 +67,6 @@ class Team extends Model
         return $this->hasOne(TeamSetting::class);
     }
 
-    public function positions(): HasMany
-    {
-        return $this->hasMany(Position::class);
-    }
-
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
@@ -119,46 +114,6 @@ class Team extends Model
     public function staleAbsenceDeletionDays(): int
     {
         return $this->cachedSettings()?->stale_absence_deletion_days ?? TeamSetting::DEFAULT_STALE_ABSENCE_DELETION_DAYS;
-    }
-
-    /**
-     * What one worked day is worth per weekday, Monday-indexed. Feeds FairnessService.
-     *
-     * @return list<float>
-     */
-    public function fairnessDayWeights(): array
-    {
-        $weights = $this->cachedSettings()?->fairness_day_weights;
-
-        // A stored array of the wrong length would silently misprice part of the week, so a
-        // partial row falls back to the default rather than being padded.
-        return is_array($weights) && count($weights) === 7
-            ? array_map('floatval', array_values($weights))
-            : TeamSetting::DEFAULT_FAIRNESS_DAY_WEIGHTS;
-    }
-
-    /** How many weeks of history the fairness ranking counts. */
-    public function fairnessWindowWeeks(): int
-    {
-        return $this->cachedSettings()?->fairness_window_weeks ?? TeamSetting::DEFAULT_FAIRNESS_WINDOW_WEEKS;
-    }
-
-    /** How hard a Slovak public holiday is to staff, in place of its weekday's weight. */
-    public function holidayWeight(): float
-    {
-        return $this->cachedSettings()?->holiday_weight ?? TeamSetting::DEFAULT_HOLIDAY_WEIGHT;
-    }
-
-    /**
-     * Quick-pick chips offered by the rozpis builder's time picker (see resources/js/app.js).
-     *
-     * @return list<string>
-     */
-    public function quickTimes(): array
-    {
-        $times = $this->cachedSettings()?->quick_times;
-
-        return is_array($times) && $times !== [] ? array_values($times) : TeamSetting::DEFAULT_QUICK_TIMES;
     }
 
     /**

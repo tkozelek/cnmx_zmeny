@@ -182,6 +182,13 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 # CLAUDE.md
 
+## Working guidelines
+
+- **Think before coding.** State assumptions. If a request has more than one reading, name them instead of silently picking one; if something is unclear, ask before building. Say so when a simpler approach exists.
+- **Simplicity first.** Minimum code that solves the request — no speculative features, single-use abstractions, unrequested configurability, or handling for impossible cases.
+- **Surgical changes.** Every changed line should trace to the request. Don't reformat or refactor adjacent code. Remove orphans your own change created (imports, variables, functions); mention pre-existing dead code rather than deleting it.
+- **Verify before calling it done.** Turn the task into a checkable goal (a test that fails then passes, a page that renders correctly) and loop until it holds. For multi-step work, state a short plan with a check per step. Tests still follow the Testing philosophy below — don't add tests for flows it excludes.
+
 ## Repository state: two things live here at once
 
 1. **`app/`, `routes/`, `resources/`, `database/`** — the existing, live Laravel app ("CNMX Zmeny"), a shift-scheduling system for cinema staff. Legacy code slated for a full rewrite, not yet replaced.

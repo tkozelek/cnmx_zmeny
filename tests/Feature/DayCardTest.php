@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Livewire\DayCard;
 use App\Livewire\ExtraNote;
 use App\Models\Assignment;
+use App\Policies\AssignmentPolicy;
 use App\Services\WeekService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,9 +20,6 @@ class DayCardTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Signing up picks no position - that is an admin's job later - so `position_id` is null.
-     */
     public function test_signing_up_creates_an_assignment_for_that_day(): void
     {
         $team = $this->tenant();
@@ -37,13 +35,12 @@ class DayCardTest extends TestCase
             'team_id' => $team->id,
             'user_id' => $user->id,
             'date' => $date,
-            'position_id' => null,
             'created_by' => null,
         ]);
     }
 
     /**
-     * The shared "Extra info" field lives in the session, so the card picks it up without it
+     * The shared "Poznámka" field lives in the session, so the card picks it up without it
      * being passed in - that is what lets one typed note apply to every day signed up.
      */
     public function test_signing_up_attaches_the_shared_extra_note(): void
@@ -85,7 +82,6 @@ class DayCardTest extends TestCase
         $assignment = Assignment::factory()->create([
             'team_id' => $team->id,
             'user_id' => $user->id,
-            'position_id' => null,
             'date' => $date,
         ]);
 
@@ -107,7 +103,6 @@ class DayCardTest extends TestCase
         $assignment = Assignment::factory()->create([
             'team_id' => $team->id,
             'user_id' => $user->id,
-            'position_id' => null,
             'date' => $date,
         ]);
 
@@ -129,7 +124,6 @@ class DayCardTest extends TestCase
         $assignment = Assignment::factory()->create([
             'team_id' => $team->id,
             'user_id' => $colleague->id,
-            'position_id' => null,
             'date' => $date,
         ]);
 
@@ -142,10 +136,10 @@ class DayCardTest extends TestCase
     }
 
     /**
-     * The card renders as locked, but the action is guarded too - a locked week must not be
-     * writable by anyone replaying the Livewire request directly.
+     * A page opened before the manager locked the week still shows "Zapísať sa" - the click is
+     * refused with the reason as a toast (not a 403 page) and the card switches to locked.
      */
-    public function test_signing_up_in_a_locked_week_is_refused(): void
+    public function test_signing_up_in_a_locked_week_is_refused_with_a_reason(): void
     {
         $team = $this->tenant();
         $user = $this->member($team);
@@ -156,9 +150,10 @@ class DayCardTest extends TestCase
         ]);
 
         Livewire::actingAs($user)
-            ->test(DayCard::class, $this->props($date->toDateString(), locked: true))
+            ->test(DayCard::class, $this->props($date->toDateString()))
             ->call('signUp')
-            ->assertForbidden();
+            ->assertDispatched('toast', type: 'error', message: AssignmentPolicy::LOCKED_MESSAGE)
+            ->assertSet('locked', true);
 
         $this->assertDatabaseCount('assignments', 0);
     }
@@ -173,7 +168,6 @@ class DayCardTest extends TestCase
         $assignment = Assignment::factory()->create([
             'team_id' => $team->id,
             'user_id' => $employee->id,
-            'position_id' => null,
             'date' => $date,
         ]);
 
@@ -187,6 +181,25 @@ class DayCardTest extends TestCase
     /**
      * @return array<string, mixed>
      */
+    public function test_signed_up_people_drop_out_of_the_draw_pool(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $signedUp = $this->member($team);
+        $free = $this->member($team);
+        $date = CarbonImmutable::now()->addDays(3)->toDateString();
+
+        Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $signedUp->id, 'date' => $date]);
+
+        $card = Livewire::actingAs($manager)->test(DayCard::class, [
+            ...$this->props($date),
+            'available' => [$signedUp->id => (string) $signedUp, $free->id => (string) $free],
+        ]);
+
+        $this->assertSame([$free->id => (string) $free], $card->instance()->drawable);
+        $card->assertSee('K dispozícii na losovanie (1)');
+    }
+
     private function props(string $date, bool $locked = false): array
     {
         return ['date' => $date, 'locked' => $locked];

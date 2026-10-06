@@ -35,10 +35,12 @@ class AbsencesDataTable extends DataTableComponent
         $this->setPrimaryKey('id')
             ->setTheme('tailwind')
             ->setDefaultSort('date_from', 'desc')
+            // The sort is already visible on the column header; a pill for it was just noise.
+            ->setSortingPillsDisabled()
             ->setPerPageAccepted([10, 25, 50, 100])
             ->setPerPage(10)
             ->setColumnSelectStatus(false)
-            ->setFilterPillsStatus(false)
+            ->setFilterPillsStatus(true)
             ->setFilterLayoutSlideDown()
             // The Stav/Akcie columns read fields (status, team_id, user_id, updated_at, ...) off
             // $row directly rather than through a registered Column, so the package's column-based
@@ -171,6 +173,6 @@ class AbsencesDataTable extends DataTableComponent
 
         $absence->delete();
 
-        $this->dispatch('toast', message: 'Absencia vymazaná.', type: 'error');
+        $this->dispatch('toast', message: 'Absencia vymazaná.', type: 'info');
     }
 }

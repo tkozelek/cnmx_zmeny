@@ -71,7 +71,7 @@ class EmailVerificationController extends Controller
 
         $request->user()?->sendEmailVerificationNotification();
 
-        return back()->with('message', 'Overovací e-mail odoslaný znova.');
+        return back()->with('message', 'Overovací e-mail sme poslali znova.');
     }
 
     public function resendGuest(Request $request): RedirectResponse
@@ -84,6 +84,6 @@ class EmailVerificationController extends Controller
             $user->sendEmailVerificationNotification();
         }
 
-        return back()->with('message', 'Overovací e-mail bol odoslaný. Skontroluj si schránku.');
+        return back()->with('message', 'Overovací e-mail bol odoslaný. Skontrolujte si schránku.');
     }
 }

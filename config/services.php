@@ -33,16 +33,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Rozpis suggestions
-    |--------------------------------------------------------------------------
-    | Gemini, configured in config/gemini.php by google-gemini-php/laravel.
-    | Optional: with no GEMINI_API_KEY set, AiRozpisSuggestionService reports
-    | itself disabled and the "AI navrhni rozpis" button never renders — the
-    | rozpis builder works fully without it.
-    */
-
-    /*
-    |--------------------------------------------------------------------------
     | Test accounts (app:import-legacy-data)
     |--------------------------------------------------------------------------
     | Kept out of the codebase since this repo is public - see

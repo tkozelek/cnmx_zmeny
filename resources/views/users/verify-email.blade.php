@@ -3,17 +3,17 @@
         <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-6 shadow-sm sm:p-8">
             <h1 class="flex items-center gap-2.5 text-xl font-bold text-white">
                 <i class="fa-solid fa-envelope-circle-check text-brand-400"></i>
-                Over si e-mail
+                Overte si e-mail
             </h1>
 
             <p class="mt-3 text-sm leading-relaxed text-neutral-300">
-                Na adresu <strong class="text-neutral-100">{{ auth()->user()?->email ?? session('unverified_email', 'tvoj e-mail') }}</strong> sme poslali
-                overovací odkaz. Klikni naň a vráť sa sem.
+                Na adresu <strong class="text-neutral-100">{{ auth()->user()?->email ?? session('unverified_email', 'váš e-mail') }}</strong> sme poslali
+                overovací odkaz. Kliknite naň a&nbsp;vráťte sa sem.
             </p>
 
             <p class="mt-2 text-xs leading-relaxed text-neutral-400">
-                Po overení ťa ešte musí schváliť vedúci kina. Ak e-mail nevidíš, pozri sa do spamu alebo si
-                ho nechaj poslať znova.
+                Po overení vás ešte musí schváliť manažér kina. Ak e-mail nevidíte, pozrite sa do spamu alebo si
+                ho nechajte poslať znova.
             </p>
 
             @if(session('message'))

@@ -15,7 +15,7 @@ use Spatie\Permission\PermissionRegistrar;
  * way code is. It only ever lived in a seeder, and seeders do not run on deploy, so a migrated
  * production database had a `manager` role with no permissions at all and a `head-manager` with
  * one. Since hasPermissionInTeam() has no role-name fallback, that meant nobody could reach the
- * user list, the rozpis builder, the week lock, positions or the cinema settings.
+ * user list, the week lock or the cinema settings.
  *
  * Run this after any change to the permission set. It is idempotent - findOrCreate plus
  * syncPermissions - so running it twice does nothing the first run did not already do, and it

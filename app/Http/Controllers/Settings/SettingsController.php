@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class SettingsController extends Controller
 {
-    public function index(Request $request): View
+    /**
+     * The old two-button "Nastavenia" page. Nothing links to it any more and the profile offers
+     * the same two actions (absences, change password), so an old bookmark lands there.
+     */
+    public function index(): RedirectResponse
     {
-        return view('nastavenia.index', [
-            'teams' => $request->user()->approvedTeams(),
-        ]);
+        return to_route('profile.index');
     }
 }

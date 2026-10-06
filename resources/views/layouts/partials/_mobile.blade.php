@@ -6,16 +6,16 @@
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
      @click="openn = false"
-     class="fixed inset-0 z-[100] grid h-full w-full place-items-center bg-neutral-950/60 backdrop-blur-xl md:hidden overflow-y-auto p-4"
+     class="fixed inset-0 z-[100] grid h-full w-full place-items-center bg-neutral-950/60 backdrop-blur-xl lg:hidden overflow-y-auto p-4"
      style="display: none;">
 
-    <nav @click.stop class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-lg bg-neutral-900 border border-neutral-800 p-6 text-center shadow-xl">
+    <nav @click.stop x-trap.noscroll="openn" class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-lg bg-neutral-900 border border-neutral-800 p-6 text-center shadow-xl">
 
         <!-- Dedicated Close Button -->
         <button
             type="button"
             @click="openn = false"
-            class="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-800/80 text-neutral-400 hover:text-white hover:bg-neutral-750 transition focus:outline-none"
+            class="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-800/80 text-neutral-400 hover:text-white hover:bg-neutral-700 transition"
             aria-label="Zavrieť menu"
             title="Zavrieť menu"
         >

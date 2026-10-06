@@ -48,7 +48,6 @@ class AssignmentController extends Controller
                 'date' => $date->toDateString(),
             ],
             [
-                'position_id' => $request->integer('position_id') ?: null,
                 'note' => $request->input('note'),
                 'created_by' => $isForSomeoneElse ? $request->user()->id : null,
             ],
