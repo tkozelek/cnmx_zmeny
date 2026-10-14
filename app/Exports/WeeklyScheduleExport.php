@@ -5,6 +5,7 @@ namespace App\Exports;
 use App\Models\Day;
 use App\Models\User;
 use App\Models\Week;
+use App\Traits\EscapesSpreadsheetFormulas;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -23,6 +24,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaultStyles, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
+    use EscapesSpreadsheetFormulas;
+
     protected $week;
 
     public function __construct(Week $week)
@@ -40,7 +43,7 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
                 $firstLetter = substr($user->name, 0, 1);
                 $popis = $user->pivot->popis ? '('.$user->pivot->popis.')' : '';
 
-                return "{$user->lastname} {$firstLetter}. $popis";
+                return $this->escapeFormula("{$user->lastname} {$firstLetter}. $popis");
             })->toArray();
             $data[] = $users;
         }
@@ -141,7 +144,7 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
                 $rowIndex = 2;
                 $newSheet->setTitle('Počet dni');
                 foreach ($additionalData as $row) {
-                    $newSheet->setCellValue('A'.$rowIndex, $row->lastname.' '.substr($row->name, 0, 1).'.')
+                    $newSheet->setCellValue('A'.$rowIndex, $this->escapeFormula($row->lastname.' '.substr($row->name, 0, 1).'.'))
                         ->setCellValue('B'.$rowIndex, $row->count);
                     $rowIndex++;
                 }
