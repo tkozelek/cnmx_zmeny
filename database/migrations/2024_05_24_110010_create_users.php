@@ -38,20 +38,6 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
-
-        DB::table('users')->insert([
-            [
-                'name' => 'Tomáš',
-                'lastname' => 'Kozelek',
-                'email' => 'tommyside@centrum.sk',
-                'password' => '$2y$10$II7TV0oAEvpOjgGllzr5/OUgv8b12IfuoIfQ.ZxrjlBeyScEsRID6',
-                'remember_token' => null,
-                'created_at' => '2024-05-24 13:09:53',
-                'updated_at' => '2024-05-24 13:09:53',
-                'id_role' => 3,
-            ],
-        ]);
-
     }
 
     /**
