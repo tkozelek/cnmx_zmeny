@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('user_days', function (Blueprint $table) {
-            $table->dropForeign('user_days_id_user_foreign');
-            $table->dropForeign('user_days_id_day_foreign');
+            $table->dropForeign(['id_user']);
+            $table->dropForeign(['id_day']);
 
             $table->foreign('id_user')->references('id')->on('users')->cascadeOnDelete();
             $table->foreign('id_day')->references('id')->on('days')->cascadeOnDelete();

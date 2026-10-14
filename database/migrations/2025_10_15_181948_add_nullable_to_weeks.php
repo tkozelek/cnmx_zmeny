@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('weeks', function (Blueprint $table) {
-            $table->dropForeign('weeks_next_week_id_foreign');
-            $table->dropForeign('weeks_prev_week_id_foreign');
+            $table->dropForeign(['next_week_id']);
+            $table->dropForeign(['prev_week_id']);
 
             $table->foreign('next_week_id')
                 ->references('id')

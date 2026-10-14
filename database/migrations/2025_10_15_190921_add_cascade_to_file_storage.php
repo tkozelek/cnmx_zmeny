@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('file_storage', function (Blueprint $table) {
-            $table->dropForeign('file_storage_id_user_foreign');
-            $table->dropForeign('file_storage_id_week_foreign');
+            $table->dropForeign(['id_user']);
+            $table->dropForeign(['id_week']);
 
             $table->foreign('id_user')->references('id')->on('users')->cascadeOnDelete();
             $table->foreign('id_week')->references('id')->on('weeks')->cascadeOnDelete();
