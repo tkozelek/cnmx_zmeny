@@ -7,7 +7,7 @@ metadata:
   originSessionId: acc11c85-ddb3-4b6c-b692-d7b47f339774
 ---
 
-Tomáš Kozelek. Personal email: tommyside@centrum.sk. Native Slovak/Czech speaker — casual tone, mix of English and Czech/Slovak is normal.
+Tomáš Kozelek. Native Slovak/Czech speaker — casual tone, mix of English and Czech/Slovak is normal.
 
 Deep Laravel expertise: Eloquent, Filament v3, Livewire, queues, multi-tenancy. Architectural thinker — reasons top-down before touching code. Demands modern PHP everywhere: enums, readonly classes, match expressions, typed properties, first-class callables. No hand-holding needed.
 
