@@ -64,7 +64,6 @@ class DatabaseSeeder extends Seeder
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($defaultTeam->id);
 
-        $tommy = $this->member($defaultTeam, 'Tomáš', 'Kozelek', 'tommyside@centrum.sk', RoleEnum::HeadManager, 'asdasd');
         $admin = $this->member($defaultTeam, 'Admin', 'Kina', 'admin@kino.test', RoleEnum::HeadManager);
         $jana = $this->member($defaultTeam, 'Jana', 'Nováková', 'jana@kino.test', RoleEnum::Employee);
         $peter = $this->member($defaultTeam, 'Peter', 'Horváth', 'peter@kino.test', RoleEnum::Employee);
@@ -73,9 +72,6 @@ class DatabaseSeeder extends Seeder
         $extraTeams = $teams->where('id', '!=', $defaultTeam->id)->take(4);
         foreach ($extraTeams as $t) {
             app(PermissionRegistrar::class)->setPermissionsTeamId($t->id);
-
-            $tommy->teams()->attach($t->id, ['approved_at' => now()]);
-            $tommy->assignRole(RoleEnum::HeadManager->value);
 
             $admin->teams()->attach($t->id, ['approved_at' => now()]);
             $admin->assignRole(RoleEnum::HeadManager->value);
@@ -87,7 +83,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SampleAssignmentsSeeder::class);
 
         $this->command?->info('Žilina Max nastavené ako hlavné kino.');
-        $this->command?->info("Prihlás sa ako {$tommy->email} s heslom 'asdasd'.");
+        $this->command?->info("Prihlás sa ako {$admin->email} s heslom 'password'.");
     }
 
     private function seedPositions(): void

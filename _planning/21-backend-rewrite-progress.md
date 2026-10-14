@@ -7,7 +7,7 @@
 >
 > `migrate:fresh --seed`, `route:list`, `test` (41 tests / 110 assertions), and Pint all pass.
 >
-> **Dev login:** `tommyside@centrum.sk` / `asdasd` (admin), or `admin@kino.test` / `password`.
+> **Dev login:** `admin@kino.test` / `password` (head manager).
 > Herd serves this at `http://cnmx_zmeny.test` — **underscore, not kebab-case**.
 >
 > `_planning/20-schema-rework-handoff.md` remains the authority on the schema.
