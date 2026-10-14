@@ -38,7 +38,7 @@ git rm database/migrations/2024_05_24_110000_create_user_roles.php \
 php artisan config:clear && php artisan migrate:fresh
 ```
 
-`migrate:fresh` drops the one remaining legacy user row (`tommyside@centrum.sk`). There is no seeder yet — see §6.
+`migrate:fresh` drops the one remaining legacy user row. There is no seeder yet — see §6.
 
 Files kept: `create_pulse_tables`, `create_cache_table`, `create_jobs_table`, `create_failed_jobs_table`, `create_permission_tables` (config-driven, needs no edit), plus the 11 new `2026_07_24_*` migrations.
 
