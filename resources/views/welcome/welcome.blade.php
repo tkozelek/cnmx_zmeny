@@ -17,10 +17,4 @@
     {{-- CTA / Register Section --}}
     @include('welcome.partials._cta')
 
-    {{-- Footer --}}
-    <footer class="border-t border-neutral-900 bg-neutral-950">
-        <div class="container mx-auto px-4 py-6 text-center text-sm text-neutral-400">
-            <p>&copy; {{ now()->year }} Cinemax Zmeny. Všetky práva vyhradené.</p>
-        </div>
-    </footer>
 </x-layout>

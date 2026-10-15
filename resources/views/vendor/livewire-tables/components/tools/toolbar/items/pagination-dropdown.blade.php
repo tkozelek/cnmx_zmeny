@@ -2,8 +2,8 @@
 <div>
     <select
         wire:model.live="perPage"
-        id="{{ $tableName }}-perPage"
-        class="block h-10 rounded-lg border border-neutral-700 bg-neutral-800 px-3 text-sm font-semibold text-neutral-100 transition focus:border-neutral-500 focus:outline-none cursor-pointer"
+        aria-label="Počet riadkov na stranu"
+        class="block h-10 rounded-lg border border-neutral-500 bg-neutral-800 px-3 text-sm font-semibold text-neutral-100 transition focus:border-neutral-500 focus:outline-none cursor-pointer"
     >
         @foreach ($this->getPerPageAccepted() as $item)
             <option

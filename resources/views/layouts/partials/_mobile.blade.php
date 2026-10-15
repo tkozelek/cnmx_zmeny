@@ -9,7 +9,7 @@
      class="fixed inset-0 z-[100] grid h-full w-full place-items-center bg-neutral-950/60 backdrop-blur-xl lg:hidden overflow-y-auto p-4"
      style="display: none;">
 
-    <nav @click.stop x-trap.noscroll="openn" class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-lg bg-neutral-900 border border-neutral-800 p-6 text-center shadow-xl">
+    <nav @click.stop x-trap.noscroll.inert="openn" role="dialog" aria-modal="true" aria-label="Menu" class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-lg bg-neutral-900 border border-neutral-800 p-6 text-center shadow-xl">
 
         <!-- Dedicated Close Button -->
         <button
@@ -47,9 +47,9 @@
                 >
                     Používatelia
                     @if(isset($newUserCount) && $newUserCount > 0)
-                        <span class="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white align-middle" aria-label="Čaká na schválenie: {{ $newUserCount }}">
-                            <span aria-hidden="true">{{ $newUserCount }}</span>
-                            <span class="sr-only">čakajúcich na schválenie</span>
+                        <span class="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-xs font-bold text-neutral-950 align-middle">
+                            <span>{{ $newUserCount }}</span>
+                            <span class="sr-only">&nbsp;čakajúcich na schválenie</span>
                         </span>
                     @endif
                 </x-nav-link>
@@ -78,7 +78,7 @@
             <x-nav-link
                 route="profile.index"
                 :is-mobile="true"
-                icon='<i class="fa-solid fa-user text-indigo-400"></i>'
+                icon='<i class="fa-solid fa-user text-brand-400"></i>'
             >
                 Môj profil
             </x-nav-link>

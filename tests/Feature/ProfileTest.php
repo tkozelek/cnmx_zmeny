@@ -72,6 +72,15 @@ class ProfileTest extends TestCase
             ->assertSee('Aktívna');
     }
 
+    public function test_an_employee_cannot_open_a_colleagues_profile(): void
+    {
+        $team = $this->tenant();
+        $employee = $this->member($team);
+        $colleague = $this->member($team);
+
+        $this->actingAs($employee)->get(route('profile.show', $colleague))->assertForbidden();
+    }
+
     public function test_back_button_preserves_origin_page_across_profile_actions(): void
     {
         $team = $this->tenant();

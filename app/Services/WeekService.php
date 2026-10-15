@@ -71,8 +71,14 @@ class WeekService
 
     public function clampForward(Team $team, CarbonImmutable $weekStart): CarbonImmutable
     {
-        $last = $this->start($team, CarbonImmutable::now())->addWeeks($team->weekLookahead());
+        $last = $this->lastOpenWeek($team);
 
         return $weekStart->gt($last) ? $last : $weekStart;
+    }
+
+    /** The furthest week the team's week_lookahead opens. */
+    public function lastOpenWeek(Team $team): CarbonImmutable
+    {
+        return $this->start($team, CarbonImmutable::now())->addWeeks($team->weekLookahead());
     }
 }

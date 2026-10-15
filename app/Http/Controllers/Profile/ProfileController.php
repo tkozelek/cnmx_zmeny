@@ -38,7 +38,7 @@ class ProfileController extends Controller
         $currentHost = $request->getHost();
 
         $isInternal = empty($referrer)
-            || ! str_contains($referrer, $currentHost)
+            || parse_url($referrer, PHP_URL_HOST) !== $currentHost
             || str_contains($referrer, '/profil')
             || str_contains($referrer, '/login')
             || str_contains($referrer, '/heslo');

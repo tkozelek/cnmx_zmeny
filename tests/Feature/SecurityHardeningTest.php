@@ -6,9 +6,14 @@ use App\Enums\Role;
 use App\Http\Kernel;
 use App\Http\Middleware\TrustHosts;
 use App\Livewire\UsersDataTable;
+use App\Models\Absence;
 use App\Models\User;
 use App\Traits\EscapesSpreadsheetFormulas;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -202,5 +207,134 @@ class SecurityHardeningTest extends TestCase
         }
 
         return $changes;
+    }
+
+    /** Laravel's `throttle:6,1` keyed guests on the IP alone, so failed logins also locked out registration. */
+    public function test_failed_logins_do_not_lock_the_same_ip_out_of_registration(): void
+    {
+        $this->tenant();
+
+        foreach (range(1, 11) as $attempt) {
+            $this->post(route('login.auth'), ['email' => "nobody{$attempt}@example.com", 'password' => 'wrong-password']);
+        }
+
+        $this->post(route('register.store'), [])->assertSessionHasErrors();
+    }
+
+    /** Rotating IPs must not let anyone flood one inbox with verification e-mails. */
+    public function test_verification_resends_are_capped_per_address(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        foreach (['10.0.0.1', '10.0.0.2', '10.0.0.3'] as $ip) {
+            $this->withServerVariables(['REMOTE_ADDR' => $ip])
+                ->post(route('verification.resend_guest'), ['email' => $user->email])
+                ->assertStatus(302);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.4'])
+            ->post(route('verification.resend_guest'), ['email' => $user->email])
+            ->assertTooManyRequests();
+    }
+
+    /** Whoever controls an address controls the password reset - a manager must not be able to change it. */
+    public function test_a_manager_cannot_change_someones_email(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::HeadManager);
+        $employee = $this->member($team);
+        $originalEmail = $employee->email;
+
+        $this->actingAs($manager)->put(route('admin.users.update', $employee), [
+            'name' => $employee->name,
+            'lastname' => $employee->lastname,
+            'email' => 'takeover@example.com',
+            'role' => Role::Employee->value,
+            'is_active' => false,
+        ])->assertRedirect();
+
+        $employee->refresh();
+        $this->assertSame($originalEmail, $employee->email);
+        $this->assertTrue($employee->is_active);
+    }
+
+    public function test_changing_the_password_ends_other_sessions(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+
+        $this->actingAs($user)->get(route('profile.index'))->assertOk();
+
+        $user->update(['password' => 'a-brand-new-password']);
+
+        $this->get(route('profile.index'))->assertRedirect(route('login'));
+    }
+
+    /** The e-mail says 60 minutes - only an admin invite to a never-used account gets 24 hours. */
+    public function test_an_ordinary_reset_link_expires_after_an_hour(): void
+    {
+        $user = User::factory()->create(['last_login_at' => now()->subWeek()]);
+        $token = Password::broker('users')->createToken($user);
+
+        $this->travel(61)->minutes();
+
+        $this->post(route('password.store'), [
+            'token' => $token,
+            'email' => $user->email,
+            'password' => 'new-password-123',
+            'password_confirmation' => 'new-password-123',
+        ]);
+
+        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+    }
+
+    public function test_pulse_is_open_only_to_the_listed_developer(): void
+    {
+        $developer = User::factory()->create(['email' => 'dev@example.com']);
+        $anyoneElse = User::factory()->create();
+
+        config(['pulse.admins' => ['dev@example.com']]);
+
+        $this->assertTrue(Gate::forUser($developer)->allows('viewPulse'));
+        $this->assertFalse(Gate::forUser($anyoneElse)->allows('viewPulse'));
+    }
+
+    /** The privacy page promises nothing loads from third parties - the CSP is what holds that true. */
+    public function test_pages_only_load_from_this_server(): void
+    {
+        $csp = $this->get(route('help'))->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("default-src 'self'", $csp);
+        $this->assertStringContainsString("frame-ancestors 'none'", $csp);
+        $this->assertStringNotContainsString('https:', $csp);
+    }
+
+    /** Logs outlive deleted accounts, so they may say an absence changed but never why someone was away. */
+    public function test_the_audit_log_never_keeps_an_absence_reason(): void
+    {
+        $team = $this->tenant();
+        $absence = Absence::factory()->create(['team_id' => $team->id, 'user_id' => $this->member($team)->id, 'reason' => 'Lekár']);
+        Log::spy();
+
+        $absence->update(['reason' => 'Rodinné dôvody']);
+        $absence->delete();
+
+        Log::shouldHaveReceived('info')->withArgs(fn (string $message, array $context): bool => $context['changes']['reason'] === '[skryté]' && $context['original']['reason'] === '[skryté]');
+        Log::shouldHaveReceived('warning')->withArgs(fn (string $message, array $context): bool => $context['attributes']['reason'] === '[skryté]');
+    }
+
+    /** A failed password change flashed the typed new password into the session file. */
+    public function test_a_failed_password_change_does_not_keep_the_new_password(): void
+    {
+        $team = $this->tenant();
+
+        $this->actingAs($this->member($team))->put(route('settings.password.update'), [
+            'current_password' => 'wrong-password',
+            'new_password' => 'my-new-secret-123',
+            'new_password_confirmation' => 'my-new-secret-123',
+        ])->assertSessionHasErrors();
+
+        $this->assertNull(session()->getOldInput('new_password'));
+        $this->assertNull(session()->getOldInput('new_password_confirmation'));
     }
 }

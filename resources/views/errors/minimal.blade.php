@@ -1,34 +1,316 @@
+{{-- Inline CSS, no @vite and no auth()/DB calls: a 500/503 page must still render when the build, database or session is what broke. --}}
+@php
+    $previousUrl = url()->previous();
+    $hasPreviousPage = $previousUrl !== url()->current() && rtrim($previousUrl, '/') !== rtrim(url('/'), '/');
+@endphp
 <!DOCTYPE html>
 <html lang="sk">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <meta name="color-scheme" content="dark">
+    <title>@yield('code') – @yield('title') | Cinemax Zmeny</title>
+    <link rel="icon" href="{{ asset('images/logo_cinemax_icon_cropped.png') }}">
 
-        <title>@yield('title')</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;         
+            --surface: #171717;    
+            --line: #262626;       
+            --line-strong: #404040;
+            --text: #e5e5e5;       
+            --muted: #a3a3a3;      
+            --brand-300: 125 211 252;
+            --brand-400: 56 189 248;
+            --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-        <style>
-            /*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}a{background-color:transparent}code{font-family:monospace,monospace;font-size:1em}[hidden]{display:none}html{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;line-height:1.5}*,:after,:before{box-sizing:border-box;border:0 solid #e2e8f0}a{color:inherit;text-decoration:inherit}code{font-family:Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}svg,video{display:block;vertical-align:middle}video{max-width:100%;height:auto}.bg-white{--bg-opacity:1;background-color:#fff;background-color:rgba(255,255,255,var(--bg-opacity))}.bg-gray-100{--bg-opacity:1;background-color:#f7fafc;background-color:rgba(247,250,252,var(--bg-opacity))}.border-gray-200{--border-opacity:1;border-color:#edf2f7;border-color:rgba(237,242,247,var(--border-opacity))}.border-gray-400{--border-opacity:1;border-color:#cbd5e0;border-color:rgba(203,213,224,var(--border-opacity))}.border-t{border-top-width:1px}.border-r{border-right-width:1px}.flex{display:flex}.grid{display:grid}.hidden{display:none}.items-center{align-items:center}.justify-center{justify-content:center}.font-semibold{font-weight:600}.h-5{height:1.25rem}.h-8{height:2rem}.h-16{height:4rem}.text-sm{font-size:.875rem}.text-lg{font-size:1.125rem}.leading-7{line-height:1.75rem}.mx-auto{margin-left:auto;margin-right:auto}.ml-1{margin-left:.25rem}.mt-2{margin-top:.5rem}.mr-2{margin-right:.5rem}.ml-2{margin-left:.5rem}.mt-4{margin-top:1rem}.ml-4{margin-left:1rem}.mt-8{margin-top:2rem}.ml-12{margin-left:3rem}.-mt-px{margin-top:-1px}.max-w-xl{max-width:36rem}.max-w-6xl{max-width:72rem}.min-h-screen{min-height:100vh}.overflow-hidden{overflow:hidden}.p-6{padding:1.5rem}.py-4{padding-top:1rem;padding-bottom:1rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.pt-8{padding-top:2rem}.fixed{position:fixed}.relative{position:relative}.top-0{top:0}.right-0{right:0}.shadow{box-shadow:0 1px 3px 0 rgba(0,0,0,.1),0 1px 2px 0 rgba(0,0,0,.06)}.text-center{text-align:center}.text-gray-200{--text-opacity:1;color:#edf2f7;color:rgba(237,242,247,var(--text-opacity))}.text-gray-300{--text-opacity:1;color:#e2e8f0;color:rgba(226,232,240,var(--text-opacity))}.text-gray-400{--text-opacity:1;color:#cbd5e0;color:rgba(203,213,224,var(--text-opacity))}.text-gray-500{--text-opacity:1;color:#a0aec0;color:rgba(160,174,192,var(--text-opacity))}.text-gray-600{--text-opacity:1;color:#718096;color:rgba(113,128,150,var(--text-opacity))}.text-gray-700{--text-opacity:1;color:#4a5568;color:rgba(74,85,104,var(--text-opacity))}.text-gray-900{--text-opacity:1;color:#1a202c;color:rgba(26,32,44,var(--text-opacity))}.uppercase{text-transform:uppercase}.underline{text-decoration:underline}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.tracking-wider{letter-spacing:.05em}.w-5{width:1.25rem}.w-8{width:2rem}.w-auto{width:auto}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}@-webkit-keyframes spin{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}@keyframes spin{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}@-webkit-keyframes ping{0%{transform:scale(1);opacity:1}75%,to{transform:scale(2);opacity:0}}@keyframes ping{0%{transform:scale(1);opacity:1}75%,to{transform:scale(2);opacity:0}}@-webkit-keyframes pulse{0%,to{opacity:1}50%{opacity:.5}}@keyframes pulse{0%,to{opacity:1}50%{opacity:.5}}@-webkit-keyframes bounce{0%,to{transform:translateY(-25%);-webkit-animation-timing-function:cubic-bezier(.8,0,1,1);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:translateY(0);-webkit-animation-timing-function:cubic-bezier(0,0,.2,1);animation-timing-function:cubic-bezier(0,0,.2,1)}}@keyframes bounce{0%,to{transform:translateY(-25%);-webkit-animation-timing-function:cubic-bezier(.8,0,1,1);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:translateY(0);-webkit-animation-timing-function:cubic-bezier(0,0,.2,1);animation-timing-function:cubic-bezier(0,0,.2,1)}}@media (min-width:640px){.sm\:rounded-lg{border-radius:.5rem}.sm\:block{display:block}.sm\:items-center{align-items:center}.sm\:justify-start{justify-content:flex-start}.sm\:justify-between{justify-content:space-between}.sm\:h-20{height:5rem}.sm\:ml-0{margin-left:0}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:pt-0{padding-top:0}.sm\:text-left{text-align:left}.sm\:text-right{text-align:right}}@media (min-width:768px){.md\:border-t-0{border-top-width:0}.md\:border-l{border-left-width:1px}.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (min-width:1024px){.lg\:px-8{padding-left:2rem;padding-right:2rem}}@media (prefers-color-scheme:dark){.dark\:bg-gray-800{--bg-opacity:1;background-color:#2d3748;background-color:rgba(45,55,72,var(--bg-opacity))}.dark\:bg-gray-900{--bg-opacity:1;background-color:#1a202c;background-color:rgba(26,32,44,var(--bg-opacity))}.dark\:border-gray-700{--border-opacity:1;border-color:#4a5568;border-color:rgba(74,85,104,var(--border-opacity))}.dark\:text-white{--text-opacity:1;color:#fff;color:rgba(255,255,255,var(--text-opacity))}.dark\:text-gray-400{--text-opacity:1;color:#cbd5e0;color:rgba(203,213,224,var(--text-opacity))}}
-        </style>
+        *, *::before, *::after { box-sizing: border-box; }
 
-        <style>
-            body {
-                font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        a:focus-visible {
+            outline: 2px solid rgb(var(--brand-400));
+            outline-offset: 2px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .topbar {
+            border-bottom: 1px solid rgb(38 38 38 / 0.8);
+            background: rgb(23 23 23 / 0.9);
+        }
+
+        .topbar-inner {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0.875rem 1rem;
+        }
+
+        .wordmark {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #fff;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1rem 4rem;
+        }
+
+        .stage {
+            width: 100%;
+            max-width: 34rem;
+        }
+
+        .screen {
+            position: relative;
+            aspect-ratio: 2.39 / 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            border: 1px solid var(--line);
+            border-radius: 0.5rem;
+            background: #141414;
+            box-shadow: 0 64px 56px -56px rgb(var(--brand-400) / 0.22);
+        }
+
+        .screen-code {
+            font-size: clamp(3.25rem, 15vw, 6rem);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+            color: #f5f5f5;
+        }
+
+        .screen-caption {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .seats {
+            display: grid;
+            gap: 0.5rem;
+            justify-items: center;
+            margin-top: 1.75rem;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(var(--seats), 1fr);
+            column-gap: 0.3rem;
+            width: var(--width);
+        }
+
+        .seat {
+            height: 0.85rem;
+            border-radius: 0.35rem 0.35rem 0.1rem 0.1rem;
+            background: var(--seat-color);
+            box-shadow: inset 0 1px 0 rgb(var(--brand-300) / var(--seat-light));
+        }
+
+        .seat.aisle { visibility: hidden; }
+
+        .row:nth-child(1) { --seat-color: #333333; --seat-light: 0.3; --width: 78%; }
+        .row:nth-child(2) { --seat-color: #262626; --seat-light: 0.15; --width: 89%; }
+        .row:nth-child(3) { --seat-color: #1f1f1f; --seat-light: 0.06; --width: 100%; }
+
+        .copy { margin-top: 2.75rem; }
+
+        h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+            color: #fff;
+            text-wrap: balance;
+        }
+
+        .message {
+            margin: 0.75rem 0 0;
+            max-width: 32rem;
+            font-size: 1rem;
+            color: var(--muted);
+            text-wrap: pretty;
+        }
+
+        .message strong { color: var(--text); font-weight: 600; }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 48px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .button-primary { background: #f5f5f5; color: #171717; }
+        .button-primary:hover { background: #fff; }
+
+        .button-secondary {
+            border: 1px solid var(--line-strong);
+            background: var(--surface);
+            color: #f5f5f5;
+        }
+
+        .button-secondary:hover { border-color: #525252; background: var(--line); }
+
+        .button svg { width: 1rem; height: 1rem; flex: none; }
+
+        .hint {
+            margin: 2.5rem 0 0;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--line);
+            font-size: 0.875rem;
+            color: var(--muted);
+        }
+
+        @media (min-width: 640px) {
+            main { padding-top: 4rem; }
+            .topbar-inner { padding-inline: 1.5rem; }
+            h1 { font-size: 2rem; }
+            .seat { height: 1rem; }
+        }
+
+        @media (max-width: 400px) {
+            .button { flex: 1 1 100%; }
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .screen-code, .screen-caption {
+                animation: projector-on 0.9s steps(1, end) both;
             }
-        </style>
-    </head>
-    <body class="antialiased">
-        <div class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center sm:pt-0">
-            <div class="max-w-xl mx-auto sm:px-6 lg:px-8">
-                <div class="flex items-center pt-8 sm:justify-start sm:pt-0">
-                    <div class="px-4 text-lg text-gray-500 border-r border-gray-400 tracking-wider">
-                        @yield('code')
-                    </div>
 
-                    <div class="ml-4 text-lg text-gray-500 uppercase tracking-wider">
-                        @yield('message')
+            .screen {
+                animation: light-spill 1.4s var(--ease-out-soft) both;
+            }
+
+            .copy {
+                animation: rise 0.8s var(--ease-out-soft) 0.25s both;
+            }
+
+            @keyframes projector-on {
+                0% { opacity: 0; }
+                20% { opacity: 0.55; }
+                30% { opacity: 0.1; }
+                45% { opacity: 0.85; }
+                55% { opacity: 0.4; }
+                70%, 100% { opacity: 1; }
+            }
+
+            @keyframes light-spill {
+                from { box-shadow: 0 64px 56px -56px rgb(var(--brand-400) / 0); }
+            }
+
+            @keyframes rise {
+                from { opacity: 0; transform: translateY(12px); }
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a href="{{ url('/') }}" class="wordmark">Cinemax</a>
+    </div>
+</header>
+
+<main>
+    <div class="stage">
+        <div aria-hidden="true">
+            <div class="screen">
+                <div class="screen-code">@yield('code')</div>
+                @hasSection('caption')
+                    <div class="screen-caption">@yield('caption')</div>
+                @endif
+            </div>
+
+            <div class="seats">
+                @foreach([12, 14, 16] as $seatCount)
+                    <div class="row" style="--seats: {{ $seatCount + 1 }}">
+                        @for($seat = 0; $seat <= $seatCount; $seat++)
+                            <span @class(['seat', 'aisle' => $seat === intdiv($seatCount, 2)])></span>
+                        @endfor
                     </div>
-                </div>
+                @endforeach
             </div>
         </div>
-    </body>
+
+        <div class="copy">
+            <h1><span class="sr-only">Chyba @yield('code'): </span>@yield('heading')</h1>
+            <p class="message">@yield('message')</p>
+
+            <div class="actions">
+                @hasSection('actions')
+                    @yield('actions')
+                @else
+                    <a href="{{ url('/') }}" class="button button-primary">
+                        Prejsť na úvod
+                        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd"/></svg>
+                    </a>
+                    @if($hasPreviousPage)
+                        <a href="{{ $previousUrl }}" class="button button-secondary">Vrátiť sa späť</a>
+                    @endif
+                @endif
+            </div>
+
+            @hasSection('hint')
+                <p class="hint">@yield('hint')</p>
+            @endif
+        </div>
+    </div>
+</main>
+</body>
 </html>

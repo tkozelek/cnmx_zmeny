@@ -1,9 +1,9 @@
-<x-layout title="Zabudnuté heslo" description="Obnovte si zabudnuté heslo do účtu Cine-max Zmeny.">
+<x-layout title="Zabudnuté heslo" description="Obnov si zabudnuté heslo do účtu Cinemax Zmeny.">
     <div class="flex-1 min-h-full w-full py-12 md:py-20 flex items-center justify-center px-4 relative overflow-hidden bg-neutral-950">
         <!-- Ambient lighting glows -->
 
         <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-700/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="w-full max-w-md relative z-10">
             <!-- Brand Badge / Logo -->
@@ -12,7 +12,7 @@
                     <i class="fa-solid fa-key"></i>
                 </div>
                 <h1 class="text-2xl font-bold tracking-tight text-white uppercase">Zabudnuté heslo</h1>
-                <p class="text-neutral-400 text-sm mt-1">Zadajte svoj e-mail pre zaslanie inštrukcií na obnovu</p>
+                <p class="text-neutral-400 text-sm mt-1">Zadaj svoj e-mail a pošleme ti inštrukcie na obnovu</p>
             </div>
 
             <!-- Card container -->
@@ -23,8 +23,9 @@
                     <x-form-input
                         type="email"
                         name="email"
+                        autocomplete="email"
                         label="E-mailová adresa"
-                        placeholder="vas@email.com"
+                        placeholder="tvoj@email.sk"
                         :value="old('email')"
                         icon="fa-envelope"
                         required
@@ -38,7 +39,7 @@
                 </form>
 
                 <div class="pt-4 border-t border-neutral-800 text-center">
-                    <a class="text-xs text-neutral-400 hover:text-slate-300 font-semibold inline-flex items-center gap-1.5 transition duration-150" href="{{ route('login') }}">
+                    <a class="text-xs text-neutral-400 hover:text-neutral-200 font-semibold inline-flex items-center gap-1.5 transition duration-150" href="{{ route('login') }}">
                         <i class="fa-solid fa-arrow-left text-[10px] text-brand-400"></i> Späť na prihlásenie
                     </a>
                 </div>

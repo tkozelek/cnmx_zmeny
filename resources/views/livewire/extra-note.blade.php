@@ -15,7 +15,7 @@
                 @class([
                     'h-10 w-full sm:w-64 rounded-lg border bg-neutral-900 py-0 pl-3 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 transition focus:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-500/50',
                     'pr-9 border-neutral-500' => filled($note),
-                    'pr-3 border-neutral-700' => blank($note),
+                    'pr-3 border-neutral-500' => blank($note),
                 ])
             >
 
@@ -35,6 +35,6 @@
     </div>
 
     <p id="extra-note-hint" class="mt-1 text-xs text-neutral-400 sm:text-right">
-        Pridá sa ku dňom, na ktoré sa zapíšete odteraz.
+        Pridá sa ku dňom, na ktoré sa zapíšeš odteraz.
     </p>
 </div>

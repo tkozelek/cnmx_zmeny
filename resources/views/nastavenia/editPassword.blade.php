@@ -1,7 +1,7 @@
-<x-layout title="Zmena hesla" description="Zmeňte si heslo do svojho účtu Cine-max Zmeny.">
+<x-layout title="Zmena hesla" description="Zmeň si heslo do svojho účtu Cinemax Zmeny.">
     <div class="container mx-auto max-w-lg px-4 py-8">
         <div class="flex flex-col gap-6">
-            <x-page-header icon="fa-key" title="Zmena hesla" subtitle="Zadajte svoje aktuálne a nové heslo pre účet" />
+            <x-page-header icon="fa-key" title="Zmena hesla" subtitle="Zadaj svoje aktuálne a nové heslo pre účet" />
 
             {{-- Card container --}}
             <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-6 sm:p-8 space-y-6">
@@ -21,8 +21,9 @@
                     <x-form-input
                         type="password"
                         name="current_password"
+                        autocomplete="current-password"
                         label="Staré heslo"
-                        placeholder="Zadajte staré heslo"
+                        placeholder="Zadaj staré heslo"
                         icon="fa-lock"
                         required
                         autofocus
@@ -31,8 +32,9 @@
                     <x-form-input
                         type="password"
                         name="new_password"
+                        autocomplete="new-password"
                         label="Nové heslo"
-                        placeholder="Zadajte nové heslo"
+                        placeholder="Zadaj nové heslo"
                         icon="fa-key"
                         required
                     />
@@ -40,8 +42,9 @@
                     <x-form-input
                         type="password"
                         name="new_password_confirmation"
+                        autocomplete="new-password"
                         label="Nové heslo znova"
-                        placeholder="Zopakujte nové heslo"
+                        placeholder="Zopakuj nové heslo"
                         icon="fa-check-double"
                         required
                     />

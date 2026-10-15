@@ -1,4 +1,4 @@
-<nav class="hidden lg:flex items-center gap-2">
+<nav aria-label="Hlavné menu" class="hidden lg:flex items-center gap-2">
     @if(auth()->check() && auth()->user()->hasVerifiedEmail())
         <x-nav-link
             route="calendar.index"
@@ -14,9 +14,9 @@
             >
                 Používatelia
                 @if(isset($newUserCount) && $newUserCount > 0)
-                    <span class="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1.5 text-xs font-bold text-white bg-rose-500 rounded-full align-middle" aria-label="Čaká na schválenie: {{ $newUserCount }}">
-                        <span aria-hidden="true">{{ $newUserCount }}</span>
-                        <span class="sr-only">čakajúcich na schválenie</span>
+                    <span class="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1.5 text-xs font-bold text-neutral-950 bg-amber-400 rounded-full align-middle">
+                        <span>{{ $newUserCount }}</span>
+                        <span class="sr-only">&nbsp;čakajúcich na schválenie</span>
                     </span>
                 @endif
             </x-nav-link>
@@ -55,7 +55,7 @@
                 :aria-expanded="openProfile.toString()"
                 aria-haspopup="menu"
                 aria-label="Používateľské menu"
-                class="group flex items-center gap-2.5 px-3 py-1.5 text-base font-semibold text-neutral-300 transition hover:bg-neutral-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-xl cursor-pointer"
+                class="group flex items-center gap-2.5 px-3 py-1.5 text-base font-semibold text-neutral-300 transition hover:bg-neutral-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 rounded-xl cursor-pointer"
             >
                 <i class="fa-solid fa-user text-sm text-neutral-400 group-hover:text-neutral-200 transition"></i>
                 <span>{{ auth()->user()->name }} {{ auth()->user()->lastname }}</span>
@@ -85,7 +85,7 @@
                         href="{{ route('profile.index') }}"
                         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
                     >
-                        <i class="fa-solid fa-user text-xs text-indigo-400"></i>
+                        <i class="fa-solid fa-user text-xs text-brand-400"></i>
                         Môj profil
                     </a>
 

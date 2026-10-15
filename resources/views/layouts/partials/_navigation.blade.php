@@ -1,4 +1,4 @@
-<div x-data="{ openn: false }"
+<header x-data="{ openn: false }"
      @keydown.escape.window="openn = false"
      class="sticky top-0 z-40 w-full border-b border-neutral-800/80 bg-neutral-900/90 backdrop-blur-md shadow-sm py-1.5"
 >
@@ -27,6 +27,4 @@
     <template x-teleport="body">
         @include('layouts.partials._mobile')
     </template>
-</div>
-
-
+</header>

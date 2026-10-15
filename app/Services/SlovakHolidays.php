@@ -15,31 +15,39 @@ use Carbon\CarbonInterface;
 class SlovakHolidays
 {
     /**
-     * [month, day] pairs that fall on the same date every year.
+     * [month, day, is-a-working-day-in(year)] for the dates that sit on the same day every year.
      *
-     * @var list<array{0: int, 1: int}>
+     * The 2024/2025 consolidation laws took 1.9 and 17.11 off the list from 2025 on, and
+     * 8.5 and 15.9 for 2026 only - they stay state holidays, but people work.
+     *
+     * @return list<array{0: int, 1: int, 2: callable(int): bool}>
      */
-    private const array FIXED = [
-        [1, 1],   // Deň vzniku Slovenskej republiky
-        [1, 6],   // Zjavenie Pána (Traja králi)
-        [5, 1],   // Sviatok práce
-        [5, 8],   // Deň víťazstva nad fašizmom
-        [7, 5],   // Sviatok svätého Cyrila a svätého Metoda
-        [8, 29],  // Výročie Slovenského národného povstania
-        [9, 1],   // Deň Ústavy Slovenskej republiky
-        [9, 15],  // Sedembolestná Panna Mária
-        [11, 1],  // Sviatok všetkých svätých
-        [11, 17], // Deň boja za slobodu a demokraciu
-        [12, 24], // Štedrý deň
-        [12, 25], // Prvý sviatok vianočný
-        [12, 26], // Druhý sviatok vianočný
-    ];
+    private static function fixed(): array
+    {
+        $always = fn (int $year): bool => false;
+
+        return [
+            [1, 1, $always],   // Deň vzniku Slovenskej republiky
+            [1, 6, $always],   // Zjavenie Pána (Traja králi)
+            [5, 1, $always],   // Sviatok práce
+            [5, 8, fn (int $year): bool => $year === 2026],   // Deň víťazstva nad fašizmom
+            [7, 5, $always],   // Sviatok svätého Cyrila a svätého Metoda
+            [8, 29, $always],  // Výročie Slovenského národného povstania
+            [9, 1, fn (int $year): bool => $year >= 2025],    // Deň Ústavy Slovenskej republiky
+            [9, 15, fn (int $year): bool => $year === 2026],  // Sedembolestná Panna Mária
+            [11, 1, $always],  // Sviatok všetkých svätých
+            [11, 17, fn (int $year): bool => $year >= 2025],  // Deň boja za slobodu a demokraciu
+            [12, 24, $always], // Štedrý deň
+            [12, 25, $always], // Prvý sviatok vianočný
+            [12, 26, $always], // Druhý sviatok vianočný
+        ];
+    }
 
     public static function isHoliday(CarbonInterface $date): bool
     {
-        foreach (self::FIXED as [$month, $day]) {
+        foreach (self::fixed() as [$month, $day, $workingDayIn]) {
             if ($date->month === $month && $date->day === $day) {
-                return true;
+                return ! $workingDayIn($date->year);
             }
         }
 

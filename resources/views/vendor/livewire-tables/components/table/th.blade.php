@@ -20,7 +20,7 @@
             'hidden lg:table-cell' => $isTailwind && $column->shouldCollapseOnTablet(),
         ])
         ->except(['default', 'default-colors', 'default-styling'])
-}}>
+}} @if($direction) aria-sort="{{ $direction === 'asc' ? 'ascending' : 'descending' }}" @endif>
     @if($column->getColumnLabelStatus())
         @unless ($this->sortingIsEnabled() && ($column->isSortable() || $column->getSortCallback()))
             <x-livewire-tables::table.th.label :$customLabelAttributes :columnTitle="$column->getTitle()" />

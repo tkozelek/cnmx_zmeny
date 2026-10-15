@@ -32,11 +32,11 @@
                     {{-- Previous Page Button --}}
                     @if ($paginator->onFirstPage())
                         <span class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-400 bg-neutral-950 border border-neutral-800/80 cursor-default">
-                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                            <i class="fa-solid fa-chevron-left text-xs" aria-hidden="true"></i>
                         </span>
                     @else
-                        <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 hover:text-white bg-neutral-800 border border-neutral-700/80 transition hover:bg-neutral-700" title="Predchádzajúca stránka">
-                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 hover:text-white bg-neutral-800 border border-neutral-700/80 transition hover:bg-neutral-700" title="Predchádzajúca stránka" aria-label="Predchádzajúca stránka">
+                            <i class="fa-solid fa-chevron-left text-xs" aria-hidden="true"></i>
                         </button>
                     @endif
 
@@ -53,7 +53,7 @@
                                 @foreach ($element as $page => $url)
                                     <span wire:key="paginator-{{ $paginator->getPageName() }}-{{ $this->numberOfPaginatorsRendered[$paginator->getPageName()] }}-page{{ $page }}">
                                         @if ($page == $paginator->currentPage())
-                                            <span class="flex h-9 min-w-9 px-3 items-center justify-center rounded-lg text-xs font-bold text-brand-300 bg-brand-500/20 border border-brand-500/60 shadow">
+                                            <span aria-current="page" class="flex h-9 min-w-9 px-3 items-center justify-center rounded-lg text-xs font-bold text-brand-300 bg-brand-500/20 border border-brand-500/60 shadow">
                                                 {{ $page }}
                                             </span>
                                         @else
@@ -69,12 +69,12 @@
 
                     {{-- Next Page Button --}}
                     @if ($paginator->hasMorePages())
-                        <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 hover:text-white bg-neutral-800 border border-neutral-700/80 transition hover:bg-neutral-700" title="Nasledujúca stránka">
-                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 hover:text-white bg-neutral-800 border border-neutral-700/80 transition hover:bg-neutral-700" title="Nasledujúca stránka" aria-label="Nasledujúca stránka">
+                            <i class="fa-solid fa-chevron-right text-xs" aria-hidden="true"></i>
                         </button>
                     @else
                         <span class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-400 bg-neutral-950 border border-neutral-800/80 cursor-default">
-                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                            <i class="fa-solid fa-chevron-right text-xs" aria-hidden="true"></i>
                         </span>
                     @endif
                 </div>

@@ -54,8 +54,8 @@ class AssignmentController extends Controller
         );
 
         return back()->with($assignment->wasRecentlyCreated
-            ? ['success' => 'Úspešne ste sa zapísali na zmenu.', 'message' => 'Úspešne ste sa zapísali na zmenu.']
-            : ['error' => 'V tento deň ste už zapísaný.']);
+            ? ['success' => 'Máš zápis na tento deň.', 'message' => 'Máš zápis na tento deň.']
+            : ['error' => 'Na tento deň už máš zápis.']);
     }
 
     public function destroy(Assignment $assignment): RedirectResponse
@@ -64,6 +64,6 @@ class AssignmentController extends Controller
 
         $assignment->delete();
 
-        return back()->with(['success' => 'Úspešne ste sa odpísali zo zmeny.', 'message' => 'Úspešne ste sa odpísali zo zmeny.']);
+        return back()->with(['success' => 'Zápis na tento deň je zrušený.', 'message' => 'Zápis na tento deň je zrušený.']);
     }
 }

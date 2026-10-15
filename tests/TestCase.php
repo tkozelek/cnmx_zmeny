@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\Team;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\PermissionRegistrar;
@@ -24,6 +25,18 @@ abstract class TestCase extends BaseTestCase
         // for reasons that have nothing to do with the test - which reads as a real failure
         // and only shows up when the suite runs in a particular order.
         Cache::flush();
+    }
+
+    /**
+     * AuthenticateSession pins the session to the first user's password hash, so switching users
+     * mid-test would read as a stale session and log the second one out. A real switch always goes
+     * through logout, which invalidates the session.
+     */
+    public function be(Authenticatable $user, $guard = null)
+    {
+        $this->app['session']->forget('password_hash_'.($guard ?? config('auth.defaults.guard')));
+
+        return parent::be($user, $guard);
     }
 
     /**

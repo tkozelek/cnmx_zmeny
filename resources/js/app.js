@@ -1,29 +1,55 @@
-import flatpickr from "flatpickr";
-import "flatpickr/dist/flatpickr.css";
-import "flatpickr/dist/themes/dark.css";
-import { Slovak } from "flatpickr/dist/l10n/sk.js";
-import { Chart, registerables } from "chart.js";
+// Only the calendar, absences and profile pages need these - loaded on first use instead of
+// shipping ~200 kB of JS to every page.
+let flatpickrLoading = null;
 
-flatpickr.localize(Slovak);
-window.flatpickr = flatpickr;
+function loadFlatpickr() {
+    flatpickrLoading ??= Promise.all([
+        import('flatpickr'),
+        import('flatpickr/dist/l10n/sk.js'),
+        import('flatpickr/dist/flatpickr.css'),
+        import('flatpickr/dist/themes/dark.css'),
+    ]).then(([{ default: flatpickr }, { Slovak }]) => {
+        flatpickr.localize(Slovak);
+        window.flatpickr = flatpickr;
+        return flatpickr;
+    });
+
+    return flatpickrLoading;
+}
+
+let chartLoading = null;
+
+function loadChart() {
+    chartLoading ??= import('chart.js').then(({ Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip }) => {
+        Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
+        return Chart;
+    });
+
+    return chartLoading;
+}
 
 function toIsoDate(date) {
     return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
 }
 
 document.addEventListener('alpine:init', () => {
-    Alpine.data('absenceRangePicker', (dateFrom, dateTo, openModal = false) => ({
+    Alpine.data('absenceRangePicker', (dateFrom, dateTo, openModal = false, minDate = null) => ({
         openModal,
         dateFrom,
         dateTo,
         sending: false,
-        initFlatpickr() {
-            if (typeof window.flatpickr !== 'function') return;
-            window.flatpickr(this.$refs.rangeInput, {
+        async initFlatpickr() {
+            const flatpickr = await loadFlatpickr();
+            flatpickr(this.$refs.rangeInput, {
                 mode: 'range',
+                // Inline inside the dialog, not a popup at the end of <body>: the dialog's focus trap
+                // would keep keyboard users out of a popup, and its overflow would clip one.
+                inline: true,
+                // Days before the reporting deadline would only fail validation.
+                minDate,
                 dateFormat: 'Y-m-d',
                 altInput: true,
-                altInputClass: 'w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer',
+                altInputClass: 'w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer',
                 altFormat: 'j. n. Y',
                 defaultDate: [this.dateFrom, this.dateTo],
                 // The visible field is flatpickr's altInput; the <label for> and the hint point at it.
@@ -41,8 +67,9 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    Alpine.data('weekPicker', (lockedDates = [], weekStartDay = 3, currentWeekStart = '') => ({
+    Alpine.data('weekPicker', (lockedDates = [], weekStartDay = 3, currentWeekStart = '', options = {}) => ({
         picker: null,
+        isOpen: false,
         lockedDates: lockedDates || [],
         weekStartDay: weekStartDay ?? 3,
         currentWeekRange: [],
@@ -65,18 +92,66 @@ document.addEventListener('alpine:init', () => {
             }
             return range;
         },
-        init() {
-            if (typeof window.flatpickr !== 'function') return;
+        async init() {
+            const flatpickr = await loadFlatpickr();
             const self = this;
             this.currentWeekRange = this.getWeekRange(currentWeekStart);
-            this.picker = window.flatpickr(this.$refs.pickerInput, {
+            this.picker = flatpickr(this.$refs.pickerInput, {
                 // On phones flatpickr would swap in the native date input: no week colouring,
                 // and opening it from the trigger button is unreliable.
                 disableMobile: true,
                 dateFormat: 'Y-m-d',
                 defaultDate: currentWeekStart,
+                // Rows start on the cinema's first weekday, so every work week is exactly one row.
+                locale: { firstDayOfWeek: (this.weekStartDay + 1) % 7 },
+                // Weeks past the team's lookahead aren't open yet - same limit as the "next" arrow.
+                maxDate: options.maxDate,
                 position: 'below center',
                 positionElement: this.$refs.triggerButton,
+                onReady: (_dates, _str, fp) => {
+                    // flatpickr's month arrows are plain spans and its labels are English.
+                    [[fp.prevMonthNav, 'Predchádzajúci mesiac'], [fp.nextMonthNav, 'Nasledujúci mesiac']].forEach(([arrow, label]) => {
+                        if (!arrow) return;
+                        arrow.setAttribute('role', 'button');
+                        arrow.setAttribute('tabindex', '0');
+                        arrow.setAttribute('aria-label', label);
+                        arrow.addEventListener('keydown', (event) => {
+                            if (event.key !== 'Enter' && event.key !== ' ') return;
+                            event.preventDefault();
+                            arrow.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                        });
+                    });
+                    fp.monthsDropdownContainer?.setAttribute('aria-label', 'Mesiac');
+                    fp.currentYearElement?.setAttribute('aria-label', 'Rok');
+                    fp.calendarContainer.setAttribute('role', 'dialog');
+                    fp.calendarContainer.setAttribute('aria-label', 'Výber týždňa');
+
+                    const footer = document.createElement('div');
+                    footer.className = 'week-picker-footer';
+                    footer.innerHTML = `
+                        <ul class="week-picker-legend" aria-hidden="true">
+                            <li><span class="week-picker-swatch is-open"></span>Otvorený</li>
+                            <li><span class="week-picker-swatch is-locked"></span>Zamknutý</li>
+                            <li><span class="week-picker-swatch is-current"></span>Zobrazený</li>
+                        </ul>
+                        <a class="week-picker-today" href="${options.currentWeekUrl ?? '/tyzdne'}">Tento týždeň</a>`;
+                    fp.calendarContainer.appendChild(footer);
+                },
+                // Focus goes into the calendar so the arrow keys work, and back to the button after.
+                onOpen: (_dates, _str, fp) => {
+                    self.isOpen = true;
+                    requestAnimationFrame(() => (fp.selectedDateElem || fp.todayDateElem || fp.days.querySelector('.flatpickr-day'))?.focus());
+                },
+                onClose: (_dates, _str, fp) => {
+                    self.isOpen = false;
+                    // A frame later: flatpickr moves focus to its own (hidden) input after this hook.
+                    requestAnimationFrame(() => {
+                        const focused = document.activeElement;
+                        if (focused === self.$refs.pickerInput || focused === document.body || fp.calendarContainer.contains(focused)) {
+                            self.$refs.triggerButton.focus();
+                        }
+                    });
+                },
                 onDayCreate: (dObj, dStr, fp, dayElem) => {
                     const dateObj = dayElem.dateObj;
                     const year = dateObj.getFullYear();
@@ -87,6 +162,13 @@ document.addEventListener('alpine:init', () => {
                     const weekRange = self.getWeekRange(dateFormatted);
                     const isLocked = self.lockedDates.includes(weekRange[0]);
                     const isCurrentActive = self.currentWeekRange.includes(dateFormatted);
+
+                    // The colours say locked/open/current - say it to screen readers too.
+                    dayElem.setAttribute('aria-label', [
+                        dayElem.getAttribute('aria-label'),
+                        isLocked ? 'zamknutý týždeň' : 'otvorený týždeň',
+                        isCurrentActive ? 'zobrazený' : null,
+                    ].filter(Boolean).join(', '));
 
                     if (isLocked) {
                         dayElem.classList.add('is-locked-week-day');
@@ -132,7 +214,7 @@ document.addEventListener('alpine:init', () => {
                     });
                 },
                 onChange: (selectedDates, dateStr) => {
-                    if (dateStr) window.location.href = '/week/' + dateStr;
+                    if (dateStr) window.location.href = (options.weekUrl ?? '/week/__DATE__').replace('__DATE__', dateStr);
                 }
             });
         },
@@ -202,28 +284,23 @@ document.addEventListener('change', function (event) {
     syncCalendarToggles(false);
 });
 
-function togglePasswordVisibility(inputId) {
+function togglePasswordVisibility(inputId, button) {
     const passwordInput = document.getElementById(inputId);
     const icon = document.getElementById(inputId + 'Icon');
+    const show = passwordInput.type === 'password';
 
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        passwordInput.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
+    passwordInput.type = show ? 'text' : 'password';
+    icon.classList.toggle('fa-eye', !show);
+    icon.classList.toggle('fa-eye-slash', show);
+    button?.setAttribute('aria-pressed', String(show));
 }
 window.togglePasswordVisibility = togglePasswordVisibility;
 
-Chart.register(...registerables);
-window.Chart = Chart;
-
-function renderProfileChart(newData) {
+async function renderProfileChart(newData) {
     const canvas = document.getElementById('barChart');
     if (!canvas) return;
+
+    const Chart = await loadChart();
 
     let data = newData || window.chartData;
     if (!data && canvas.dataset.chart) {
@@ -349,13 +426,31 @@ document.addEventListener('DOMContentLoaded', function() {
     renderProfileChart();
 });
 
+// After a deploy an open tab still references the old chunk hashes - reload once onto the new build.
+window.addEventListener('vite:preloadError', () => {
+    try {
+        if (sessionStorage.getItem('reloaded-for-new-build')) return;
+        sessionStorage.setItem('reloaded-for-new-build', '1');
+    } catch (e) {
+        return; // storage blocked - no way to stop a reload loop, so don't start one
+    }
+    window.location.reload();
+});
+
 // Welcome-page scroll choreography and auditorium. Dynamic imports so both are their own
-// chunks and only the welcome page ever downloads them.
+// chunks and only the welcome page ever downloads them. The page hides its content until the
+// choreography reveals it (html.js), so if that fails the hiding is dropped and the page shows as is.
+const showWelcomeWithoutMotion = () => document.documentElement.classList.remove('js');
+
 if (document.querySelector('[data-scroll-progress]')) {
-    import('./welcome.js').then(({ mountWelcome }) => mountWelcome());
+    import('./welcome.js')
+        .then(({ mountWelcome }) => mountWelcome())
+        .catch(showWelcomeWithoutMotion);
 }
 
 const seatFieldCanvas = document.querySelector('[data-seat-field]');
 if (seatFieldCanvas) {
-    import('./seat-field.js').then(({ mountSeatField }) => mountSeatField(seatFieldCanvas));
+    import('./seat-field.js')
+        .then(({ mountSeatField }) => mountSeatField(seatFieldCanvas))
+        .catch(() => {});
 }

@@ -45,6 +45,12 @@ return [
 
     'enabled' => env('PULSE_ENABLED', true),
 
+    // Who may open the dashboard (comma-separated e-mails), see the viewPulse gate.
+    'admins' => array_values(array_filter(array_map(
+        fn (string $email): string => mb_strtolower(trim($email)),
+        explode(',', (string) env('PULSE_ADMIN_EMAILS', '')),
+    ))),
+
     /*
     |--------------------------------------------------------------------------
     | Pulse Storage Driver

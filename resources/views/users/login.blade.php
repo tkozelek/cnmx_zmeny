@@ -1,9 +1,9 @@
-<x-layout title="Prihlásenie" description="Prihláste sa do portálu pracovných zmien Cine-max.">
+<x-layout title="Prihlásenie" description="Prihlás sa do portálu pracovných zmien Cinemax.">
     <div class="flex-1 min-h-full w-full py-12 md:py-20 flex items-center justify-center px-4 relative overflow-hidden bg-neutral-950">
         <!-- Ambient lighting glows -->
 
         <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-700/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="w-full max-w-md relative z-10">
             <!-- Brand Badge / Logo -->
@@ -11,8 +11,8 @@
                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-neutral-900 border border-neutral-800 text-brand-400 shadow-sm text-xl mb-3">
                     <i class="fa-solid fa-film"></i>
                 </div>
-                <h1 class="text-2xl font-bold tracking-tight text-white uppercase">Vitajte späť</h1>
-                <p class="text-neutral-400 text-sm mt-1">Prihláste sa do portálu pracovných zmien CNMX</p>
+                <h1 class="text-2xl font-bold tracking-tight text-white uppercase">Vitaj späť</h1>
+                <p class="text-neutral-400 text-sm mt-1">Prihlás sa do portálu pracovných zmien Cinemax</p>
             </div>
 
             <!-- Card container -->
@@ -27,8 +27,9 @@
                     <x-form-input
                         type="email"
                         name="email"
+                        autocomplete="username"
                         label="E-mailová adresa"
-                        placeholder="vas@email.com"
+                        placeholder="tvoj@email.sk"
                         :value="old('email')"
                         icon="fa-envelope"
                         required
@@ -38,6 +39,7 @@
                     <x-form-input
                         type="password"
                         name="password"
+                        autocomplete="current-password"
                         label="Heslo"
                         placeholder="••••••••"
                         icon="fa-lock"
@@ -63,7 +65,7 @@
 
                 <div class="pt-4 border-t border-neutral-800 text-center">
                     <p class="text-xs text-neutral-400">
-                        Nemáte ešte účet?
+                        Ešte nemáš účet?
                         <a class="text-brand-400 hover:text-brand-300 font-semibold inline-flex items-center gap-1 ml-1 hover:underline" href="{{ route('register') }}">
                             Vytvoriť nový účet
                         </a>
@@ -100,7 +102,7 @@
                     </p>
 
                     <p class="text-xs text-neutral-400 leading-relaxed">
-                        Pred prihlásením prosím klikni na odkaz v e-maile a potvrď svoj účet. Následne ťa schváli vedúci kina.
+                        Pred prihlásením prosím klikni na odkaz v e-maile a potvrď svoj účet. Potom ťa ešte schváli manažér kina.
                     </p>
 
                     <div class="pt-3 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-center gap-3">

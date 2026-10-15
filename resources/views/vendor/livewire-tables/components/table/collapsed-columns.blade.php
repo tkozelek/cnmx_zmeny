@@ -7,13 +7,12 @@
         @toggle-row-content.window="($event.detail.tableName === '{{ $tableName }}' && $event.detail.row === {{ $rowIndex }}) ? $el.classList.toggle('{{ $isBootstrap ? 'd-none' : 'hidden' }}') : null"
         {{
             $attributes->merge([
-                    'wire:loading.class.delay' => 'opacity-50 dark:bg-gray-900 dark:opacity-60',
+                    'wire:loading.class.delay' => 'opacity-50',
                     'wire:key' => $tableName.'-row-'.$row->{$primaryKey}.'-collapsed-contents',
                 ])
                 ->merge($customAttributes)
                 ->class([
-                    'hidden bg-white dark:bg-gray-700 dark:text-white rappasoft-striped-row' => ($isTailwind && ($customAttributes['default'] ?? true) && $rowIndex % 2 === 0),
-                    'hidden bg-gray-50 dark:bg-gray-800 dark:text-white rappasoft-striped-row' => ($isTailwind && ($customAttributes['default'] ?? true) && $rowIndex % 2 !== 0),
+                    'hidden bg-neutral-900 text-neutral-200 border-b border-neutral-800/50 rappasoft-striped-row' => ($isTailwind && ($customAttributes['default'] ?? true)),
                     'd-none bg-light rappasoft-striped-row' => ($isBootstrap && $rowIndex % 2 === 0 && ($customAttributes['default'] ?? true)),
                     'd-none bg-white rappasoft-striped-row' => ($isBootstrap && $rowIndex % 2 !== 0 && ($customAttributes['default'] ?? true)),
                 ])

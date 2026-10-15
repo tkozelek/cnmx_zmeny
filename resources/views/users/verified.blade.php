@@ -13,7 +13,7 @@
                 <div class="space-y-2">
                     <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">E-mail bol úspešne overený</h1>
                     <p class="text-sm sm:text-base text-neutral-300 leading-relaxed">
-                        Vaša e-mailová adresa je overená. Účet teraz čaká na schválenie manažérom kina.
+                        Tvoja e-mailová adresa je overená. Účet teraz čaká na schválenie manažérom kina.
                     </p>
                 </div>
 
@@ -23,7 +23,7 @@
                         <span>Čo nasleduje ďalej?</span>
                     </div>
                     <p class="text-xs text-neutral-400 leading-relaxed">
-                        Manažér kina skontroluje vašu registráciu. Hneď ako váš účet schváli, príde vám e-mail a&nbsp;môžete sa prihlásiť.
+                        Manažér kina skontroluje tvoju registráciu. Hneď ako tvoj účet schváli, príde ti e-mail a&nbsp;môžeš sa prihlásiť.
                     </p>
                 </div>
 

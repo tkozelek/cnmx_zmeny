@@ -22,6 +22,8 @@
             <button
                 x-cloak x-show="!currentlyReorderingStatus"
                 x-on:click.prevent="$dispatch('toggle-row-content', {'tableName': '{{ $tableName }}', 'row': {{ $rowIndex }}}); open = !open"
+                :aria-expanded="open.toString()"
+                aria-label="Podrobnosti riadku"
                 @class([
                     'border-0 bg-transparent p-0' => $isBootstrap
                 ])
@@ -30,7 +32,7 @@
                     $attributes->merge($this->getCollapsingColumnButtonExpandAttributes)
                         ->class([
                             'h-6 w-6' => $isTailwind && ($this->getCollapsingColumnButtonExpandAttributes['default-styling'] ?? true),
-                            'text-green-600' => $isTailwind && ($this->getCollapsingColumnButtonExpandAttributes['default-colors'] ?? true),
+                            'text-brand-400' => $isTailwind && ($this->getCollapsingColumnButtonExpandAttributes['default-colors'] ?? true),
                             'laravel-livewire-tables-btn-lg text-success' => $isBootstrap && ($this->getCollapsingColumnButtonExpandAttributes['default-colors'] ?? true)
                         ])
                         ->except(['default','default-styling','default-colors']) 
@@ -40,7 +42,7 @@
                     $attributes->merge($this->getCollapsingColumnButtonCollapseAttributes)
                         ->class([
                             'h-6 w-6' => $isTailwind && ($this->getCollapsingColumnButtonCollapseAttributes['default-styling'] ?? true),
-                            'text-yellow-600' => $isTailwind && ($this->getCollapsingColumnButtonCollapseAttributes['default-colors'] ?? true),
+                            'text-neutral-400' => $isTailwind && ($this->getCollapsingColumnButtonCollapseAttributes['default-colors'] ?? true),
                             'laravel-livewire-tables-btn-lg text-warning' => $isBootstrap && ($this->getCollapsingColumnButtonExpandAttributes['default-colors'] ?? true),
                         ])
                         ->except(['default','default-styling','default-colors']) 

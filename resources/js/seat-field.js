@@ -19,6 +19,9 @@ const NEAREST_DEPTH = 5;
 const INFLUENCE_RADIUS = 2.6;
 const MAX_LIFT = 0.55;
 const IDLE_AFTER_MS = 3500;
+// Motion nobody started must stop within 5 s (WCAG 2.2.2) - the sweep then rests until a pointer moves.
+const IDLE_SWEEP_MS = 5000;
+const OFFSTAGE = { x: Infinity, z: Infinity };
 /** Rows rise in front-to-back the first time the room scrolls into view. */
 const ENTRANCE_MS = 900;
 const ENTRANCE_ROW_STAGGER_MS = 70;
@@ -144,7 +147,12 @@ export function mountSeatField(canvas) {
 
             // Seat back, then the cushion as a flat bar below it.
             ctx.beginPath();
-            ctx.roundRect(b.x - b.w / 2, b.y - b.h, b.w, b.h * 0.72, Math.max(1, b.w * 0.22));
+            // roundRect needs Safari 16 / Chrome 99 - square seats beat a canvas that stops drawing.
+            if (ctx.roundRect) {
+                ctx.roundRect(b.x - b.w / 2, b.y - b.h, b.w, b.h * 0.72, Math.max(1, b.w * 0.22));
+            } else {
+                ctx.rect(b.x - b.w / 2, b.y - b.h, b.w, b.h * 0.72);
+            }
             ctx.fill();
             ctx.stroke();
             ctx.fillRect(b.x - b.w * 0.55, b.y - b.h * 0.2, b.w * 1.1, Math.max(1, b.h * 0.12));
@@ -177,16 +185,24 @@ export function mountSeatField(canvas) {
     const step = (time) => {
         if (!running) return;
 
+        enteredAt ??= time;
+
         let focus = pointer;
         if (!focus || time - lastPointerAt > IDLE_AFTER_MS) {
-            // Idle: a slow figure-eight sweep across the room.
-            const t = time / 2600;
-            focus = { x: Math.sin(t) * roomWidth * 0.34, z: NEAREST_DEPTH + rows * ROW_SPACING * (0.45 + 0.3 * Math.sin(t * 2)) };
-            targetCamX = Math.sin(t) * 0.8;
+            const idleSince = Math.max(enteredAt, lastPointerAt + IDLE_AFTER_MS);
+
+            if (time - idleSince > IDLE_SWEEP_MS) {
+                focus = OFFSTAGE;
+                targetCamX = 0;
+            } else {
+                // Idle: a slow figure-eight sweep across the room.
+                const t = time / 2600;
+                focus = { x: Math.sin(t) * roomWidth * 0.34, z: NEAREST_DEPTH + rows * ROW_SPACING * (0.45 + 0.3 * Math.sin(t * 2)) };
+                targetCamX = Math.sin(t) * 0.8;
+            }
         }
 
         camX += (targetCamX - camX) * 0.06;
-        enteredAt ??= time;
 
         for (const seat of seats) {
             const dist = Math.hypot(seat.x - focus.x, (seat.z - focus.z) * 0.9);
@@ -198,6 +214,12 @@ export function mountSeatField(canvas) {
         }
 
         draw();
+
+        if (focus === OFFSTAGE && Math.abs(camX) < 0.01 && seats.every((seat) => seat.enter > 0.999 && seat.glow < 0.005)) {
+            stop();
+            return;
+        }
+
         frame = requestAnimationFrame(step);
     };
 
@@ -222,6 +244,7 @@ export function mountSeatField(canvas) {
         pointer = unproject(sx, sy);
         lastPointerAt = performance.now();
         targetCamX = (sx / width - 0.5) * 2.4;
+        start();
         canvas.style.cursor = seatAt(sx, sy) ? 'pointer' : 'default';
     });
 
@@ -231,7 +254,7 @@ export function mountSeatField(canvas) {
         const seat = seatAt(...localPoint(event));
         if (!seat) return;
         seat.taken = !seat.taken;
-        if (reducedMotion) draw();
+        reducedMotion ? draw() : start();
     });
 
     // Only animate while the section is on screen - no reason to burn frames below the fold.

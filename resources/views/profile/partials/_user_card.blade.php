@@ -12,8 +12,9 @@
 
                 {{-- Active is the normal state - only the exception gets a badge. --}}
                 @unless($user->is_active ?? true)
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-rose-500/10 text-rose-300 border-rose-500/30">
-                        Neaktívny
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border border-dashed bg-neutral-900 text-neutral-400 border-neutral-600">
+                        <i class="fa-solid fa-ban text-[10px]" aria-hidden="true"></i>
+                        Zablokovaný
                     </span>
                 @endunless
             </div>
@@ -30,7 +31,7 @@
                 @endif
 
                 <span class="shrink-0">
-                    Členom od: <span class="text-neutral-200 font-medium">{{ $user->created_at->format('d. m. Y') }}</span>
+                    Členom od: <span class="text-neutral-200 font-medium">{{ $user->created_at->format('d.m.Y') }}</span>
                 </span>
 
                 <span class="shrink-0">

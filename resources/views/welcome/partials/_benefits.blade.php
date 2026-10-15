@@ -1,9 +1,9 @@
 @php
     $benefits = [
-        ['icon' => 'fa-calendar-check', 'accent' => 'sky', 'title' => 'Píšeš si dni sám', 'text' => 'Vyznač, kedy môžeš pracovať okolo školy či brigády, a manažér z toho poskladá rozpis.'],
-        ['icon' => 'fa-mobile-screen-button', 'accent' => 'emerald', 'title' => 'Vždy v telefóne', 'text' => 'Rozpis máš na mobile aj počítači, kedykoľvek si ho potrebuješ pozrieť.'],
-        ['icon' => 'fa-envelope', 'accent' => 'amber', 'title' => 'Vieš o zmenách hneď', 'text' => 'Keď manažér zverejní alebo upraví rozpis, príde ti e-mail.'],
-        ['icon' => 'fa-eye', 'accent' => 'rose', 'title' => 'Rovnaký rozpis pre všetkých', 'text' => 'Celý tím vidí to isté, takže nikto sa nemusí pýtať, čo platí.'],
+        ['icon' => 'fa-calendar-check', 'title' => 'Dni si vyberáš ty', 'text' => 'Vyznač, kedy môžeš pracovať popri škole či inej brigáde – manažér hneď vidí, s kým môže počítať.'],
+        ['icon' => 'fa-mobile-screen-button', 'title' => 'Vždy v telefóne', 'text' => 'Rozpis máš na mobile aj počítači, kedykoľvek si ho potrebuješ pozrieť.'],
+        ['icon' => 'fa-umbrella-beach', 'title' => 'Absenciu nahlásiš za minútu', 'text' => 'Dovolenku či skúškové zapíšeš vopred a manažér ju uvidí priamo v kalendári.'],
+        ['icon' => 'fa-eye', 'title' => 'Rovnaký rozpis pre všetkých', 'text' => 'Celý tím vidí to isté, takže nikto sa nemusí pýtať, čo platí.'],
     ];
 @endphp
 
@@ -20,7 +20,6 @@
             @foreach($benefits as $i => $benefit)
                 <x-card-with-icon
                     :icon="$benefit['icon']"
-                    :accent="$benefit['accent']"
                     :title="$benefit['title']"
                     :text="$benefit['text']"
                     data-tilt

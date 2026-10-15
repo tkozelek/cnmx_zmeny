@@ -31,8 +31,12 @@ class PasswordResetController extends Controller
             'password' => ['required', 'confirmed', PasswordRule::min(8)],
         ]);
 
-        // 'add_user' broker: 24h expiry, so the admin-invite link keeps the validity it promises.
-        $status = Password::broker('add_user')->reset(
+        // Both brokers share one token table and differ only in expiry, so the broker decides how
+        // old a token may be. An admin invite (24h) goes to an account that has never logged in;
+        // everyone else gets the 60 minutes the reset e-mail promises.
+        $neverLoggedIn = User::where('email', $request->string('email')->value())->whereNull('last_login_at')->exists();
+
+        $status = Password::broker($neverLoggedIn ? 'add_user' : 'users')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill([

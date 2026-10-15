@@ -5,23 +5,23 @@
 <div @class([
     'relative flex flex-col overflow-hidden rounded-lg border bg-neutral-900 transition',
     'border-emerald-500/70' => $this->mine && ! $this->isToday,
-    'border-indigo-500' => $this->isToday,
+    'border-brand-500' => $this->isToday,
     'border-neutral-800 hover:border-neutral-700' => ! $this->mine && ! $this->isToday,
 ])>
     {{-- Day card content, blurred while this card's own request is running --}}
     <div wire:loading.class.delay="blur-sm pointer-events-none select-none" class="flex flex-col flex-1 transition-[filter] duration-200">
         {{-- `armed` lives here, not on the button: this wrapper survives the morph between the two buttons. --}}
         <div x-data="{ armed: false }">
-            @if($locked)
+            @if($locked || $this->isPastForMe)
                 @if($this->mine)
                     <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-emerald-700 text-sm font-semibold text-white">
                         <span>Zapísaný</span>
                         <i class="fa-solid fa-lock text-xs text-emerald-100" aria-hidden="true"></i>
-                        <span class="sr-only">– týždeň je zamknutý</span>
+                        <span class="sr-only">– {{ $locked ? 'týždeň je zamknutý' : 'deň už uplynul' }}</span>
                     </div>
                 @else
                     <div class="flex min-h-11 w-full items-center justify-center gap-2 border-b border-neutral-800 bg-neutral-950 text-sm font-medium text-neutral-400">
-                        <span>Zamknutý</span>
+                        <span>{{ $locked ? 'Zamknutý' : 'Uplynulý deň' }}</span>
                     </div>
                 @endif
             @elseif($this->mine)
@@ -33,6 +33,8 @@
                     @click="if (armed || matchMedia('(hover: hover)').matches) { armed = false; $wire.withdraw() } else { armed = true; setTimeout(() => armed = false, 3000) }"
                     wire:target="withdraw"
                     :class="armed && '!bg-rose-700'"
+                    {{-- The visible text is the state; the name says what the button does. --}}
+                    :aria-label="armed ? 'Potvrdiť odpísanie – {{ $dayName }} {{ $shortDate }}' : 'Odpísať sa – {{ $dayName }} {{ $shortDate }} (máš zápis)'"
                     class="group/btn flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 bg-emerald-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 focus-visible:bg-rose-700 focus-visible:outline-offset-[-4px]"
                 >
                     <span wire:loading.remove wire:target="withdraw">
@@ -40,7 +42,7 @@
                             <span class="group-hover/btn:hidden group-focus-visible/btn:hidden">Zapísaný</span>
                             <span class="hidden group-hover/btn:inline group-focus-visible/btn:inline">Odpísať sa</span>
                         </span>
-                        <span x-show="armed" x-cloak>Ťuknite znova na odpísanie</span>
+                        <span x-show="armed" x-cloak>Ťukni znova na odpísanie</span>
                         <span class="sr-only">– {{ $dayName }} {{ $shortDate }}</span>
                     </span>
                     <span wire:loading wire:target="withdraw"><i class="fa-solid fa-circle-notch fa-spin text-xs" aria-hidden="true"></i></span>
@@ -79,7 +81,7 @@
                 'text-emerald-300/80' => $this->mine && ! $this->isToday,
                 'text-neutral-400' => ! ($this->mine && ! $this->isToday),
             ])>
-                {{ $this->dayCarbon->format('d.m.Y') }}@if($this->isHoliday)<span class="text-rose-300"> · Sviatok</span>@endif
+                {{ $this->dayCarbon->format('d.m.Y') }}@if($this->isHoliday)<span class="text-brand-300"> · Sviatok</span>@endif
             </p>
         </div>
 
@@ -113,7 +115,7 @@
                         <button
                             type="button"
                             wire:click="remove({{ $assignment->id }})"
-                            wire:confirm="Odpísať {{ $assignment->user }} z {{ $shortDate }}? Nedostane o tom upozornenie."
+                            wire:confirm="Odstrániť zápis: {{ $assignment->user }} ({{ $shortDate }})? Nedostane o tom upozornenie."
                             class="-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-700 hover:text-white focus-visible:opacity-100 sm:[@media(hover:hover)]:opacity-0 sm:group-hover:opacity-100"
                             title="Odpísať {{ $assignment->user }}"
                             aria-label="Odpísať {{ $assignment->user }} – {{ $dayName }} {{ $shortDate }}"

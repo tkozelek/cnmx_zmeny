@@ -1,5 +1,6 @@
 @extends('errors::minimal')
 
-@section('title', __('Payment Required'))
 @section('code', '402')
-@section('message', __('Payment Required'))
+@section('title', 'Vyžaduje sa platba')
+@section('heading', 'Táto funkcia nie je dostupná')
+@section('message', 'Na jej použitie je potrebné predplatné. Ak ju potrebuješ, obráť sa na manažéra kina.')

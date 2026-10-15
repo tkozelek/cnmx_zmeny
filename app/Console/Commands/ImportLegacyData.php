@@ -15,13 +15,17 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
- * Repeatable import from the legacy production schema (see the `legacy` connection in
- * config/database.php - LEGACY_DB_* in .env) into the rewritten schema. Safe to cron: users
- * and absences are fully replaced from legacy, while assignments are diff-merged rather than
- * wiped.
+ * Import from the legacy production schema (see the `legacy` connection in
+ * config/database.php - LEGACY_DB_* in .env) into the rewritten schema. Users and absences are
+ * replaced from legacy, assignments are diff-merged, and locked legacy weeks become week locks.
+ *
+ * Re-runnable for rehearsals, but NOT safe to cron: a run wipes the team's absences and locks and
+ * drops sign-ups legacy doesn't have. After each run it records when it finished, and refuses to
+ * run again once the team has data written in the new app since then (see newDataSinceLastRun()).
  *
  * Read-only against `legacy`: every call against that connection is a SELECT. This is what
  * makes it safe to point LEGACY_DB_* at a real production database and import prod -> whatever
@@ -38,6 +42,8 @@ class ImportLegacyData extends Command
 {
     protected $signature = 'app:import-legacy-data
         {--team=1 : ID tímu, ktorý dostane reálne dáta}
+        {--with-test-users : Vytvoriť aj testovacie účty (TEST_USER_* v .env) - nie na produkcii}
+        {--discard-new-data : Prepísať aj dáta zapísané v novej aplikácii od posledného importu}
         {--force : Preskočiť potvrdzovaciu otázku}';
 
     protected $description = 'Nahradí demo dáta daného tímu reálnymi dátami z legacy databázy (LEGACY_DB_* v .env)';
@@ -84,6 +90,19 @@ class ImportLegacyData extends Command
             return self::FAILURE;
         }
 
+        if ($this->option('with-test-users') && blank(config('services.test_users.password'))) {
+            $this->error('--with-test-users vyžaduje TEST_USER_PASSWORD v .env.');
+
+            return self::FAILURE;
+        }
+
+        if (! $this->option('discard-new-data') && ($since = $this->newDataSinceLastRun($team))) {
+            $this->error("Tím '{$team->name}' má od posledného importu ({$since}) nové zápisy, absencie alebo zámky - ".
+                'import by ich zmazal. Ak to naozaj chceš, spusti ho s --discard-new-data.');
+
+            return self::FAILURE;
+        }
+
         if (! $this->option('force') && ! $this->confirm(
             "Toto nahradí zamestnancov a absencie tímu '{$team->name}' reálnymi dátami z legacy databázy. ".
             'Zapísané zmeny sa zlúčia. Pokračovať?'
@@ -96,16 +115,50 @@ class ImportLegacyData extends Command
 
             $this->clearSeededData($team, $legacy);
             $userMap = $this->importUsers($team, $legacy);
-            $this->ensureTestUsers($team);
+
+            if ($this->option('with-test-users')) {
+                $this->ensureTestUsers($team);
+            }
+
             $this->importAssignments($legacy, $userMap);
             $this->importAbsences($legacy, $userMap);
+            $this->importWeekLocks($legacy);
         });
 
+        Storage::disk('local')->put($this->markerPath($team), now()->toDateTimeString());
+
         $this->info('Import dokončený.');
-        $this->line('Preskočené (nová schéma pre ne nemá tabuľku): bugs, file_storage.');
-        $this->line('Testovacie účty: '.implode(' / ', array_column($this->testUsers(), 'email')));
+        $this->line('Preskočené (nová schéma pre ne nemá tabuľku): bugs, file_storage, shifts, rates.');
+
+        if ($this->option('with-test-users')) {
+            $this->line('Testovacie účty: '.implode(' / ', array_column($this->testUsers(), 'email')));
+        }
 
         return self::SUCCESS;
+    }
+
+    private function markerPath(Team $team): string
+    {
+        return "legacy-import/team-{$team->id}.txt";
+    }
+
+    /**
+     * When the previous run finished, if anything in this team has been written since - a sign-up,
+     * an absence or a lock made in the new app, which the next run would wipe.
+     */
+    private function newDataSinceLastRun(Team $team): ?string
+    {
+        $finishedAt = Storage::disk('local')->get($this->markerPath($team));
+
+        if ($finishedAt === null) {
+            return null;
+        }
+
+        $hasNewData = Assignment::query()->withoutGlobalScope('team')->where('team_id', $team->id)->where('created_at', '>', $finishedAt)->exists()
+            || Absence::query()->withoutGlobalScope('team')->where('team_id', $team->id)->where('created_at', '>', $finishedAt)->exists()
+            || WeekLock::query()->withoutGlobalScope('team')->where('team_id', $team->id)->where('created_at', '>', $finishedAt)->exists();
+
+        return $hasNewData ? $finishedAt : null;
     }
 
     /**
@@ -139,9 +192,11 @@ class ImportLegacyData extends Command
     }
 
     /**
-     * Legacy id_role: 1 neoverený, 2 brigádnik, 3 administrátor, 4 zablokovaný. Only 2 and 3
-     * are actually in use in the restored data, so unverified/blocked are not handled here -
-     * see App\Enums\Role and _planning/20-schema-rework-handoff.md for where those states moved to.
+     * Legacy id_role: 1 neoverený, 2 brigádnik, 3 administrátor, 4 zablokovaný. Not-yet-approved
+     * (1) keeps a pending membership and blocked (4) stays inactive - both remain employees, as
+     * that is where those states live now (see App\Enums\Role).
+     *
+     * Every imported address counts as verified: in legacy, the manager's approval was the check.
      *
      * @return array<int, int> legacy user id => new user id
      */
@@ -150,6 +205,8 @@ class ImportLegacyData extends Command
         $map = [];
 
         foreach ($legacy->table('users')->get() as $legacyUser) {
+            $legacyRole = (int) $legacyUser->id_role;
+
             $user = User::updateOrCreate(
                 ['email' => $legacyUser->email],
                 [
@@ -157,15 +214,22 @@ class ImportLegacyData extends Command
                     'lastname' => $legacyUser->lastname,
                     'password' => $legacyUser->password,
                     'current_team_id' => $team->id,
-                    'is_active' => true,
+                    'is_active' => $legacyRole !== 4,
                     'email_verified_at' => now(),
                     'last_login_at' => $legacyUser->last_login_at,
                 ]
             );
 
-            $user->teams()->syncWithoutDetaching([$team->id => ['approved_at' => $legacyUser->created_at]]);
+            if ($legacyUser->created_at !== null) {
+                $user->created_at = $legacyUser->created_at;
+                $user->save();
+            }
 
-            $role = (int) $legacyUser->id_role === 3 ? RoleEnum::HeadManager : RoleEnum::Employee;
+            $user->teams()->syncWithoutDetaching([
+                $team->id => ['approved_at' => $legacyRole === 1 ? null : ($legacyUser->created_at ?? now())],
+            ]);
+
+            $role = $legacyRole === 3 ? RoleEnum::HeadManager : RoleEnum::Employee;
             $user->syncRoles([$role->value]);
 
             $map[$legacyUser->id] = $user->id;
@@ -289,13 +353,27 @@ class ImportLegacyData extends Command
                 'day_of_week' => null,
                 'reason' => $row->popis !== null ? mb_substr($row->popis, 0, 500) : null,
                 'status' => $row->date_canceled !== null ? AbsenceStatus::Cancelled->value : AbsenceStatus::Active->value,
-                'created_at' => $now,
-                'updated_at' => $now,
+                // The original time, not "now": AbsencePolicy lets a fresh absence be deleted outright.
+                'created_at' => $row->created_at ?? $now,
+                'updated_at' => $row->updated_at ?? $now,
             ];
         }
 
         foreach (array_chunk($insert, 500) as $chunk) {
             DB::table('absences')->insert($chunk);
         }
+    }
+
+    /**
+     * Legacy `weeks.locked` -> week_locks. Legacy weeks start on Thursday, which is also the
+     * default TeamSetting::DEFAULT_WEEK_START_DAY, so `date_from` is the week_start as-is.
+     */
+    private function importWeekLocks(Connection $legacy): void
+    {
+        $legacy->table('weeks')->where('locked', true)->pluck('date_from')
+            ->each(fn (string $dateFrom) => WeekLock::firstOrCreate([
+                'team_id' => getPermissionsTeamId(),
+                'week_start' => Carbon::parse($dateFrom)->toDateString(),
+            ]));
     }
 }

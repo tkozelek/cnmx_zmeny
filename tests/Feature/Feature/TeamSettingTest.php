@@ -60,7 +60,7 @@ class TeamSettingTest extends TestCase
         $this->actingAs($employee)
             ->get(route('team.settings.edit'))
             ->assertOk()
-            ->assertSee('Máte iba práva na zobrazenie nastavení')
+            ->assertSee('Máš iba práva na zobrazenie nastavení')
             ->assertDontSee('Uložiť nastavenia');
 
         // Cannot update settings without team.update permission

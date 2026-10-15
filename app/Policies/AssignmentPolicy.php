@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\WeekLock;
 use App\Services\WeekService;
 use App\Traits\GuardsCurrentTeam;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Auth\Access\Response;
 
@@ -22,6 +23,8 @@ class AssignmentPolicy
     use GuardsCurrentTeam;
 
     public const string LOCKED_MESSAGE = 'Týždeň je zamknutý – zápisy sa už nedajú meniť.';
+
+    public const string PAST_MESSAGE = 'Minulé dni sa už nedajú meniť.';
 
     public function __construct(private readonly WeekService $weeks) {}
 
@@ -45,7 +48,7 @@ class AssignmentPolicy
 
         if ($hasAbsence) {
             return Response::deny($forUser->is($user)
-                ? 'Na tento deň máte nahlásenú absenciu.'
+                ? 'Na tento deň máš nahlásenú absenciu.'
                 : 'Na tento deň má nahlásenú absenciu.');
         }
 
@@ -55,6 +58,16 @@ class AssignmentPolicy
 
         if (! $user->isApprovedIn($team)) {
             return Response::deny();
+        }
+
+        if ($date->lt(CarbonImmutable::today())) {
+            return Response::deny(self::PAST_MESSAGE);
+        }
+
+        // The calendar only shows weeks up to the team's lookahead; a crafted request must not
+        // reach further (it would also skew everyone's statistics).
+        if ($date->gt($this->weeks->end($this->weeks->lastOpenWeek($team)))) {
+            return Response::deny('Tento týždeň ešte nie je otvorený na zápis.');
         }
 
         return $this->weekLocked($team, $date) ? Response::deny(self::LOCKED_MESSAGE) : Response::allow();
@@ -75,6 +88,10 @@ class AssignmentPolicy
 
         if ($assignment->user_id !== $user->id) {
             return false;
+        }
+
+        if ($assignment->date->lt(CarbonImmutable::today())) {
+            return Response::deny(self::PAST_MESSAGE);
         }
 
         return $this->weekLocked($assignment->team, $assignment->date)
