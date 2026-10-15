@@ -34,9 +34,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:100', self::NO_FORMULA_PREFIX],
             'lastname' => ['required', 'string', 'max:100', self::NO_FORMULA_PREFIX],
-            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->route('user'))],
             'role' => ['required', Rule::in(Role::values())],
-            'is_active' => ['nullable', 'boolean'],
         ];
     }
 

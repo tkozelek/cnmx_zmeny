@@ -1,10 +1,10 @@
-<x-layout title="Správa kina" description="Nastavenia týždňa, absencií a prevádzky vášho kina.">
+<x-layout title="Správa kina" description="Nastavenia týždňa, absencií a prevádzky tvojho kina.">
     <div class="container mx-auto px-4 py-8 max-w-3xl">
         <div class="flex flex-col gap-6">
 
             <x-page-header
                 icon="fa-sliders"
-                :title="'Správa kina - '.$team->name"
+                :title="'Správa kina – '.$team->name"
                 subtitle="Konfigurácia parametrov týždňa, absencií a nastavení prevádzky"
             />
 
@@ -20,7 +20,7 @@
                 @if(! $canEdit)
                     <div class="mb-6 rounded-xl bg-amber-500/10 border border-amber-500/30 p-4 text-xs font-semibold text-amber-400 flex items-center gap-2">
                         <i class="fa-solid fa-lock text-sm"></i>
-                        Máte iba práva na zobrazenie nastavení. Polia sú vo forme iba na čítanie.
+                        Máš iba práva na zobrazenie nastavení. Polia sú vo forme iba na čítanie.
                     </div>
                 @endif
 

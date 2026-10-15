@@ -1,4 +1,4 @@
-<x-layout :title="$title" description="Zapíšte sa na pracovné zmeny v aktuálnom týždni.">
+<x-layout :title="$title" description="Zapíš sa na pracovné zmeny v aktuálnom týždni.">
     <div class="container mx-auto px-4 py-6 md:px-6 lg:px-8">
         <div class="flex flex-col gap-6">
 
@@ -10,7 +10,7 @@
 
                 @if($locked)
                     @cannot('lock', \App\Models\Assignment::class)
-                        <p class="text-sm text-neutral-300"><i class="fa-solid fa-lock mr-1.5 text-xs text-rose-400" aria-hidden="true"></i>Týždeň je zamknutý – zápisy sa už nedajú meniť.</p>
+                        <p class="text-sm text-neutral-300"><i class="fa-solid fa-lock mr-1.5 text-xs text-neutral-400" aria-hidden="true"></i>Týždeň je zamknutý – zápisy sa už nedajú meniť.</p>
                     @endcannot
                 @endif
 
@@ -22,19 +22,15 @@
                             @if($locked)
                                 @method('DELETE')
                             @endif
-                            <button type="submit" @class([
-                                'inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-sm font-semibold text-white transition',
-                                'bg-brand-700 hover:bg-brand-800' => $locked,
-                                'bg-rose-700 hover:bg-rose-800' => ! $locked,
-                            ])>
-                                <i class="fa-solid {{ $locked ? 'fa-lock-open' : 'fa-lock' }}" aria-hidden="true"></i>
+                            <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-900 px-4 text-sm font-semibold text-neutral-100 shadow-sm transition hover:border-brand-500/60 hover:bg-neutral-800 hover:text-white">
+                                <i class="fa-solid {{ $locked ? 'fa-lock-open' : 'fa-lock' }} text-xs text-brand-400" aria-hidden="true"></i>
                                 {{ $locked ? 'Odomknúť týždeň' : 'Zamknúť týždeň' }}
                             </button>
                         </form>
 
                         <a href="{{ route('schedule.export', ['date' => $weekStart->toDateString()]) }}"
-                           class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800">
-                            <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i>
+                           class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-900 px-4 text-sm font-semibold text-neutral-100 shadow-sm transition hover:border-brand-500/60 hover:bg-neutral-800 hover:text-white">
+                            <i class="fa-solid fa-file-arrow-down text-xs text-brand-400" aria-hidden="true"></i>
                             Excel
                         </a>
                     </div>

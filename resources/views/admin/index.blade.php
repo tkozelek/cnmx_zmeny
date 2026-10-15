@@ -1,10 +1,10 @@
-<x-layout title="Správa používateľov" description="Zoznam a správa používateľov vášho kina.">
+<x-layout title="Správa používateľov" description="Zoznam a správa používateľov tvojho kina.">
     <div x-data="{ openModal: @js($errors->any()) }" class="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
         <x-page-header icon="fa-users" title="Správa používateľov" subtitle="Zoznam a správa používateľov tohto kina.">
             <button @click="openModal = true"
                     aria-haspopup="dialog"
                     :aria-expanded="openModal.toString()"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg text-neutral-900 bg-neutral-100 hover:bg-white transition focus:outline-none shadow"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg text-neutral-900 bg-neutral-100 hover:bg-white transition focus:outline-none shadow-md"
                     type="button">
                 <i class="fa-solid fa-user-plus text-xs" aria-hidden="true"></i> Pridať používateľa
             </button>
@@ -28,7 +28,7 @@
                      role="dialog"
                      aria-modal="true"
                      aria-labelledby="modal-adduser-title"
-                     class="relative w-full max-w-2xl rounded-xl border border-neutral-800 bg-neutral-900 shadow-2xl overflow-hidden my-auto">
+                     class="relative w-full max-w-2xl rounded-lg border border-neutral-800 bg-neutral-900 shadow-xl overflow-hidden my-auto">
                     <div class="flex items-center justify-between p-4 md:p-5 border-b border-neutral-800">
                         <h3 id="modal-adduser-title" class="text-lg font-bold text-white">
                             Pridať používateľa

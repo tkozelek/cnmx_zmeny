@@ -40,6 +40,7 @@ Route::middleware(SetCurrentTeam::class.':optional')->group(function () {
         ->name('welcome.index');
 
     Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
+    Route::view('/ochrana-osobnych-udajov', 'privacy.index')->name('privacy');
 });
 
 Route::get('/overenie-emailu/{id}/{hash}', [EmailVerificationController::class, 'verify'])
@@ -50,7 +51,7 @@ Route::get('/email-overeny', [EmailVerificationController::class, 'verified'])
     ->name('verification.verified');
 
 Route::post('/overenie-emailu/znova', [EmailVerificationController::class, 'resendGuest'])
-    ->middleware('throttle:6,1')
+    ->middleware('throttle:mail-recipient')
     ->name('verification.resend_guest');
 
 Route::middleware('auth')->group(function () {
@@ -65,18 +66,18 @@ Route::middleware('guest')->group(function () {
     Route::get('/prihlasenie', [LoginController::class, 'index'])->name('login');
     Route::post('/prihlasenie', [LoginController::class, 'authenticate'])
         ->name('login.auth')
-        ->middleware('throttle:6,1');
+        ->middleware('throttle:guest-form');
 
     Route::get('/registracia', [RegisterController::class, 'index'])->name('register');
     Route::post('/registracia', [RegisterController::class, 'store'])
         ->name('register.store')
-        ->middleware('throttle:6,1');
+        ->middleware('throttle:guest-form');
 
     Route::prefix('/zabudnute-heslo')->group(function () {
         Route::get('/', [PasswordRequestController::class, 'index'])->name('password.index');
         Route::post('/', [PasswordRequestController::class, 'send'])
             ->name('password.send')
-            ->middleware('throttle:6,1');
+            ->middleware('throttle:mail-recipient');
 
         Route::get('/{token}', [PasswordResetController::class, 'show'])->name('password.reset');
 
@@ -84,7 +85,7 @@ Route::middleware('guest')->group(function () {
         // not the threat, but this was the one unthrottled way in.
         Route::post('/store', [PasswordResetController::class, 'store'])
             ->name('password.store')
-            ->middleware('throttle:6,1');
+            ->middleware('throttle:guest-form');
     });
 });
 

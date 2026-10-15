@@ -15,11 +15,20 @@
                     'fa-solid fa-circle-info text-brand-400'
                 )
             });
-            setTimeout(() => {
-                this.removeToast(id);
-            }, 4500);
+            this.resume(id);
+        },
+        timers: {},
+        // Confirmations fade on their own; an error stays until closed - it is something to act on.
+        resume(id) {
+            const toast = this.toasts.find(t => t.id === id);
+            if (!toast || toast.type === 'error') return;
+            this.timers[id] = setTimeout(() => this.removeToast(id), 4500);
+        },
+        pause(id) {
+            clearTimeout(this.timers[id]);
         },
         removeToast(id) {
+            this.pause(id);
             this.toasts = this.toasts.filter(t => t.id !== id);
         },
         handleToastEvent(e) {
@@ -64,6 +73,10 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 translate-y-2"
+            @mouseenter="pause(toast.id)"
+            @mouseleave="resume(toast.id)"
+            @focusin="pause(toast.id)"
+            @focusout="resume(toast.id)"
             class="pointer-events-auto flex items-center gap-2.5 rounded-xl border border-neutral-800 bg-neutral-900/95 backdrop-blur-md px-4 py-3 shadow-2xl text-neutral-100"
             :class="{
                 'border-emerald-500/50': toast.type === 'success',
@@ -72,7 +85,7 @@
                 'border-brand-500/60': toast.type === 'info' || toast.type === 'status'
             }"
         >
-            <i class="shrink-0 text-sm" :class="toast.icon"></i>
+            <i class="shrink-0 text-sm" :class="toast.icon" aria-hidden="true"></i>
             <p class="flex-1 min-w-0 text-xs font-medium leading-snug break-words" x-text="toast.message" :title="toast.message"></p>
 
             <button
@@ -81,7 +94,7 @@
                 class="shrink-0 text-neutral-400 hover:text-white transition-colors focus:outline-none ml-2"
                 aria-label="Zavrieť oznam"
             >
-                <i class="fa-solid fa-xmark text-xs"></i>
+                <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
             </button>
         </div>
     </template>

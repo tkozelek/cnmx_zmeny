@@ -2,20 +2,22 @@
     <nav class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto" aria-label="Karty profilu">
         <button
             type="button"
+            :aria-pressed="(tab === 'stats').toString()"
             @click="tab = 'stats'; $nextTick(() => { if (typeof window.renderProfileChart === 'function') window.renderProfileChart(currentPeriod.counts); })"
             :class="tab === 'stats' ? 'bg-neutral-800 text-white font-semibold' : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900 font-medium'"
             class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:py-1.5 rounded-md text-xs sm:text-sm transition cursor-pointer text-center"
         >
-            <i class="fa-solid fa-chart-column text-xs" :class="tab === 'stats' ? 'text-brand-300' : 'text-neutral-400'"></i>
+            <i aria-hidden="true" class="fa-solid fa-chart-column text-xs" :class="tab === 'stats' ? 'text-brand-300' : 'text-neutral-400'"></i>
             <span>Frekvencia zmien</span>
         </button>
         <button
             type="button"
+            :aria-pressed="(tab === 'absences').toString()"
             @click="tab = 'absences'"
             :class="tab === 'absences' ? 'bg-neutral-800 text-white font-semibold' : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900 font-medium'"
             class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:py-1.5 rounded-md text-xs sm:text-sm transition cursor-pointer text-center"
         >
-            <i class="fa-solid fa-calendar-xmark text-xs" :class="tab === 'absences' ? 'text-brand-300' : 'text-neutral-400'"></i>
+            <i aria-hidden="true" class="fa-solid fa-calendar-xmark text-xs" :class="tab === 'absences' ? 'text-brand-300' : 'text-neutral-400'"></i>
             <span>Absencie</span>
             @if($activeAbsences->count() > 0)
                 <span class="ml-1 text-xs font-semibold text-neutral-400">
@@ -29,6 +31,7 @@
     <div x-show="tab === 'stats'" class="grid grid-cols-3 sm:flex items-center gap-1 bg-neutral-900 p-1 rounded-lg border border-neutral-800 w-full sm:w-auto">
         <button
             type="button"
+            :aria-pressed="(period === 'all').toString()"
             @click="setPeriod('all')"
             :class="period === 'all' ? 'bg-neutral-800 text-white shadow-sm font-semibold' : 'text-neutral-400 hover:text-neutral-200 font-medium'"
             class="px-2 py-1.5 sm:px-2.5 sm:py-1 rounded-md text-xs transition cursor-pointer text-center"
@@ -37,6 +40,7 @@
         </button>
         <button
             type="button"
+            :aria-pressed="(period === 'month').toString()"
             @click="setPeriod('month')"
             :class="period === 'month' ? 'bg-neutral-800 text-white shadow-sm font-semibold' : 'text-neutral-400 hover:text-neutral-200 font-medium'"
             class="px-2 py-1.5 sm:px-2.5 sm:py-1 rounded-md text-xs transition cursor-pointer text-center"
@@ -45,6 +49,7 @@
         </button>
         <button
             type="button"
+            :aria-pressed="(period === 'year').toString()"
             @click="setPeriod('year')"
             :class="period === 'year' ? 'bg-neutral-800 text-white shadow-sm font-semibold' : 'text-neutral-400 hover:text-neutral-200 font-medium'"
             class="px-2 py-1.5 sm:px-2.5 sm:py-1 rounded-md text-xs transition cursor-pointer text-center"

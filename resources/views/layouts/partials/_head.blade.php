@@ -1,33 +1,20 @@
 <head>
-    {{-- Lets CSS hide scroll-reveal content only when JS is there to reveal it again. --}}
-    <script>document.documentElement.classList.add('js')</script>
-    <title>{{ $title ? "{$title} | Cine-max Zmeny" : 'Cine-max Zmeny' }}</title>
+    {{-- Lets CSS hide scroll-reveal content only when JS is there to reveal it again - and shows it
+         anyway if the welcome script hasn't started within 4 s (blocked, offline, stale build). --}}
+    <script>
+        document.documentElement.classList.add('js');
+        setTimeout(function () {
+            var root = document.documentElement;
+            if (!root.classList.contains('motion-ready')) root.classList.remove('js');
+        }, 4000);
+    </script>
+    <title>{{ $title ? "{$title} | Cinemax Zmeny" : 'Cinemax Zmeny' }}</title>
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="icon" href="{{asset('images/logo_cinemax_icon_cropped.png')}}"/>
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
-        integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
-    />
-
     @include('layouts.partials._meta')
-
-    <!-- DNS Prefetch (fallback pre staršie prehliadače) -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-
-    <!-- Preconnect pre rýchlejšie spojenie -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 

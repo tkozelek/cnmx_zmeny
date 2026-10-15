@@ -1,6 +1,6 @@
 @props(['roles'])
 
-<x-layout title="Upraviť používateľa" description="Upravte údaje a rolu používateľa.">
+<x-layout title="Upraviť používateľa" description="Uprav údaje a rolu používateľa.">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex justify-center">
         <div class="w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-lg shadow-sm p-6 sm:p-8 space-y-6">
             <div class="flex items-center justify-between pb-4 border-b border-neutral-800">
@@ -46,15 +46,16 @@
                     />
                 </div>
 
+                {{-- Read-only: an account can belong to several cinemas, and whoever controls the
+                     address controls the password reset - so no manager may change it. --}}
                 <x-form-input
                     type="email"
                     name="email"
                     id="email"
                     label="E-mail"
-                    placeholder="j.hruska@gmail.com"
-                    :value="old('email', $user->email)"
+                    :value="$user->email"
                     icon="fa-envelope"
-                    required
+                    disabled
                 />
 
                 <div class="relative">

@@ -7,6 +7,7 @@ use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetCurrentTeam;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustHosts;
@@ -49,6 +50,8 @@ class Kernel extends HttpKernel
         // point at their own domain. TrustHosts allows this app's URL and its subdomains only.
         TrustHosts::class,
         TrustProxies::class,
+        // Global, not in `web`: a 404 for an unknown URL never reaches the web group.
+        SecurityHeaders::class,
         HandleCors::class,
         PreventRequestsDuringMaintenance::class,
         ValidatePostSize::class,
@@ -68,7 +71,8 @@ class Kernel extends HttpKernel
             StartSession::class,
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
-            SubstituteBindings::class,
+            // No SubstituteBindings here: the `tenant` group binds after SetCurrentTeam, so a
+            // record from another cinema is simply not found (404) instead of found-then-refused (403).
         ],
 
         'api' => [
@@ -86,6 +90,8 @@ class Kernel extends HttpKernel
          */
         'tenant' => [
             'auth',
+            // Ends every other session once the password changes (logoutOtherDevices relies on it).
+            AuthenticateSession::class,
             EnsureUserIsActive::class,
             SetCurrentTeam::class,
             SubstituteBindings::class,

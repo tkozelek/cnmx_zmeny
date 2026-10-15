@@ -19,6 +19,13 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Demo cinemas and accounts with the password "password" - never on a real deployment.
+        if (app()->isProduction()) {
+            $this->command?->error('DatabaseSeeder vytvára demo dáta a v produkcii sa nespúšťa.');
+
+            return;
+        }
+
         $this->call(RolePermissionSeeder::class);
 
         $cinemaLocations = [
@@ -96,6 +103,7 @@ class DatabaseSeeder extends Seeder
             'email' => $email,
             'password' => Hash::make($password),
             'current_team_id' => $team->id,
+            'email_verified_at' => now(),
         ]);
 
         $user->teams()->attach($team, ['approved_at' => now()]);

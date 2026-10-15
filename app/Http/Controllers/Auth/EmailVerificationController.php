@@ -84,6 +84,6 @@ class EmailVerificationController extends Controller
             $user->sendEmailVerificationNotification();
         }
 
-        return back()->with('message', 'Overovací e-mail bol odoslaný. Skontrolujte si schránku.');
+        return back()->with('message', 'Overovací e-mail bol odoslaný. Skontroluj si schránku.');
     }
 }

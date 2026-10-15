@@ -22,8 +22,8 @@ class StoreAbsenceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date_from' => ['required', 'date'],
-            'date_to' => ['required', 'date', 'after_or_equal:date_from'],
+            'date_from' => ['required', 'date', 'after_or_equal:'.now()->subYear()->toDateString()],
+            'date_to' => ['required', 'date', 'after_or_equal:date_from', 'before_or_equal:'.now()->addYears(2)->toDateString()],
             'day_of_week' => ['nullable', 'integer', 'between:0,6'],
             'open_ended' => ['nullable', 'boolean'],
             'reason' => ['required', 'string', 'max:500'],
@@ -56,7 +56,7 @@ class StoreAbsenceRequest extends FormRequest
                     };
                     $validator->errors()->add(
                         'date_from',
-                        "Absenciu v kine {$team->name} je potrebné nahlásiť minimálne {$days} {$unit} vopred. Na skoršie dni sa dohodnite s manažérom."
+                        "Absenciu v kine {$team->name} je potrebné nahlásiť minimálne {$days} {$unit} vopred. Na skoršie dni sa dohodni s manažérom."
                     );
                 }
             },
@@ -80,10 +80,10 @@ class StoreAbsenceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'date_from.required' => 'Zadajte, odkedy budete chýbať.',
-            'date_to.required' => 'Zadajte, dokedy budete chýbať.',
+            'date_from.required' => 'Zadaj, odkedy budeš chýbať.',
+            'date_to.required' => 'Zadaj, dokedy budeš chýbať.',
             'date_to.after_or_equal' => 'Koniec absencie nemôže byť pred jej začiatkom.',
-            'reason.required' => 'Uveďte dôvod absencie.',
+            'reason.required' => 'Uveď dôvod absencie.',
         ];
     }
 }

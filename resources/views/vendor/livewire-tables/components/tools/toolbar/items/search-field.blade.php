@@ -8,9 +8,11 @@
 
     <input
         wire:model{{ $this->getSearchOptions() }}="search"
+        name="{{ $this->getTableName() }}-search"
         placeholder="{{ $this->getSearchPlaceholder() ?: 'Vyhľadať v tabuľke...' }}"
-        type="text"
-        class="block w-full h-10 rounded-lg border border-neutral-700 bg-neutral-800 ps-10 pe-9 text-sm text-neutral-100 placeholder-neutral-400 transition focus:border-neutral-500 focus:outline-none"
+        aria-label="{{ $this->getSearchPlaceholder() ?: 'Vyhľadať v tabuľke' }}"
+        type="search"
+        class="block w-full h-10 rounded-lg border border-neutral-500 bg-neutral-800 ps-10 pe-9 text-sm text-neutral-100 placeholder-neutral-400 transition focus:border-neutral-500 focus:outline-none"
     />
 
     @if ($this->hasSearch)

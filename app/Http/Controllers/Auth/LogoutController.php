@@ -15,6 +15,6 @@ class LogoutController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return to_route('login')->with(['message' => 'Boli ste odhlásení.']);
+        return to_route('login')->with(['message' => 'Odhlásenie prebehlo úspešne.']);
     }
 }

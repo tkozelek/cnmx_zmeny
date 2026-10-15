@@ -3,8 +3,15 @@
 @php
     $navBtnStyle = 'inline-flex h-11 sm:h-12 w-11 sm:w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-600 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink-0 leading-none';
 
+    $weeks = app(\App\Services\WeekService::class);
+    $pickerOptions = [
+        'maxDate' => $weeks->end($weeks->lastOpenWeek($currentTeam))->toDateString(),
+        'weekUrl' => route('calendar.show', ['date' => '__DATE__']),
+        'currentWeekUrl' => route('calendar.index'),
+    ];
+
     $triggerStyle = $locked
-        ? 'border-rose-500/80 bg-neutral-900 hover:border-rose-400 text-white'
+        ? 'border-neutral-500 bg-neutral-900 hover:border-neutral-400 text-white'
         : 'border-neutral-700 bg-neutral-900 hover:border-neutral-600 hover:text-white';
 @endphp
 
@@ -19,35 +26,39 @@
 
     {{-- Main Date Trigger --}}
     <div
-        x-data="weekPicker(@js($lockedWeekStarts), {{ $currentTeam->weekStartDay() }}, '{{ $weekStart->toDateString() }}')"
+        x-data="weekPicker(@js($lockedWeekStarts), {{ $currentTeam->weekStartDay() }}, '{{ $weekStart->toDateString() }}', @js($pickerOptions))"
         class="relative flex-1 sm:flex-initial flex items-center justify-center min-w-0"
     >
         <button
             x-ref="triggerButton"
             type="button"
             @click="open()"
+            aria-haspopup="dialog"
+            :aria-expanded="isOpen.toString()"
             @class([
                 'inline-flex h-11 sm:h-12 w-full sm:w-auto items-center justify-center rounded-lg border font-semibold text-neutral-100 transition focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink min-w-0 leading-none text-xs sm:text-base gap-2 sm:gap-3 px-2.5 sm:px-6 py-0',
                 $triggerStyle,
             ])
-            title="Kliknutím otvoríte kalendár"
+            title="Vyber týždeň"
         >
-            <i class="fa-regular fa-calendar text-xs sm:text-base text-neutral-400 shrink-0"></i>
+            <i class="fa-regular fa-calendar text-xs sm:text-base text-neutral-400 shrink-0" aria-hidden="true"></i>
+            <span class="sr-only">Vybrať týždeň, zobrazený:</span>
             <span class="truncate tracking-wide font-bold">
                 {{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}
             </span>
 
             @if($locked)
-                <span class="inline-flex items-center gap-1 rounded bg-rose-700 px-1.5 py-0.5 text-xs font-semibold text-white shrink-0">
+                <span class="inline-flex items-center gap-1 rounded border border-neutral-600 bg-neutral-800 px-1.5 py-0.5 text-xs font-semibold text-neutral-200 shrink-0">
                     <i class="fa-solid fa-lock text-[10px]" aria-hidden="true"></i>
                     <span class="sr-only sm:not-sr-only">Zamknutý</span>
                 </span>
             @endif
 
-            <i class="fa-solid fa-chevron-down text-[10px] sm:text-xs text-neutral-400 shrink-0"></i>
+            <i class="fa-solid fa-chevron-down text-[10px] sm:text-xs text-neutral-400 shrink-0" aria-hidden="true"></i>
         </button>
 
-        <input x-ref="pickerInput" type="text" class="sr-only" />
+        {{-- flatpickr's anchor only - the button above is the control. --}}
+        <input x-ref="pickerInput" type="text" class="sr-only" tabindex="-1" aria-hidden="true" />
     </div>
 
     {{-- Next Week --}}
@@ -59,8 +70,8 @@
             <i class="fa-solid fa-chevron-right text-sm sm:text-base leading-none m-auto"></i>
         </a>
     @else
-        <span class="{{ $navBtnStyle }} cursor-not-allowed opacity-30" aria-hidden="true" title="Ďalšie týždne ešte nie sú otvorené.">
-            <i class="fa-solid fa-chevron-right text-sm sm:text-base leading-none m-auto"></i>
+        <span class="{{ $navBtnStyle }} cursor-not-allowed opacity-30" role="link" aria-disabled="true" aria-label="Ďalšie týždne ešte nie sú otvorené" title="Ďalšie týždne ešte nie sú otvorené.">
+            <i class="fa-solid fa-chevron-right text-sm sm:text-base leading-none m-auto" aria-hidden="true"></i>
         </span>
     @endif
 </div>

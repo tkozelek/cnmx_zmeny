@@ -26,6 +26,33 @@ trait Loggable
      */
     private const NEVER_LOGGED = ['password', 'remember_token'];
 
+    /**
+     * Logged as "changed", never with the value: logs outlive the deleted account, and the privacy
+     * page promises personal details and absence reasons are gone with it.
+     *
+     * @var list<string>
+     */
+    private const VALUE_REDACTED = ['name', 'lastname', 'email', 'reason', 'note'];
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    private static function forLog(array $attributes): array
+    {
+        foreach (self::NEVER_LOGGED as $secret) {
+            unset($attributes[$secret]);
+        }
+
+        foreach (self::VALUE_REDACTED as $personal) {
+            if (array_key_exists($personal, $attributes)) {
+                $attributes[$personal] = '[skryté]';
+            }
+        }
+
+        return $attributes;
+    }
+
     public static function bootLoggable(): void
     {
         static::updated(function (Model $model): void {
@@ -40,15 +67,14 @@ trait Loggable
             // A login is not an edit worth logging.
             unset($changes['last_login_at']);
 
-            foreach (self::NEVER_LOGGED as $secret) {
-                unset($changes[$secret], $original[$secret]);
-            }
+            $changes = self::forLog($changes);
+            $original = self::forLog($original);
 
             if (empty($changes)) {
                 return;
             }
 
-            Log::info('Používateľ "'.($user ?? 'Neznámy').'" upravil model "'.get_class($model).'" (ID: '.$model->getKey().').', [
+            Log::info('Účet #'.($user?->id ?? '-').' upravil model "'.get_class($model).'" (ID: '.$model->getKey().').', [
                 'user_id' => $user?->id,
                 'model' => get_class($model),
                 'target_id' => $model->getKey(),
@@ -60,14 +86,10 @@ trait Loggable
         static::deleted(function (Model $model): void {
             $user = Auth::user();
 
-            $attributes = $model->getAttributes();
+            $attributes = self::forLog($model->getAttributes());
             unset($attributes['updated_at']);
 
-            foreach (self::NEVER_LOGGED as $secret) {
-                unset($attributes[$secret]);
-            }
-
-            Log::warning('Používateľ "'.($user ?? 'Neznámy').'" vymazal model "'.get_class($model).'" (ID: '.$model->getKey().').', [
+            Log::warning('Účet #'.($user?->id ?? '-').' vymazal model "'.get_class($model).'" (ID: '.$model->getKey().').', [
                 'user_id' => $user?->id,
                 'model' => get_class($model),
                 'target_id' => $model->getKey(),

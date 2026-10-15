@@ -14,6 +14,7 @@
 const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 
 export function mountWelcome() {
+    document.documentElement.classList.add('motion-ready');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const hero = document.getElementById('hero');
 
@@ -76,6 +77,11 @@ export function mountWelcome() {
 
     window.addEventListener('scroll', requestUpdate, { passive: true });
     window.addEventListener('resize', () => {
+        steps?.layout();
+        requestUpdate();
+    });
+    // Inter swaps in after first paint and rewraps the step texts - re-measure the track then.
+    document.fonts?.ready.then(() => {
         steps?.layout();
         requestUpdate();
     });

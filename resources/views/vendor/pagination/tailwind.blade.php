@@ -7,7 +7,7 @@
                     {!! __('pagination.previous') !!}
                 </span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800 border border-neutral-700 leading-5 rounded-md hover:bg-neutral-750 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-indigo-500 active:bg-neutral-750 transition ease-in-out duration-150">
+                <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800 border border-neutral-700 leading-5 rounded-md hover:bg-neutral-750 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-brand-400 active:bg-neutral-750 transition ease-in-out duration-150">
                     {!! __('pagination.previous') !!}
                 </a>
             @endif
@@ -33,7 +33,7 @@
         <div>
             {{-- Next Page Link --}}
             @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800 border border-neutral-700 leading-5 rounded-md hover:bg-neutral-750 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-indigo-500 active:bg-neutral-750 transition ease-in-out duration-150">
+                <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800 border border-neutral-700 leading-5 rounded-md hover:bg-neutral-750 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-brand-400 active:bg-neutral-750 transition ease-in-out duration-150">
                     {!! __('pagination.next') !!}
                 </a>
             @else

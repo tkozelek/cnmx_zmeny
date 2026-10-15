@@ -22,6 +22,13 @@ class SlovakHolidaysTest extends TestCase
             'Christmas Day' => ['2026-12-25', true],
             'St. Stephen\'s Day' => ['2026-12-26', true],
             'ordinary Monday' => ['2026-06-15', false],
+            '1.9. is a working day since 2025' => ['2026-09-01', false],
+            '17.11. is a working day since 2025' => ['2026-11-17', false],
+            '8.5. is a working day in 2026 only' => ['2026-05-08', false],
+            '15.9. is a working day in 2026 only' => ['2026-09-15', false],
+            '8.5. is a day off again in 2027' => ['2027-05-08', true],
+            '15.9. is a day off again in 2027' => ['2027-09-15', true],
+            '1.9. was still a day off in 2024' => ['2024-09-01', true],
             'day after New Year' => ['2026-01-02', false],
         ];
     }

@@ -14,6 +14,9 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class AbsencesDataTable extends DataTableComponent
 {
+    /** Both absence tables share /dovolenka - distinct names keep their element ids unique. */
+    public string $tableName = 'all-absences';
+
     use FormatsAbsenceColumns;
 
     protected $model = Absence::class;

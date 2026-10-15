@@ -64,7 +64,7 @@
                         </div>
                     </div>
                     @if($absence->status === \App\Enums\AbsenceStatus::Cancelled)
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 self-start sm:self-center shrink-0">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-neutral-800 text-neutral-400 border border-neutral-700 self-start sm:self-center shrink-0">
                             Zrušená
                         </span>
                     @else

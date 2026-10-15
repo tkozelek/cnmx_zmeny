@@ -48,6 +48,7 @@ class AssignmentSignupTest extends TestCase
         $assignment = Assignment::factory()->create([
             'team_id' => $team->id,
             'user_id' => $user->id,
+            'date' => now()->addDays(3)->toDateString(),
         ]);
 
         $this->actingAs($user)
@@ -55,6 +56,24 @@ class AssignmentSignupTest extends TestCase
             ->assertRedirect();
 
         $this->assertModelMissing($assignment);
+    }
+
+    public function test_an_employee_cannot_rewrite_the_past_or_reach_past_the_open_weeks(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $yesterday = Assignment::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'date' => now()->subDay()->toDateString(),
+        ]);
+
+        $this->actingAs($user)->delete(route('assignments.destroy', $yesterday))->assertForbidden();
+        $this->actingAs($user)->post(route('assignments.store'), ['date' => now()->subDays(2)->toDateString()])->assertForbidden();
+        $this->actingAs($user)->post(route('assignments.store'), ['date' => '2040-01-05'])->assertForbidden();
+
+        $this->assertModelExists($yesterday);
+        $this->assertDatabaseCount('assignments', 1);
     }
 
     public function test_an_employee_cannot_sign_up_for_a_locked_week(): void

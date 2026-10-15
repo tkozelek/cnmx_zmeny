@@ -22,13 +22,13 @@ class VerifyEmailAddress extends VerifyEmail implements ShouldQueue
     protected function buildMailMessage($url): MailMessage
     {
         return (new MailMessage)
-            ->subject('Cine-max Zmeny | Overenie e-mailovej adresy')
-            ->greeting('Dobrý deň,')
-            ->line('Kliknite na tlačidlo nižšie a overte svoju e-mailovú adresu.')
+            ->subject('Cinemax Zmeny | Overenie e-mailovej adresy')
+            ->greeting('Ahoj,')
+            ->line('Klikni na tlačidlo nižšie a over svoju e-mailovú adresu.')
             ->action('Overiť e-mail', $url)
             ->line('Odkaz platí '.config('auth.verification.expire', 60).' minút.')
-            ->line('Po overení vás ešte musí schváliť manažér kina – dovtedy sa do aplikácie neprihlásite.')
-            ->line('Ak ste si účet nevytvorili, tento e-mail ignorujte.')
-            ->salutation(new HtmlString('S pozdravom,<br><strong>Cine-max Zmeny</strong>'));
+            ->line('Po overení ťa ešte musí schváliť manažér kina – dovtedy sa do aplikácie neprihlásiš.')
+            ->line('Ak tento e-mail nečakáš, pokojne ho ignoruj.')
+            ->salutation(new HtmlString('S pozdravom,<br><strong>Cinemax Zmeny</strong>'));
     }
 }

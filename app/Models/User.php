@@ -129,7 +129,10 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isMemberOf(Team $team): bool
     {
-        return $this->teams()->whereKey($team->getKey())->exists();
+        // The users table asks this per row with `teams` already eager-loaded - no query per row then.
+        return $this->relationLoaded('teams')
+            ? $this->teams->contains($team)
+            : $this->teams()->whereKey($team->getKey())->exists();
     }
 
     /**

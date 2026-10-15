@@ -1,7 +1,15 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\AuthServiceProvider;
+use App\Providers\EventServiceProvider;
+use App\Providers\RouteServiceProvider;
+use App\Providers\SearchServiceProvider;
+use App\Providers\ViewServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
+use Maatwebsite\Excel\Excel;
+use Maatwebsite\Excel\ExcelServiceProvider;
 
 return [
 
@@ -57,6 +65,12 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+
+    /*
+    | Read by App\Http\Middleware\TrustProxies. Lives here, not in an env() call there,
+    | because env() returns null once `config:cache` has run.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
 
     'asset_url' => env('ASSET_URL'),
 
@@ -164,14 +178,14 @@ return [
         /*
          * Application Service Providers...
          */
-        App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
+        AppServiceProvider::class,
+        AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
-        App\Providers\SearchServiceProvider::class,
-        \Maatwebsite\Excel\ExcelServiceProvider::class,
-        App\Providers\ViewServiceProvider::class,
+        EventServiceProvider::class,
+        RouteServiceProvider::class,
+        SearchServiceProvider::class,
+        ExcelServiceProvider::class,
+        ViewServiceProvider::class,
     ])->toArray(),
 
     /*
@@ -187,7 +201,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
-        'Excel' => \Maatwebsite\Excel\Excel::class,
+        'Excel' => Excel::class,
     ])->toArray(),
 
 ];

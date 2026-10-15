@@ -10,7 +10,7 @@
 
     <div x-show="currentPeriod.total > 0">
         <div class="h-48 sm:h-64 w-full min-w-0 overflow-hidden relative mb-4 sm:mb-6">
-            <canvas id="barChart" data-chart='@json($arr)'></canvas>
+            <canvas id="barChart" data-chart='@json($arr)' role="img" aria-label="Graf zápisov podľa dní v týždni. Rovnaké čísla sú v prehľade pod grafom."></canvas>
         </div>
 
         {{-- Weekday Summary Grid - all 7 days in 1 row --}}

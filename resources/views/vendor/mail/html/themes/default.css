@@ -263,37 +263,37 @@ img {
 
 .button-green,
 .button-success {
-    background-color: #48bb78;
-    border-bottom: 8px solid #48bb78;
-    border-left: 18px solid #48bb78;
-    border-right: 18px solid #48bb78;
-    border-top: 8px solid #48bb78;
+    background-color: #059669;
+    border-bottom: 8px solid #059669;
+    border-left: 18px solid #059669;
+    border-right: 18px solid #059669;
+    border-top: 8px solid #059669;
 }
 
 .button-red,
 .button-error {
-    background-color: #e53e3e;
-    border-bottom: 8px solid #e53e3e;
-    border-left: 18px solid #e53e3e;
-    border-right: 18px solid #e53e3e;
-    border-top: 8px solid #e53e3e;
+    background-color: #e11d48;
+    border-bottom: 8px solid #e11d48;
+    border-left: 18px solid #e11d48;
+    border-right: 18px solid #e11d48;
+    border-top: 8px solid #e11d48;
 }
 
 /* Panels */
 
 .panel {
-    border-left: #2d3748 solid 4px;
+    border-left: #0284c7 solid 4px;
     margin: 21px 0;
 }
 
 .panel-content {
-    background-color: #edf2f7;
-    color: #718096;
+    background-color: #27272a;
+    color: #d4d4d8;
     padding: 16px;
 }
 
 .panel-content p {
-    color: #718096;
+    color: #d4d4d8;
 }
 
 .panel-item {

@@ -64,7 +64,11 @@ class AbsencePolicy
     {
         $team = app(Team::class);
 
-        return $this->belongsToCurrentTeam($absence) && $absence->user_id === $user->id;
+        // Only one that is still on: ending an absence that is already over would drag its end to yesterday.
+        return $this->belongsToCurrentTeam($absence)
+            && $absence->user_id === $user->id
+            && $absence->status === AbsenceStatus::Active
+            && $absence->date_to->gte(today());
     }
 
     /**

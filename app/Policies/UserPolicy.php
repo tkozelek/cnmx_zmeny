@@ -10,7 +10,7 @@ use Illuminate\Auth\Access\Response;
 /**
  * Team-managed User Policy using dot-notation permissions:
  * - user.view-any: View user list for current cinema team
- * - user.view: View user details or own profile
+ * - user.view: Own profile (someone else's needs user.view-any)
  * - user.create: Add/invite new user to cinema team
  * - user.update: Edit user details and roles
  * - user.delete: Block/remove user from cinema team
@@ -31,7 +31,8 @@ class UserPolicy
             return true;
         }
 
-        return $this->inCurrentTeam($model) && $user->hasPermissionInTeam('user.view');
+        // Someone else's profile carries their e-mail and absence reasons - managers only, not colleagues.
+        return $this->inCurrentTeam($model) && $user->hasPermissionInTeam('user.view-any');
     }
 
     /** $targetRole is the role the new account is about to be assigned. */
@@ -66,7 +67,7 @@ class UserPolicy
             return true;
         }
 
-        return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina – najprv vymenujte ďalšieho, potom mu môžete zmeniť rolu.');
+        return $this->denyLastHeadManager('Toto je posledný hlavný manažér kina – najprv vymenuj ďalšieho, potom mu môžeš zmeniť rolu.');
     }
 
     public function delete(User $user, User $model): bool|Response

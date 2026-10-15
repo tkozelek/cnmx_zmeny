@@ -374,6 +374,24 @@ class AbsenceTest extends TestCase
         $this->assertSame(AbsenceStatus::Cancelled, $absence->fresh()->status);
     }
 
+    public function test_an_absence_that_is_already_over_cannot_be_ended(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+
+        $absence = Absence::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'date_from' => CarbonImmutable::now()->subWeeks(3)->toDateString(),
+            'date_to' => CarbonImmutable::now()->subWeeks(2)->toDateString(),
+            'status' => AbsenceStatus::Active,
+        ]);
+
+        $this->actingAs($user)->patch(route('absences.end', $absence))->assertForbidden();
+
+        $this->assertSame(CarbonImmutable::now()->subWeeks(2)->toDateString(), $absence->fresh()->date_to->toDateString());
+    }
+
     /** An absence deactivated in advance is marked as cancelled instead of being deleted. */
     public function test_ending_a_future_absence_marks_it_cancelled(): void
     {

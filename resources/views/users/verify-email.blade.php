@@ -1,19 +1,19 @@
-<x-layout title="Overenie e-mailu" description="Potvrďte svoju e-mailovú adresu a dokončite registráciu do Cine-max Zmeny.">
+<x-layout title="Overenie e-mailu" description="Potvrď svoju e-mailovú adresu a dokonči registráciu do Cinemax Zmeny.">
     <div class="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-4 py-12">
         <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-6 shadow-sm sm:p-8">
             <h1 class="flex items-center gap-2.5 text-xl font-bold text-white">
                 <i class="fa-solid fa-envelope-circle-check text-brand-400"></i>
-                Overte si e-mail
+                Over si e-mail
             </h1>
 
             <p class="mt-3 text-sm leading-relaxed text-neutral-300">
-                Na adresu <strong class="text-neutral-100">{{ auth()->user()?->email ?? session('unverified_email', 'váš e-mail') }}</strong> sme poslali
-                overovací odkaz. Kliknite naň a&nbsp;vráťte sa sem.
+                Na adresu <strong class="text-neutral-100">{{ auth()->user()?->email ?? session('unverified_email', 'tvoj e-mail') }}</strong> sme poslali
+                overovací odkaz. Klikni naň a&nbsp;vráť sa sem.
             </p>
 
             <p class="mt-2 text-xs leading-relaxed text-neutral-400">
-                Po overení vás ešte musí schváliť manažér kina. Ak e-mail nevidíte, pozrite sa do spamu alebo si
-                ho nechajte poslať znova.
+                Po overení ťa ešte musí schváliť manažér kina. Ak e-mail nevidíš, pozri sa do spamu alebo si
+                ho nechaj poslať znova.
             </p>
 
             @if(session('message'))

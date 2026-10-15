@@ -12,6 +12,9 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class MyAbsencesDataTable extends DataTableComponent
 {
+    /** Both absence tables share /dovolenka - distinct names keep their element ids unique. */
+    public string $tableName = 'my-absences';
+
     use FormatsAbsenceColumns;
 
     protected $model = Absence::class;
@@ -35,7 +38,7 @@ class MyAbsencesDataTable extends DataTableComponent
             ->setAdditionalSelects(['absences.*'])
             ->setSearchPlaceholder('Vyhľadať v absenciách…')
             ->setLoadingPlaceholderContent('Načítavam absencie...')
-            ->setEmptyMessage('Nemáte evidované žiadne absencie.');
+            ->setEmptyMessage('Nemáš evidované žiadne absencie.');
     }
 
     public function builder(): Builder

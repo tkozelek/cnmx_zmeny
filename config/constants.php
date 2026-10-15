@@ -28,7 +28,7 @@ return [
         'new_password.required' => 'Nové heslo je potrebné.',
         'new_password.confirmed' => 'Heslá sa nezhodujú.',
         'new_password.min' => 'Heslo je príliš krátke. Musí mať aspoň 8 znakov.',
-        'role.required' => 'Vyberte rolu.',
+        'role.required' => 'Vyber rolu.',
         'role.in' => 'Neznáma rola.',
     ],
 ];

@@ -9,10 +9,14 @@
         <div
             x-data="{ openTeam: false }"
             @click.outside="openTeam = false"
+            @keydown.escape="if (openTeam) { openTeam = false; $refs.teamButton.focus() }"
             class="relative py-1"
         >
             <button
+                x-ref="teamButton"
                 @click="openTeam = !openTeam"
+                :aria-expanded="openTeam.toString()"
+                aria-label="Prepnúť kino, aktuálne {{ $currentTeam?->name ?? 'Kino' }}"
                 type="button"
                 class="flex items-center gap-2 rounded-lg bg-neutral-800/80 border border-neutral-700/80 px-3 py-1.5 text-sm font-semibold text-neutral-200 transition hover:bg-neutral-800 hover:text-white focus:outline-none"
                 title="Prepnutie kina"

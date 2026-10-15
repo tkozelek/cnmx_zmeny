@@ -34,12 +34,12 @@ class UserAllowedToLogin extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Cine-max Zmeny | Účet schválený')
-            ->greeting('Dobrý deň, '.$this->user->name.',')
-            ->line('Manažér kina schválil váš účet. Môžete sa prihlásiť a zapisovať sa na dni.')
+            ->subject('Cinemax Zmeny | Účet schválený')
+            ->greeting('Ahoj '.$this->user->name.',')
+            ->line('Manažér kina schválil tvoj účet. Môžeš sa prihlásiť a zapisovať sa na dni.')
             ->action('Prihlásiť sa', route('login'))
-            ->line(new HtmlString('Ak potrebujete poradiť, pozrite si sekciu <b>Pomoc</b> v navigácii.'))
-            ->salutation(new HtmlString('S pozdravom,<br><strong>Cine-max Zmeny</strong>'));
+            ->line(new HtmlString('Ak potrebuješ poradiť, pozri si sekciu <b>Pomoc</b> v navigácii.'))
+            ->salutation(new HtmlString('S pozdravom,<br><strong>Cinemax Zmeny</strong>'));
     }
 
     /**

@@ -1,17 +1,18 @@
 @php
     // Managers are exempt from the deadline (StoreAbsenceRequest::after). For everyone else the
     // picker opens on the first day they may still report, instead of a today that always fails.
-    $deadlineDays = auth()->user()->hasPermissionInTeam('absence.manage') ? 0 : $currentTeam->absenceDeadlineDays();
+    $isManager = auth()->user()->hasPermissionInTeam('absence.manage');
+    $deadlineDays = $isManager ? 0 : $currentTeam->absenceDeadlineDays();
     $firstAllowedDay = now()->addDays($deadlineDays)->format('Y-m-d');
 @endphp
-<x-layout title="Absencie" description="Nahláste a spravujte svoje absencie a dovolenky.">
+<x-layout title="Absencie" description="Nahlás a spravuj svoje absencie a dovolenky.">
     <div
-        x-data="absenceRangePicker('{{ old('date_from', $firstAllowedDay) }}', '{{ old('date_to', $firstAllowedDay) }}', @js($errors->any() || request()->boolean('nova')))"
+        x-data="absenceRangePicker('{{ old('date_from', $firstAllowedDay) }}', '{{ old('date_to', $firstAllowedDay) }}', @js($errors->any() || request()->boolean('nova')), @js($isManager ? null : $firstAllowedDay))"
         x-init="$nextTick(() => initFlatpickr())"
         class="container mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-8"
     >
 
-        <x-page-header icon="fa-calendar-days" title="Absencie" subtitle="Dni, kedy nemôžete pracovať.">
+        <x-page-header icon="fa-calendar-days" title="Absencie" subtitle="Dni, kedy nemôžeš pracovať.">
             <button @click="openModal = true"
                     aria-haspopup="dialog"
                     :aria-expanded="openModal.toString()"
@@ -80,12 +81,12 @@
                             Rozsah dátumov absencie <span class="text-rose-400" aria-hidden="true">*</span>
                         </label>
                         <div class="relative">
-                            <input x-ref="rangeInput" type="text" placeholder="Vyberte rozsah dátumov…" aria-label="Rozsah dátumov absencie" class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer">
+                            <input x-ref="rangeInput" type="text" placeholder="Vyber rozsah dátumov…" aria-label="Rozsah dátumov absencie" class="w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer">
                             <input type="hidden" name="date_from" :value="dateFrom">
                             <input type="hidden" name="date_to" :value="dateTo">
                         </div>
                         <p id="absence-range-hint" class="text-xs text-neutral-400 mt-1">
-                            Kliknite na prvý a posledný deň (pri jednom dni dvakrát na ten istý).
+                            Klikni na prvý a posledný deň (pri jednom dni dvakrát na ten istý).
                             @if($deadlineDays > 0)
                                 Absenciu treba nahlásiť aspoň {{ $deadlineDays }} {{ $deadlineDays === 1 ? 'deň' : ($deadlineDays <= 4 ? 'dni' : 'dní') }} vopred.
                             @endif
@@ -105,10 +106,10 @@
                             required
                             maxlength="500"
                             aria-describedby="reason-hint"
-                            placeholder="Napr. dovolenka, PN, lekár…"
-                            class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none"
+                            placeholder="Napr. dovolenka, škola, rodinné dôvody…"
+                            class="w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none"
                         >
-                        <p id="reason-hint" class="text-xs text-neutral-400 mt-1">Maximálne 500 znakov.</p>
+                        <p id="reason-hint" class="text-xs text-neutral-400 mt-1">Neuvádzaj zdravotné dôvody ani diagnózy – pri chorobe stačí „osobné dôvody“. Maximálne 500 znakov.</p>
                     </div>
 
                     {{-- Action Buttons --}}

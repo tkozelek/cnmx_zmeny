@@ -42,7 +42,7 @@
         </h1>
 
         <p class="hero-follow mx-auto mb-10 mt-6 max-w-2xl text-lg leading-relaxed text-neutral-300 md:text-xl" style="--delay: 550ms">
-            Zapíš si, kedy môžeš pracovať, a rozpis máš vždy po ruke - na mobile aj na počítači.
+            Zapíš si, kedy môžeš pracovať, a rozpis máš vždy po ruke – na mobile aj na počítači.
         </p>
 
         <div class="hero-follow flex flex-col items-center justify-center gap-3 sm:flex-row" style="--delay: 700ms">
@@ -59,7 +59,7 @@
 
     {{-- The reveal sits on an inner span: .hero-follow sets `transform`, which would
          otherwise wipe out the -translate-x-1/2 that centers the link. --}}
-    <a id="hero-cue" href="#ako-to-funguje" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-neutral-400 transition hover:text-white">
+    <a id="hero-cue" href="#ako-to-funguje" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-neutral-200 transition [text-shadow:0_1px_8px_rgb(0_0_0/0.9)] hover:text-white">
         <span class="hero-follow flex flex-col items-center gap-1" style="--delay: 1100ms">
             Ako to funguje
             <i class="fa-solid fa-chevron-down text-base motion-safe:animate-bounce" aria-hidden="true"></i>

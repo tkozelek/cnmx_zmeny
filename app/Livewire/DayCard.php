@@ -63,7 +63,7 @@ class DayCard extends Component
         unset($this->assignments, $this->mine);
 
         $this->dispatch('assignment-updated')->to(SignupSummary::class);
-        $this->dispatch('toast', message: 'Zapísali ste sa na '.$this->dayCarbon->format('d.m.'), type: 'success');
+        $this->dispatch('toast', message: 'Máš zápis na '.$this->dayCarbon->format('d.m.'), type: 'success');
     }
 
     public function withdraw(): void
@@ -92,7 +92,7 @@ class DayCard extends Component
         $day = $this->dayCarbon->format('d.m.');
 
         $this->dispatch('toast', type: 'info', message: $isOwn
-            ? "Odpísali ste sa z {$day}"
+            ? "Zápis na {$day} zrušený"
             : "Zápis zrušený: {$assignment->user}, {$day}");
     }
 
@@ -180,6 +180,13 @@ class DayCard extends Component
         return auth()->user()?->can('viewAny', User::class) ?? false;
     }
 
+    /** A past day is closed to employees just like a locked week; managers may still fix it. */
+    #[Computed]
+    public function isPastForMe(): bool
+    {
+        return ! $this->isAdmin && $this->dayCarbon->lt(CarbonImmutable::today());
+    }
+
     #[Computed]
     public function isToday(): bool
     {
@@ -213,7 +220,8 @@ class DayCard extends Component
     /** The × next to a name: a manager taking somebody else off the day. Your own row has the big button. */
     public function canRemove(Assignment $assignment): bool
     {
-        return ! $this->locked && $this->isAdmin && $assignment->user_id !== auth()->id();
+        // Same rule as AssignmentPolicy::delete: a lock stops employees, not the managers who set it.
+        return $this->isAdmin && $assignment->user_id !== auth()->id();
     }
 
     public function render()
