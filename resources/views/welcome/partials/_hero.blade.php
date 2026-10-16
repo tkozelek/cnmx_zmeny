@@ -16,23 +16,26 @@
      collapsing URL bar from pushing it off-screen. --}}
 <section id="hero" class="relative flex min-h-[calc(100svh-3.5rem)] items-center justify-center overflow-hidden text-center">
     {{-- A real <img> rather than a CSS background: it gets srcset (mobile never downloads
-         the 2400px file), fetchpriority for LCP, and alt text. welcome.js slowly scales it
-         and fades in the solid shade above it on scroll, so the photo sinks into the dark
-         page instead of ending on a hard edge - no gradient needed. --}}
-    <img
-        id="hero-media"
-        src="{{ asset('images/welcome_hero_1600.webp') }}"
-        srcset="{{ asset('images/welcome_hero_960.webp') }} 960w, {{ asset('images/welcome_hero_1600.webp') }} 1600w, {{ asset('images/welcome_hero_2400.webp') }} 2400w"
-        sizes="100vw"
-        width="2400"
-        height="1600"
-        alt="Diváci v tmavej kinosále pred plátnom"
-        fetchpriority="high"
-        decoding="async"
-        class="absolute inset-0 h-full w-full origin-[50%_40%] object-cover object-[50%_40%] will-change-transform"
-    >
-    <div class="absolute inset-0 bg-neutral-950/55"></div>
-    <div id="hero-shade" class="absolute inset-0 bg-neutral-950 opacity-0"></div>
+         the 2400px file), fetchpriority for LCP, and alt text. welcome.js scrolls it at a
+         slower rate (parallax), scales it and fades in the solid shade above it, so the photo
+         sinks into the dark page. The wrapper's mask stays put while the photo moves inside
+         it, feathering the bottom into the neutral-950 section below instead of a hard cut. --}}
+    <div class="absolute inset-0 [-webkit-mask-image:linear-gradient(to_bottom,#000_50%,rgb(0_0_0/.75)_70%,rgb(0_0_0/.35)_85%,rgb(0_0_0/.1)_95%,transparent)] [mask-image:linear-gradient(to_bottom,#000_50%,rgb(0_0_0/.75)_70%,rgb(0_0_0/.35)_85%,rgb(0_0_0/.1)_95%,transparent)]">
+        <img
+            id="hero-media"
+            src="{{ asset('images/welcome_hero_1600.webp') }}"
+            srcset="{{ asset('images/welcome_hero_960.webp') }} 960w, {{ asset('images/welcome_hero_1600.webp') }} 1600w, {{ asset('images/welcome_hero_2400.webp') }} 2400w"
+            sizes="100vw"
+            width="2400"
+            height="1600"
+            alt="Diváci v tmavej kinosále pred plátnom"
+            fetchpriority="high"
+            decoding="async"
+            class="absolute inset-0 h-full w-full origin-[50%_40%] object-cover object-[50%_40%] will-change-transform"
+        >
+        <div class="absolute inset-0 bg-neutral-950/55"></div>
+        <div id="hero-shade" class="absolute inset-0 bg-neutral-950 opacity-0"></div>
+    </div>
 
     <div id="hero-content" class="container relative mx-auto px-4 pb-24 pt-16 sm:pb-32">
         <h1 class="mx-auto max-w-4xl text-4xl font-extrabold leading-[1.1] tracking-tight text-neutral-50 sm:text-5xl md:text-6xl">
