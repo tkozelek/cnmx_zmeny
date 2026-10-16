@@ -51,12 +51,13 @@ export function mountWelcome() {
         const viewport = window.innerHeight;
 
         if (hero) {
-            // Push into the room while the photo sinks into the dark page below it.
+            // Parallax: the photo trails the page at 40% speed (the section's overflow-hidden
+            // clips what it pushes down), pushing into the room while it sinks into the dark.
             const p = clamp(scrollY / (hero.offsetHeight || 1));
-            heroMedia.style.transform = `scale(${1 + p * 0.12})`;
-            // The shade outruns the scroll so the photo's bright bottom edge is already dark
-            // by the time the next section meets it.
-            heroShade.style.opacity = String(clamp(p * 1.6) * 0.92);
+            heroMedia.style.transform = `translate3d(0, ${Math.min(scrollY, hero.offsetHeight) * 0.4}px, 0) scale(${1 + p * 0.12})`;
+            // The hero's mask already feathers the bottom edge, so the shade can trail the
+            // scroll and leave the parallax visible for most of the way out.
+            heroShade.style.opacity = String(clamp(p * 1.2) * 0.85);
             heroContent.style.opacity = String(clamp(1 - p * 1.8));
             heroContent.style.transform = `translateY(${p * 70}px)`;
             heroCue.style.opacity = String(clamp(1 - p * 4));
