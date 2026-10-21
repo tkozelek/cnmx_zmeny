@@ -17,6 +17,14 @@
                 {{-- Action Buttons Under Week Selector --}}
                 @can('lock', \App\Models\Assignment::class)
                     <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
+                        @if($hasRozpis && $locked)
+                            <a href="{{ route('rozpis.show', ['date' => $weekStart->toDateString()]) }}"
+                               class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500">
+                                <i class="fa-solid fa-table-list text-xs" aria-hidden="true"></i>
+                                Rozpis
+                            </a>
+                        @endif
+
                         <form method="POST" action="{{ route($locked ? 'weeks.unlock' : 'weeks.lock', ['date' => $weekStart->toDateString()]) }}">
                             @csrf
                             @if($locked)
@@ -35,6 +43,14 @@
                         </a>
                     </div>
                 @endcan
+
+                @if($rozpisPublished)
+                    <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}"
+                       class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-700/60 bg-emerald-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600">
+                        <i class="fa-solid fa-clipboard-list text-xs" aria-hidden="true"></i>
+                        Rozpis zmien
+                    </a>
+                @endif
             </header>
 
             {{-- Controls row: toggles on the left, the shared signup note on the right --}}

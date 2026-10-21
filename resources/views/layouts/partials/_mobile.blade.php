@@ -93,6 +93,26 @@
                 </x-nav-link>
             @endcan
 
+            @can('accessPlatform')
+                <x-nav-link
+                    route="filament.platform.pages.dashboard"
+                    :is-mobile="true"
+                    icon='<i class="fa-solid fa-shield-halved text-brand-400"></i>'
+                >
+                    Platforma
+                </x-nav-link>
+            @endcan
+
+            @can('viewAny', \App\Models\Position::class)
+                <x-nav-link
+                    route="positions.index"
+                    :is-mobile="true"
+                    icon='<i class="fa-solid fa-list-check text-brand-400"></i>'
+                >
+                    Pozície
+                </x-nav-link>
+            @endcan
+
             <x-nav-link
                 route="settings.password.edit"
                 :is-mobile="true"

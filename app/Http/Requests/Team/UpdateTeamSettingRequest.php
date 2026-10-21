@@ -2,13 +2,11 @@
 
 namespace App\Http\Requests\Team;
 
+use App\Enums\TeamFeature;
 use App\Models\Team;
-use App\Models\WeekLock;
-use App\Services\WeekService;
-use Carbon\CarbonImmutable;
+use App\Rules\WeekStartDayChangeable;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Validator;
 
 class UpdateTeamSettingRequest extends FormRequest
 {
@@ -27,40 +25,58 @@ class UpdateTeamSettingRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'week_start_day' => ['required', 'integer', 'between:0,6'],
+            'week_start_day' => ['bail', 'required', 'integer', 'between:0,6', new WeekStartDayChangeable(app(Team::class))],
             'week_lookahead' => ['required', 'integer', 'between:1,52'],
             'absence_deadline_days' => ['required', 'integer', 'between:0,30'],
             'stale_absence_deletion_days' => ['required', 'integer', 'between:0,365'],
         ];
+
+        // Without the rozpis module, posted fairness/quick-time fields stay out of validated().
+        if (! $this->hasRozpis()) {
+            return $rules;
+        }
+
+        return [
+            ...$rules,
+
+            // Exactly seven, Monday-indexed. A short array would misprice part of the week, and
+            // Team::fairnessDayWeights() would silently fall back to the defaults instead.
+            'fairness_day_weights' => ['required', 'array', 'size:7'],
+            'fairness_day_weights.*' => ['required', 'numeric', 'between:0.1,10'],
+            'fairness_window_weeks' => ['required', 'integer', 'between:1,52'],
+
+            // How hard a Slovak public holiday is to staff, independent of its weekday - see
+            // FairnessService::dayWeight() and App\Services\SlovakHolidays.
+            'holiday_weight' => ['required', 'numeric', 'between:0.1,10'],
+
+            // Optional: an empty/missing list means "use TeamSetting::DEFAULT_QUICK_TIMES". The
+            // editor (quickTimesEditor in app.js) already dedupes and sorts client-side, so
+            // there's nothing left to normalise here.
+            'quick_times' => ['sometimes', 'array'],
+            'quick_times.*' => ['date_format:H:i'],
+        ];
     }
 
     /**
-     * A lock belongs to a week_start, so moving the start day would silently unlock every current and
-     * future locked week. Past ones no longer matter - employees can't change past days.
-     *
-     * @return array<int, callable>
+     * Number inputs arrive as strings, and the `array` cast would store them as strings -
+     * leaving the JSON column's contents dependent on how the row happened to be written.
      */
-    public function after(): array
+    protected function passedValidation(): void
     {
-        return [
-            function (Validator $validator): void {
-                $team = app(Team::class);
+        if (! $this->hasRozpis()) {
+            return;
+        }
 
-                if ($validator->errors()->isNotEmpty() || (int) $this->input('week_start_day') === $team->weekStartDay()) {
-                    return;
-                }
+        $this->merge([
+            'fairness_day_weights' => array_map('floatval', array_values($this->validated('fairness_day_weights'))),
+        ]);
+    }
 
-                $hasOpenLocks = WeekLock::query()
-                    ->where('week_start', '>=', app(WeekService::class)->start($team, CarbonImmutable::now())->toDateString())
-                    ->exists();
-
-                if ($hasOpenLocks) {
-                    $validator->errors()->add('week_start_day', 'Začiatok týždňa sa nedá zmeniť, kým je aktuálny alebo budúci týždeň zamknutý. Najprv ho odomkni.');
-                }
-            },
-        ];
+    private function hasRozpis(): bool
+    {
+        return app(Team::class)->hasFeature(TeamFeature::Rozpis);
     }
 
     /**
@@ -78,6 +94,16 @@ class UpdateTeamSettingRequest extends FormRequest
             'absence_deadline_days.between' => 'Uzávierka absencií musí byť medzi 0 a 30 dňami.',
             'stale_absence_deletion_days.required' => 'Lehota na vymazanie neaktívnej absencie je povinná.',
             'stale_absence_deletion_days.between' => 'Lehota na vymazanie neaktívnej absencie musí byť medzi 0 a 365 dňami.',
+            'fairness_day_weights.size' => 'Váhy dní musia byť zadané pre všetkých 7 dní.',
+            'fairness_day_weights.*.required' => 'Váha dňa je povinná.',
+            'fairness_day_weights.*.numeric' => 'Váha dňa musí byť číslo.',
+            'fairness_day_weights.*.between' => 'Váha dňa musí byť medzi 0,1 a 10.',
+            'fairness_window_weeks.required' => 'Obdobie hodnotenia je povinné.',
+            'fairness_window_weeks.between' => 'Obdobie hodnotenia musí byť medzi 1 a 52 týždňami.',
+            'holiday_weight.required' => 'Váha sviatku je povinná.',
+            'holiday_weight.numeric' => 'Váha sviatku musí byť číslo.',
+            'holiday_weight.between' => 'Váha sviatku musí byť medzi 0,1 a 10.',
+            'quick_times.*.date_format' => 'Čas musí byť v tvare HH:MM.',
         ];
     }
 }

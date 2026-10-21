@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TeamFeature;
 use App\Http\Controllers\Absence\AbsenceController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\EmailVerificationController;
@@ -13,13 +14,18 @@ use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Calendar\ScheduleExportController;
 use App\Http\Controllers\Calendar\WeekLockController;
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\Position\PositionController;
 use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\Rozpis\RozpisController;
+use App\Http\Controllers\Rozpis\RozpisExportController;
+use App\Http\Controllers\Rozpis\RozpisPublishController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Team\TeamSettingController;
 use App\Http\Controllers\Team\TeamSwitchController;
 use App\Http\Middleware\SetCurrentTeam;
 use Illuminate\Support\Facades\Route;
+use Laravel\Pennant\Middleware\EnsureFeaturesAreActive;
 
 /*
 |--------------------------------------------------------------------------
@@ -152,4 +158,20 @@ Route::middleware('tenant')->group(function () {
 
     Route::get('/sprava-kina', [TeamSettingController::class, 'edit'])->name('team.settings.edit');
     Route::put('/sprava-kina', [TeamSettingController::class, 'update'])->name('team.settings.update');
+
+    // Rozpis: per-cinema module (404 when off), authorized in the controllers.
+    Route::middleware(EnsureFeaturesAreActive::using(TeamFeature::Rozpis))->group(function () {
+        Route::get('/admin/pozicie', [PositionController::class, 'index'])->name('positions.index');
+
+        Route::get('/tyzden/{date}/rozpis', [RozpisController::class, 'show'])->name('rozpis.show');
+        Route::post('/tyzden/{date}/rozpis/kopirovat', [RozpisController::class, 'copy'])->name('rozpis.copy');
+        Route::post('/tyzden/{date}/rozpis/kopirovat-tyzden', [RozpisController::class, 'copyWeek'])->name('rozpis.copy-week');
+
+        Route::get('/tyzden/{date}/rozpis/zmeny', [RozpisController::class, 'published'])->name('rozpis.published');
+
+        Route::post('/tyzden/{date}/rozpis/zverejnit', [RozpisPublishController::class, 'store'])->name('rozpis.publish');
+        Route::delete('/tyzden/{date}/rozpis/zverejnit', [RozpisPublishController::class, 'destroy'])->name('rozpis.unpublish');
+
+        Route::get('/tyzden/{date}/rozpis/export', RozpisExportController::class)->name('rozpis.export');
+    });
 });

@@ -2,10 +2,19 @@
 
 namespace App\Models;
 
+use App\Enums\TeamFeature;
 use App\Notifications\AddUserResetPassword;
 use App\Notifications\ResetPasswordNotification;
 use App\Notifications\VerifyEmailAddress;
+use App\Services\SuperAdminSession;
 use App\Traits\Loggable;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,10 +36,15 @@ use Spatie\Permission\Traits\HasRoles;
  *
  * The legacy `id_role` column is gone. Its two non-permission values became attributes:
  * blocked -> `is_active = false`, unverified -> `team_user.approved_at IS NULL`.
+ *
+ * `is_super_admin` is deliberately not fillable.
  */
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasName, MustVerifyEmail
 {
-    use CanResetPassword, HasFactory, HasRoles, Loggable, Notifiable;
+    use CanResetPassword, HasFactory, HasRoles, InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery, Loggable, Notifiable;
+
+    /** Roles live on `web`; without this Spatie would look them up under `platform` inside the panel. */
+    protected string $guard_name = 'web';
 
     protected $fillable = [
         'name',
@@ -56,6 +70,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'is_super_admin' => 'boolean',
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
         ];
@@ -135,29 +150,63 @@ class User extends Authenticatable implements MustVerifyEmail
             : $this->teams()->whereKey($team->getKey())->exists();
     }
 
+    public function actsAsSuperAdmin(): bool
+    {
+        return app(SuperAdminSession::class)->isActive($this);
+    }
+
     /**
-     * Point the user at another of their teams. Refuses teams they are not approved in,
-     * so a forged team id on the switch route cannot cross the tenant boundary.
+     * Kept apart from approvedTeams(), which lists a cinema's people - a super admin is not one.
+     *
+     * @return Collection<int, Team>
+     */
+    public function accessibleTeams(): Collection
+    {
+        return $this->actsAsSuperAdmin()
+            ? Team::query()->orderBy('name')->get()
+            : $this->approvedTeams();
+    }
+
+    public function canEnter(Team $team): bool
+    {
+        return $this->actsAsSuperAdmin() || $this->isApprovedIn($team);
+    }
+
+    /**
+     * Point the user at another of their teams. Refuses teams they may not enter, so a forged
+     * team id on the switch route cannot cross the tenant boundary.
      */
     public function switchTeam(Team $team): bool
     {
-        if (! $this->isApprovedIn($team)) {
+        if (! $this->canEnter($team)) {
             return false;
         }
 
         $this->forceFill(['current_team_id' => $team->getKey()])->save();
+        $this->setRelation('currentTeam', $team);
 
         return true;
     }
 
     /**
      * Check whether the user has a specific permission in a given cinema team (or current active team).
+     *
+     * Super admin bypass lives here, not in Gate::before, so policy rules (last head manager,
+     * ownership, locks) still apply to them.
      */
     public function hasPermissionInTeam(string $permission, ?Team $team = null): bool
     {
         $team = $team ?? $this->currentTeam;
 
-        if (! $team || ! $this->isApprovedIn($team)) {
+        if (! $team) {
+            return false;
+        }
+
+        if ($this->actsAsSuperAdmin()) {
+            return true;
+        }
+
+        if (! $this->isApprovedIn($team)) {
             return false;
         }
 
@@ -171,6 +220,32 @@ class User extends Authenticatable implements MustVerifyEmail
         } finally {
             setPermissionsTeamId($originalTeamId);
         }
+    }
+
+    /**
+     * May turn this cinema's signups into a shift plan - the rozpis builder, its slots, its
+     * exports and its AI draft all hang off this one permission, and off the cinema having the
+     * rozpis module switched on at all.
+     */
+    public function canBuildRozpis(): bool
+    {
+        $team = app(Team::class);
+
+        return $team->hasFeature(TeamFeature::Rozpis)
+            && $this->hasPermissionInTeam('assignment.assign-position', $team);
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $panel->getId() === 'platform'
+            && $this->is_super_admin
+            && $this->is_active
+            && $this->hasVerifiedEmail();
+    }
+
+    public function getFilamentName(): string
+    {
+        return trim($this->name.' '.$this->lastname);
     }
 
     /** Views print users directly: "Kozelek T." */

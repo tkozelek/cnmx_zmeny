@@ -36,8 +36,10 @@ class EnsureUserIsActive
                 ->with('show_unverified_modal', true);
         }
 
-        if ($user->approvedTeams()->isEmpty()) {
-            return $this->reject($request, 'E-mail máš overený, účet ešte čaká na schválenie manažérom kina.');
+        if ($user->accessibleTeams()->isEmpty()) {
+            return $this->reject($request, $user->is_super_admin
+                ? 'Do kín vstupuješ cez administráciu platformy.'
+                : 'E-mail máš overený, účet ešte čaká na schválenie manažérom kina.');
         }
 
         return $next($request);

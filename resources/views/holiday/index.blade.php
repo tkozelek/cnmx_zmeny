@@ -13,6 +13,7 @@
     >
 
         <x-page-header icon="fa-calendar-days" title="Absencie" subtitle="Dni, kedy nemôžeš pracovať.">
+            @can('create', App\Models\Absence::class)
             <button @click="openModal = true"
                     aria-haspopup="dialog"
                     :aria-expanded="openModal.toString()"
@@ -20,6 +21,7 @@
                     type="button">
                 <i class="fa-solid fa-plus text-xs" aria-hidden="true"></i> Pridať absenciu
             </button>
+            @endcan
         </x-page-header>
 
         {{-- Add Absence Alpine Modal Component with x-teleport to body --}}

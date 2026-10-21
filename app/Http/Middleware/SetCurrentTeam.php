@@ -40,13 +40,13 @@ class SetCurrentTeam
 
         $team = $user->currentTeam;
 
-        // A stale or unset current_team_id falls back to any approved membership, and the
-        // choice is persisted so it survives the next request.
-        if (! $team || ! $user->isApprovedIn($team)) {
-            $team = $user->approvedTeams()->first();
+        // A stale or unset current_team_id falls back to any enterable cinema, persisted for next time.
+        if (! $team || ! $user->canEnter($team)) {
+            $team = $user->accessibleTeams()->first();
 
             if ($team) {
                 $user->forceFill(['current_team_id' => $team->getKey()])->save();
+                $user->setRelation('currentTeam', $team);
             }
         }
 

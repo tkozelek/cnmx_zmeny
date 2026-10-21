@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Enums\TeamFeature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Pennant\Feature;
 use Tests\TestCase;
 
 class LayoutTest extends TestCase
@@ -18,7 +20,7 @@ class LayoutTest extends TestCase
     {
         $this->get(route('help'))
             ->assertOk()
-            ->assertSee('/livewire/livewire', false);
+            ->assertSee('/livewire.js', false);
     }
 
     /**
@@ -28,11 +30,13 @@ class LayoutTest extends TestCase
     public function test_a_public_page_gates_the_navigation_against_the_current_team(): void
     {
         $team = $this->tenant();
+        Feature::for($team)->activate(TeamFeature::Rozpis);
 
         $this->actingAs($this->member($team, Role::HeadManager))
             ->get(route('help'))
             ->assertOk()
             ->assertSee('Správa kina')
+            ->assertSee('Pozície')
             ->assertSee('Používatelia');
     }
 
@@ -40,10 +44,12 @@ class LayoutTest extends TestCase
     public function test_pages_using_the_shared_page_header_still_render(): void
     {
         $team = $this->tenant();
+        Feature::for($team)->activate(TeamFeature::Rozpis);
         $headManager = $this->member($team, Role::HeadManager);
 
         foreach ([
             'team.settings.edit',
+            'positions.index',
             'admin.users.index',
             'absences.index',
             'settings.password.edit',

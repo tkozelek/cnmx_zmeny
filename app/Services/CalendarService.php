@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\Role;
+use App\Enums\TeamFeature;
 use App\Models\Absence;
 use App\Models\Assignment;
 use App\Models\Team;
@@ -28,7 +29,7 @@ class CalendarService
         $canViewAbsences = $viewer->hasPermissionInTeam('absence.view', $team);
 
         // Preload all assignments for the week in 1 query to prevent N+1 queries across the 7 DayCards.
-        $weekAssignments = Assignment::with('user')
+        $weekAssignments = Assignment::with(['user', 'position'])
             ->betweenDates($from, $to)
             ->get()
             ->groupBy(fn (Assignment $a): string => $a->date->toDateString());
@@ -38,12 +39,18 @@ class CalendarService
             ->map(fn ($ws) => $ws instanceof CarbonInterface ? $ws->toDateString() : (string) $ws)
             ->toArray();
 
+        // One row answers both questions: a week is locked when it exists, and published when it
+        // also carries a timestamp. Publication only ever happens to a locked week.
+        $lock = WeekLock::forWeek($team->getKey(), $weekStart);
+
         return [
             'weekStart' => $weekStart,
             'weekEnd' => $to,
             'days' => $this->weeks->days($weekStart),
             'weekAssignments' => $weekAssignments,
-            'locked' => WeekLock::locked($team->getKey(), $weekStart),
+            'locked' => $lock !== null,
+            'hasRozpis' => $hasRozpis = $team->hasFeature(TeamFeature::Rozpis),
+            'rozpisPublished' => $hasRozpis && (bool) $lock?->isRozpisPublished(),
             'lockedWeekStarts' => $lockedWeekStarts,
             'absences' => $canViewAbsences ? $this->absences($from, $to) : collect(),
             'available' => $viewer->hasPermissionInTeam('assignment.lock', $team) ? $this->available($team, $weekStart) : [],
