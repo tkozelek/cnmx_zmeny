@@ -119,6 +119,7 @@ class ProfileController extends Controller
 
         $counts = $user->assignments()
             ->when($since, fn ($query) => $query->where('date', '>=', $since->toDateString()))
+            ->where('date', '<=', today()->toDateString())
             ->groupBy('day_of_week')
             ->orderBy('day_of_week')
             ->pluck(

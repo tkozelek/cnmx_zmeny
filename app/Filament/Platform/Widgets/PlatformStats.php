@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class PlatformStats extends StatsOverviewWidget
 {
+    /** Four counts across every cinema; they don't need re-running every 5 s per open tab. */
+    protected ?string $pollingInterval = null;
+
     protected function getStats(): array
     {
         $pending = DB::table('team_user')
@@ -24,7 +27,7 @@ class PlatformStats extends StatsOverviewWidget
             Stat::make('Kiná', Team::count()),
             Stat::make('Aktívne účty', User::where('is_active', true)->where('is_super_admin', false)->count()),
             Stat::make('Čakajú na schválenie', $pending)->color($pending > 0 ? 'warning' : 'gray'),
-            Stat::make('Zápisy tento týždeň', Assignment::query()
+            Stat::make('Zápisy tento týždeň (po – ne)', Assignment::query()
                 ->whereBetween('date', [now()->startOfWeek()->toDateString(), now()->endOfWeek()->toDateString()])
                 ->count()),
         ];

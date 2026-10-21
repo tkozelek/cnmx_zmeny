@@ -18,7 +18,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Laravel\Pennant\Feature;
 
 class TeamForm
@@ -72,14 +71,6 @@ class TeamForm
                         TextInput::make('stale_absence_deletion_days')
                             ->label('Vymazanie neaktívnej absencie po (dňoch, 0 = hneď)')
                             ->integer()->minValue(0)->maxValue(365)->required(),
-                        TextInput::make('timezone')
-                            ->label('Časové pásmo')
-                            ->required()
-                            ->rule(Rule::in(timezone_identifiers_list())),
-                        TextInput::make('locale')
-                            ->label('Jazyk')
-                            ->required()
-                            ->maxLength(10),
                         Fieldset::make('Rozpis')
                             ->visible(fn (EditRecord $livewire): bool => $livewire->getRecord()->hasFeature(TeamFeature::Rozpis))
                             ->columns(7)

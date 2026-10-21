@@ -11,6 +11,7 @@ use App\Models\Team;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Activity;
 
@@ -400,24 +401,28 @@ class RozpisService
         }
 
         $existing = PositionSlot::where('date', $to->toDateString())->get()->countBy('position_id');
-        $added = 0;
 
-        foreach ($source->groupBy('position_id') as $positionId => $slots) {
-            // Skip the rows the target already has, copy the remainder.
-            foreach ($slots->slice($existing[$positionId] ?? 0) as $slot) {
-                PositionSlot::create([
-                    'position_id' => $positionId,
-                    'date' => $to->toDateString(),
-                    'start_time' => $slot->start_time,
-                    'end_time' => $slot->end_time,
-                    'sort_order' => $slot->sort_order,
-                ]);
+        // All or nothing: a failure halfway must not leave a half-copied day.
+        return DB::transaction(function () use ($source, $existing, $to): int {
+            $added = 0;
 
-                $added++;
+            foreach ($source->groupBy('position_id') as $positionId => $slots) {
+                // Skip the rows the target already has, copy the remainder.
+                foreach ($slots->slice($existing[$positionId] ?? 0) as $slot) {
+                    PositionSlot::create([
+                        'position_id' => $positionId,
+                        'date' => $to->toDateString(),
+                        'start_time' => $slot->start_time,
+                        'end_time' => $slot->end_time,
+                        'sort_order' => $slot->sort_order,
+                    ]);
+
+                    $added++;
+                }
             }
-        }
 
-        return $added;
+            return $added;
+        });
     }
 
     /**
@@ -428,17 +433,20 @@ class RozpisService
     {
         $sourceDays = $this->weeks->days($sourceWeekStart)->values();
         $targetDays = $this->weeks->days($targetWeekStart)->values();
-        $totalAdded = 0;
 
-        foreach ($sourceDays as $index => $sourceDay) {
-            $targetDay = $targetDays->get($index);
+        return DB::transaction(function () use ($sourceDays, $targetDays): int {
+            $totalAdded = 0;
 
-            if ($targetDay) {
-                $totalAdded += $this->copySlots($sourceDay, $targetDay);
+            foreach ($sourceDays as $index => $sourceDay) {
+                $targetDay = $targetDays->get($index);
+
+                if ($targetDay) {
+                    $totalAdded += $this->copySlots($sourceDay, $targetDay);
+                }
             }
-        }
 
-        return $totalAdded;
+            return $totalAdded;
+        });
     }
 
     /**

@@ -35,12 +35,13 @@ class CalendarService
             ->groupBy(fn (Assignment $a): string => $a->date->toDateString());
 
         $lockedWeekStarts = WeekLock::where('team_id', $team->id)
+            ->where('is_locked', true)
             ->pluck('week_start')
             ->map(fn ($ws) => $ws instanceof CarbonInterface ? $ws->toDateString() : (string) $ws)
             ->toArray();
 
-        // One row answers both questions: a week is locked when it exists, and published when it
-        // also carries a timestamp. Publication only ever happens to a locked week.
+        // One row answers both questions: a week is locked when the row says so, and published
+        // when it also carries a timestamp. A published week may be unlocked again for late changes.
         $lock = WeekLock::forWeek($team->getKey(), $weekStart);
 
         return [
@@ -48,7 +49,7 @@ class CalendarService
             'weekEnd' => $to,
             'days' => $this->weeks->days($weekStart),
             'weekAssignments' => $weekAssignments,
-            'locked' => $lock !== null,
+            'locked' => (bool) $lock?->is_locked,
             'hasRozpis' => $hasRozpis = $team->hasFeature(TeamFeature::Rozpis),
             'rozpisPublished' => $hasRozpis && (bool) $lock?->isRozpisPublished(),
             'lockedWeekStarts' => $lockedWeekStarts,

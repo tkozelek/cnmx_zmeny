@@ -31,4 +31,9 @@ class ChangePasswordRequest extends FormRequest
     {
         return config('constants.messages');
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return route('settings.index').'#heslo';
+    }
 }

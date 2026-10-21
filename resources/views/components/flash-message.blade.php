@@ -1,3 +1,4 @@
+{{-- Session messages are added a beat after load, so screen readers have registered the live region before it changes. --}}
 <div
     x-data="{
         toasts: [],
@@ -22,7 +23,7 @@
         resume(id) {
             const toast = this.toasts.find(t => t.id === id);
             if (!toast || toast.type === 'error') return;
-            this.timers[id] = setTimeout(() => this.removeToast(id), 4500);
+            this.timers[id] = setTimeout(() => this.removeToast(id), 8000);
         },
         pause(id) {
             clearTimeout(this.timers[id]);
@@ -44,6 +45,7 @@
         }
     }"
     x-init="
+        setTimeout(() => {
         @if(session('success'))
             addToast(@json(session('success')), 'success', @json(session('icon', '')));
         @elseif(session('message'))
@@ -61,6 +63,7 @@
         @if(session('warning'))
             addToast(@json(session('warning')), 'warning', @json(session('icon', '')));
         @endif
+        }, 500);
     "
     @toast.window="handleToastEvent($event)"
     role="status" aria-live="polite" class="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-4 z-[110] flex flex-col gap-2 sm:w-full sm:max-w-sm pointer-events-none"
@@ -86,7 +89,7 @@
             }"
         >
             <i class="shrink-0 text-sm" :class="toast.icon" aria-hidden="true"></i>
-            <p class="flex-1 min-w-0 text-xs font-medium leading-snug break-words" x-text="toast.message" :title="toast.message"></p>
+            <p class="flex-1 min-w-0 text-sm font-medium leading-snug break-words" x-text="toast.message" :title="toast.message"></p>
 
             <button
                 type="button"

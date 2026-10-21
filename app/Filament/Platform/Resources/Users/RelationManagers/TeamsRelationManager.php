@@ -53,6 +53,7 @@ class TeamsRelationManager extends RelationManager
                                 ->all())
                             ->required(),
                         $this->roleSelect(),
+                        $this->headManagerPassword(),
                     ])
                     ->action(fn (array $data) => $this->membership()->add($this->user(), Team::findOrFail($data['team_id']), Role::from($data['role']))),
             ])
@@ -66,7 +67,7 @@ class TeamsRelationManager extends RelationManager
                 Action::make('changeRole')
                     ->label('Zmeniť rolu')
                     ->fillForm(fn (Team $record): array => ['role' => $this->membership()->roleOf($this->user(), $record)?->value])
-                    ->schema([$this->roleSelect()])
+                    ->schema([$this->roleSelect(), $this->headManagerPassword()])
                     ->action(fn (Team $record, array $data) => $this->attempt(fn () => $this->membership()->changeRole($this->user(), $record, Role::from($data['role'])))),
                 Action::make('remove')
                     ->label('Odobrať z kina')

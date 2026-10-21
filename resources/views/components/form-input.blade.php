@@ -24,7 +24,7 @@
                 'w-full min-h-12 px-4 py-3 rounded-xl bg-neutral-900 border text-white placeholder-neutral-400 transition-all duration-200 text-base sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed',
                 'border-rose-500/70' => $error,
                 'border-neutral-500' => ! $error,
-                'focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500 hover:border-neutral-400',
+                'focus:outline-none focus:border-brand-500 hover:border-neutral-400',
                 'pl-11' => $icon,
                 'pr-12' => $type === 'password',
             ]) }}

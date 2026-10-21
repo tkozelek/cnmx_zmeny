@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A row here means that week is frozen for that team. Unlocking deletes the row.
+ * A row with `is_locked` means that week is frozen for that team. Unlocking deletes the row,
+ * unless the week's rozpis is published - then the row stays, unlocked, to keep the publication.
  *
  * This is all that survives of the legacy `weeks` table - weeks themselves are computed
  * from team_settings.week_start_day, so there is nothing to pre-generate.
@@ -26,6 +27,7 @@ class WeekLock extends Model
     protected $fillable = [
         'team_id',
         'week_start',
+        'is_locked',
         'locked_by',
         'rozpis_published_at',
         'published_by',
@@ -40,6 +42,7 @@ class WeekLock extends Model
     {
         return [
             'week_start' => 'date:Y-m-d',
+            'is_locked' => 'boolean',
             'rozpis_published_at' => 'datetime',
         ];
     }
@@ -59,6 +62,16 @@ class WeekLock extends Model
         return $this->rozpis_published_at !== null;
     }
 
+    /** A published week keeps its row, unlocked, so the rozpis stays out for the late change. */
+    public function unlock(): void
+    {
+        if ($this->isRozpisPublished()) {
+            $this->update(['is_locked' => false]);
+        } else {
+            $this->delete();
+        }
+    }
+
     /**
      * The single lock check, used by both policies and the admin UI.
      *
@@ -69,13 +82,14 @@ class WeekLock extends Model
     {
         return static::query()
             ->forTeamWeek($teamId, $weekStart)
+            ->where('is_locked', true)
             ->exists();
     }
 
     /**
      * The lock row itself, for the callers that need more than "is it locked" - publishing hangs
      * off it. Null when the week was never locked, which is also the answer to "is the rozpis
-     * published": there is no rozpis before there is a lock.
+     * published": there is no rozpis before there is a lock. Check `is_locked` for the lock state.
      */
     public static function forWeek(int $teamId, CarbonInterface|string $weekStart): ?self
     {

@@ -15,12 +15,12 @@
                     @if($publishedAt)
                         <p class="mt-1 flex items-center gap-1.5 text-xs text-neutral-400">
                             <i class="fa-solid fa-circle-check text-[0.7rem] text-emerald-500"></i>
-                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }}. Toto je konečná verzia - len na čítanie.
+                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }}. Toto je konečná verzia – len na čítanie.
                         </p>
                     @else
                         <p class="mt-1 flex items-center gap-1.5 text-xs text-amber-400">
                             <i class="fa-solid fa-pen-ruler text-[0.7rem]"></i>
-                            Pracovná verzia - zamestnanci ju zatiaľ nevidia.
+                            Pracovná verzia – zamestnanci ju zatiaľ nevidia.
                         </p>
                     @endif
                 </div>
@@ -31,7 +31,7 @@
 
                     <span class="inline-flex h-11 items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-5 text-base font-bold tracking-wide text-neutral-100">
                         <i class="fa-regular fa-calendar text-neutral-400"></i>
-                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} - {{ $weekEnd->format('d.m.Y') }}</span>
+                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}</span>
                     </span>
 
                     <x-rozpis.week-arrow direction="next"
@@ -164,7 +164,7 @@
                             @if($canBuild && $day['unfilled'] > 0 && $day['eligible'])
                                 <div class="border-t border-neutral-800/80 bg-emerald-500/[0.04] px-3 py-2">
                                     <p class="text-xs font-semibold uppercase tracking-wider text-emerald-500"
-                                       title="Zapísaní, bez absencie tento deň, ešte nezaradení - zoradení podľa spravodlivosti: v neobľúbený deň je hore ten, kto ich odrobil najmenej, v obľúbený ten, kto si ho najviac zaslúžil.">
+                                       title="Zapísaní, bez absencie tento deň, ešte nezaradení – zoradení podľa spravodlivosti: v neobľúbený deň je hore ten, kto ich odrobil najmenej, v obľúbený ten, kto si ho najviac zaslúžil.">
                                         Kto môže byť vylosovaný
                                     </p>
                                     <p class="mt-1 text-xs leading-relaxed text-neutral-400">

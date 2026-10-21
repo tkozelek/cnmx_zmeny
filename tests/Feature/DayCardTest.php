@@ -6,6 +6,8 @@ use App\Enums\Role;
 use App\Livewire\DayCard;
 use App\Livewire\ExtraNote;
 use App\Models\Assignment;
+use App\Models\Team;
+use App\Models\User;
 use App\Policies\AssignmentPolicy;
 use App\Services\WeekService;
 use Carbon\CarbonImmutable;
@@ -176,6 +178,29 @@ class DayCardTest extends TestCase
             ->call('remove', $assignment->id);
 
         $this->assertModelMissing($assignment);
+    }
+
+    /** A hand-crafted Livewire call with another cinema's id must not reach that cinema's plan. */
+    public function test_an_admin_cannot_remove_an_assignment_from_another_cinema(): void
+    {
+        $team = $this->tenant();
+        $admin = $this->member($team, Role::HeadManager);
+        $date = CarbonImmutable::now()->addDays(3)->toDateString();
+
+        $otherTeam = Team::factory()->create(['name' => 'Kino B']);
+        $foreign = Assignment::factory()->create([
+            'team_id' => $otherTeam->id,
+            'user_id' => User::factory()->memberOf($otherTeam, Role::Employee->value)->create()->id,
+            'date' => $date,
+        ]);
+        setPermissionsTeamId($team->id);
+
+        Livewire::actingAs($admin)
+            ->test(DayCard::class, $this->props($date))
+            ->call('remove', $foreign->id)
+            ->assertNotFound();
+
+        $this->assertModelExists($foreign);
     }
 
     /**

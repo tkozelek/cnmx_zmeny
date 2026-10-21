@@ -172,6 +172,10 @@ export function mountSeatField(canvas) {
         const wantedColumns = Math.min(MAX_COLUMNS, Math.max(MIN_COLUMNS, Math.round(width / PIXELS_PER_SEAT)));
         if (wantedColumns !== columns) {
             buildSeats(wantedColumns);
+            // A rebuild after the entrance (rotation, resize) must not leave an empty room while the loop rests.
+            if (enteredAt !== null && !running) {
+                seats.forEach((seat) => { seat.enter = 1; });
+            }
         }
 
         // Fit the front row to the canvas width, raise the camera until the rows spread over

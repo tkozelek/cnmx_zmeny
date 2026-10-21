@@ -116,6 +116,29 @@ class PlatformPanelTest extends TestCase
         $this->assertTrue($superAdmin->fresh()->is_super_admin);
     }
 
+    /** Handing over a whole cinema is guarded like granting super admin. */
+    public function test_making_someone_head_manager_needs_the_acting_admins_password(): void
+    {
+        $team = $this->tenant();
+        $employee = $this->member($team);
+        $superAdmin = User::factory()->superAdmin()->create();
+
+        Livewire::actingAs($superAdmin, SuperAdminSession::GUARD)
+            ->test(MembersRelationManager::class, ['ownerRecord' => $team, 'pageClass' => EditTeam::class])
+            ->callTableAction('changeRole', $employee, data: ['role' => Role::HeadManager->value, 'current_password' => 'wrong'])
+            ->assertHasTableActionErrors(['current_password']);
+
+        setPermissionsTeamId($team->id);
+        $this->assertFalse($employee->fresh()->hasRole(Role::HeadManager->value));
+
+        Livewire::actingAs($superAdmin, SuperAdminSession::GUARD)
+            ->test(MembersRelationManager::class, ['ownerRecord' => $team, 'pageClass' => EditTeam::class])
+            ->callTableAction('changeRole', $employee, data: ['role' => Role::HeadManager->value, 'current_password' => 'password']);
+
+        setPermissionsTeamId($team->id);
+        $this->assertTrue($employee->fresh()->hasRole(Role::HeadManager->value));
+    }
+
     public function test_the_last_head_manager_cannot_be_demoted_from_the_panel(): void
     {
         $team = $this->tenant();

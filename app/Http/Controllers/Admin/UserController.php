@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\Team;
 use App\Models\User;
 use App\Notifications\AddUserResetPassword;
+use App\Services\TeamMembershipService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -71,6 +72,7 @@ class UserController extends Controller
         return view('admin.edit', [
             'user' => $user,
             'roles' => $this->assignableRoles(),
+            'isShared' => $user->belongsToSeveralTeams(),
         ]);
     }
 
@@ -103,19 +105,24 @@ class UserController extends Controller
     }
 
     /**
-     * Deactivate, never delete.
+     * Take the person out of this cinema, never delete.
      *
-     * `shifts.user_id` and `rates.user_id` are RESTRICT on purpose - payroll history must
-     * survive - so a real delete would fail for anyone who has ever worked. Deactivating
-     * matches what the schema is built for, and `is_active = false` is exactly what the
-     * legacy "blocked" role meant.
+     * `is_active` is global, so it is only switched off when this cinema was their only one -
+     * otherwise a manager here would lock them out of cinemas that still want them. A real delete
+     * would also wipe their history, which is why the last cinema deactivates instead.
      */
-    public function destroy(User $user): RedirectResponse
+    public function destroy(User $user, Team $team, TeamMembershipService $memberships): RedirectResponse
     {
         $this->authorize('delete', $user);
 
-        $user->update(['is_active' => false]);
+        if ($user->belongsToSeveralTeams()) {
+            $memberships->remove($user, $team);
+            $message = 'Používateľ bol odobratý z tohto kina.';
+        } else {
+            $user->update(['is_active' => false]);
+            $message = 'Účet bol úspešne deaktivovaný.';
+        }
 
-        return to_route('admin.users.index')->with(['success' => 'Účet bol úspešne deaktivovaný.', 'message' => 'Účet bol úspešne deaktivovaný.']);
+        return to_route('admin.users.index')->with(['success' => $message, 'message' => $message]);
     }
 }

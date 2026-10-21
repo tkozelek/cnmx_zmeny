@@ -44,6 +44,8 @@ class CalendarController extends Controller
                 // Null past the team's week_lookahead, so the view simply hides the arrow
                 // rather than offering a link that silently lands back on this week.
                 'nextWeek' => $this->weeks->clampForward($team, $next)->equalTo($next) ? $next : null,
+                // Phones only (see .week-compact in app.css); chosen in /nastavenia.
+                'compactWeek' => $request->user()->compact_week,
             ],
         ));
     }

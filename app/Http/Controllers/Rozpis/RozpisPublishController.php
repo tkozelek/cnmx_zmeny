@@ -31,6 +31,7 @@ class RozpisPublishController extends Controller
     public function store(Request $request, Team $team, string $date): RedirectResponse
     {
         $lock = $this->lockFor($request, $team, $date);
+        abort_unless($lock->is_locked, 404);
 
         $lock->update([
             'rozpis_published_at' => now(),
@@ -41,7 +42,7 @@ class RozpisPublishController extends Controller
 
         return $this->back(
             $lock->week_start->toDateString(),
-            'Rozpis zverejnený - zamestnanci ho už vidia.',
+            'Rozpis zverejnený – zamestnanci ho už vidia.',
             'fa fa-bullhorn',
         );
     }
@@ -51,6 +52,11 @@ class RozpisPublishController extends Controller
         $lock = $this->lockFor($request, $team, $date);
 
         $lock->update(['rozpis_published_at' => null, 'published_by' => null]);
+
+        // An unlocked row only existed to carry the publication.
+        if (! $lock->is_locked) {
+            $lock->delete();
+        }
 
         return $this->back(
             $lock->week_start->toDateString(),

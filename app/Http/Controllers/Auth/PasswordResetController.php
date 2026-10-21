@@ -31,23 +31,24 @@ class PasswordResetController extends Controller
             'password' => ['required', 'confirmed', PasswordRule::min(8)],
         ]);
 
-        // Both brokers share one token table and differ only in expiry, so the broker decides how
-        // old a token may be. An admin invite (24h) goes to an account that has never logged in;
-        // everyone else gets the 60 minutes the reset e-mail promises.
-        $neverLoggedIn = User::where('email', $request->string('email')->value())->whereNull('last_login_at')->exists();
+        // A forgot-password link (60 min) and a manager's invite (24h) live in separate token
+        // tables, so whichever one holds this token decides how old it may be.
+        $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
+        $setPassword = function (User $user, string $password): void {
+            $user->forceFill([
+                'password' => Hash::make($password),
+            ])->setRememberToken(Str::random(60));
 
-        $status = Password::broker($neverLoggedIn ? 'add_user' : 'users')->reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                ])->setRememberToken(Str::random(60));
+            $user->save();
 
-                $user->save();
+            event(new PasswordReset($user));
+        };
 
-                event(new PasswordReset($user));
-            }
-        );
+        $status = Password::broker('users')->reset($credentials, $setPassword);
+
+        if ($status === Password::INVALID_TOKEN) {
+            $status = Password::broker('add_user')->reset($credentials, $setPassword);
+        }
 
         return $status === Password::PASSWORD_RESET
             ? redirect()->route('login')->with('message', __($status))

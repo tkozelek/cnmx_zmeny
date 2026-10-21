@@ -270,10 +270,13 @@ class SecurityHardeningTest extends TestCase
         $this->get(route('profile.index'))->assertRedirect(route('login'));
     }
 
-    /** The e-mail says 60 minutes - only an admin invite to a never-used account gets 24 hours. */
+    /**
+     * The e-mail says 60 minutes - only a manager's invite gets 24 hours. Even for an account that
+     * has never logged in, which used to be enough to stretch a forgot-password link to a day.
+     */
     public function test_an_ordinary_reset_link_expires_after_an_hour(): void
     {
-        $user = User::factory()->create(['last_login_at' => now()->subWeek()]);
+        $user = User::factory()->create(['last_login_at' => null]);
         $token = Password::broker('users')->createToken($user);
 
         $this->travel(61)->minutes();

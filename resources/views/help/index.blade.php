@@ -66,7 +66,7 @@
                 </h2>
                 <div x-show="activeAccordion === 2" style="display: none;">
                     <div class="p-6 md:p-8 text-neutral-300 leading-relaxed border-t border-neutral-800 bg-neutral-950 space-y-4 text-sm">
-                        <p>Na deň sa zapíšeš tlačidlom <strong class="font-semibold text-brand-400">„Zapísať sa“</strong> pri danom dni. Tvoje meno sa potom zobrazí pri dni a&nbsp;tlačidlo sa zmení na <strong class="font-semibold text-brand-400">„Zapísaný“</strong>. Ak sa chceš odpísať, klikni naň znova a&nbsp;odpísanie potvrď.</p>
+                        <p>Na deň sa zapíšeš tlačidlom <strong class="font-semibold text-brand-400">„Zapísať sa“</strong> pri danom dni. Tvoje meno sa potom zobrazí pri dni a&nbsp;tlačidlo sa zmení na <strong class="font-semibold text-brand-400">„Zapísaný“</strong>. Ak sa chceš odpísať, klikni naň znova. Na mobile sa tlačidlo najprv zmení na „Ťukni znova na odpísanie“ – ťukni ešte raz a&nbsp;si odpísaný.</p>
                         <p>Do poľa <strong class="font-semibold text-white">Poznámka</strong> môžeš spresniť, kedy môžeš (napr. <em>od 15:00</em> alebo <em>do 22:00</em>). Poznámka sa pridá ku dňom, na ktoré sa zapíšeš odteraz – už existujúce zápisy nezmení.</p>
                         <p>Zapisovať sa môžeš na viacero týždňov dopredu – koľko, určuje kino.</p>
                         <p><strong class="font-semibold text-white">Zamknutý týždeň</strong>: Keď manažér týždeň zamkne, pod výberom týždňa uvidíš „Týždeň je zamknutý – zápisy sa už nedajú meniť.“ Na dni v&nbsp;takom týždni sa už nemôžeš zapísať ani z&nbsp;nich odpísať. Ak potrebuješ niečo zmeniť, obráť sa na manažéra.</p>

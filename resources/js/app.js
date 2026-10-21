@@ -2,6 +2,44 @@
 // shipping ~200 kB of JS to every page.
 let flatpickrLoading = null;
 
+/** A failed import (flaky data, a stale chunk after deploy) is not cached, so the next use retries. */
+function forgetFailedLoad(reset) {
+    return (error) => {
+        reset();
+        throw error;
+    };
+}
+
+const slovakDate = new Intl.DateTimeFormat('sk', { day: 'numeric', month: 'long', year: 'numeric' });
+
+/** flatpickr's day cells are plain spans named in US order ("Október 22, 2026"). */
+function nameDay(dayElem) {
+    dayElem.setAttribute('role', 'button');
+    dayElem.setAttribute('aria-label', slovakDate.format(dayElem.dateObj));
+}
+
+/** flatpickr's month arrows are plain spans with English labels - make them real buttons. */
+function makeMonthArrowsButtons(fp) {
+    [[fp.prevMonthNav, 'Predchádzajúci mesiac'], [fp.nextMonthNav, 'Nasledujúci mesiac']].forEach(([arrow, label]) => {
+        if (!arrow) return;
+        arrow.setAttribute('role', 'button');
+        arrow.setAttribute('tabindex', '0');
+        arrow.setAttribute('aria-label', label);
+        arrow.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            arrow.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        });
+    });
+}
+
+/** An inline calendar has no day in the tab order; give it exactly one, from which the arrow keys move. */
+function keepOneDayTabbable(fp) {
+    const day = fp.days.querySelector('.selected, .today:not(.flatpickr-disabled)')
+        ?? fp.days.querySelector('.flatpickr-day:not(.flatpickr-disabled):not(.prevMonthDay):not(.nextMonthDay)');
+    day?.setAttribute('tabindex', '0');
+}
+
 function loadFlatpickr() {
     flatpickrLoading ??= Promise.all([
         import('flatpickr'),
@@ -12,7 +50,7 @@ function loadFlatpickr() {
         flatpickr.localize(Slovak);
         window.flatpickr = flatpickr;
         return flatpickr;
-    });
+    }).catch(forgetFailedLoad(() => { flatpickrLoading = null; }));
 
     return flatpickrLoading;
 }
@@ -23,7 +61,7 @@ function loadChart() {
     chartLoading ??= import('chart.js').then(({ Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip }) => {
         Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
         return Chart;
-    });
+    }).catch(forgetFailedLoad(() => { chartLoading = null; }));
 
     return chartLoading;
 }
@@ -35,7 +73,9 @@ function toIsoDate(date) {
 let sortableLoading = null;
 
 function loadSortable() {
-    sortableLoading ??= import('sortablejs').then(({ default: Sortable }) => Sortable);
+    sortableLoading ??= import('sortablejs')
+        .then(({ default: Sortable }) => Sortable)
+        .catch(forgetFailedLoad(() => { sortableLoading = null; }));
 
     return sortableLoading;
 }
@@ -134,6 +174,8 @@ document.addEventListener('alpine:init', () => {
         picker: null,
         async init() {
             const flatpickr = await loadFlatpickr();
+            // Livewire may have removed the component while the import was loading.
+            if (!this.$refs.input?.isConnected) return;
             this.picker = flatpickr(this.$refs.input, {
                 ...timeFieldOptions(initial),
                 onChange: (dates, value) => this.$wire.set(property, value, false),
@@ -144,16 +186,24 @@ document.addEventListener('alpine:init', () => {
             this.picker?.clear();
             this.$wire.set(property, null, false);
         },
+        destroy() {
+            this.picker?.destroy();
+        },
     }));
 
     Alpine.data('slotTimePicker', (slotId, initial = null, quickTimes = []) => ({
+        picker: null,
         async init() {
             const flatpickr = await loadFlatpickr();
-            flatpickr(this.$refs.input, {
+            if (!this.$refs.input?.isConnected) return;
+            this.picker = flatpickr(this.$refs.input, {
                 ...timeFieldOptions(initial),
                 onChange: (dates, value) => this.$wire.updateSlotTime(slotId, value || null),
                 onReady: (_dates, _str, fp) => addQuickTimes(fp, quickTimes, pickQuickTime(fp)),
             });
+        },
+        destroy() {
+            this.picker?.destroy();
         },
     }));
 
@@ -164,6 +214,7 @@ document.addEventListener('alpine:init', () => {
         async init() {
             if (!this.$refs.newTimeInput) return;
             const flatpickr = await loadFlatpickr();
+            if (!this.$refs.newTimeInput?.isConnected) return;
             this.picker = flatpickr(this.$refs.newTimeInput, {
                 ...timeFieldOptions(null),
                 disableMobile: true,
@@ -180,12 +231,17 @@ document.addEventListener('alpine:init', () => {
         remove(index) {
             this.times.splice(index, 1);
         },
+        destroy() {
+            this.picker?.destroy();
+        },
     }));
 
     Alpine.data('weekJump', (current, urlTemplate) => ({
+        picker: null,
         async init() {
             const flatpickr = await loadFlatpickr();
-            flatpickr(this.$refs.input, {
+            if (!this.$refs.input?.isConnected) return;
+            this.picker = flatpickr(this.$refs.input, {
                 disableMobile: true,
                 dateFormat: 'Y-m-d',
                 defaultDate: current,
@@ -197,7 +253,10 @@ document.addEventListener('alpine:init', () => {
             });
         },
         open() {
-            this.$refs.input._flatpickr?.open();
+            this.picker?.open();
+        },
+        destroy() {
+            this.picker?.destroy();
         },
     }));
 
@@ -206,9 +265,12 @@ document.addEventListener('alpine:init', () => {
         dateFrom,
         dateTo,
         sending: false,
+        picker: null,
         async initFlatpickr() {
             const flatpickr = await loadFlatpickr();
-            flatpickr(this.$refs.rangeInput, {
+            if (!this.$refs.rangeInput?.isConnected) return;
+            this.picker?.destroy();
+            this.picker = flatpickr(this.$refs.rangeInput, {
                 mode: 'range',
                 // Inline inside the dialog, not a popup at the end of <body>: the dialog's focus trap
                 // would keep keyboard users out of a popup, and its overflow would clip one.
@@ -218,20 +280,29 @@ document.addEventListener('alpine:init', () => {
                 dateFormat: 'Y-m-d',
                 altInput: true,
                 altInputClass: 'w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer',
-                altFormat: 'j. n. Y',
+                altFormat: 'j.n.Y',
                 defaultDate: [this.dateFrom, this.dateTo],
                 // The visible field is flatpickr's altInput; the <label for> and the hint point at it.
                 onReady: (_dates, _str, fp) => {
+                    makeMonthArrowsButtons(fp);
+                    keepOneDayTabbable(fp);
                     if (!fp.altInput) return;
                     fp.altInput.id = 'absence-range';
-                    fp.altInput.setAttribute('aria-describedby', 'absence-range-hint');
+                    // The server's error summary, when there is one, describes the dates too.
+                    fp.altInput.setAttribute('aria-describedby', document.getElementById('absence-errors') ? 'absence-range-hint absence-errors' : 'absence-range-hint');
                 },
-                onChange: (selectedDates) => {
+                onDayCreate: (_dates, _str, _fp, dayElem) => nameDay(dayElem),
+                onMonthChange: (_dates, _str, fp) => keepOneDayTabbable(fp),
+                onChange: (selectedDates, _str, fp) => {
+                    keepOneDayTabbable(fp);
                     if (!selectedDates.length) return;
                     this.dateFrom = toIsoDate(selectedDates[0]);
                     this.dateTo = selectedDates.length === 2 ? toIsoDate(selectedDates[1]) : this.dateFrom;
                 },
             });
+        },
+        destroy() {
+            this.picker?.destroy();
         },
     }));
 
@@ -262,6 +333,7 @@ document.addEventListener('alpine:init', () => {
         },
         async init() {
             const flatpickr = await loadFlatpickr();
+            if (!this.$refs.pickerInput?.isConnected) return;
             const self = this;
             this.currentWeekRange = this.getWeekRange(currentWeekStart);
             this.picker = flatpickr(this.$refs.pickerInput, {
@@ -277,18 +349,7 @@ document.addEventListener('alpine:init', () => {
                 position: 'below center',
                 positionElement: this.$refs.triggerButton,
                 onReady: (_dates, _str, fp) => {
-                    // flatpickr's month arrows are plain spans and its labels are English.
-                    [[fp.prevMonthNav, 'Predchádzajúci mesiac'], [fp.nextMonthNav, 'Nasledujúci mesiac']].forEach(([arrow, label]) => {
-                        if (!arrow) return;
-                        arrow.setAttribute('role', 'button');
-                        arrow.setAttribute('tabindex', '0');
-                        arrow.setAttribute('aria-label', label);
-                        arrow.addEventListener('keydown', (event) => {
-                            if (event.key !== 'Enter' && event.key !== ' ') return;
-                            event.preventDefault();
-                            arrow.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                        });
-                    });
+                    makeMonthArrowsButtons(fp);
                     fp.monthsDropdownContainer?.setAttribute('aria-label', 'Mesiac');
                     fp.currentYearElement?.setAttribute('aria-label', 'Rok');
                     fp.calendarContainer.setAttribute('role', 'dialog');
@@ -301,8 +362,12 @@ document.addEventListener('alpine:init', () => {
                             <li><span class="week-picker-swatch is-open"></span>Otvorený</li>
                             <li><span class="week-picker-swatch is-locked"></span>Zamknutý</li>
                             <li><span class="week-picker-swatch is-current"></span>Zobrazený</li>
-                        </ul>
-                        <a class="week-picker-today" href="${options.currentWeekUrl ?? '/tyzdne'}">Tento týždeň</a>`;
+                        </ul>`;
+                    const today = document.createElement('a');
+                    today.className = 'week-picker-today';
+                    today.href = options.currentWeekUrl ?? '/tyzdne';
+                    today.textContent = 'Tento týždeň';
+                    footer.appendChild(today);
                     fp.calendarContainer.appendChild(footer);
                 },
                 // Focus goes into the calendar so the arrow keys work, and back to the button after.
@@ -332,6 +397,7 @@ document.addEventListener('alpine:init', () => {
                     const isCurrentActive = self.currentWeekRange.includes(dateFormatted);
 
                     // The colours say locked/open/current - say it to screen readers too.
+                    nameDay(dayElem);
                     dayElem.setAttribute('aria-label', [
                         dayElem.getAttribute('aria-label'),
                         isLocked ? 'zamknutý týždeň' : 'otvorený týždeň',
@@ -388,6 +454,9 @@ document.addEventListener('alpine:init', () => {
         },
         open() {
             this.picker ? this.picker.open() : null;
+        },
+        destroy() {
+            this.picker?.destroy();
         }
     }));
 });
@@ -464,6 +533,9 @@ function togglePasswordVisibility(inputId, button) {
 }
 window.togglePasswordVisibility = togglePasswordVisibility;
 
+let profileChart = null;
+let profileChartResize = null;
+
 async function renderProfileChart(newData) {
     const canvas = document.getElementById('barChart');
     if (!canvas) return;
@@ -485,6 +557,10 @@ async function renderProfileChart(newData) {
         canvas._chartInstance.update();
         return;
     }
+
+    // A Livewire morph may have replaced the canvas: drop the old chart and its resize handler.
+    profileChart?.destroy();
+    window.removeEventListener('resize', profileChartResize);
 
     const shortLabels = ['Pon', 'Uto', 'Str', 'Štv', 'Pia', 'Sob', 'Ned'];
     const fullLabels = ['Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota', 'Nedeľa'];
@@ -576,7 +652,8 @@ async function renderProfileChart(newData) {
     // only swaps the mobile/desktop label set, tick font size and bar thickness once the
     // viewport actually crosses the 640px breakpoint, since those aren't part of Chart.js's
     // own resize handling and were otherwise frozen at whatever size the page first loaded at.
-    window.addEventListener('resize', () => {
+    profileChart = canvas._chartInstance;
+    profileChartResize = () => {
         const nowMobile = isMobileNow();
         if (nowMobile === isMobile) return;
         isMobile = nowMobile;
@@ -586,7 +663,8 @@ async function renderProfileChart(newData) {
         chart.data.datasets[0].maxBarThickness = isMobile ? 32 : 44;
         chart.options.scales.x.ticks.font.size = isMobile ? 11 : 12;
         chart.update();
-    });
+    };
+    window.addEventListener('resize', profileChartResize);
 }
 window.renderProfileChart = renderProfileChart;
 
@@ -595,6 +673,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // After a deploy an open tab still references the old chunk hashes - reload once onto the new build.
+// The guard is cleared once a page has stayed up for a while, so the next deploy reloads too.
+window.addEventListener('load', () => setTimeout(() => {
+    try {
+        sessionStorage.removeItem('reloaded-for-new-build');
+    } catch (e) {
+        // storage blocked - nothing to clear
+    }
+}, 10000));
+
 window.addEventListener('vite:preloadError', () => {
     try {
         if (sessionStorage.getItem('reloaded-for-new-build')) return;

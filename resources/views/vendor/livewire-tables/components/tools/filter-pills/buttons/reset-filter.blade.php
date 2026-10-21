@@ -8,13 +8,13 @@
 @if ($isTailwind)
     <button
         class="flex-shrink-0 ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center text-brand-400 hover:text-white focus:outline-none transition"
-        title="Odstrániť filter"
+        title="Odstrániť filter {{ $filterPillData->getTitle() }}"
         {{
             $attributes->merge($filterButtonAttributes)
             ->except(['default', 'default-colors', 'default-styling', 'default-text'])
         }}
     >
-        <span class="sr-only">Odstrániť filter</span>
-        <i class="fa-solid fa-xmark text-xs"></i>
+        <span class="sr-only">Odstrániť filter {{ $filterPillData->getTitle() }}</span>
+        <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
     </button>
 @endif

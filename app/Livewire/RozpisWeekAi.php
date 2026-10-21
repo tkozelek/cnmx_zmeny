@@ -45,7 +45,7 @@ class RozpisWeekAi extends Component
 
         $this->dispatch(
             'toast',
-            message: 'Návrh na celý týždeň: '.array_sum(array_map('count', $byDate)).' zaradení - potvrď ich v dňoch.',
+            message: 'Návrh na celý týždeň: '.array_sum(array_map('count', $byDate)).' zaradení – potvrď ich v dňoch.',
         );
     }
 

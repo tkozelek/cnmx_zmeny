@@ -77,6 +77,20 @@ class CalendarPageTest extends TestCase
             ->assertSee($nextWeek->format('d.m.Y'));
     }
 
+    public function test_default_landing_page_skips_every_locked_week(): void
+    {
+        $team = $this->tenant();
+        $currentWeek = app(WeekService::class)->start($team, CarbonImmutable::now());
+
+        $team->weekLocks()->create(['week_start' => $currentWeek->toDateString()]);
+        $team->weekLocks()->create(['week_start' => $currentWeek->addWeek()->toDateString()]);
+
+        $this->actingAs($this->member($team))
+            ->get(route('calendar.index'))
+            ->assertOk()
+            ->assertSee($currentWeek->addWeeks(2)->format('d.m.Y'));
+    }
+
     public function test_a_mid_week_url_resolves_to_the_containing_week(): void
     {
         $team = $this->tenant();

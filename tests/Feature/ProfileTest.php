@@ -27,7 +27,7 @@ class ProfileTest extends TestCase
             ->assertSee($user->email)
             ->assertSee('Frekvencia zmien')
             ->assertSee('Absencie')
-            ->assertSee('Zmena hesla');
+            ->assertSee('Zmeniť heslo');
     }
 
     public function test_user_can_filter_profile_by_date(): void

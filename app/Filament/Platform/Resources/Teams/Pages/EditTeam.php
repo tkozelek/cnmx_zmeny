@@ -22,7 +22,9 @@ class EditTeam extends EditRecord
                         ->label(fn (Team $record): string => "Pre potvrdenie napíš „{$record->name}“")
                         ->required()
                         ->in(fn (Team $record): array => [$record->name]),
-                ]),
+                ])
+                // Members' cached team lists would still offer the deleted cinema for 10 minutes.
+                ->before(fn (Team $record) => $record->users->each->forgetApprovedTeamsCache()),
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Models\Team;
+use App\Models\WeekLock;
 use App\Services\WeekService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,6 +29,26 @@ class WeekLockTest extends TestCase
 
         $this->actingAs($admin)->delete(route('weeks.unlock', ['date' => $date]))->assertRedirect();
         $this->assertDatabaseCount('week_locks', 0);
+    }
+
+    /** A late change must not silently pull a rozpis employees were already told about. */
+    public function test_unlocking_a_published_week_keeps_the_rozpis_published(): void
+    {
+        $team = $this->tenant();
+        $admin = $this->member($team, Role::HeadManager);
+        $date = CarbonImmutable::now()->addDays(3)->toDateString();
+        $weekStart = $this->weekStart($team, $date);
+
+        $team->weekLocks()->create(['week_start' => $weekStart, 'rozpis_published_at' => now()]);
+
+        $this->actingAs($admin)->delete(route('weeks.unlock', ['date' => $date]))->assertRedirect();
+
+        $lock = WeekLock::forWeek($team->id, $weekStart);
+        $this->assertNotNull($lock?->rozpis_published_at);
+        $this->assertFalse(WeekLock::locked($team->id, $weekStart));
+
+        $this->actingAs($admin)->post(route('weeks.lock', ['date' => $date]))->assertRedirect();
+        $this->assertTrue(WeekLock::locked($team->id, $weekStart));
     }
 
     public function test_an_employee_cannot_lock_a_week(): void

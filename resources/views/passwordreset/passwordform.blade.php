@@ -1,73 +1,48 @@
-<x-layout title="Resetovanie hesla" description="Nastav si nové heslo do účtu Cinemax Zmeny.">
-    <div class="flex-1 min-h-full w-full py-12 md:py-20 flex items-center justify-center px-4 relative overflow-hidden bg-neutral-950">
-        {{-- Ambient lighting glows --}}
-        <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-700/10 rounded-full blur-3xl pointer-events-none"></div>
+<x-layout title="Nové heslo" description="Nastav si nové heslo do účtu Cinemax Zmeny.">
+    <x-auth-card title="Nové heslo" subtitle="Zadaj nové heslo pre svoj účet.">
+        <form class="flex flex-col gap-6" action="{{ route('password.store') }}" method="POST">
+            @csrf
+            <input type="hidden" name="token" value="{{ $token }}">
 
-        <div class="w-full max-w-md relative z-10">
-            {{-- Brand Badge / Logo --}}
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-neutral-900 border border-neutral-800 text-brand-400 shadow-sm text-xl mb-3">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <h1 class="text-2xl font-bold tracking-tight text-white uppercase">Resetovanie hesla</h1>
-                <p class="text-neutral-400 text-sm mt-1">Zadaj svoje nové heslo pre účet</p>
-            </div>
+            @if(session('error'))
+                <x-alert>{{ session('error') }}</x-alert>
+            @endif
 
-            {{-- Card container --}}
-            <div class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-6 sm:p-8 space-y-6">
-                @if(session('error'))
-                    <x-alert>{{ session('error') }}</x-alert>
-                @endif
+            <x-form-input
+                type="email"
+                name="email"
+                autocomplete="username"
+                spellcheck="false"
+                label="E-mail"
+                :value="$email ?: old('email')"
+                icon="fa-envelope"
+                required
+            />
 
-                <form class="space-y-5" action="{{ route('password.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="token" value="{{ $token }}">
+            <x-form-input
+                type="password"
+                name="password"
+                autocomplete="new-password"
+                label="Nové heslo"
+                icon="fa-key"
+                required
+                autofocus
+            />
 
-                    <x-form-input
-                        type="email"
-                        name="email"
-                        autocomplete="username"
-                        label="E-mailová adresa"
-                        placeholder="tvoj@email.sk"
-                        :value="$email ?: old('email')"
-                        icon="fa-envelope"
-                        required
-                    />
+            <x-form-input
+                type="password"
+                name="password_confirmation"
+                autocomplete="new-password"
+                label="Nové heslo znova"
+                icon="fa-check-double"
+                required
+            />
 
-                    <x-form-input
-                        type="password"
-                        name="password"
-                        autocomplete="new-password"
-                        label="Nové heslo"
-                        placeholder="Zadaj nové heslo"
-                        icon="fa-key"
-                        required
-                        autofocus
-                    />
+            <x-submit-button busy-label="Ukladám…">Uložiť nové heslo</x-submit-button>
+        </form>
 
-                    <x-form-input
-                        type="password"
-                        name="password_confirmation"
-                        autocomplete="new-password"
-                        label="Nové heslo znova"
-                        placeholder="Zopakuj nové heslo"
-                        icon="fa-check-double"
-                        required
-                    />
-
-                    <button type="submit" class="w-full py-3.5 px-5 bg-neutral-800 hover:bg-neutral-750 active:bg-neutral-850 text-white font-bold rounded-xl text-sm tracking-widest uppercase border border-neutral-700 hover:border-brand-500/60 shadow-lg shadow-black/40 transition duration-200 flex items-center justify-center gap-2 group">
-                        <span>Resetovať heslo</span>
-                        <i class="fa-solid fa-check text-xs text-brand-400 group-hover:scale-110 transition-transform"></i>
-                    </button>
-                </form>
-
-                <div class="pt-4 border-t border-neutral-800 text-center">
-                    <a class="text-xs text-neutral-400 hover:text-neutral-200 font-semibold inline-flex items-center gap-1.5 transition duration-150" href="{{ route('login') }}">
-                        <i class="fa-solid fa-arrow-left text-[10px] text-brand-400"></i> Späť na prihlásenie
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+        <x-slot:footer>
+            <a href="{{ route('login') }}" class="inline-flex min-h-11 items-center px-1 font-semibold text-brand-400 underline-offset-4 hover:text-brand-300 hover:underline">Späť na prihlásenie</a>
+        </x-slot:footer>
+    </x-auth-card>
 </x-layout>

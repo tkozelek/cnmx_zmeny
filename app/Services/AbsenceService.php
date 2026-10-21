@@ -43,8 +43,9 @@ class AbsenceService
     }
 
     /**
-     * End an absence: shorten it to today if it is already running, or mark status as cancelled
-     * if deactivated in advance so it remains stored in history as inactive/cancelled.
+     * End an absence: cancel it if it has not started yet, otherwise cut it short after
+     * yesterday (or after today when it began today). A running one stays active, so the days
+     * already taken keep showing in past weeks, the managers' list and the rozpis.
      */
     public function end(Absence $absence): void
     {
@@ -63,7 +64,6 @@ class AbsenceService
 
         $absence->update([
             'date_to' => $newDateTo->toDateString(),
-            'status' => AbsenceStatus::Cancelled,
         ]);
     }
 }
