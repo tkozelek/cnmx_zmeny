@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\AbsenceStatus;
 use App\Enums\Role;
 use App\Models\Absence;
+use App\Models\Assignment;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -377,10 +378,34 @@ class AbsenceTest extends TestCase
         $this->assertModelExists($absence);
     }
 
+    /** Otherwise the person stays in the plan for a day they also reported off. */
+    public function test_an_absence_over_a_signed_up_day_is_refused(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $day = CarbonImmutable::now()->addWeeks(2);
+
+        Assignment::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'date' => $day->toDateString(),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('absences.store'), [
+                'date_from' => $day->subDay()->toDateString(),
+                'date_to' => $day->addDay()->toDateString(),
+                'reason' => 'Skúškové',
+            ])
+            ->assertSessionHasErrors(['date_from' => 'Na tieto dni máš zápis: '.$day->format('j.n.').'. Najprv sa z nich odpíš – v zamknutom týždni ťa odpíše manažér.']);
+
+        $this->assertDatabaseCount('absences', 0);
+    }
+
     /**
-     * Ending a running absence sets status to cancelled and updates date_to.
+     * Ending a running absence cuts it short but keeps it active, so the days already taken stay on record.
      */
-    public function test_ending_a_running_absence_shortens_it_to_today(): void
+    public function test_ending_a_running_absence_shortens_it_to_yesterday(): void
     {
         $team = $this->tenant();
         $user = $this->member($team);
@@ -396,7 +421,9 @@ class AbsenceTest extends TestCase
             ->patch(route('absences.end', $absence))
             ->assertRedirect();
 
-        $this->assertSame(AbsenceStatus::Cancelled, $absence->fresh()->status);
+        $absence->refresh();
+        $this->assertSame(AbsenceStatus::Active, $absence->status);
+        $this->assertSame(CarbonImmutable::yesterday()->toDateString(), $absence->date_to->toDateString());
     }
 
     public function test_an_absence_that_is_already_over_cannot_be_ended(): void

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Livewire\UsersDataTable;
+use App\Models\Team;
 use App\Models\User;
 use App\Notifications\AddUserResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -369,5 +370,55 @@ class UserRoleManagementTest extends TestCase
 
         $this->assertTrue($headManager->fresh()->is_active);
         $this->assertTrue($headManager->fresh()->isApprovedIn($team));
+    }
+
+    /**
+     * `is_active` is global: deactivating from one cinema used to lock the person out of every
+     * cinema, including one where they are the head manager.
+     */
+    public function test_removing_a_member_of_several_cinemas_only_takes_them_out_of_this_one(): void
+    {
+        $teamA = $this->tenant();
+        $manager = $this->member($teamA, Role::Manager);
+        $shared = $this->sharedEmployee($teamA);
+
+        $this->actingAs($manager)
+            ->delete(route('admin.users.destroy', $shared))
+            ->assertRedirect(route('admin.users.index'));
+
+        $shared->refresh();
+        $this->assertTrue($shared->is_active);
+        $this->assertFalse($shared->isMemberOf($teamA));
+        $this->assertSame(1, $shared->teams()->count());
+    }
+
+    public function test_a_shared_accounts_name_cannot_be_changed_from_one_cinema(): void
+    {
+        $teamA = $this->tenant();
+        $manager = $this->member($teamA, Role::Manager);
+        $shared = $this->sharedEmployee($teamA);
+
+        $this->actingAs($manager)
+            ->put(route('admin.users.update', $shared), [
+                'name' => 'Iné',
+                'lastname' => 'Meno',
+                'role' => Role::Employee->value,
+            ])
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertSame($shared->name, $shared->fresh()->name);
+    }
+
+    /** An employee of $teamA who is also head manager of a second cinema. */
+    private function sharedEmployee(Team $teamA): User
+    {
+        $teamB = Team::factory()->create(['name' => 'Kino B']);
+        $shared = User::factory()->memberOf($teamB, Role::HeadManager->value)->create();
+
+        $shared->teams()->attach($teamA, ['approved_at' => now()]);
+        setPermissionsTeamId($teamA->id);
+        $shared->unsetRelation('roles')->assignRole(Role::Employee->value);
+
+        return $shared;
     }
 }

@@ -12,7 +12,6 @@
                     name="name"
                     autocomplete="given-name"
                     label="Meno"
-                    placeholder="Juraj"
                     :value="old('name')"
                     icon="fa-user"
                     required
@@ -22,7 +21,6 @@
                     name="lastname"
                     autocomplete="family-name"
                     label="Priezvisko"
-                    placeholder="Hruška"
                     :value="old('lastname')"
                     icon="fa-user"
                     required
@@ -35,7 +33,7 @@
                 autocomplete="email"
                 spellcheck="false"
                 label="E-mail"
-                hint="Pošlem ti naň odkaz na overenie účtu."
+                hint="Pošleme ti naň odkaz na overenie účtu."
                 placeholder="tvoj@email.sk"
                 :value="old('email')"
                 icon="fa-envelope"
@@ -88,7 +86,6 @@
                     autocomplete="new-password"
                     label="Heslo"
                     hint="Aspoň 8 znakov."
-                    placeholder="••••••••"
                     icon="fa-lock"
                     required
                 />
@@ -100,7 +97,6 @@
                     id="password_confirmation"
                     label="Potvrď heslo"
                     hint="Ešte raz, nech sa nepomýliš."
-                    placeholder="••••••••"
                     icon="fa-lock"
                     enterkeyhint="go"
                     required

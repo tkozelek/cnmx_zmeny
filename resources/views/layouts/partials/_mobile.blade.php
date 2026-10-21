@@ -114,11 +114,11 @@
             @endcan
 
             <x-nav-link
-                route="settings.password.edit"
+                route="settings.index"
                 :is-mobile="true"
-                icon='<i class="fa-solid fa-key"></i>'
+                icon='<i class="fa-solid fa-sliders"></i>'
             >
-                Zmena hesla
+                Nastavenia
             </x-nav-link>
 
             <x-logout-button

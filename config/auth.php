@@ -107,7 +107,7 @@ return [
         ],
         'add_user' => [
             'provider' => 'users',
-            'table' => 'password_reset_tokens',
+            'table' => 'password_invite_tokens',
             'expire' => 1440,
             'throttle' => 0,
         ],

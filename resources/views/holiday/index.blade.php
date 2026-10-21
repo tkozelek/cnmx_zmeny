@@ -4,6 +4,8 @@
     $isManager = auth()->user()->hasPermissionInTeam('absence.manage');
     $deadlineDays = $isManager ? 0 : $currentTeam->absenceDeadlineDays();
     $firstAllowedDay = now()->addDays($deadlineDays)->format('Y-m-d');
+    // Nothing reported yet: an empty state instead of a search, filters and headers over zero rows.
+    $hasOwnAbsences = auth()->user()->absences()->exists();
 @endphp
 <x-layout title="Absencie" description="Nahlás a spravuj svoje absencie a dovolenky.">
     <div
@@ -64,12 +66,12 @@
 
                     {{-- Error Alert --}}
                     @if($errors->any())
-                        <div role="alert" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm space-y-1">
+                        <div id="absence-errors" role="alert" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm space-y-1">
                             <p class="font-bold flex items-center gap-2">
-                                <i class="fa-solid fa-circle-exclamation text-rose-400"></i>
+                                <i class="fa-solid fa-circle-exclamation text-rose-400" aria-hidden="true"></i>
                                 Chyba pri ukladaní absencie:
                             </p>
-                            <ul class="list-disc list-inside text-xs space-y-0.5 pl-1">
+                            <ul class="list-disc list-inside text-sm space-y-0.5 pl-1">
                                 @foreach($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
@@ -88,7 +90,7 @@
                             <input type="hidden" name="date_to" :value="dateTo">
                         </div>
                         <p id="absence-range-hint" class="text-xs text-neutral-400 mt-1">
-                            Klikni na prvý a posledný deň (pri jednom dni dvakrát na ten istý).
+                            Vyber prvý a posledný deň (pri jednom dni ten istý deň dvakrát).
                             @if($deadlineDays > 0)
                                 Absenciu treba nahlásiť aspoň {{ $deadlineDays }} {{ $deadlineDays === 1 ? 'deň' : ($deadlineDays <= 4 ? 'dni' : 'dní') }} vopred.
                             @endif
@@ -107,8 +109,9 @@
                             value="{{ old('reason') }}"
                             required
                             maxlength="500"
-                            aria-describedby="reason-hint"
-                            placeholder="Napr. dovolenka, škola, rodinné dôvody…"
+                            aria-describedby="reason-hint @error('reason') absence-errors @enderror"
+                            @error('reason') aria-invalid="true" @enderror
+                            placeholder="Napr. dovolenka, skúškové…"
                             class="w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none"
                         >
                         <p id="reason-hint" class="text-xs text-neutral-400 mt-1">Neuvádzaj zdravotné dôvody ani diagnózy – pri chorobe stačí „osobné dôvody“. Maximálne 500 znakov.</p>
@@ -146,7 +149,21 @@
                 <i class="fa-solid fa-user-clock text-brand-400 text-base"></i>
                 <h2 class="text-lg font-bold text-neutral-100">Moje absencie</h2>
             </div>
-            <livewire:my-absences-data-table />
+            @if($hasOwnAbsences)
+                <livewire:my-absences-data-table />
+            @else
+                <x-empty-state icon="fa-umbrella-beach" message="Zatiaľ nemáš nahlásenú žiadnu absenciu.">
+                    Keď nebudeš môcť prísť, nahlás to vopred – manažér to uvidí pri týždni.
+                    @can('create', App\Models\Absence::class)
+                        <x-slot:action>
+                            <button @click="openModal = true" type="button" aria-haspopup="dialog"
+                                    class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-neutral-600 px-4 text-sm font-semibold text-neutral-100 transition hover:border-neutral-400 hover:bg-neutral-800">
+                                <i class="fa-solid fa-plus text-xs" aria-hidden="true"></i> Pridať absenciu
+                            </button>
+                        </x-slot:action>
+                    @endcan
+                </x-empty-state>
+            @endif
         </div>
 
 

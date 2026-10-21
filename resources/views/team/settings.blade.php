@@ -59,9 +59,11 @@
                                     <select
                                         name="week_start_day"
                                         id="week_start_day"
+                                        aria-describedby="week_start_day-hint @error('week_start_day') week_start_day-error @enderror"
+                                        @error('week_start_day') aria-invalid="true" @enderror
                                         @disabled(! $canEdit)
                                         required
-                                        class="w-full px-4 py-3 pl-11 rounded-xl bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-400 transition-all duration-200 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500 hover:border-neutral-700 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                        class="w-full min-h-12 px-4 py-3 pl-11 rounded-xl bg-neutral-900 border border-neutral-500 text-white placeholder-neutral-400 transition-all duration-200 text-base sm:text-sm focus:outline-none focus:border-brand-500 hover:border-neutral-400 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         @foreach($weekDays as $dayValue => $dayName)
                                             <option value="{{ $dayValue }}" @selected(old('week_start_day', $settings->week_start_day) == $dayValue)>
@@ -73,9 +75,9 @@
                                         <i class="fa-solid fa-chevron-down text-xs"></i>
                                     </div>
                                 </div>
-                                <p class="text-xs text-neutral-400 mt-1">Deň, ktorým sa začína nový pracovný týždeň.</p>
+                                <p id="week_start_day-hint" class="text-xs text-neutral-400 mt-1">Deň, ktorým sa začína nový pracovný týždeň.</p>
                                 @error('week_start_day')
-                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                    <p id="week_start_day-error" class="text-rose-400 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
@@ -289,7 +291,7 @@
 
                     @if($canEdit)
                         <div class="pt-4 flex justify-end">
-                            <button type="submit" class="py-2.5 px-5 bg-neutral-100 hover:bg-white text-neutral-900 font-semibold rounded-lg text-sm transition flex items-center gap-2">
+                            <button type="submit" class="min-h-12 py-2.5 px-5 bg-neutral-100 hover:bg-white text-neutral-900 font-semibold rounded-lg text-sm transition flex items-center gap-2">
                                 <i class="fa-solid fa-floppy-disk text-xs" aria-hidden="true"></i>
                                 <span>Uložiť nastavenia</span>
                             </button>

@@ -11,42 +11,42 @@
             <form wire:submit="save" class="flex flex-col gap-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                     <div>
-                        <label for="position-name" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">Názov</label>
-                        <input id="position-name" type="text" wire:model="name" placeholder="Bufet"
-                               class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
-                        @error('name') <p class="mt-1.5 text-xs font-medium text-rose-400">{{ $message }}</p> @enderror
+                        <label for="position-name" class="mb-2 block text-sm font-medium text-neutral-200">Názov</label>
+                        <input id="position-name" @error('name') aria-invalid="true" aria-describedby="position-name-error" @enderror type="text" wire:model="name" placeholder="Bufet"
+                               class="w-full rounded-xl border border-neutral-500 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-400 shadow-inner transition hover:border-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
+                        @error('name') <p id="position-name-error" class="mt-1.5 text-sm font-medium text-rose-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="position-code" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">Skratka</label>
-                        <input id="position-code" type="text" wire:model="code" placeholder="BUF" maxlength="10"
-                               class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
-                        @error('code') <p class="mt-1.5 text-xs font-medium text-rose-400">{{ $message }}</p> @enderror
+                        <label for="position-code" class="mb-2 block text-sm font-medium text-neutral-200">Skratka</label>
+                        <input id="position-code" @error('code') aria-invalid="true" aria-describedby="position-code-error" @enderror type="text" wire:model="code" placeholder="BUF" maxlength="10"
+                               class="w-full rounded-xl border border-neutral-500 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-400 shadow-inner transition hover:border-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
+                        @error('code') <p id="position-code-error" class="mt-1.5 text-sm font-medium text-rose-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="position-group" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">Skupina</label>
-                        <select id="position-group" wire:model="groupId"
-                                class="h-[46px] w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm text-white shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
+                        <label for="position-group" class="mb-2 block text-sm font-medium text-neutral-200">Skupina</label>
+                        <select id="position-group" @error('groupId') aria-invalid="true" aria-describedby="position-group-error" @enderror wire:model="groupId"
+                                class="h-[46px] w-full rounded-xl border border-neutral-500 bg-neutral-900 px-4 text-sm text-white shadow-inner transition hover:border-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
                             <option value="">- bez skupiny -</option>
                             @foreach($this->groups as $group)
                                 <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
                         </select>
-                        @error('groupId') <p class="mt-1.5 text-xs font-medium text-rose-400">{{ $message }}</p> @enderror
+                        @error('groupId') <p id="position-group-error" class="mt-1.5 text-sm font-medium text-rose-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="position-color" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">Farba</label>
-                        <input id="position-color" type="color" wire:model="color"
-                               class="h-[46px] w-full cursor-pointer rounded-xl border border-neutral-800 bg-neutral-900 px-2 shadow-inner">
-                        @error('color') <p class="mt-1.5 text-xs font-medium text-rose-400">{{ $message }}</p> @enderror
+                        <label for="position-color" class="mb-2 block text-sm font-medium text-neutral-200">Farba</label>
+                        <input id="position-color" @error('color') aria-invalid="true" aria-describedby="position-color-error" @enderror type="color" wire:model="color"
+                               class="h-[46px] w-full cursor-pointer rounded-xl border border-neutral-500 bg-neutral-900 px-2 shadow-inner">
+                        @error('color') <p id="position-color-error" class="mt-1.5 text-sm font-medium text-rose-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="flex items-end">
                         <label class="flex min-h-[46px] w-full cursor-pointer items-center gap-2.5 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm text-neutral-200">
                             <input type="checkbox" wire:model="isManager"
-                                   class="h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-brand-500 focus:ring-0">
+                                   class="h-4 w-4 rounded border-neutral-500 bg-neutral-800 text-brand-500 focus:ring-0">
                             Vedúci zmeny
                         </label>
                     </div>
@@ -85,9 +85,9 @@
 
             <form wire:submit="saveGroup" class="flex flex-col gap-2 sm:flex-row sm:items-start">
                 <div class="flex-1">
-                    <input type="text" wire:model="groupName" placeholder="Názov skupiny (napr. Bufet)"
-                           class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 shadow-inner transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
-                    @error('groupName') <p class="mt-1.5 text-xs font-medium text-rose-400">{{ $message }}</p> @enderror
+                    <input type="text" wire:model="groupName" placeholder="Názov skupiny (napr. Bufet)" aria-label="Názov skupiny" @error('groupName') aria-invalid="true" aria-describedby="group-name-error" @enderror
+                           class="w-full rounded-xl border border-neutral-500 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-400 shadow-inner transition hover:border-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
+                    @error('groupName') <p id="group-name-error" class="mt-1.5 text-sm font-medium text-rose-400">{{ $message }}</p> @enderror
                 </div>
 
                 @if($editingGroupId)
@@ -109,14 +109,14 @@
                     @foreach($this->groups as $index => $group)
                         <li wire:key="group-{{ $group->id }}" class="flex items-center gap-2 py-2">
                             <span class="flex items-center gap-1">
-                                <button type="button" wire:click="moveGroup({{ $group->id }}, -1)"
-                                        @disabled($index === 0) title="Posunúť vyššie"
-                                        class="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white disabled:opacity-30">
+                                <button type="button" @if($index === 0) aria-disabled="true" @else wire:click="moveGroup({{ $group->id }}, -1)" @endif
+                                        title="Posunúť vyššie" aria-label="Posunúť skupinu {{ $group->name }} vyššie"
+                                        class="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white aria-disabled:cursor-default aria-disabled:opacity-30">
                                     <i class="fa-solid fa-chevron-up text-[0.65rem]"></i>
                                 </button>
-                                <button type="button" wire:click="moveGroup({{ $group->id }}, 1)"
-                                        @disabled($index === $this->groups->count() - 1) title="Posunúť nižšie"
-                                        class="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white disabled:opacity-30">
+                                <button type="button" @if($index === $this->groups->count() - 1) aria-disabled="true" @else wire:click="moveGroup({{ $group->id }}, 1)" @endif
+                                        title="Posunúť nižšie" aria-label="Posunúť skupinu {{ $group->name }} nižšie"
+                                        class="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white aria-disabled:cursor-default aria-disabled:opacity-30">
                                     <i class="fa-solid fa-chevron-down text-[0.65rem]"></i>
                                 </button>
                             </span>
@@ -124,7 +124,7 @@
                             <span class="min-w-0 flex-1 truncate text-sm font-semibold text-white">{{ $group->name }}</span>
 
                             <span class="shrink-0 rounded-full border border-neutral-700 bg-neutral-800 px-2.5 py-0.5 text-[0.65rem] font-semibold text-neutral-400">
-                                {{ $group->positions_count }} {{ $group->positions_count === 1 ? 'pozícia' : 'pozícií' }}
+                                {{ $group->positions_count }} {{ match (true) { $group->positions_count === 1 => 'pozícia', $group->positions_count >= 2 && $group->positions_count <= 4 => 'pozície', default => 'pozícií' } }}
                             </span>
 
                             <button type="button" wire:click="editGroup({{ $group->id }})" title="Premenovať skupinu"
@@ -152,16 +152,14 @@
             <x-table-row wire:key="position-{{ $position->id }}">
                 <x-table-cell>
                     <div class="flex items-center gap-1">
-                        <button type="button" wire:click="move({{ $position->id }}, -1)"
-                                @disabled($index === 0)
-                                title="Posunúť vyššie"
-                                class="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white disabled:opacity-30">
+                        <button type="button" @if($index === 0) aria-disabled="true" @else wire:click="move({{ $position->id }}, -1)" @endif
+                                title="Posunúť vyššie" aria-label="Posunúť pozíciu {{ $position->name }} vyššie"
+                                class="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white aria-disabled:cursor-default aria-disabled:opacity-30">
                             <i class="fa-solid fa-chevron-up text-[0.65rem]"></i>
                         </button>
-                        <button type="button" wire:click="move({{ $position->id }}, 1)"
-                                @disabled($index === $this->positions->count() - 1)
-                                title="Posunúť nižšie"
-                                class="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white disabled:opacity-30">
+                        <button type="button" @if($index === $this->positions->count() - 1) aria-disabled="true" @else wire:click="move({{ $position->id }}, 1)" @endif
+                                title="Posunúť nižšie" aria-label="Posunúť pozíciu {{ $position->name }} nižšie"
+                                class="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white aria-disabled:cursor-default aria-disabled:opacity-30">
                             <i class="fa-solid fa-chevron-down text-[0.65rem]"></i>
                         </button>
                     </div>

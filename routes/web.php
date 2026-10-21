@@ -3,6 +3,7 @@
 use App\Enums\TeamFeature;
 use App\Http\Controllers\Absence\AbsenceController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\EmailChangeController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
@@ -19,6 +20,8 @@ use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Rozpis\RozpisController;
 use App\Http\Controllers\Rozpis\RozpisExportController;
 use App\Http\Controllers\Rozpis\RozpisPublishController;
+use App\Http\Controllers\Settings\EmailController;
+use App\Http\Controllers\Settings\NameController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Team\TeamSettingController;
@@ -55,6 +58,17 @@ Route::get('/overenie-emailu/{id}/{hash}', [EmailVerificationController::class, 
 
 Route::get('/email-overeny', [EmailVerificationController::class, 'verified'])
     ->name('verification.verified');
+
+Route::prefix('/zmena-emailu/{id}/{token}')
+    ->middleware(['signed', 'throttle:6,1'])
+    ->controller(EmailChangeController::class)
+    ->name('email-change.')
+    ->group(function () {
+        Route::get('/', 'show')->name('show');
+        Route::post('/', 'approve')->name('approve');
+        Route::delete('/', 'decline')->name('decline');
+        Route::get('/overit', 'verify')->name('verify');
+    });
 
 Route::post('/overenie-emailu/znova', [EmailVerificationController::class, 'resendGuest'])
     ->middleware('throttle:mail-recipient')
@@ -123,7 +137,12 @@ Route::middleware('tenant')->group(function () {
 
     Route::prefix('/nastavenia')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('settings.index');
-        Route::get('/heslo', [PasswordController::class, 'edit'])->name('settings.password.edit');
+        Route::put('/', [SettingsController::class, 'update'])->name('settings.update');
+        Route::put('/meno', [NameController::class, 'update'])->name('settings.name.update');
+        Route::put('/email', [EmailController::class, 'update'])
+            ->name('settings.email.update')
+            ->middleware('throttle:6,1');
+        Route::delete('/email', [EmailController::class, 'destroy'])->name('settings.email.destroy');
         Route::put('/heslo', [PasswordController::class, 'update'])
             ->name('settings.password.update')
             ->middleware('throttle:6,1');

@@ -5,6 +5,7 @@ namespace App\Http\Requests\Absence;
 use App\Models\Absence;
 use App\Models\Team;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -34,10 +35,27 @@ class StoreAbsenceRequest extends FormRequest
      * The submission deadline: an absence must be reported at least
      * `team_settings.absence_deadline_days` before the first day it covers.
      * Admins and managers are exempt - they fix things after the fact.
+     *
+     * And nobody may report an absence over a day they are still signed up for - they would
+     * stay in the plan while also being away.
      */
     public function after(): array
     {
         return [
+            function (Validator $validator): void {
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                $conflicts = $this->conflictingSignupDates();
+
+                if ($conflicts !== []) {
+                    $validator->errors()->add(
+                        'date_from',
+                        'Na tieto dni máš zápis: '.implode(', ', $conflicts).'. Najprv sa z nich odpíš – v zamknutom týždni ťa odpíše manažér.'
+                    );
+                }
+            },
             function (Validator $validator): void {
                 if ($validator->errors()->isNotEmpty() || $this->user()->hasPermissionInTeam('absence.manage')) {
                     return;
@@ -61,6 +79,32 @@ class StoreAbsenceRequest extends FormRequest
                 }
             },
         ];
+    }
+
+    /**
+     * The user's own sign-ups in this cinema the absence would cover, from today on, as "d.m.".
+     *
+     * @return list<string>
+     */
+    private function conflictingSignupDates(): array
+    {
+        $from = CarbonImmutable::parse($this->date('date_from'))->max(CarbonImmutable::today());
+        $to = CarbonImmutable::parse($this->date('date_to'));
+
+        if ($from->gt($to)) {
+            return [];
+        }
+
+        return $this->user()->assignments()
+            ->betweenDates($from, $to)
+            ->orderBy('date')
+            ->pluck('date')
+            ->when($this->filled('day_of_week'), fn ($dates) => $dates->filter(
+                fn (CarbonInterface $date): bool => $date->dayOfWeekIso - 1 === $this->integer('day_of_week')
+            ))
+            ->map(fn (CarbonInterface $date): string => $date->format('j.n.'))
+            ->values()
+            ->all();
     }
 
     /**

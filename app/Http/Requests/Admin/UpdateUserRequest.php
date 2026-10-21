@@ -31,9 +31,14 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
+        // A name is shared by every cinema the account belongs to, so one cinema may not change it alone.
+        $nameRules = $this->route('user')->belongsToSeveralTeams()
+            ? ['exclude']
+            : ['required', 'string', 'max:100', self::NO_FORMULA_PREFIX];
+
         return [
-            'name' => ['required', 'string', 'max:100', self::NO_FORMULA_PREFIX],
-            'lastname' => ['required', 'string', 'max:100', self::NO_FORMULA_PREFIX],
+            'name' => $nameRules,
+            'lastname' => $nameRules,
             'role' => ['required', Rule::in(Role::values())],
         ];
     }

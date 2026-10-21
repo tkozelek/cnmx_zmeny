@@ -3,15 +3,17 @@
     $shortDate = $this->dayCarbon->format('d.m.');
 @endphp
 <div @class([
-    'relative flex flex-col overflow-hidden rounded-lg border bg-neutral-900 transition',
+    'day-card relative flex flex-col overflow-hidden rounded-lg border bg-neutral-900 transition',
+    'day-card--mine' => $this->mine,
+    'day-card--today' => $this->isToday,
     'border-emerald-500/70' => $this->mine && ! $this->isToday,
     'border-brand-500' => $this->isToday,
     'border-neutral-800 hover:border-neutral-700' => ! $this->mine && ! $this->isToday,
 ])>
     {{-- Day card content, blurred while this card's own request is running --}}
-    <div wire:loading.class.delay="blur-sm pointer-events-none select-none" class="flex flex-col flex-1 transition-[filter] duration-200">
+    <div wire:loading.class.delay="blur-sm pointer-events-none select-none" class="day-card__body flex flex-col flex-1 transition-[filter] duration-200">
         {{-- `armed` lives here, not on the button: this wrapper survives the morph between the two buttons. --}}
-        <div x-data="{ armed: false }">
+        <div x-data="{ armed: false }" class="day-card__action">
             @if($locked || $this->isPastForMe)
                 @if($this->mine)
                     <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-emerald-700 text-sm font-semibold text-white">
@@ -31,15 +33,16 @@
             @elseif($this->mine)
                 {{-- With a mouse the hover already says "Odpísať sa", so one click withdraws. On touch
                      there is no hover: the first tap turns the button into the question, the second
-                     tap within 3 s withdraws. --}}
+                     tap within 6 s withdraws. Leaving the button disarms it as well. --}}
                 <button
                     type="button"
-                    @click="if (armed || matchMedia('(hover: hover)').matches) { armed = false; $wire.withdraw() } else { armed = true; setTimeout(() => armed = false, 3000) }"
+                    @click="if (armed || matchMedia('(hover: hover)').matches) { armed = false; $wire.withdraw() } else { armed = true; setTimeout(() => armed = false, 6000) }"
+                    @blur="armed = false"
                     wire:target="withdraw"
                     :class="armed && '!bg-rose-700'"
-                    {{-- The visible text is the state; the name says what the button does. --}}
-                    :aria-label="armed ? 'Potvrdiť odpísanie – {{ $dayName }} {{ $shortDate }}' : 'Odpísať sa – {{ $dayName }} {{ $shortDate }} (máš zápis)'"
-                    class="group/btn flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 bg-emerald-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 focus-visible:bg-rose-700 focus-visible:outline-offset-[-4px]"
+                    {{-- Starts with the visible text (voice control), then says what the button does. --}}
+                    :aria-label="armed ? 'Ťukni znova na odpísanie – {{ $dayName }} {{ $shortDate }}' : 'Zapísaný – {{ $dayName }} {{ $shortDate }}, odpísať sa'"
+                    class="group/btn flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 bg-emerald-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 focus-visible:bg-rose-700 focus-visible:outline-offset-[-4px] focus-visible:!outline-white"
                 >
                     <span wire:loading.remove wire:target="withdraw">
                         <span x-show="! armed">
@@ -51,12 +54,14 @@
                     </span>
                     <span wire:loading wire:target="withdraw"><i class="fa-solid fa-circle-notch fa-spin text-xs" aria-hidden="true"></i></span>
                 </button>
+                {{-- The name change alone is rarely announced on phones. --}}
+                <span class="sr-only" aria-live="polite" x-text="armed ? 'Ťukni znova na odpísanie' : ''"></span>
             @else
                 <button
                     type="button"
                     wire:click="signUp"
                     wire:target="signUp"
-                    class="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 bg-brand-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-800 focus-visible:outline-offset-[-4px]"
+                    class="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 bg-brand-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-800 focus-visible:outline-offset-[-4px] focus-visible:!outline-white"
                 >
                     <span wire:loading.remove wire:target="signUp">
                         Zapísať sa<span class="sr-only"> – {{ $dayName }} {{ $shortDate }}</span>
@@ -68,7 +73,7 @@
 
         {{-- Day header --}}
         <div @class([
-            'flex flex-col items-center justify-center px-4 py-2.5 border-b text-center',
+            'day-card__head flex flex-col items-center justify-center px-4 py-2.5 border-b text-center',
             'bg-emerald-950/40 border-emerald-800/60' => $this->mine && ! $this->isToday,
             'bg-neutral-950 border-neutral-500' => $this->isToday,
             'bg-neutral-950 border-neutral-800' => ! $this->mine && ! $this->isToday,
@@ -115,12 +120,13 @@
                     </div>
 
                     @if($this->canRemove($assignment))
-                        {{-- Revealed on hover only where hovering exists - on touch it is always shown. --}}
+                        {{-- Revealed on hover only where hovering exists - on touch it is always shown, with a
+                             finger-sized hit area that the negative margins keep from stretching the row. --}}
                         <button
                             type="button"
                             wire:click="remove({{ $assignment->id }})"
                             wire:confirm="Odstrániť zápis: {{ $assignment->user }} ({{ $shortDate }})? Nedostane o tom upozornenie."
-                            class="-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-700 hover:text-white focus-visible:opacity-100 sm:[@media(hover:hover)]:opacity-0 sm:group-hover:opacity-100"
+                            class="-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-700 hover:text-white [@media(hover:none)]:-my-2 [@media(hover:none)]:-mr-2 [@media(hover:none)]:h-10 [@media(hover:none)]:w-10 focus-visible:opacity-100 sm:[@media(hover:hover)]:opacity-0 sm:group-hover:opacity-100"
                             title="Odpísať {{ $assignment->user }}"
                             aria-label="Odpísať {{ $assignment->user }} – {{ $dayName }} {{ $shortDate }}"
                         >

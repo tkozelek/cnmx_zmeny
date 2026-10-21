@@ -37,12 +37,15 @@ class RozpisDay extends Component
     #[Locked]
     public string $date;
 
-    /** Preloaded by RozpisService so seven of these do not each query for themselves. */
+    /** Preloaded by RozpisService so seven of these do not each query for themselves. Locked: read instead of the DB. */
+    #[Locked]
     public ?Collection $initialSlots = null;
 
+    #[Locked]
     public ?Collection $initialAssignments = null;
 
     /** @var array<int, array{totalDays: int, avgWeight: float, earnedCredit: float, hardDayDebt: float}>|null */
+    #[Locked]
     public ?array $initialFairness = null;
 
     /** "Add position" form. */
@@ -379,7 +382,7 @@ class RozpisDay extends Component
 
         $this->dispatch('toast', ...match (count($this->suggestions)) {
             0 => ['message' => 'AI nenavrhla žiadne zaradenie.', 'type' => 'error'],
-            default => ['message' => 'Návrh pripravený - potvrď jednotlivé zaradenia.'],
+            default => ['message' => 'Návrh pripravený – potvrď jednotlivé zaradenia.'],
         });
     }
 

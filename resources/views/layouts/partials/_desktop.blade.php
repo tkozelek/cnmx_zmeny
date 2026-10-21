@@ -46,20 +46,22 @@
         <div
             x-data="{ openProfile: false }"
             @click.outside="openProfile = false"
-            @keydown.escape.window="openProfile = false"
+            @keydown.escape.window="if (openProfile) { openProfile = false; $refs.profileButton.focus() }"
+            @focusout="if (! $el.contains($event.relatedTarget)) openProfile = false"
             class="relative py-1"
         >
             <button
                 type="button"
+                x-ref="profileButton"
                 @click="openProfile = !openProfile"
                 :aria-expanded="openProfile.toString()"
                 aria-haspopup="menu"
-                aria-label="Používateľské menu"
+                aria-label="{{ auth()->user()->name }} {{ auth()->user()->lastname }}, používateľské menu"
                 class="group flex items-center gap-2.5 px-3 py-1.5 text-base font-semibold text-neutral-300 transition hover:bg-neutral-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 rounded-xl cursor-pointer"
             >
-                <i class="fa-solid fa-user text-sm text-neutral-400 group-hover:text-neutral-200 transition"></i>
+                <i class="fa-solid fa-user text-sm text-neutral-400 group-hover:text-neutral-200 transition" aria-hidden="true"></i>
                 <span>{{ auth()->user()->name }} {{ auth()->user()->lastname }}</span>
-                <i class="fa-solid fa-chevron-down text-xs text-neutral-400 group-hover:text-neutral-300 transition-transform duration-200" :class="{'rotate-180': openProfile}"></i>
+                <i aria-hidden="true" class="fa-solid fa-chevron-down text-xs text-neutral-400 group-hover:text-neutral-300 transition-transform duration-200" :class="{'rotate-180': openProfile}"></i>
             </button>
 
             {{-- Dropdown Container --}}
@@ -121,11 +123,11 @@
 
 
                     <a
-                        href="{{ route('settings.password.edit') }}"
+                        href="{{ route('settings.index') }}"
                         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
                     >
-                        <i class="fa-solid fa-key text-xs text-neutral-400"></i>
-                        Zmena hesla
+                        <i class="fa-solid fa-sliders text-xs text-neutral-400" aria-hidden="true"></i>
+                        Nastavenia
                     </a>
 
                     <div class="my-1 border-t border-neutral-800"></div>

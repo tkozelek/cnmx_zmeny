@@ -25,7 +25,8 @@
                             </a>
                         @endif
 
-                        <form method="POST" action="{{ route($locked ? 'weeks.unlock' : 'weeks.lock', ['date' => $weekStart->toDateString()]) }}">
+                        <form method="POST" action="{{ route($locked ? 'weeks.unlock' : 'weeks.lock', ['date' => $weekStart->toDateString()]) }}"
+                              @if($locked && $rozpisPublished) onsubmit="return confirm('Odomknúť týždeň so zverejneným rozpisom? Rozpis ostane zverejnený a zmeny v ňom sa pošlú zamestnancom.')" @endif>
                             @csrf
                             @if($locked)
                                 @method('DELETE')
@@ -65,7 +66,7 @@
             </div>
 
             {{-- Day cards grid (items-start so columns don't stretch to uniform height) --}}
-            <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+            <div @class(['grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7', 'week-compact' => $compactWeek])>
                 @foreach($days as $day)
                     <livewire:day-card :date="$day->toDateString()"
                                        :locked="$locked"

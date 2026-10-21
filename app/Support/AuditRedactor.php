@@ -16,6 +16,7 @@ final class AuditRedactor
     public const array NEVER_LOGGED = [
         'password',
         'remember_token',
+        'pending_email_token',
         'app_authentication_secret',
         'app_authentication_recovery_codes',
     ];
@@ -25,7 +26,7 @@ final class AuditRedactor
      *
      * @var list<string>
      */
-    public const array VALUE_REDACTED = ['name', 'lastname', 'email', 'reason', 'note'];
+    public const array VALUE_REDACTED = ['name', 'lastname', 'email', 'pending_email', 'reason', 'note'];
 
     /**
      * @param  array<string, mixed>  $attributes

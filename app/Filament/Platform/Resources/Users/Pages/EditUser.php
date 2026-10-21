@@ -54,6 +54,12 @@ class EditUser extends EditRecord
                         ->label(fn (User $record): string => "Pre potvrdenie napíš {$record->email}")
                         ->required()
                         ->in(fn (User $record): array => [$record->email]),
+                    // Irreversible across every cinema - a borrowed panel session alone must not be enough.
+                    TextInput::make('current_password')
+                        ->label('Tvoje heslo')
+                        ->password()
+                        ->required()
+                        ->currentPassword(guard: SuperAdminSession::GUARD),
                 ]),
         ];
     }

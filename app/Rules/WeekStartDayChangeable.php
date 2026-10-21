@@ -29,7 +29,7 @@ class WeekStartDayChangeable implements ValidationRule
             ->exists();
 
         if ($hasOpenLocks) {
-            $fail('Začiatok týždňa sa nedá zmeniť, kým je aktuálny alebo budúci týždeň zamknutý. Najprv ho odomkni.');
+            $fail('Začiatok týždňa sa nedá zmeniť, kým je aktuálny alebo budúci týždeň zamknutý alebo má zverejnený rozpis. Najprv ho odomkni a rozpis stiahni.');
         }
     }
 }

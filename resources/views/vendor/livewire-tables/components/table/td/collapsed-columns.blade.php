@@ -23,7 +23,7 @@
                 x-cloak x-show="!currentlyReorderingStatus"
                 x-on:click.prevent="$dispatch('toggle-row-content', {'tableName': '{{ $tableName }}', 'row': {{ $rowIndex }}}); open = !open"
                 :aria-expanded="open.toString()"
-                aria-label="Podrobnosti riadku"
+                aria-label="Podrobnosti riadku {{ $rowIndex + 1 }}"
                 @class([
                     'border-0 bg-transparent p-0' => $isBootstrap
                 ])

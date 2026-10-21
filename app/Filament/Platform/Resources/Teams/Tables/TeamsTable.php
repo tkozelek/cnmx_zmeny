@@ -4,6 +4,7 @@ namespace App\Filament\Platform\Resources\Teams\Tables;
 
 use App\Enums\TeamFeature;
 use App\Models\Team;
+use App\Services\PlatformAudit;
 use App\Services\SuperAdminSession;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -48,6 +49,8 @@ class TeamsTable
                     ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
                     ->action(function (Team $record, Component $livewire): void {
                         app(SuperAdminSession::class)->enter(Filament::auth()->user(), $record);
+                        // Not an Eloquent write the panel audits by itself: who walked into which cinema.
+                        app(PlatformAudit::class)->record('cinema.entered', $record);
                         $livewire->redirect(route('calendar.index'));
                     }),
                 EditAction::make(),

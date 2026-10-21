@@ -79,7 +79,7 @@ class TeamIsolationTest extends TestCase
      * `team_user`, so nothing scopes a route binding on it. Holding `user.update` in one cinema
      * used to authorise editing, role-changing or deactivating *any* account in the database by
      * guessing its id; UserPolicy now checks the target's membership as well as the actor's
-     * permission.
+     * permission - and answers 404, so a manager cannot probe which ids exist elsewhere.
      */
     public function test_a_manager_cannot_manage_a_user_from_another_cinema(): void
     {
@@ -91,11 +91,11 @@ class TeamIsolationTest extends TestCase
 
         $this->actingAs($manager)
             ->get(route('admin.users.edit', $outsider))
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this->actingAs($manager)
             ->delete(route('admin.users.destroy', $outsider))
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this->assertTrue($outsider->fresh()->is_active, 'A stranger must not be deactivable from here.');
     }
@@ -111,7 +111,7 @@ class TeamIsolationTest extends TestCase
 
         $this->actingAs($employee)
             ->get(route('profile.show', $outsider))
-            ->assertForbidden();
+            ->assertNotFound();
     }
 
     public function test_resources_are_strictly_isolated_between_teams(): void

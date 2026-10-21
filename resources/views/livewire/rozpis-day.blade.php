@@ -94,7 +94,7 @@
                                  Saves on change, so there is no form and no submit button. --}}
                             <div x-data="slotTimePicker({{ $row['slot']->id }}, @js($row['time']), @js($this->quickTimes))" class="shrink-0">
                                 <input x-ref="input" type="text" readonly
-                                       placeholder="+ čas" title="Čas nástupu - kliknutím zmeníš"
+                                       placeholder="+ čas" title="Čas nástupu – kliknutím zmeníš"
                                        class="w-[3.75rem] cursor-pointer rounded bg-neutral-800/80 px-1.5 py-0.5 text-center text-[0.7rem] font-semibold tabular-nums text-neutral-300 transition hover:bg-neutral-700 hover:text-white focus:outline-none focus:ring-1 focus:ring-brand-500">
                             </div>
                         @elseif($row['time'])
@@ -182,7 +182,7 @@
                         {{-- AI draft: dashed and muted until the manager accepts it. Nothing is
                              written to `assignments` while it looks like this. --}}
                         <div class="flex items-center justify-between gap-1.5 rounded border border-dashed border-violet-500/50 bg-violet-500/5 px-2 py-1 text-sm">
-                            <span class="min-w-0 truncate text-violet-300/90" title="AI návrh - nie je uložené">
+                            <span class="min-w-0 truncate text-violet-300/90" title="AI návrh – nie je uložené">
                                 <i class="fa-solid fa-wand-magic-sparkles text-xs opacity-70"></i>
                                 {{ $row['suggestion']->user }}
                             </span>
@@ -199,6 +199,7 @@
                         {{-- The vedúci row picks from who may lead a shift, not from who signed
                              up: leadership does not write itself into the daily pool. --}}
                         <select wire:change="placeLeader($event.target.value, {{ $row['slot']->id }})"
+                                aria-label="Vedúci zmeny: {{ $row['slot']->position->label() }}, {{ $this->dayName }} {{ $this->dayCarbon->format('j.n.') }}"
                                 class="w-full rounded border border-violet-500/30 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
                             <option value="">- vybrať vedúceho -</option>
                             @foreach($this->leadershipRoster as $leader)
@@ -212,12 +213,13 @@
                              means something it is appended to the option text instead - otherwise
                              touch users would build blind to the one thing that decides the order. --}}
                         <select wire:change="place($event.target.value, {{ $row['slot']->id }})"
+                                aria-label="Priradiť na {{ $row['slot']->position->label() }}, {{ $this->dayName }} {{ $this->dayCarbon->format('j.n.') }}"
                                 @if($this->isHardToStaff)
-                                    title="Zoradené podľa spravodlivosti - vyššie číslo znamená, že tento človek odpracoval menej ťažkých dní, než je v kine zvykom, a je na rade."
+                                    title="Zoradené podľa spravodlivosti – vyššie číslo znamená, že tento človek odpracoval menej ťažkých dní, než je v kine zvykom, a je na rade."
                                 @elseif($this->isDesirableDay)
-                                    title="Zoradené podľa spravodlivosti - vyššie číslo znamená viac odpracovaných a ťažších dní, takže si tento deň zaslúži viac."
+                                    title="Zoradené podľa spravodlivosti – vyššie číslo znamená viac odpracovaných a ťažších dní, takže si tento deň zaslúži viac."
                                 @endif
-                                class="w-full rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
+                                class="w-full rounded border border-neutral-600 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
                             <option value="">- priradiť -</option>
                             @foreach($this->unassignedPool as $candidate)
                                 <option value="{{ $candidate->id }}">
@@ -271,7 +273,8 @@
     @if($this->canBuild && $this->availablePositions->isNotEmpty())
         <form wire:submit="addSlot" class="flex items-center gap-1 border-t border-neutral-800/80 px-2.5 py-2">
             <select wire:model="newPositionId"
-                    class="min-w-0 flex-1 rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-300 focus:border-brand-500 focus:outline-none">
+                    aria-label="Pridať pozíciu – {{ $this->dayName }} {{ $this->dayCarbon->format('j.n.') }}"
+                    class="min-w-0 flex-1 rounded border border-neutral-600 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-300 focus:border-brand-500 focus:outline-none">
                 <option value="">+ pozícia</option>
                 @foreach($this->availablePositions as $position)
                     <option value="{{ $position->id }}">{{ $position->label() }}</option>
@@ -318,12 +321,12 @@
 
                     @if($this->isHardToStaff)
                         <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-xs font-semibold text-amber-400"
-                              title="Kto je na ťahu - vyššie číslo znamená, že odpracoval menej ťažkých dní, než je v kine zvykom">
+                              title="Kto je na ťahu – vyššie číslo znamená, že odpracoval menej ťažkých dní, než je v kine zvykom">
                             {{ number_format($this->scoreFor($assignment->user_id), 1) }}
                         </span>
                     @elseif($this->isDesirableDay)
                         <span class="shrink-0 rounded bg-neutral-900 px-1.5 py-0.5 text-xs font-semibold text-emerald-400"
-                              title="Kto si tento deň zaslúži - vyššie číslo znamená viac odpracovaných a ťažších dní">
+                              title="Kto si tento deň zaslúži – vyššie číslo znamená viac odpracovaných a ťažších dní">
                             {{ number_format($this->scoreFor($assignment->user_id), 1) }}
                         </span>
                     @endif
@@ -341,7 +344,8 @@
               class="flex items-center gap-1 border-t border-neutral-800/80 px-2.5 py-2">
             @csrf
             <select name="source_date"
-                    class="min-w-0 flex-1 rounded border border-neutral-800 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
+                    aria-label="Kopírovať celý deň z… – do {{ $this->dayName }} {{ $this->dayCarbon->format('j.n.') }}"
+                    class="min-w-0 flex-1 rounded border border-neutral-600 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
                 <option value="">kopírovať celý deň z…</option>
                 @foreach($this->copySources as $source)
                     <option value="{{ $source['date'] }}">{{ $source['label'] }}</option>

@@ -37,7 +37,8 @@ use Spatie\Permission\Traits\HasRoles;
  * The legacy `id_role` column is gone. Its two non-permission values became attributes:
  * blocked -> `is_active = false`, unverified -> `team_user.approved_at IS NULL`.
  *
- * `is_super_admin` is deliberately not fillable.
+ * `is_super_admin` is deliberately not fillable, and neither is `pending_email` - only
+ * EmailChangeService moves an address through its confirmation steps.
  */
 class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasName, MustVerifyEmail
 {
@@ -55,6 +56,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         'is_active',
         'email_verified_at',
         'last_login_at',
+        'compact_week',
     ];
 
     /**
@@ -63,6 +65,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     protected $hidden = [
         'password',
         'remember_token',
+        'pending_email_token',
     ];
 
     protected function casts(): array
@@ -72,7 +75,9 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'is_active' => 'boolean',
             'is_super_admin' => 'boolean',
             'email_verified_at' => 'datetime',
+            'pending_email_approved_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'compact_week' => 'boolean',
         ];
     }
 
@@ -82,6 +87,12 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return $this->belongsToMany(Team::class)
             ->withPivot('approved_at')
             ->withTimestamps();
+    }
+
+    /** Whether the account is shared - a cinema may then change only its own membership, not the account. */
+    public function belongsToSeveralTeams(): bool
+    {
+        return $this->teams()->count() > 1;
     }
 
     /** The team this user is currently acting in. */

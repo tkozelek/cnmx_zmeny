@@ -26,13 +26,13 @@
                     @if($publishedAt)
                         <p class="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
                             <i class="fa-solid fa-circle-check text-[0.7rem]"></i>
-                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }} - zamestnanci rozpis vidia,
+                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }} – zamestnanci rozpis vidia,
                             ďalšie úpravy sa prejavia okamžite.
                         </p>
                     @else
                         <p class="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-amber-400">
                             <i class="fa-solid fa-pen-ruler text-[0.7rem]"></i>
-                            Pracovná verzia - zamestnanci ju zatiaľ nevidia.
+                            Pracovná verzia – zamestnanci ju zatiaľ nevidia.
                         </p>
                     @endif
                 </div>
@@ -48,7 +48,7 @@
                             title="Kliknutím vyber týždeň"
                             class="inline-flex h-11 items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-5 text-base font-bold tracking-wide text-neutral-100 transition hover:border-neutral-700 hover:text-white">
                         <i class="fa-regular fa-calendar text-neutral-400"></i>
-                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} - {{ $weekEnd->format('d.m.Y') }}</span>
+                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}</span>
                         <i class="fa-solid fa-chevron-down text-xs text-neutral-400"></i>
                     </button>
                     <input x-ref="input" type="text" class="sr-only" tabindex="-1" aria-hidden="true">
@@ -136,7 +136,7 @@
 
                     <div class="overflow-x-auto border-t border-neutral-800/80 px-4 py-3">
                         <p class="mb-2.5 text-xs leading-relaxed text-neutral-400">
-                            Vychádza z toho, na koľko dní sa človek zapísal - kto je k dispozícii viac, dostane viac -
+                            Vychádza z toho, na koľko dní sa človek zapísal – kto je k dispozícii viac, dostane viac –
                             a zo zásluh, ktoré rozdiel medzi rovnako dostupnými ľuďmi nakloní v prospech toho,
                             kto pre kino odrobil viac: viac dní a viac tých neobľúbených. Nikdy neodporučí viac
                             dní, než na koľko sa zapísal. Je to odporúčanie, nie pravidlo.

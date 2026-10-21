@@ -10,7 +10,8 @@
 <div {{ $this->getPaginationWrapperAttributesBag() }}>
     @if ($this->paginationVisibilityIsEnabled())
         <div class="mt-4 px-4 md:p-0 sm:flex justify-between items-center space-y-4 sm:space-y-0 text-sm text-neutral-400">
-            <div>
+            {{-- Polite live region: a search or a page change is otherwise silent for screen readers. --}}
+            <div aria-live="polite" aria-atomic="true">
                 @if ($this->paginationIsEnabled && $this->isPaginationMethod('standard') && $currentRows->lastPage() > 1 && $this->showPaginationDetails)
                     <p class="paged-pagination-results leading-5 text-neutral-400">
                         <span>Zobrazených</span>
@@ -22,10 +23,11 @@
                         <span>výsledkov</span>
                     </p>
                 @elseif ($this->showPaginationDetails)
+                    @php($resultCount = $currentRows->count())
                     <p class="total-pagination-results leading-5 text-neutral-400">
                         <span>Celkom</span>
-                        <span class="font-bold text-neutral-100">{{ $currentRows->count() }}</span>
-                        <span>výsledkov</span>
+                        <span class="font-bold text-neutral-100">{{ $resultCount }}</span>
+                        <span>{{ match (true) { $resultCount === 1 => 'výsledok', $resultCount >= 2 && $resultCount <= 4 => 'výsledky', default => 'výsledkov' } }}</span>
                     </p>
                 @endif
             </div>

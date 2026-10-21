@@ -76,6 +76,7 @@ class MembersRelationManager extends RelationManager
                                 ->mapWithKeys(fn (User $user): array => [$user->getKey() => "{$user->lastname} {$user->name} ({$user->email})"])
                                 ->all()),
                         $this->roleSelect(),
+                        $this->headManagerPassword(),
                     ])
                     ->action(fn (array $data) => $this->membership()->add(User::findOrFail($data['user_id']), $this->team(), Role::from($data['role']))),
             ])
@@ -89,7 +90,7 @@ class MembersRelationManager extends RelationManager
                 Action::make('changeRole')
                     ->label('Zmeniť rolu')
                     ->fillForm(fn (User $record): array => ['role' => $record->team_role])
-                    ->schema([$this->roleSelect()])
+                    ->schema([$this->roleSelect(), $this->headManagerPassword()])
                     ->action(fn (User $record, array $data) => $this->attempt(fn () => $this->membership()->changeRole($record, $this->team(), Role::from($data['role'])))),
                 Action::make('remove')
                     ->label('Odobrať z kina')

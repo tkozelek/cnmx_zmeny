@@ -9,6 +9,7 @@ use App\Models\WeekLock;
 use App\Services\RozpisService;
 use App\Services\WeekService;
 use Carbon\CarbonImmutable;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -102,7 +103,11 @@ class RozpisController extends Controller
      */
     public function copy(Request $request, Team $team, string $date): RedirectResponse
     {
-        $target = CarbonImmutable::parse($date)->startOfDay();
+        try {
+            $target = CarbonImmutable::parse($date)->startOfDay();
+        } catch (InvalidFormatException) {
+            abort(404);
+        }
         $weekStart = $this->weeks->start($team, $target);
 
         $this->authorize('create', [PositionSlot::class, $target]);
@@ -126,7 +131,7 @@ class RozpisController extends Controller
             ->route('rozpis.show', ['date' => $weekStart->toDateString()])
             ->with([
                 'message' => $added === 0
-                    ? 'Nepridali sa žiadne pozície - deň ich už má, alebo je zdrojový deň prázdny.'
+                    ? 'Nepridali sa žiadne pozície – deň ich už má, alebo je zdrojový deň prázdny.'
                     : "Skopírovaných pozícií: {$added}.",
                 'icon' => 'fa fa-copy',
             ]);
@@ -148,7 +153,7 @@ class RozpisController extends Controller
             ->route('rozpis.show', ['date' => $targetWeekStart->toDateString()])
             ->with([
                 'message' => $added === 0
-                    ? 'Nepridali sa žiadne pozície z minulého týždňa - týždeň ich už má, alebo bol minulý týždeň prázdny.'
+                    ? 'Nepridali sa žiadne pozície z minulého týždňa – týždeň ich už má, alebo bol minulý týždeň prázdny.'
                     : "Skopírovaných pozícií z minulého týždňa: {$added}.",
                 'icon' => 'fa fa-copy',
             ]);

@@ -25,14 +25,18 @@ class UserPolicy
         return $user->hasPermissionInTeam('user.view-any');
     }
 
-    public function view(User $user, User $model): bool
+    public function view(User $user, User $model): bool|Response
     {
         if ($user->id === $model->id) {
             return true;
         }
 
+        if (! $this->inCurrentTeam($model)) {
+            return Response::denyAsNotFound();
+        }
+
         // Someone else's profile carries their e-mail and absence reasons - managers only, not colleagues.
-        return $this->inCurrentTeam($model) && $user->hasPermissionInTeam('user.view-any');
+        return $user->hasPermissionInTeam('user.view-any');
     }
 
     /** $targetRole is the role the new account is about to be assigned. */
@@ -53,7 +57,11 @@ class UserPolicy
     {
         $team = app(Team::class);
 
-        if (! $this->inCurrentTeam($model) || ! $user->hasPermissionInTeam('user.update', $team)) {
+        if (! $this->inCurrentTeam($model)) {
+            return Response::denyAsNotFound();
+        }
+
+        if (! $user->hasPermissionInTeam('user.update', $team)) {
             return false;
         }
 
@@ -76,7 +84,11 @@ class UserPolicy
             return false;
         }
 
-        if (! $this->inCurrentTeam($model) || ! $user->hasPermissionInTeam('user.delete')) {
+        if (! $this->inCurrentTeam($model)) {
+            return Response::denyAsNotFound();
+        }
+
+        if (! $user->hasPermissionInTeam('user.delete')) {
             return false;
         }
 
@@ -103,7 +115,11 @@ class UserPolicy
     {
         $team = app(Team::class);
 
-        if (! $this->inCurrentTeam($model) || ! $user->hasPermissionInTeam('user.approve', $team)) {
+        if (! $this->inCurrentTeam($model)) {
+            return Response::denyAsNotFound();
+        }
+
+        if (! $user->hasPermissionInTeam('user.approve', $team)) {
             return false;
         }
 
@@ -153,6 +169,7 @@ class UserPolicy
      * `user.update` in one cinema authorised editing, role-changing or deactivating *any*
      * account in the database by id.
      */
+    /** Outside the cinema answers 404, not 403 - a manager here must not learn which accounts exist elsewhere. */
     private function inCurrentTeam(User $model): bool
     {
         return $model->isMemberOf(app(Team::class));

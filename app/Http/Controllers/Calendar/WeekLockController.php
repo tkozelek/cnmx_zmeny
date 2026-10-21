@@ -11,7 +11,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * Freezing a week. The lock *is* the row: creating it locks, deleting it unlocks.
+ * Freezing a week. Locking creates (or re-locks) the row; unlocking deletes it, unless the week's
+ * rozpis is published - the row then stays, unlocked, so the publication survives a late change.
  */
 class WeekLockController extends Controller
 {
@@ -23,10 +24,14 @@ class WeekLockController extends Controller
 
         $weekStart = $this->weeks->alignFromRequest($team, $date);
 
-        WeekLock::firstOrCreate(
+        $lock = WeekLock::firstOrCreate(
             ['week_start' => $weekStart->toDateString()],
             ['locked_by' => $request->user()->id],
         );
+
+        if (! $lock->is_locked) {
+            $lock->update(['is_locked' => true, 'locked_by' => $request->user()->id]);
+        }
 
         return $this->backToWeek($weekStart->toDateString(), 'Týždeň zamknutý.', 'fa fa-lock');
     }
@@ -37,7 +42,8 @@ class WeekLockController extends Controller
 
         $weekStart = $this->weeks->alignFromRequest($team, $date);
 
-        WeekLock::where('week_start', $weekStart->toDateString())->delete();
+        // Through the model, not a mass delete, so the change reaches the activity log.
+        WeekLock::where('week_start', $weekStart->toDateString())->first()?->unlock();
 
         return $this->backToWeek($weekStart->toDateString(), 'Týždeň odomknutý.', 'fa fa-lock-open');
     }

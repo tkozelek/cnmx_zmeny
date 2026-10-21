@@ -65,6 +65,11 @@ class UsersDataTable extends DataTableComponent
                 $query->whereNotNull('users.email_verified_at')
                     ->orWhereHas('teams', fn ($q) => $q->where('teams.id', $team->id)->whereNotNull('team_user.approved_at'));
             })
+            // People waiting for approval come first, whatever the column sort - the nav badge points here.
+            ->orderByRaw(
+                '(users.is_active = 1 and exists (select 1 from team_user where team_user.user_id = users.id and team_user.team_id = ? and team_user.approved_at is null)) desc',
+                [$team->id],
+            )
             ->with(['roles', 'teams']);
     }
 
@@ -175,7 +180,7 @@ class UsersDataTable extends DataTableComponent
                         }
 
                         return '<div class="flex items-center justify-start gap-2">
-                            <button wire:click="accept('.$row->id.')" title="Schváliť" aria-label="Schváliť používateľa '.$fullName.'" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-check text-sm" aria-hidden="true"></i></button>
+                            <button wire:click="accept('.$row->id.')" aria-label="Schváliť používateľa '.$fullName.'" class="inline-flex h-9 items-center gap-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 px-3 text-xs font-semibold text-white shadow-sm transition"><i class="fa-solid fa-check text-xs" aria-hidden="true"></i> Schváliť</button>
                             <button wire:click="deny('.$row->id.')" wire:confirm="Zamietnuť registráciu – '.$fullName.'? Účet sa zablokuje a nebude sa môcť prihlásiť." title="Zamietnuť" aria-label="Zamietnuť používateľa '.$fullName.'" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-sm transition"><i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i></button>
                         </div>';
                     }
