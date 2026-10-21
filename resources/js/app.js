@@ -32,7 +32,175 @@ function toIsoDate(date) {
     return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
 }
 
+let sortableLoading = null;
+
+function loadSortable() {
+    sortableLoading ??= import('sortablejs').then(({ default: Sortable }) => Sortable);
+
+    return sortableLoading;
+}
+
+const timeFieldOptions = (initial) => ({
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: 'H:i',
+    time_24hr: true,
+    minuteIncrement: 15,
+    defaultDate: initial,
+});
+
+function addQuickTimes(fp, times, onPick) {
+    if (!times || !times.length) return;
+
+    const row = document.createElement('div');
+    row.className = 'flatpickr-quick-times';
+
+    times.forEach((time) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = time;
+        button.className = 'flatpickr-quick-time';
+        button.addEventListener('click', () => onPick(time));
+        row.appendChild(button);
+    });
+
+    fp.calendarContainer.prepend(row);
+}
+
+function pickQuickTime(fp) {
+    return (time) => {
+        fp.setDate(time, true);
+        fp.close();
+    };
+}
+
 document.addEventListener('alpine:init', () => {
+    // `$wire.` is required: Livewire does not put component methods in Alpine's scope, and a bare
+    // call throws an error Alpine swallows, leaving a drag that silently does nothing.
+    Alpine.directive('sortable', (el, { expression }, { evaluate, cleanup }) => {
+        let sortable = null;
+        let destroyed = false;
+
+        loadSortable().then((Sortable) => {
+            if (destroyed) return;
+            sortable = Sortable.create(el, {
+                group: el.dataset.sortableGroup ?? 'sortable',
+                animation: 150,
+                ghostClass: 'opacity-40',
+                onAdd: (event) => {
+                    const id = event.item.dataset.sortableId;
+                    if (!id) return;
+
+                    evaluate(`$wire.${expression}(${id}, ${el.dataset.sortableTarget ?? 'null'})`);
+                },
+            });
+        });
+
+        cleanup(() => {
+            destroyed = true;
+            sortable?.destroy();
+        });
+    });
+
+    // Only the grip drags: each row contains another sortable list of person cards.
+    Alpine.directive('sortable-order', (el, { expression }, { evaluate, cleanup }) => {
+        let sortable = null;
+        let destroyed = false;
+
+        loadSortable().then((Sortable) => {
+            if (destroyed) return;
+            sortable = Sortable.create(el, {
+                animation: 150,
+                handle: '[data-drag-handle]',
+                draggable: '[data-slot-id]',
+                ghostClass: 'opacity-40',
+                onEnd: () => {
+                    const ids = Array.from(el.children)
+                        .map((node) => node.dataset.slotId)
+                        .filter(Boolean);
+
+                    if (ids.length) evaluate(`$wire.${expression}([${ids.join(',')}])`);
+                },
+            });
+        });
+
+        cleanup(() => {
+            destroyed = true;
+            sortable?.destroy();
+        });
+    });
+
+    Alpine.data('timePicker', (property, initial = null, quickTimes = []) => ({
+        picker: null,
+        async init() {
+            const flatpickr = await loadFlatpickr();
+            this.picker = flatpickr(this.$refs.input, {
+                ...timeFieldOptions(initial),
+                onChange: (dates, value) => this.$wire.set(property, value, false),
+                onReady: (_dates, _str, fp) => addQuickTimes(fp, quickTimes, pickQuickTime(fp)),
+            });
+        },
+        clear() {
+            this.picker?.clear();
+            this.$wire.set(property, null, false);
+        },
+    }));
+
+    Alpine.data('slotTimePicker', (slotId, initial = null, quickTimes = []) => ({
+        async init() {
+            const flatpickr = await loadFlatpickr();
+            flatpickr(this.$refs.input, {
+                ...timeFieldOptions(initial),
+                onChange: (dates, value) => this.$wire.updateSlotTime(slotId, value || null),
+                onReady: (_dates, _str, fp) => addQuickTimes(fp, quickTimes, pickQuickTime(fp)),
+            });
+        },
+    }));
+
+    Alpine.data('quickTimesEditor', (initial = []) => ({
+        times: [...initial],
+        newTime: '',
+        picker: null,
+        async init() {
+            if (!this.$refs.newTimeInput) return;
+            const flatpickr = await loadFlatpickr();
+            this.picker = flatpickr(this.$refs.newTimeInput, {
+                ...timeFieldOptions(null),
+                disableMobile: true,
+                onChange: (dates, value) => { this.newTime = value; },
+            });
+        },
+        add() {
+            if (!this.newTime || this.times.includes(this.newTime)) return;
+            this.times.push(this.newTime);
+            this.times.sort();
+            this.newTime = '';
+            this.picker?.clear();
+        },
+        remove(index) {
+            this.times.splice(index, 1);
+        },
+    }));
+
+    Alpine.data('weekJump', (current, urlTemplate) => ({
+        async init() {
+            const flatpickr = await loadFlatpickr();
+            flatpickr(this.$refs.input, {
+                disableMobile: true,
+                dateFormat: 'Y-m-d',
+                defaultDate: current,
+                positionElement: this.$refs.trigger,
+                position: 'below center',
+                onChange: (dates, value) => {
+                    if (value) window.location.href = urlTemplate.replace('__DATE__', value);
+                },
+            });
+        },
+        open() {
+            this.$refs.input._flatpickr?.open();
+        },
+    }));
+
     Alpine.data('absenceRangePicker', (dateFrom, dateTo, openModal = false, minDate = null) => ({
         openModal,
         dateFrom,
@@ -229,9 +397,9 @@ document.addEventListener('alpine:init', () => {
  * that is an English "This page has expired" confirm.
  */
 document.addEventListener('livewire:init', () => {
-    Livewire.hook('request', ({ fail }) => {
-        fail(({ status, preventDefault }) => {
-            if (status !== 419) return;
+    Livewire.interceptRequest(({ onError }) => {
+        onError(({ response, preventDefault }) => {
+            if (response.status !== 419) return;
 
             preventDefault();
             if (confirm('Stránka bola dlho nečinná. Načítať ju znova?')) window.location.reload();

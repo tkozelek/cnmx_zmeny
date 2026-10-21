@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * Retention as promised on the privacy page (/ochrana-osobnych-udajov): accounts nobody needs any
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\File;
  * - applicants never approved in any cinema (pending, denied, never verified): 6 months after registering
  * - members gone quiet: 12 months without a login and without a sign-up
  * - log files older than the daily channel's `days` (Monolog's own rotation counts files, not days)
+ * - activity log rows (rozpis history, platform admin audit) older than 12 months
  * - expired file-cache entries, e.g. rate-limit keys derived from IPs and e-mails
  *
  * Managers are never pruned here, so a cinema can't lose its last manager to a cron job.
@@ -43,6 +45,7 @@ class PrunePersonalData extends Command
 
         if (! $this->option('dry-run')) {
             $this->pruneOldLogs();
+            $this->pruneOldActivity();
             $this->pruneExpiredCache();
         }
 
@@ -58,6 +61,11 @@ class PrunePersonalData extends Command
                 File::delete($log);
             }
         }
+    }
+
+    private function pruneOldActivity(): void
+    {
+        Activity::query()->where('created_at', '<', now()->subMonths(12))->delete();
     }
 
     /** The file store only drops an expired entry when it is read again - most never are. */
@@ -83,6 +91,7 @@ class PrunePersonalData extends Command
     private function rejectedApplicants(): Builder
     {
         return User::query()
+            ->where('is_super_admin', false)
             ->whereDoesntHave('teams', fn (Builder $query) => $query->whereNotNull('team_user.approved_at'))
             ->where('created_at', '<', now()->subMonths(6));
     }
@@ -93,6 +102,7 @@ class PrunePersonalData extends Command
         $cutoff = now()->subMonths(12);
 
         return User::query()
+            ->where('is_super_admin', false)
             ->whereHas('teams', fn (Builder $query) => $query->whereNotNull('team_user.approved_at'))
             ->where('created_at', '<', $cutoff)
             ->where(fn (Builder $query) => $query->whereNull('last_login_at')->orWhere('last_login_at', '<', $cutoff))

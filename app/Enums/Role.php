@@ -23,6 +23,20 @@ enum Role: string
         };
     }
 
+    /**
+     * Everyone who outranks a brigádnik, most senior first.
+     *
+     * This is who the vedúci slot may be filled from. Deliberately a role question rather than a
+     * signup question: a manažér running Friday night does not write themselves into the pool the
+     * way a brigádnik does - they are simply on.
+     *
+     * @return list<self>
+     */
+    public static function leadership(): array
+    {
+        return [self::HeadManager, self::Manager];
+    }
+
     /** Badge colours, the same on the users table and the profile card. */
     public function badgeClasses(): string
     {

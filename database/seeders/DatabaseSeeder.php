@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\Role as RoleEnum;
+use App\Models\Position;
 use App\Models\Team;
 use App\Models\TeamSetting;
 use App\Models\User;
@@ -56,6 +57,9 @@ class DatabaseSeeder extends Seeder
 
             TeamSetting::create(['team_id' => $team->id]);
 
+            app(PermissionRegistrar::class)->setPermissionsTeamId($team->id);
+            $this->seedPositions();
+
             $teams->put($name, $team);
 
             if ($name === 'Žilina Max') {
@@ -87,6 +91,20 @@ class DatabaseSeeder extends Seeder
 
         $this->command?->info('Žilina Max nastavené ako hlavné kino.');
         $this->command?->info("Prihlás sa ako {$admin->email} s heslom 'password'.");
+    }
+
+    private function seedPositions(): void
+    {
+        $positions = [
+            ['name' => 'Uvádzač', 'code' => 'UV', 'sort_order' => 10],
+            ['name' => 'Bufet', 'code' => 'BUF', 'sort_order' => 20],
+            ['name' => 'Pokladňa', 'code' => 'POK', 'sort_order' => 30],
+            ['name' => 'Vedúci', 'code' => 'VED', 'sort_order' => 40, 'is_manager' => true],
+        ];
+
+        foreach ($positions as $position) {
+            Position::create($position);
+        }
     }
 
     private function member(

@@ -3,6 +3,7 @@
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
 use App\Providers\EventServiceProvider;
+use App\Providers\Filament\PlatformPanelProvider;
 use App\Providers\RouteServiceProvider;
 use App\Providers\SearchServiceProvider;
 use App\Providers\ViewServiceProvider;
@@ -186,6 +187,7 @@ return [
         SearchServiceProvider::class,
         ExcelServiceProvider::class,
         ViewServiceProvider::class,
+        PlatformPanelProvider::class,
     ])->toArray(),
 
     /*

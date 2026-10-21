@@ -147,6 +147,146 @@
 
                     </div>
 
+                    @if($hasRozpis)
+                        <div class="my-6 border-t border-neutral-800"></div>
+
+                        <div class="space-y-4">
+                            <h2 class="text-base font-semibold text-neutral-100 flex items-center gap-2">
+                                <i class="fa-solid fa-scale-balanced text-xs text-neutral-400" aria-hidden="true"></i>
+                                Spravodlivosť rozpisu
+                            </h2>
+
+                            <p class="text-xs text-neutral-400">
+                                Koľko „váži“ odpracovaný deň. Vyššia váha = deň, na ktorý sa málokto hlási
+                                dobrovoľne – kto ho odpracuje, má to započítané viac. Nižšia váha ako
+                                <strong>1,0</strong> = deň, o ktorý je záujem (typicky víkend) – ten sa počíta za menej,
+                                lebo ho netreba nikomu nanútiť.
+                                Ako <strong>neobľúbený</strong> sa označí deň s váhou nad priemerom týždňa: v ňom sa
+                                zoznam nezaradených zoradí podľa toho, kto takých dní odrobil najmenej – ten je na rade.
+                                Ako <strong>obľúbený</strong> sa označí deň s váhou pod 1,0: v ňom sa zoradí podľa zásluh,
+                                teda kto pre kino odrobil najviac dní a najviac tých neobľúbených. Pri menách sa v oboch
+                                prípadoch zobrazí príslušné číslo, vyššie je vždy vyššie v poradí. Ak sú všetky váhy
+                                rovnaké, neoznačí sa žiadny deň.
+                            </p>
+
+                            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+                                @foreach($fairnessDays as $day)
+                                    <div>
+                                        <label for="fairness_day_weights_{{ $day['index'] }}" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                            {{ $day['short'] }}
+                                        </label>
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            min="0.1"
+                                            max="10"
+                                            name="fairness_day_weights[{{ $day['index'] }}]"
+                                            id="fairness_day_weights_{{ $day['index'] }}"
+                                            value="{{ old('fairness_day_weights.'.$day['index'], $day['weight']) }}"
+                                            @disabled(! $canEdit)
+                                            required
+                                            title="{{ $day['name'] }}"
+                                            class="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-3 text-sm text-white transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                        @error('fairness_day_weights.'.$day['index'])
+                                            <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            @error('fairness_day_weights')
+                                <p class="text-xs text-rose-400">{{ $message }}</p>
+                            @enderror
+
+                            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                                <div>
+                                    <x-form-input
+                                        type="number"
+                                        name="fairness_window_weeks"
+                                        label="Obdobie hodnotenia (týždne dozadu)"
+                                        placeholder="12"
+                                        :value="old('fairness_window_weeks', $fairnessWindowWeeks)"
+                                        icon="fa-clock-rotate-left"
+                                        min="1"
+                                        max="52"
+                                        :disabled="!$canEdit"
+                                        required
+                                    />
+                                    <p class="text-xs text-neutral-400 mt-1">Ako ďaleko do minulosti sa počítajú odpracované dni.</p>
+                                </div>
+
+                                <div>
+                                    <x-form-input
+                                        type="number"
+                                        step="0.1"
+                                        name="holiday_weight"
+                                        label="Váha sviatku"
+                                        placeholder="1.6"
+                                        :value="old('holiday_weight', $holidayWeight)"
+                                        icon="fa-star"
+                                        min="0.1"
+                                        max="10"
+                                        :disabled="!$canEdit"
+                                        required
+                                    />
+                                    <p class="text-xs text-neutral-400 mt-1">
+                                        Váha slovenského štátneho sviatku – platí namiesto váhy jeho dňa v týždni,
+                                        nech vyjde na ktorýkoľvek deň.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="my-6 border-t border-neutral-800"></div>
+
+                        <div class="space-y-4" x-data="quickTimesEditor(@js($quickTimes))">
+                            <h2 class="text-base font-semibold text-neutral-100 flex items-center gap-2">
+                                <i class="fa-solid fa-clock text-xs text-neutral-400" aria-hidden="true"></i>
+                                Časy nástupu
+                            </h2>
+                            <p class="text-xs text-neutral-400">
+                                Rýchle tlačidlá pri zadávaní času nástupu v rozpise, aby si nemusel čas vždy vypisovať ručne.
+                            </p>
+
+                            <table class="w-full text-sm text-left text-neutral-300">
+                                <tbody class="divide-y divide-neutral-800">
+                                    <template x-for="(time, index) in times" :key="time">
+                                        <tr>
+                                            <td class="py-2 font-semibold tabular-nums text-white" x-text="time"></td>
+                                            <td class="py-2 text-right">
+                                                <input type="hidden" name="quick_times[]" :value="time">
+                                                @if($canEdit)
+                                                    <button type="button" @click="remove(index)" title="Odstrániť čas" aria-label="Odstrániť čas"
+                                                            class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-300 transition hover:bg-rose-500/20">
+                                                        <i class="fa-solid fa-trash text-[0.65rem]" aria-hidden="true"></i>
+                                                    </button>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="times.length === 0">
+                                        <td colspan="2" class="py-3 text-center text-neutral-400">Žiadne časy – použijú sa predvolené.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            @if($canEdit)
+                                <div class="flex items-center gap-2">
+                                    <input x-ref="newTimeInput" type="text" readonly placeholder="čas" aria-label="Nový čas nástupu"
+                                           class="w-24 cursor-pointer rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-center text-sm tabular-nums text-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60">
+                                    <button type="button" @click="add()"
+                                            class="inline-flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2 text-sm font-semibold text-white transition hover:border-brand-500/50">
+                                        <i class="fa-solid fa-plus text-xs text-brand-400" aria-hidden="true"></i> Pridať
+                                    </button>
+                                </div>
+                            @endif
+
+                            @error('quick_times') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
+                            @error('quick_times.*') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
+
                     @if($canEdit)
                         <div class="pt-4 flex justify-end">
                             <button type="submit" class="py-2.5 px-5 bg-neutral-100 hover:bg-white text-neutral-900 font-semibold rounded-lg text-sm transition flex items-center gap-2">

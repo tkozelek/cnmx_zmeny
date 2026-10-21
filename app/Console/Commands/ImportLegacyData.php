@@ -113,16 +113,20 @@ class ImportLegacyData extends Command
         DB::transaction(function () use ($team, $legacy): void {
             setPermissionsTeamId($team->id);
 
-            $this->clearSeededData($team, $legacy);
-            $userMap = $this->importUsers($team, $legacy);
+            // A few thousand historical rows landing in the activity log would bury the real
+            // edits the rozpis history panel exists to show - same reasoning as SampleAssignmentsSeeder.
+            activity()->withoutLogging(function () use ($team, $legacy): void {
+                $this->clearSeededData($team, $legacy);
+                $userMap = $this->importUsers($team, $legacy);
 
-            if ($this->option('with-test-users')) {
-                $this->ensureTestUsers($team);
-            }
+                if ($this->option('with-test-users')) {
+                    $this->ensureTestUsers($team);
+                }
 
-            $this->importAssignments($legacy, $userMap);
-            $this->importAbsences($legacy, $userMap);
-            $this->importWeekLocks($legacy);
+                $this->importAssignments($legacy, $userMap);
+                $this->importAbsences($legacy, $userMap);
+                $this->importWeekLocks($legacy);
+            });
         });
 
         Storage::disk('local')->put($this->markerPath($team), now()->toDateTimeString());
@@ -265,9 +269,12 @@ class ImportLegacyData extends Command
      * SQL join, since `legacy` may be a genuinely separate database server that a cross-table
      * join can't reach.
      *
-     * Legacy owns the signup itself (who, which date, the free-text `popis` note). On a row that
-     * already exists only `note` is refreshed, a signup missing from this legacy pull gets
-     * deleted, and a new signup is inserted.
+     * Legacy owns only the signup itself (who, which date, the free-text `popis` note) - never
+     * a position. So on a row that already exists, only `note` is refreshed; `position_id`,
+     * `position_slot_id`, `start_time` and `end_time` (written onto this same row by
+     * RozpisDay::place() in the builder) are left exactly as they were. A signup missing from
+     * this legacy pull gets deleted, since nobody keeps a position they are no longer signed up
+     * for; a new signup is inserted bare.
      *
      * @param  array<int, int>  $userMap
      */

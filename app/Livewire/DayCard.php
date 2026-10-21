@@ -175,6 +175,12 @@ class DayCard extends Component
     }
 
     #[Computed]
+    public function isMember(): bool
+    {
+        return auth()->user()?->isApprovedIn(app(Team::class)) ?? false;
+    }
+
+    #[Computed]
     public function canViewUsers(): bool
     {
         return auth()->user()?->can('viewAny', User::class) ?? false;

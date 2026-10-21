@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Role;
+use App\Enums\TeamFeature;
 use App\Traits\Loggable;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
+use Laravel\Pennant\Feature;
 
 /**
  * One cinema. The tenant boundary for everything except User.
@@ -55,6 +57,7 @@ class Team extends Model
     public function pendingUsers(): BelongsToMany
     {
         return $this->users()
+            ->where('users.is_super_admin', false)
             ->whereNotNull('users.email_verified_at')
             ->wherePivotNull('approved_at');
     }
@@ -65,6 +68,11 @@ class Team extends Model
     public function settings(): HasOne
     {
         return $this->hasOne(TeamSetting::class);
+    }
+
+    public function positions(): HasMany
+    {
+        return $this->hasMany(Position::class);
     }
 
     public function assignments(): HasMany
@@ -117,6 +125,55 @@ class Team extends Model
     }
 
     /**
+     * What one worked day is worth per weekday, Monday-indexed. Feeds FairnessService.
+     *
+     * @return list<float>
+     */
+    public function fairnessDayWeights(): array
+    {
+        $weights = $this->cachedSettings()?->fairness_day_weights;
+
+        // A stored array of the wrong length would silently misprice part of the week, so a
+        // partial row falls back to the default rather than being padded.
+        return is_array($weights) && count($weights) === 7
+            ? array_map('floatval', array_values($weights))
+            : TeamSetting::DEFAULT_FAIRNESS_DAY_WEIGHTS;
+    }
+
+    /** How many weeks of history the fairness ranking counts. */
+    public function fairnessWindowWeeks(): int
+    {
+        return $this->cachedSettings()?->fairness_window_weeks ?? TeamSetting::DEFAULT_FAIRNESS_WINDOW_WEEKS;
+    }
+
+    /** How hard a Slovak public holiday is to staff, in place of its weekday's weight. */
+    public function holidayWeight(): float
+    {
+        return $this->cachedSettings()?->holiday_weight ?? TeamSetting::DEFAULT_HOLIDAY_WEIGHT;
+    }
+
+    /**
+     * Quick-pick chips offered by the rozpis builder's time picker (see resources/js/app.js).
+     *
+     * @return list<string>
+     */
+    public function quickTimes(): array
+    {
+        $times = $this->cachedSettings()?->quick_times;
+
+        return is_array($times) && $times !== [] ? array_values($times) : TeamSetting::DEFAULT_QUICK_TIMES;
+    }
+
+    public function hasFeature(TeamFeature $feature): bool
+    {
+        if (! Feature::for($this)->active($feature)) {
+            return false;
+        }
+
+        return $feature->requires() === null || $this->hasFeature($feature->requires());
+    }
+
+    /**
      * Everybody in this cinema who holds $role and can actually use it: approved membership and
      * an active account.
      *
@@ -141,6 +198,7 @@ class Team extends Model
         try {
             return User::role($roleValues)
                 ->where('users.is_active', true)
+                ->where('users.is_super_admin', false)
                 ->whereHas('teams', fn (Builder $query) => $query
                     ->where('teams.id', $this->getKey())
                     ->whereNotNull('team_user.approved_at'))

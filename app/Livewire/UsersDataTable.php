@@ -59,6 +59,7 @@ class UsersDataTable extends DataTableComponent
 
         return User::query()
             ->select('users.*')
+            ->where('users.is_super_admin', false)
             ->whereHas('teams', fn (Builder $q) => $q->where('teams.id', $team->id))
             ->where(function (Builder $query) use ($team) {
                 $query->whereNotNull('users.email_verified_at')

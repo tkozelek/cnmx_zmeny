@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Support\AuditRedactor;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -14,45 +15,6 @@ use Illuminate\Support\Facades\Log;
  */
 trait Loggable
 {
-    /**
-     * Never written to the log, on any event.
-     *
-     * `remember_token` is the worst of these: Laravel stores it unhashed and it *is* the
-     * remember-me cookie value, so a token in a log file is a usable credential. The password
-     * hash is little better. The delete handler always stripped these; the update handler did
-     * not, which meant every password reset and every rehash-on-login wrote both.
-     *
-     * @var list<string>
-     */
-    private const NEVER_LOGGED = ['password', 'remember_token'];
-
-    /**
-     * Logged as "changed", never with the value: logs outlive the deleted account, and the privacy
-     * page promises personal details and absence reasons are gone with it.
-     *
-     * @var list<string>
-     */
-    private const VALUE_REDACTED = ['name', 'lastname', 'email', 'reason', 'note'];
-
-    /**
-     * @param  array<string, mixed>  $attributes
-     * @return array<string, mixed>
-     */
-    private static function forLog(array $attributes): array
-    {
-        foreach (self::NEVER_LOGGED as $secret) {
-            unset($attributes[$secret]);
-        }
-
-        foreach (self::VALUE_REDACTED as $personal) {
-            if (array_key_exists($personal, $attributes)) {
-                $attributes[$personal] = '[skryté]';
-            }
-        }
-
-        return $attributes;
-    }
-
     public static function bootLoggable(): void
     {
         static::updated(function (Model $model): void {
@@ -67,8 +29,8 @@ trait Loggable
             // A login is not an edit worth logging.
             unset($changes['last_login_at']);
 
-            $changes = self::forLog($changes);
-            $original = self::forLog($original);
+            $changes = AuditRedactor::redact($changes);
+            $original = AuditRedactor::redact($original);
 
             if (empty($changes)) {
                 return;
@@ -86,7 +48,7 @@ trait Loggable
         static::deleted(function (Model $model): void {
             $user = Auth::user();
 
-            $attributes = self::forLog($model->getAttributes());
+            $attributes = AuditRedactor::redact($model->getAttributes());
             unset($attributes['updated_at']);
 
             Log::warning('Účet #'.($user?->id ?? '-').' vymazal model "'.get_class($model).'" (ID: '.$model->getKey().').', [

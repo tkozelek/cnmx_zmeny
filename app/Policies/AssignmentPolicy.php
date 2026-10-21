@@ -39,6 +39,11 @@ class AssignmentPolicy
     {
         $forUser = $targetUser ?? $user;
 
+        // Keeps a visiting super admin off the plan, lists and exports.
+        if (! $forUser->isApprovedIn($team)) {
+            return Response::deny('Na zmeny sa môžu zapisovať len členovia kina.');
+        }
+
         // Users cannot sign up for work on dates covered by their reported absences.
         $hasAbsence = $forUser->absences()
             ->where('team_id', $team->id)
@@ -97,6 +102,28 @@ class AssignmentPolicy
         return $this->weekLocked($assignment->team, $assignment->date)
             ? Response::deny(self::LOCKED_MESSAGE)
             : Response::allow();
+    }
+
+    /**
+     * Place someone on a position (or take them off it) in the rozpis builder.
+     *
+     * Requires the week to be *locked* - the inverse of create()/delete(). Self-signup and
+     * position assignment are two consecutive phases of the same week, and locking is the
+     * switch between them: employees stop editing, the manager starts.
+     */
+    public function assignPosition(User $user, Assignment $assignment): bool
+    {
+        $team = app(Team::class);
+
+        if (! $this->belongsToCurrentTeam($assignment)) {
+            return false;
+        }
+
+        if (! $this->weekLocked($team, $assignment->date)) {
+            return false;
+        }
+
+        return $user->canBuildRozpis();
     }
 
     /** Only authorized roles freeze and unfreeze a week. */

@@ -40,6 +40,17 @@ class UserFactory extends Factory
         return $this->state(['is_active' => false]);
     }
 
+    /** A super admin who has already set up TOTP, i.e. can actually use the role. */
+    public function superAdmin(): static
+    {
+        return $this->afterCreating(function (User $user): void {
+            $user->forceFill([
+                'is_super_admin' => true,
+                'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
+            ])->save();
+        });
+    }
+
     /** An approved member of $team, acting in it. */
     public function memberOf(Team $team, ?string $role = null): static
     {
