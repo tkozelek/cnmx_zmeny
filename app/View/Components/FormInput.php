@@ -7,38 +7,29 @@ use Illuminate\View\Component;
 
 class FormInput extends Component
 {
-    public string $type = 'text';
+    public string $inputId;
 
-    public string $name;
+    public ?string $error;
 
-    public ?string $id = null;
+    public ?string $describedBy;
 
-    public ?string $label;
-
-    public ?string $placeholder = '';
-
-    public ?string $value = '';
-
-    public ?string $icon = null;
-
-    /*
-     * @param string $name
-     * @param string|null $id
-     * @param string|null $label
-     * @param string|null $placeholder
-     * @param string|null $value
-     * @param string|null $icon
-     * @param string|null $type
-     */
-    public function __construct(string $name, ?string $id, ?string $label, ?string $placeholder, ?string $value, ?string $icon, ?string $type = 'text')
-    {
-        $this->type = $type ?? 'text';
-        $this->name = $name;
-        $this->id = $id;
-        $this->label = $label;
-        $this->placeholder = $placeholder;
-        $this->value = $value;
-        $this->icon = $icon;
+    public function __construct(
+        public string $name,
+        public ?string $label = null,
+        public ?string $placeholder = '',
+        public ?string $value = '',
+        public ?string $icon = null,
+        public ?string $type = 'text',
+        public ?string $hint = null,
+        ?string $id = null,
+    ) {
+        $this->type ??= 'text';
+        $this->inputId = $id ?? $name;
+        $this->error = session('errors')?->first($name) ?: null;
+        $this->describedBy = collect([
+            $hint ? "{$this->inputId}-hint" : null,
+            $this->error ? "{$this->inputId}-error" : null,
+        ])->filter()->implode(' ') ?: null;
     }
 
     public function render(): View

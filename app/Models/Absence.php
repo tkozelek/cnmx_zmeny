@@ -87,6 +87,18 @@ class Absence extends Model
         });
     }
 
+    /** Running and upcoming first (nearest start first), then ended (latest first), cancelled last. */
+    public function scopeOrderByRelevance(Builder $query): Builder
+    {
+        $today = now()->toDateString();
+        $cancelled = AbsenceStatus::Cancelled->value;
+
+        return $query
+            ->orderByRaw('CASE WHEN status = ? THEN 2 WHEN date_to < ? THEN 1 ELSE 0 END', [$cancelled, $today])
+            ->orderByRaw('CASE WHEN status != ? AND date_to >= ? THEN date_from END', [$cancelled, $today])
+            ->orderByDesc('date_to');
+    }
+
     /** Not cancelled, and its date range hasn't run out yet. */
     public function isActive(): bool
     {

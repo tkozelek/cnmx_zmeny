@@ -157,6 +157,98 @@ body {
     }
 }
 
+.field {
+    display: grid;
+    align-content: start;
+}
+
+.field > .field__hint {
+    margin-top: 0.25rem;
+}
+
+.field > .field__control {
+    margin-top: 0.5rem;
+}
+
+.field > .field__error {
+    margin-top: 0.5rem;
+}
+
+.field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Shared label / hint / control / error rows, so neighbours line up whichever one has a hint or an error. */
+@media (min-width: 640px) {
+    .field-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(4, auto);
+        column-gap: 1rem;
+        row-gap: 0;
+    }
+
+    .field-row > .field {
+        grid-row: 1 / span 4;
+        grid-template-rows: subgrid;
+    }
+
+    .field-row > .field > .field__label { grid-row: 1; }
+    .field-row > .field > .field__hint { grid-row: 2; }
+    .field-row > .field > .field__control { grid-row: 3; }
+    .field-row > .field > .field__error { grid-row: 4; }
+}
+
+.auth-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* Radial gradients rather than filter: blur(), which is expensive to animate on phones. */
+.auth-backdrop::before,
+.auth-backdrop::after {
+    content: '';
+    position: absolute;
+    border-radius: 9999px;
+    animation: auth-drift 26s ease-in-out infinite alternate;
+}
+
+.auth-backdrop::before {
+    top: -6rem;
+    left: calc(50% - 38rem);
+    width: 44rem;
+    height: 44rem;
+    background: radial-gradient(closest-side, rgb(var(--color-brand-500) / 0.16), rgb(var(--color-brand-500) / 0.08) 40%, rgb(var(--color-brand-500) / 0.025) 72%, transparent);
+}
+
+.auth-backdrop::after {
+    bottom: -10rem;
+    left: calc(50% - 2rem);
+    width: 40rem;
+    height: 40rem;
+    background: radial-gradient(closest-side, rgb(var(--color-brand-700) / 0.22), rgb(var(--color-brand-700) / 0.11) 40%, rgb(var(--color-brand-700) / 0.035) 72%, transparent);
+    animation-duration: 32s;
+    animation-direction: alternate-reverse;
+}
+
+@keyframes auth-drift {
+    to {
+        translate: 3rem 2.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-backdrop::before,
+    .auth-backdrop::after {
+        animation: none;
+    }
+}
+
 .cta-button {
     transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }

@@ -37,7 +37,6 @@ class AbsencesDataTable extends DataTableComponent
     {
         $this->setPrimaryKey('id')
             ->setTheme('tailwind')
-            ->setDefaultSort('date_from', 'desc')
             // The sort is already visible on the column header; a pill for it was just noise.
             ->setSortingPillsDisabled()
             ->setPerPageAccepted([10, 25, 50, 100])
@@ -61,7 +60,8 @@ class AbsencesDataTable extends DataTableComponent
 
         return Absence::query()
             ->where('team_id', $team->id)
-            ->with('user');
+            ->with('user')
+            ->when($this->getSorts() === [], fn (Builder $query) => $query->orderByRelevance());
     }
 
     public function filters(): array

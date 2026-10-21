@@ -88,6 +88,31 @@ class AbsenceTest extends TestCase
         $this->assertDatabaseCount('absences', 0);
     }
 
+    public function test_absences_list_whats_happening_soonest_first(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $make = fn (int $from, int $to, AbsenceStatus $status = AbsenceStatus::Active) => Absence::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'date_from' => today()->addDays($from)->toDateString(),
+            'date_to' => today()->addDays($to)->toDateString(),
+            'status' => $status,
+        ])->id;
+
+        $farAhead = $make(30, 32);
+        $ended = $make(-10, -8);
+        $running = $make(-2, 2);
+        $cancelled = $make(5, 6, AbsenceStatus::Cancelled);
+        $nextWeek = $make(7, 8);
+        $endedLongAgo = $make(-60, -50);
+
+        $this->assertSame(
+            [$running, $nextWeek, $farAhead, $ended, $endedLongAgo, $cancelled],
+            Absence::query()->orderByRelevance()->pluck('id')->all(),
+        );
+    }
+
     public function test_an_employee_can_delete_their_own_absence(): void
     {
         $team = $this->tenant();
