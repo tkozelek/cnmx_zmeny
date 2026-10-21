@@ -16,8 +16,11 @@ class RegisterController extends Controller
 {
     public function index(): View
     {
+        $teams = Team::where('is_active', true)->orderBy('name')->get();
+
         return view('users.register', [
-            'teams' => Team::where('is_active', true)->orderBy('name')->get(),
+            'teams' => $teams,
+            'showTeamPicker' => $teams->count() > 1,
         ]);
     }
 
@@ -30,7 +33,7 @@ class RegisterController extends Controller
         $team = $this->resolveTeam($request->integer('team_id') ?: null);
 
         if (! $team) {
-            return back()->with(['error' => 'Vyber si kino.'])->withInput();
+            return back()->withErrors(['team_id' => 'Vyber si kino.'])->withInput();
         }
 
         $fields = $request->safe()->except('team_id');
