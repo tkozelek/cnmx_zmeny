@@ -38,6 +38,7 @@ class PlatformPanelProvider extends PanelProvider
             ->brandName('Cinemax Zmeny · Platforma')
             ->colors(['primary' => Color::Sky])
             ->darkMode(true)
+            ->favicon(asset('images/icons/favicon-32.png'))
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
             ->discoverResources(in: app_path('Filament/Platform/Resources'), for: 'App\Filament\Platform\Resources')
             ->discoverPages(in: app_path('Filament/Platform/Pages'), for: 'App\Filament\Platform\Pages')

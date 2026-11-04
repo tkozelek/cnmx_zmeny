@@ -7,7 +7,11 @@
     <meta name="robots" content="noindex">
     <meta name="color-scheme" content="dark">
     <title>@yield('code') – @yield('title') | Cinemax Zmeny</title>
-    <link rel="icon" href="{{ asset('images/logo_cinemax_icon_cropped.png') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/icons/favicon-32.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#0c0c0e">
 
     @if($fontUrls)
         <link rel="preload" href="{{ $fontUrls['latin'] }}" as="font" type="font/woff2" crossorigin>

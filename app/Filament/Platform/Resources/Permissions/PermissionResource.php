@@ -25,7 +25,10 @@ class PermissionResource extends Resource
 
     protected static ?string $modelLabel = 'oprávnenie';
 
-    protected static ?string $pluralModelLabel = 'roly a oprávnenia';
+    protected static ?string $pluralModelLabel = 'Roly a oprávnenia';
+
+    // Filament would otherwise title-case every word ("Roly A Oprávnenia").
+    protected static bool $hasTitleCaseModelLabel = false;
 
     protected static string|UnitEnum|null $navigationGroup = 'Bezpečnosť';
 
