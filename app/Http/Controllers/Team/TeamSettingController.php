@@ -6,6 +6,8 @@ use App\Enums\TeamFeature;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Team\UpdateTeamSettingRequest;
 use App\Models\Team;
+use App\Services\SignupRateService;
+use App\Support\SlovakPlural;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -45,7 +47,34 @@ class TeamSettingController extends Controller
             'fairnessWindowWeeks' => $team->fairnessWindowWeeks(),
             'holidayWeight' => $team->holidayWeight(),
             'quickTimes' => $team->quickTimes(),
+            ...$this->occupancy($team),
         ]);
+    }
+
+    /**
+     * @return array{occupancyMembers: int, occupancyMembersLabel: string, occupancyWeeks: int, occupancyChart: array{rates: list<float>, labels: list<string>}, occupancy: list<array{short: string, name: string, rate: float, label: string}>}
+     */
+    private function occupancy(Team $team): array
+    {
+        $service = app(SignupRateService::class);
+        $members = $service->memberCounts([$team->getKey()]);
+        $rates = $service->byWeekday($members)[$team->getKey()] ?? array_fill(0, 7, 0.0);
+        $names = ['Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota', 'Nedeľa'];
+
+        $memberCount = $members[$team->getKey()] ?? 0;
+
+        return [
+            'occupancyMembers' => $memberCount,
+            'occupancyMembersLabel' => SlovakPlural::of($memberCount, 'člena', 'členov', 'členov'),
+            'occupancyWeeks' => SignupRateService::WEEKS,
+            'occupancyChart' => ['rates' => $rates, 'labels' => $names],
+            'occupancy' => array_map(fn (int $i): array => [
+                'short' => mb_substr($names[$i], 0, 2),
+                'name' => $names[$i],
+                'rate' => $rates[$i],
+                'label' => number_format($rates[$i], 0, ',', ' ').' %',
+            ], range(0, 6)),
+        ];
     }
 
     public function update(UpdateTeamSettingRequest $request): RedirectResponse

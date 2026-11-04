@@ -301,6 +301,36 @@
                 </form>
             </div>
 
+            <section class="bg-neutral-900 rounded-lg border border-neutral-800 shadow-sm p-6 sm:p-8" aria-labelledby="occupancy-heading">
+                <h2 id="occupancy-heading" class="text-base font-semibold text-neutral-100 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-column text-xs text-neutral-400" aria-hidden="true"></i>
+                    Obsadenosť podľa dňa v&nbsp;týždni
+                </h2>
+
+                @if($occupancyMembers > 0)
+                    <p class="mt-1 text-sm text-neutral-400">
+                        Priemerný podiel z&nbsp;{{ $occupancyMembersLabel }} kina zapísaných v&nbsp;daný deň za posledných {{ $occupancyWeeks }}&nbsp;týždňov.
+                    </p>
+
+                    <div class="mt-5 h-48 sm:h-56 w-full min-w-0 relative">
+                        <canvas data-rate-chart='@json($occupancyChart)' role="img" aria-label="Graf obsadenosti podľa dňa v týždni. Rovnaké čísla sú v prehľade pod grafom."></canvas>
+                    </div>
+
+                    <dl class="mt-4 grid grid-cols-7 gap-1 sm:gap-2 text-center">
+                        @foreach($occupancy as $day)
+                            <div class="rounded-lg border border-neutral-800 bg-neutral-950/60 p-1.5 sm:p-2.5 min-w-0">
+                                <dt class="text-[11px] sm:text-xs font-medium text-neutral-400">
+                                    <abbr title="{{ $day['name'] }}" class="no-underline">{{ $day['short'] }}</abbr>
+                                </dt>
+                                <dd class="mt-0.5 text-sm font-semibold text-neutral-100 tabular-nums">{{ $day['label'] }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                @else
+                    <p class="mt-1 text-sm text-neutral-400">Zatiaľ tu nie sú žiadni schválení členovia.</p>
+                @endif
+            </section>
+
         </div>
     </div>
 </x-layout>

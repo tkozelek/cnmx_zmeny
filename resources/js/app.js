@@ -687,8 +687,76 @@ async function renderProfileChart(newData) {
 }
 window.renderProfileChart = renderProfileChart;
 
+async function renderRateCharts() {
+    const canvases = document.querySelectorAll('canvas[data-rate-chart]');
+    if (!canvases.length) return;
+
+    const Chart = await loadChart();
+
+    canvases.forEach((canvas) => {
+        if (canvas._chartInstance) return;
+
+        let chart;
+        try {
+            chart = JSON.parse(canvas.dataset.rateChart);
+        } catch (e) {
+            return;
+        }
+
+        const short = chart.labels.map((label) => label.slice(0, 2));
+        const percent = (value) => value.toLocaleString('sk-SK', { maximumFractionDigits: 1 }) + ' %';
+
+        canvas._chartInstance = new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: short,
+                datasets: [{
+                    data: chart.rates,
+                    // brand-500 / brand-400, like the profile chart
+                    backgroundColor: 'rgba(14, 165, 233, 0.85)',
+                    hoverBackgroundColor: 'rgba(56, 189, 248, 1)',
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    maxBarThickness: 44,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#171717',
+                        titleColor: '#f5f5f5',
+                        bodyColor: '#d4d4d4',
+                        borderColor: '#262626',
+                        borderWidth: 1,
+                        padding: 10,
+                        cornerRadius: 6,
+                        displayColors: false,
+                        callbacks: {
+                            title: (items) => chart.labels[items[0].dataIndex] ?? '',
+                            label: (context) => percent(context.parsed.y) + ' členov zapísaných',
+                        },
+                    },
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#a3a3a3' } },
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.06)' },
+                        ticks: { color: '#a3a3a3', callback: (value) => value + ' %' },
+                    },
+                },
+            },
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     renderProfileChart();
+    renderRateCharts();
 });
 
 // After a deploy an open tab still references the old chunk hashes - reload once onto the new build.

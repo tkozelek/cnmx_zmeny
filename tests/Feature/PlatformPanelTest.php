@@ -127,6 +127,8 @@ class PlatformPanelTest extends TestCase
     public function test_the_dashboard_widgets_count_sign_ups_per_cinema(): void
     {
         $team = $this->tenant();
+        // A fixed name: a random one with an apostrophe is escaped differently inside the chart's JSON.
+        $team->update(['name' => 'Kino Test']);
         $member = $this->member($team);
         foreach (range(1, 14) as $daysAgo) {
             Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $member->id, 'date' => today()->subDays($daysAgo)->toDateString()]);

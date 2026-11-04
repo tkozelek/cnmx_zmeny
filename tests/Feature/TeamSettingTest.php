@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Enums\TeamFeature;
+use App\Models\Assignment;
 use App\Services\WeekService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -105,6 +106,26 @@ class TeamSettingTest extends TestCase
                 'stale_absence_deletion_days' => 45,
             ])
             ->assertForbidden();
+    }
+
+    /** Same numbers as the /platform chart, for this cinema only: one of two members on every Friday is 50 %. */
+    public function test_settings_show_the_cinemas_occupancy_by_weekday(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-04 10:00'));
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::HeadManager);
+        $regular = $this->member($team);
+
+        for ($friday = CarbonImmutable::parse('2026-09-11'); $friday->lt(today()); $friday = $friday->addWeek()) {
+            Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $regular->id, 'date' => $friday->toDateString()]);
+        }
+
+        $this->actingAs($manager)
+            ->get(route('team.settings.edit'))
+            ->assertOk()
+            ->assertSee('Obsadenosť podľa dňa')
+            ->assertSee('z&nbsp;2 členov', false)
+            ->assertSeeInOrder(['Pi', '50 %', 'So', '0 %']);
     }
 
     public function test_user_without_team_permissions_is_forbidden(): void
