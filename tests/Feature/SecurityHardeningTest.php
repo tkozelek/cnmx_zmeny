@@ -210,6 +210,17 @@ class SecurityHardeningTest extends TestCase
     }
 
     /** Laravel's `throttle:6,1` keyed guests on the IP alone, so failed logins also locked out registration. */
+    public function test_the_beta_gate_asks_for_the_shared_password_only_when_configured(): void
+    {
+        $this->get(route('login'))->assertOk();
+
+        config(['app.preview_auth' => ['user' => 'beta', 'password' => 'tajne-heslo']]);
+
+        $this->get(route('login'))->assertUnauthorized()->assertHeader('WWW-Authenticate');
+        $this->withBasicAuth('beta', 'zle')->get(route('login'))->assertUnauthorized();
+        $this->withBasicAuth('beta', 'tajne-heslo')->get(route('login'))->assertOk();
+    }
+
     public function test_an_array_in_the_email_field_is_a_validation_error_not_a_crash(): void
     {
         $this->from(route('login'))

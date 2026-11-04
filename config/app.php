@@ -75,6 +75,16 @@ return [
     'asset_url' => env('ASSET_URL'),
 
     /*
+    | Shared basic-auth gate for a non-production copy (see RequirePreviewAuth). Leave both unset
+    | in production.
+    */
+
+    'preview_auth' => [
+        'user' => env('PREVIEW_AUTH_USER'),
+        'password' => env('PREVIEW_AUTH_PASSWORD'),
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------

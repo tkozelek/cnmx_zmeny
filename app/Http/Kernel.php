@@ -8,6 +8,7 @@ use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\RequirePreviewAuth;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetCurrentTeam;
 use App\Http\Middleware\TrimStrings;
@@ -51,6 +52,7 @@ class Kernel extends HttpKernel
         // point at their own domain. TrustHosts allows this app's URL and its subdomains only.
         TrustHosts::class,
         TrustProxies::class,
+        RequirePreviewAuth::class,
         // After TrustProxies, or ip_hash would be the load balancer's address for everyone.
         AddRequestLogContext::class,
         // Global, not in `web`: a 404 for an unknown URL never reaches the web group.
