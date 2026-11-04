@@ -137,7 +137,7 @@
                             type="button"
                             wire:click="remove({{ $assignment->id }})"
                             wire:confirm="Odstrániť zápis: {{ $assignment->user }} ({{ $this->shortDate }})? Nedostane o tom upozornenie."
-                            class="-my-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-700 hover:text-white [@media(hover:none)]:-my-2 [@media(hover:none)]:-mr-2 [@media(hover:none)]:h-10 [@media(hover:none)]:w-10 focus-visible:opacity-100 sm:[@media(hover:hover)]:opacity-40 sm:group-hover:opacity-100"
+                            class="-my-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-700 hover:text-white [@media(hover:none)]:-my-2 [@media(hover:none)]:-mr-2 [@media(hover:none)]:h-10 [@media(hover:none)]:w-10 focus-visible:opacity-100 sm:[@media(hover:hover)]:opacity-60 sm:group-hover:opacity-100"
                             title="Odpísať {{ $assignment->user }}"
                             aria-label="Odpísať {{ $assignment->user }} – {{ $this->dayName }} {{ $this->shortDate }}"
                         >

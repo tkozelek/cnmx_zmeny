@@ -162,6 +162,22 @@ class ImportLegacyDataTest extends TestCase
         $this->assertSame(1, Assignment::where('user_id', User::where('email', 'aktivny@kino.sk')->sole()->id)->count());
     }
 
+    /** Through the `hashed` cast a "$2b$" hash was hashed again - that person could never log in. */
+    public function test_a_legacy_2b_hash_above_the_current_cost_logs_in_and_is_rehashed(): void
+    {
+        $team = $this->tenant();
+        $this->legacyUser(1, 'brigadnik@kino.sk', 2);
+        $legacyHash = '$2b$'.substr(password_hash('heslo1234', PASSWORD_BCRYPT, ['cost' => 10]), 4);
+        DB::connection('legacy')->table('users')->where('id', 1)->update(['password' => $legacyHash]);
+
+        $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true])->assertSuccessful();
+
+        $this->post(route('login.auth'), ['email' => 'brigadnik@kino.sk', 'password' => 'heslo1234'])
+            ->assertRedirect(route('calendar.index'));
+
+        $this->assertStringStartsWith('$2y$04$', User::where('email', 'brigadnik@kino.sk')->sole()->password, 'Re-hashed at the current cost on the first login.');
+    }
+
     public function test_the_import_refuses_a_super_admin_email_and_a_lock_off_the_week_start(): void
     {
         $team = $this->tenant();
@@ -181,6 +197,14 @@ class ImportLegacyDataTest extends TestCase
             ->assertFailed();
 
         $this->assertDatabaseCount('week_locks', 0);
+
+        DB::connection('legacy')->table('weeks')->delete();
+        // An MD5 leftover: nobody could ever log in with it.
+        DB::connection('legacy')->table('users')->where('id', 1)->update(['password' => md5('heslo1234')]);
+
+        $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true])
+            ->expectsOutputToContain('nie je bcrypt')
+            ->assertFailed();
     }
 
     private function legacyUser(int $id, string $email, int $role, ?string $createdAt = null): void

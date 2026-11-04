@@ -47,7 +47,8 @@ The import (`app:import-legacy-data --team=<id>`):
 - every run ends with a **legacy-vs-new count table** and rolls back by itself on any mismatch,
 - aborts on two legacy users whose e-mails collide after trim/lowercase, on a legacy e-mail that belongs
   to the super admin, on a locked legacy week that doesn't start on the team's week-start day, and when
-  `DB_*` and `LEGACY_DB_*` name the same database,
+  `DB_*` and `LEGACY_DB_*` name the same database, and on a password hash that isn't bcrypt (any bcrypt
+  cost and the `$2a$`/`$2b$` variants are fine; the first login re-hashes),
 - leaves out sign-ups from today on of blocked (4) and pending (1) people - legacy never withdrew them,
   and the new app would show them as working (the count table applies the same rule),
 - sends no mail and writes no audit lines for imported sign-ups,
@@ -68,7 +69,7 @@ The import (`app:import-legacy-data --team=<id>`):
 | D4 | How long to keep the legacy dump + uploaded files | 30 days after go-live, encrypted, off the web host, then delete | |
 | D8 | Super admin account | A separate e-mail that is **not** in legacy, created after the final import (§4) | |
 | D9 | Team settings | Confirm with a manager: week starts Thursday, 5 weeks ahead, absence deadline 2 days (**new rule** – legacy had none), stale absence deletion 30 days | |
-| D12 | Login throttle on day one | Everyone logs in at once; `POST /prihlasenie` allows 10/min per IP (5/min per e-mail). Cinema Wi-Fi shares one IP. Check `ip_hash` differs per network (§3 step 2). If staff get "too many attempts", `php8.4 artisan cache:clear` resets the limiter | |
+| D12 | Login throttle on day one | Everyone logs in at once; `POST /prihlasenie` allows 30/min per IP, 5/min per IP + e-mail and 20/min per e-mail. Cinema Wi-Fi shares one IP. Check `ip_hash` differs per network (§3 step 3, `TRUSTED_PROXIES`). If staff get "too many attempts", `php8.4 artisan cache:clear` resets the limiter | |
 | – | `PRIVACY_MAIL_PROVIDER` | Whoever runs the mail server sending `@cinemaxzmeny.eu` | |
 
 ---
@@ -112,8 +113,8 @@ The import (`app:import-legacy-data --team=<id>`):
    - `DB_*` → the **new** DB
    - `LEGACY_DB_*` → the read-only user from step 1; `LEGACY_DB_USERNAME`/`LEGACY_DB_PASSWORD` set
      **explicitly** (the import refuses to run without them)
-   - `BCRYPT_ROUNDS` ≥ the highest cost among the legacy hashes (P11; unset = 10). A legacy hash with a
-     higher cost than this is rejected and the import aborts on the first such user.
+   - `BCRYPT_ROUNDS` unset (= 10) or higher. Legacy hashes of any bcrypt cost are imported as they are
+     and re-hashed at this cost on each person's first login.
    - `SESSION_DRIVER` / `CACHE_STORE` unset = `file` under the shared `storage/` (fine; sessions are
      garbage-collected hourly)
    - `PREVIEW_AUTH_USER` / `PREVIEW_AUTH_PASSWORD` – set them on a rehearsal host (built-in basic auth for
@@ -156,7 +157,7 @@ The import (`app:import-legacy-data --team=<id>`):
    -- P5 every locked legacy week starts on a Thursday (DAYOFWEEK: 1 = Sunday, 5 = Thursday);
    --    a non-Thursday lock would never match a computed week, so that week would show unlocked
    SELECT id, date_from FROM weeks WHERE locked = 1 AND DAYOFWEEK(date_from) <> 5;
-   -- P6 baseline counts (the import's count table compares the same numbers)
+   -- P6 baseline counts (the import's count table compares the same numbers - its sign-ups are P6 minus P12)
    SELECT (SELECT COUNT(*) FROM users) users,
           (SELECT COUNT(DISTINCT ud.id_user, d.date) FROM user_days ud JOIN days d ON d.id = ud.id_day) signups,
           (SELECT COUNT(*) FROM user_holidays) holidays,
@@ -180,8 +181,8 @@ The import (`app:import-legacy-data --team=<id>`):
       AND (u.last_login_at IS NULL OR u.last_login_at < NOW() - INTERVAL 12 MONTH)
       AND NOT EXISTS (SELECT 1 FROM user_days ud JOIN days d ON d.id = ud.id_day
                        WHERE ud.id_user = u.id AND d.date >= CURDATE() - INTERVAL 12 MONTH);
-   -- P11 password hash formats and bcrypt costs ("$2y$10$" = cost 10). Set BCRYPT_ROUNDS to at least the
-   --     highest cost; anything that isn't "$2y$"/"$2b$" is not bcrypt and aborts the import - fix it in legacy.
+   -- P11 password hash formats ("$2y$10$" = bcrypt cost 10). "$2y$"/"$2b$"/"$2a$" are bcrypt and import fine at any
+   --     cost; anything else aborts the import (nobody could log in with it) - reset that person's password in legacy.
    SELECT LEFT(password, 7) prefix, COUNT(*) FROM users GROUP BY prefix;
    -- P12 future sign-ups of blocked/pending people - the import leaves these out (know the number)
    SELECT COUNT(*) FROM user_days ud JOIN days d ON d.id = ud.id_day JOIN users u ON u.id = ud.id_user
@@ -210,8 +211,9 @@ The import (`app:import-legacy-data --team=<id>`):
     behind HTTP basic auth or an IP allow-list. Run §6 as a real manager and a real brigádnik (ask them,
     and line the same two people up for the cutover day).
 11. **Announce it to staff** 2–3 days ahead (template in §8) – including the deadline to copy worked
-    hours and the new absence deadline (D9). In the release you deploy, set the privacy page's
-    "platí od" date (`app/Http/ViewComposers/PrivacyComposer.php`) to the cutover day.
+    hours and the new absence deadline (D9). Before building the release you deploy (step 3), set the
+    privacy page's "platí od" date (`app/Http/ViewComposers/PrivacyComposer.php`, now 4. 11. 2026) to the
+    cutover day.
 
 ---
 
@@ -223,10 +225,10 @@ week gets locked. Times are rough.
 | Time | Step |
 |---|---|
 | T-12 | **Check the target DB**: `php8.4 artisan db:show` must name the NEW database, never `d40700_sys` – the next step wipes whatever it names. |
-| T-10 | **Clean target** in the new release: `php8.4 artisan migrate:fresh --force && php8.4 artisan permissions:sync`, create the cinema again (§3 step 4), note the new `--team` id. The final import must not sit on rehearsal leftovers. |
+| T-10 | **Clean target** in the new release: `php8.4 artisan migrate:fresh --force && php8.4 artisan permissions:sync`, `php8.4 artisan cache:clear` (cached team settings survive a fresh DB), create the cinema again (§3 step 4), note the new `--team` id. The final import must not sit on rehearsal leftovers. |
 | T-0 | **Freeze legacy**: in the legacy app folder `php artisan down --retry=60`. From now on nobody can write. |
 | T+1 | **Dump the legacy DB**: `mysqldump --single-transaction --no-tablespaces d40700_sys > legacy-<date>.sql`. Pack the legacy uploaded files with it (D4). |
-| T+3 | **Final import**: `php8.4 artisan app:import-legacy-data --team=<id> --force`, then `php8.4 artisan cache:clear`. The count table must show no mismatch – otherwise it rolled back: `php artisan up` on legacy and stop here. |
+| T+3 | **Final import**: `php8.4 artisan app:import-legacy-data --team=<id> --force`, then `php8.4 artisan cache:clear`. The count table must show no mismatch – otherwise it rolled back: `php artisan up` on legacy and stop here. If it says „Dáta sú naimportované, ale nepodarilo sa zapísať…“, the data IS in: fix the `storage/` permissions, write the current time into the file it names, and carry on. |
 | T+8 | **Spot checks** (§5). |
 | T+12 | **Team settings** per D9 in Nastavenia (as an imported head-manager). |
 | T+14 | **Optimise**: `php8.4 artisan config:cache && php8.4 artisan route:cache && php8.4 artisan view:cache && php8.4 artisan event:cache`, then `php8.4 artisan queue:restart`. Point the queue worker at the new release (§3 step 5). |

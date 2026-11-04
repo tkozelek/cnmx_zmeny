@@ -153,6 +153,22 @@ class SecurityHardeningTest extends TestCase
             ->assertRedirect(route('calendar.index'));
     }
 
+    /** Per IP alone, rotating addresses could guess one account's password without end. */
+    public function test_guessing_one_accounts_password_from_many_ips_is_capped(): void
+    {
+        $this->tenant();
+        $owner = User::factory()->create();
+
+        foreach (range(1, 20) as $attempt) {
+            $this->withServerVariables(['REMOTE_ADDR' => "203.0.113.{$attempt}"])
+                ->post(route('login.auth'), ['email' => $owner->email, 'password' => 'wrong-password']);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.99'])
+            ->post(route('login.auth'), ['email' => $owner->email, 'password' => 'wrong-password'])
+            ->assertTooManyRequests();
+    }
+
     /** A blocked account could still authenticate and use the auth-only verification endpoints. */
     public function test_a_blocked_account_cannot_use_the_verification_endpoints(): void
     {

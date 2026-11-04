@@ -157,7 +157,7 @@
                             Zrušiť
                         </button>
                         {{-- Until the calendar has loaded, the hidden dates are only the defaults. --}}
-                        <button type="submit" :disabled="sending || ! picker" class="px-5 py-2.5 text-sm font-semibold text-neutral-900 bg-neutral-100 hover:bg-white rounded-lg transition disabled:opacity-60">
+                        <button type="submit" :disabled="sending || ! picker || (recurring && dateFrom === dateTo)" class="px-5 py-2.5 text-sm font-semibold text-neutral-900 bg-neutral-100 hover:bg-white rounded-lg transition disabled:opacity-60">
                             Nahlásiť absenciu
                         </button>
                     </div>

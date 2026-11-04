@@ -51,7 +51,7 @@ the production database rather than `master`'s code, so the migration doesn't ne
 | Legacy column | New | Notes |
 |---|---|---|
 | `id` (mediumint) | new bigint `id` | Not preserved. Importer keeps a legacy→new id map for the child tables. |
-| `name`, `lastname` (varchar 255) | `name`, `lastname` (varchar **100**) | Values over 100 chars fail in MySQL strict mode and abort the whole import. See G1. |
+| `name`, `lastname` (varchar 255) | `name`, `lastname` (varchar 255 - widened back by `2026_11_04_103249`) | Fits as-is (G1). |
 | `email` | `email` (globally unique) | Matched by e-mail. Must be trimmed and lowercased, with collisions rejected. See G5. |
 | `password` (bcrypt, cost 10) | `password` | Hash copied as-is, so **everyone keeps their password**. The `hashed` cast accepts an existing bcrypt hash only if `BCRYPT_ROUNDS` ≥ 10. Below 10 it throws "Could not verify…" and the whole import aborts. The default is 10, so login rehashes only if `BCRYPT_ROUNDS` is set above 10. |
 | `remember_token` | – | Dropped. A new `APP_KEY` logs everyone out anyway. |
@@ -174,7 +174,7 @@ notes, non-Thursday weeks, baseline counts). P4 (overlong notes) can be dropped:
 50 and 255, so they always fit. Add:
 
 ```sql
--- P7 names that don't fit the new varchar(100) (G1) - fix in legacy before the cutover
+-- P7 names that don't fit (G1; the columns are 255 again, so this should return nothing)
 SELECT id, CHAR_LENGTH(name), CHAR_LENGTH(lastname) FROM users
  WHERE CHAR_LENGTH(name) > 100 OR CHAR_LENGTH(lastname) > 100;
 

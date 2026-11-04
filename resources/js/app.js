@@ -351,6 +351,11 @@ document.addEventListener('alpine:init', () => {
                     keepOneDayTabbable(fp);
                     describeDayStates(fp);
                 },
+                // A year change redraws the days without firing onMonthChange.
+                onYearChange: (_dates, _str, fp) => {
+                    keepOneDayTabbable(fp);
+                    describeDayStates(fp);
+                },
                 onChange: (selectedDates, _str, fp) => {
                     keepOneDayTabbable(fp);
                     describeDayStates(fp);

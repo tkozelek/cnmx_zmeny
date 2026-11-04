@@ -79,10 +79,12 @@ class ImportLegacyData extends Command
         // The runbook runs `migrate:fresh` on whatever DB_* names - one copied line would make that
         // the legacy production database. Refusing here makes every rehearsal catch it first.
         $default = config('database.default');
+        $server = fn (string $connection): string => str_replace('localhost', '127.0.0.1', (string) config("database.connections.{$connection}.host"))
+            .':'.config("database.connections.{$connection}.port");
 
         if (config("database.connections.{$default}.driver") !== 'sqlite'
             && config("database.connections.{$default}.database") === config('database.connections.legacy.database')
-            && config("database.connections.{$default}.host") === config('database.connections.legacy.host')) {
+            && $server($default) === $server('legacy')) {
             $this->error('DB_* a LEGACY_DB_* ukazujú na tú istú databázu - nová aplikácia musí mať vlastnú (pozri runbook).');
 
             return self::FAILURE;
@@ -147,6 +149,17 @@ class ImportLegacyData extends Command
 
         if ($superAdmins->isNotEmpty()) {
             $this->error('Legacy používateľ má e-mail super admina ('.$superAdmins->implode(', ').') - super admin musí mať samostatný e-mail.');
+
+            return self::FAILURE;
+        }
+
+        // The first login checks a legacy hash and re-hashes it at today's cost - but only bcrypt.
+        $notBcrypt = $legacy->table('users')->get(['id', 'password'])
+            ->reject(fn ($legacyUser): bool => password_get_info($this->bcryptHash((string) $legacyUser->password))['algoName'] === 'bcrypt')
+            ->pluck('id');
+
+        if ($notBcrypt->isNotEmpty()) {
+            $this->error('Heslo týchto legacy používateľov nie je bcrypt, nemohli by sa prihlásiť (id): '.$notBcrypt->implode(', '));
 
             return self::FAILURE;
         }
@@ -325,18 +338,19 @@ class ImportLegacyData extends Command
         foreach ($legacy->table('users')->get() as $legacyUser) {
             $legacyRole = (int) $legacyUser->id_role;
 
-            $user = User::updateOrCreate(
-                ['email' => $this->normalizeEmail($legacyUser->email)],
-                [
-                    'name' => $legacyUser->name,
-                    'lastname' => $legacyUser->lastname,
-                    'password' => $legacyUser->password,
-                    'current_team_id' => $team->id,
-                    'is_active' => $legacyRole !== 4,
-                    'email_verified_at' => now(),
-                    'last_login_at' => $legacyUser->last_login_at,
-                ]
-            );
+            $user = User::firstOrNew(['email' => $this->normalizeEmail($legacyUser->email)]);
+            $user->forceFill([
+                'name' => $legacyUser->name,
+                'lastname' => $legacyUser->lastname,
+                'current_team_id' => $team->id,
+                'is_active' => $legacyRole !== 4,
+                'email_verified_at' => now(),
+                'last_login_at' => $legacyUser->last_login_at,
+            ]);
+            // As-is, past the `hashed` cast: that would hash a "$2b$" hash a second time and refuse a
+            // cost above BCRYPT_ROUNDS. The first login checks it and re-hashes it at today's cost.
+            $user->setRawAttributes(['password' => $this->bcryptHash($legacyUser->password)] + $user->getAttributes());
+            $user->save();
 
             // The legacy timestamps, not the import's: otherwise "Naposledy upravený" reads the
             // cutover time for everybody.
@@ -536,6 +550,12 @@ class ImportLegacyData extends Command
     private function keepsSignup(int $legacyRole, string $date): bool
     {
         return ! in_array($legacyRole, [1, 4], true) || $date < today()->toDateString();
+    }
+
+    /** "$2a$"/"$2b$" are bcrypt too, but PHP only recognises the "$2y$" label for the same algorithm. */
+    private function bcryptHash(string $hash): string
+    {
+        return in_array(substr($hash, 0, 4), ['$2a$', '$2b$'], true) ? '$2y$'.substr($hash, 4) : $hash;
     }
 
     private function normalizeEmail(string $email): string

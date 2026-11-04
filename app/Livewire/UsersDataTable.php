@@ -202,7 +202,7 @@ class UsersDataTable extends DataTableComponent
                     $editUrl = route('admin.users.edit', ['user' => $row->id]);
 
                     return '<div class="flex items-center justify-start">
-                        <a href="'.$editUrl.'" aria-label="Upraviť používateľa '.$fullName.'" class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-3.5 py-2 text-xs font-semibold shadow-sm transition"><i class="fa-solid fa-pen-to-square text-xs text-neutral-400" aria-hidden="true"></i> Upraviť</a>
+                        <a href="'.$editUrl.'" aria-label="Upraviť používateľa '.$fullName.'" class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-3.5 py-2 text-xs font-semibold shadow-sm transition"><i class="fa-solid fa-pen-to-square text-xs text-neutral-400" aria-hidden="true"></i> <span class="max-[359px]:sr-only">Upraviť</span></a>
                     </div>';
                 })
                 ->html(),

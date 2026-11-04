@@ -31,7 +31,7 @@ class RouteServiceProvider extends ServiceProvider
         // Livewire replays this with the page's own method (GET), so its calls - sign-ups,
         // approvals, but also table searches and rozpis drags - get a separate, roomier ceiling.
         RateLimiter::for('member-writes', fn (Request $request) => match (true) {
-            $request->hasHeader('X-Livewire') => Limit::perMinute(240)->by('livewire:'.($request->user()?->id ?: $request->ip())),
+            $request->hasHeader('X-Livewire') && $request->isMethodSafe() => Limit::perMinute(240)->by('livewire:'.($request->user()?->id ?: $request->ip())),
             $request->isMethodSafe() => Limit::none(),
             default => Limit::perMinute(60)->by('member:'.($request->user()?->id ?: $request->ip())),
         });
@@ -41,12 +41,15 @@ class RouteServiceProvider extends ServiceProvider
 
         // Per form, not one bucket per IP: Laravel's `throttle:6,1` keys guests on the IP alone,
         // so a few bad logins also locked the same IP out of registration and password reset.
-        // The e-mail bucket is per IP too: keyed on the address alone, anyone who knew a
+        // The tight e-mail bucket is per IP too: keyed on the address alone, anyone who knew a
         // colleague's e-mail could keep them locked out. The IP ceiling leaves room for a whole
-        // cinema logging in over one shared Wi-Fi at the start of a shift.
+        // cinema logging in over one shared Wi-Fi at the start of a shift. The account-wide
+        // ceiling stops password guessing from rotating IPs - generous enough that someone
+        // hammering a colleague's address costs them a minute's wait, not a lockout.
         RateLimiter::for('guest-form', fn (Request $request) => [
             Limit::perMinute(30)->by($request->route()?->getName().'|ip:'.$request->ip()),
             Limit::perMinute(5)->by($request->route()?->getName().'|ip:'.$request->ip().'|email:'.$email($request)),
+            Limit::perMinute(20)->by($request->route()?->getName().'|email:'.$email($request)),
         ]);
 
         // Forms that send an e-mail to the typed address: capped per recipient, so nobody can
