@@ -154,4 +154,28 @@ class CalendarPageTest extends TestCase
             ->assertDontSee('Zobraziť voľných na losovanie')
             ->assertViewHas('available', []);
     }
+
+    public function test_a_weekly_absence_greys_out_only_its_weekday(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $weekStart = app(WeekService::class)->start($team, CarbonImmutable::now())->addWeek();
+        $monday = $weekStart->next(CarbonImmutable::MONDAY);
+
+        Absence::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'date_from' => $weekStart->toDateString(),
+            'date_to' => $weekStart->addDays(6)->toDateString(),
+            'day_of_week' => 0,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('calendar.show', ['date' => $weekStart->toDateString()]))
+            ->assertOk()
+            ->assertSee('Absencia')
+            ->assertViewHas('absentDays', fn (array $days): bool => array_keys(array_filter($days)) === [$monday->toDateString()]);
+
+        $this->assertSame(6, substr_count($response->getContent(), 'Zapísať sa<span'));
+    }
 }

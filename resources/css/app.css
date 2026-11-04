@@ -662,6 +662,12 @@ body {
     width: calc(100% / 7) !important;
 }
 
+/* The stretched inline grid must stay 7 days wide - a 44px cap fits 9 per row in a wide dialog. */
+.flatpickr-calendar.inline .flatpickr-day {
+    max-width: calc(100% / 7) !important;
+    flex-basis: calc(100% / 7) !important;
+}
+
 /* The 320px override for the month header - see the flatpickr-calendar one above. */
 @media (max-width: 359px) {
     .flatpickr-months,

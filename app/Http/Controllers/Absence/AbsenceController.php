@@ -42,8 +42,8 @@ class AbsenceController extends Controller
                 'names' => Absence::WEEKDAYS,
             ],
             'errorFields' => [
-                'date_from' => $recurring ? 'absence-repeat-from' : 'absence-range',
-                'date_to' => $recurring ? 'absence-repeat-to' : 'absence-range',
+                'date_from' => 'absence-range',
+                'date_to' => 'absence-range',
                 'day_of_week' => 'absence-weekday-0',
             ],
             'weekdays' => collect(Absence::WEEKDAYS)->map(fn (string $name): array => [

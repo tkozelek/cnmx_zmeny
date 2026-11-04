@@ -55,8 +55,28 @@ class CalendarService
             'lockedWeekStarts' => $lockedWeekStarts,
             'absences' => $canViewAbsences ? $this->absences($from, $to) : collect(),
             'available' => $viewer->hasPermissionInTeam('assignment.lock', $team) ? $this->available($team, $weekStart) : [],
+            'absentDays' => $this->absentDays($viewer, $weekStart),
         ];
 
+    }
+
+    /**
+     * The viewer's own days off this week - their cards say "Absencia" instead of offering a
+     * sign-up the policy would refuse.
+     *
+     * @return array<string, bool> Y-m-d => absent
+     */
+    private function absentDays(User $viewer, CarbonImmutable $weekStart): array
+    {
+        [$from, $to] = $this->weeks->range($weekStart);
+
+        $absences = $viewer->absences()->overlapping($from, $to)->get();
+
+        return $this->weeks->days($weekStart)
+            ->mapWithKeys(fn (CarbonImmutable $day): array => [
+                $day->toDateString() => $absences->contains(fn (Absence $absence): bool => $absence->covers($day)),
+            ])
+            ->all();
     }
 
     /**

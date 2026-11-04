@@ -37,6 +37,10 @@ class DayCard extends Component
     #[Locked]
     public bool $locked = false;
 
+    /** The viewer reported an absence covering this day; display only - the policy still decides. */
+    #[Locked]
+    public bool $absent = false;
+
     /**
      * Preloaded assignments passed from parent page on initial load to eliminate N+1 queries.
      *

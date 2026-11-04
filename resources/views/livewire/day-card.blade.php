@@ -27,6 +27,12 @@
                 <div class="flex min-h-11 w-full items-center justify-center gap-2 border-b border-neutral-800 bg-neutral-950 text-sm font-medium text-neutral-400">
                     <span>Nie si členom kina</span>
                 </div>
+            @elseif($absent && ! $this->mine)
+                <div class="flex min-h-11 w-full items-center justify-center gap-2 border-b border-neutral-800 bg-neutral-950 text-sm font-medium text-neutral-400">
+                    <i class="fa-solid fa-umbrella-beach text-xs" aria-hidden="true"></i>
+                    <span>Absencia</span>
+                    <span class="sr-only">– {{ $this->dayName }} {{ $this->shortDate }}, na tento deň máš nahlásenú absenciu</span>
+                </div>
             @elseif($this->mine)
                 {{-- With a mouse the hover already says "Odpísať sa", so one click withdraws. On touch
                      there is no hover: the first tap turns the button into the question, the second

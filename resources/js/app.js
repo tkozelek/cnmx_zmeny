@@ -276,17 +276,15 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.data('absenceRangePicker', (dateFrom, dateTo, openModal = false, minDate = null, repeat = {}) => ({
         openModal,
-        minDate,
         recurring: repeat.enabled ?? false,
         dayOfWeek: repeat.dayOfWeek ?? null,
-        repeatFrom: dateFrom,
-        repeatTo: repeat.enabled ? dateTo : '',
         get recurrenceSummary() {
             if (this.dayOfWeek === null) return 'Vyber deň v týždni.';
             const every = repeat.every[this.dayOfWeek];
-            if (!this.repeatFrom || !this.repeatTo) return `${every[0].toUpperCase()}${every.slice(1)} – vyber, odkedy a dokedy.`;
-            const from = new Date(`${this.repeatFrom}T00:00:00`);
-            const to = new Date(`${this.repeatTo}T00:00:00`);
+            // One picked day (the default, or the first click of a range) isn't a period yet.
+            if (!this.dateFrom || !this.dateTo || this.dateFrom === this.dateTo) return `${every[0].toUpperCase()}${every.slice(1)} – v kalendári vyber prvý a posledný deň obdobia.`;
+            const from = new Date(`${this.dateFrom}T00:00:00`);
+            const to = new Date(`${this.dateTo}T00:00:00`);
             const first = new Date(from);
             first.setDate(from.getDate() + ((this.dayOfWeek - ((from.getDay() + 6) % 7) + 7) % 7));
             // Rounded to whole days: a range across the DST switch is an hour short of full weeks.

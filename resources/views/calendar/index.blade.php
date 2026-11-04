@@ -72,6 +72,7 @@
                 @foreach($days as $day)
                     <livewire:day-card :date="$day->toDateString()"
                                        :locked="$locked"
+                                       :absent="$absentDays[$day->toDateString()]"
                                        :initial-assignments="$weekAssignments->get($day->toDateString(), collect())"
                                        :available="$available[$day->toDateString()] ?? []"
                                        :key="'day-'.$day->toDateString()" />

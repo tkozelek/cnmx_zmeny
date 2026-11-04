@@ -66,8 +66,8 @@
 
                     <x-error-summary id="absence-errors" title="Absenciu sa nepodarilo uložiť:" :fields="$errorFields" />
 
-                    <input type="hidden" name="date_from" :value="recurring ? repeatFrom : dateFrom">
-                    <input type="hidden" name="date_to" :value="recurring ? repeatTo : dateTo">
+                    <input type="hidden" name="date_from" :value="dateFrom">
+                    <input type="hidden" name="date_to" :value="dateTo">
 
                     <fieldset>
                         <legend class="sr-only">Typ absencie</legend>
@@ -87,21 +87,7 @@
                         </div>
                     </fieldset>
 
-                    {{-- Flatpickr Range Select --}}
-                    <div x-show="!recurring">
-                        <label for="absence-range" class="block mb-2 text-sm font-semibold text-neutral-200">
-                            Dni absencie <span class="text-rose-400" aria-hidden="true">*</span>
-                        </label>
-                        <input x-ref="rangeInput" type="text" placeholder="Vyber rozsah dátumov…" aria-label="Dni absencie" class="w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer">
-                        <p id="absence-range-hint" class="text-xs text-neutral-400 mt-1">
-                            Klikni na prvý a&nbsp;posledný deň. Jeden deň = klikni naň dvakrát.
-                            @if($deadlineLabel)
-                                Nahlás aspoň {{ $deadlineLabel }} vopred.
-                            @endif
-                        </p>
-                    </div>
-
-                    <div x-show="recurring" x-cloak class="space-y-5">
+                    <div x-show="recurring" x-cloak>
                         <fieldset>
                             <legend class="mb-2 text-sm font-semibold text-neutral-200">
                                 Ktorý deň <span class="text-rose-400" aria-hidden="true">*</span>
@@ -125,42 +111,27 @@
                                 @endforeach
                             </div>
                         </fieldset>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label for="absence-repeat-from" class="mb-2 block text-sm font-semibold text-neutral-200">
-                                    Od <span class="text-rose-400" aria-hidden="true">*</span>
-                                </label>
-                                <input type="date"
-                                       id="absence-repeat-from"
-                                       x-model="repeatFrom"
-                                       :min="minDate"
-                                       :disabled="!recurring"
-                                       :required="recurring"
-                                       class="h-11 w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3 text-base sm:text-sm text-neutral-100 [color-scheme:dark] focus:border-neutral-500 focus:outline-none">
-                            </div>
-                            <div>
-                                <label for="absence-repeat-to" class="mb-2 block text-sm font-semibold text-neutral-200">
-                                    Do <span class="text-rose-400" aria-hidden="true">*</span>
-                                </label>
-                                <input type="date"
-                                       id="absence-repeat-to"
-                                       x-model="repeatTo"
-                                       :min="repeatFrom"
-                                       :disabled="!recurring"
-                                       :required="recurring"
-                                       class="h-11 w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3 text-base sm:text-sm text-neutral-100 [color-scheme:dark] focus:border-neutral-500 focus:outline-none">
-                            </div>
-                        </div>
-
-                        <p class="flex items-start gap-2 rounded-lg border border-brand-500/30 bg-brand-500/10 px-3.5 py-2.5 text-sm text-brand-200" aria-live="polite">
-                            <i class="fa-solid fa-repeat mt-0.5 text-xs" aria-hidden="true"></i>
-                            <span x-text="recurrenceSummary"></span>
-                        </p>
-                        @if($deadlineLabel)
-                            <p class="-mt-3 text-xs text-neutral-400">Nahlás aspoň {{ $deadlineLabel }} vopred.</p>
-                        @endif
                     </div>
+
+                    {{-- Flatpickr Range Select: the days of a one-off absence, or the period of a weekly one --}}
+                    <div>
+                        <label for="absence-range" class="block mb-2 text-sm font-semibold text-neutral-200">
+                            <span x-text="recurring ? 'Obdobie' : 'Dni absencie'">Dni absencie</span> <span class="text-rose-400" aria-hidden="true">*</span>
+                        </label>
+                        <input x-ref="rangeInput" type="text" placeholder="Vyber rozsah dátumov…" aria-label="Dni absencie" class="w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer">
+                        <p id="absence-range-hint" class="text-xs text-neutral-400 mt-1">
+                            <span x-show="!recurring">Klikni na prvý a&nbsp;posledný deň. Jeden deň = klikni naň dvakrát.</span>
+                            <span x-show="recurring" x-cloak>Klikni na prvý a&nbsp;posledný deň obdobia.</span>
+                            @if($deadlineLabel)
+                                Nahlás aspoň {{ $deadlineLabel }} vopred.
+                            @endif
+                        </p>
+                    </div>
+
+                    <p x-show="recurring" x-cloak class="flex items-start gap-2 rounded-lg border border-brand-500/30 bg-brand-500/10 px-3.5 py-2.5 text-sm text-brand-200" aria-live="polite">
+                        <i class="fa-solid fa-repeat mt-0.5 text-xs" aria-hidden="true"></i>
+                        <span x-text="recurrenceSummary"></span>
+                    </p>
 
                     {{-- Required Reason --}}
                     <div>
