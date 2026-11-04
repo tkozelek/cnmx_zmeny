@@ -8,7 +8,7 @@
             class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:py-1.5 rounded-md text-xs sm:text-sm transition cursor-pointer text-center"
         >
             <i aria-hidden="true" class="fa-solid fa-chart-column text-xs" :class="tab === 'stats' ? 'text-brand-300' : 'text-neutral-400'"></i>
-            <span>Frekvencia zmien</span>
+            <span>Zápisy podľa dní</span>
         </button>
         <button
             type="button"

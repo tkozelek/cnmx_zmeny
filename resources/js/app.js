@@ -70,7 +70,6 @@ function loadFlatpickr() {
             // The bundled "Ned Pon Ut Str…" mixes lengths; the rest of the app writes "Po Ut St…".
             weekdays: { ...Slovak.weekdays, shorthand: ['Ne', 'Po', 'Ut', 'St', 'Št', 'Pi', 'So'] },
         });
-        window.flatpickr = flatpickr;
         return flatpickr;
     }).catch(forgetFailedLoad(() => {
         flatpickrLoading = null;
@@ -539,12 +538,6 @@ document.addEventListener('livewire:init', () => {
     });
 });
 
-function showToast(message, type = 'success', icon = '') {
-    window.dispatchEvent(new CustomEvent('toast', {
-        detail: { message, type, icon }
-    }));
-}
-
 /**
  * The calendar's two switches drive a class on <html> (see app.css). Each is remembered per
  * browser, so a manager doesn't switch losovanie back on for every week, and re-synced on
@@ -605,7 +598,7 @@ async function renderProfileChart(newData) {
 
     const Chart = await loadChart();
 
-    let data = newData || window.chartData;
+    let data = newData;
     if (!data && canvas.dataset.chart) {
         try {
             data = JSON.parse(canvas.dataset.chart);

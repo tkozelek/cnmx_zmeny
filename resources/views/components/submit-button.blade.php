@@ -4,7 +4,8 @@
 <button
     type="submit"
     x-data="{ busy: false }"
-    x-init="$el.form.addEventListener('submit', (event) => setTimeout(() => busy = ! event.defaultPrevented)); window.addEventListener('pageshow', () => busy = false)"
+    x-init="$el.form.addEventListener('submit', (event) => setTimeout(() => busy = ! event.defaultPrevented))"
+    @pageshow.window="busy = false"
     x-bind:disabled="busy"
     x-bind:aria-busy="busy"
     {{ $attributes->class([

@@ -25,7 +25,7 @@ class ProfileTest extends TestCase
             ->assertSee($user->name)
             ->assertSee($user->lastname)
             ->assertSee($user->email)
-            ->assertSee('Frekvencia zmien')
+            ->assertSee('Zápisy podľa dní')
             ->assertSee('Absencie')
             ->assertSee('Zmeniť heslo');
     }

@@ -61,7 +61,7 @@
                 </div>
 
                 {{-- Form --}}
-                <form action="{{ route('absences.store') }}" method="POST" class="p-6 space-y-5" @submit="sending = true">
+                <form action="{{ route('absences.store') }}" method="POST" class="p-6 space-y-5" @submit="setTimeout(() => sending = true)">
                     @csrf
 
                     <x-error-summary id="absence-errors" title="Absenciu sa nepodarilo uložiť:" :fields="$errorFields" />

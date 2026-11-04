@@ -33,8 +33,8 @@ class WelcomeComposer
             'sceneSteps' => [
                 ['title' => 'Vyberieš si dni', 'text' => 'Pri dni, kedy môžeš, ťukneš na „Zapísať sa“. Zmeníš plány? Odpíšeš sa rovnako rýchlo.'],
                 ['title' => "Vidíš, kto ide s\u{00A0}tebou", 'text' => 'Pri každom dni sú mená kolegov, ktorí sú zapísaní. Celý tím vidí ten istý týždeň.'],
-                ['title' => 'Absenciu nahlásiš vopred', 'text' => "Dovolenku či skúškové zapíšeš raz a\u{00A0}manažér ju uvidí priamo pri týždni."],
-                ['title' => 'Týždeň sa zamkne', 'text' => "Keď je rozpis hotový, manažér týždeň zamkne. Zápisy potom platia a\u{00A0}nič sa už nepresúva."],
+                ['title' => 'Absenciu nahlásiš vopred', 'text' => "Dovolenku, skúškové či školu každý utorok zapíšeš raz a\u{00A0}manažér to uvidí priamo pri týždni."],
+                ['title' => 'Týždeň sa zamkne', 'text' => "Keď sú zápisy uzavreté, manažér týždeň zamkne. Potom platia a\u{00A0}nič sa už nepresúva."],
             ],
         ]);
     }

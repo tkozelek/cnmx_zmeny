@@ -10,7 +10,7 @@
     <div wire:loading.class.delay="blur-sm pointer-events-none select-none" class="day-card__body flex flex-col flex-1 transition-[filter] duration-200">
         {{-- `armed` lives here, not on the button: this wrapper survives the morph between the two buttons.
              `refocus` hands keyboard focus from the clicked button to the one that replaces it. --}}
-        <div x-data="{ armed: false, refocus(call) { const had = this.$root.contains(document.activeElement); call.then(() => had && requestAnimationFrame(() => this.$root.querySelector('button')?.focus())) } }" class="day-card__action">
+        <div x-data="{ armed: false, disarm: null, refocus(call) { const had = this.$root.contains(document.activeElement); call.then(() => had && requestAnimationFrame(() => this.$root.querySelector('button')?.focus())) } }" class="day-card__action">
             @if($locked || $this->isPastForMe)
                 @if($this->mine)
                     <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-emerald-700 text-sm font-semibold text-white">
@@ -42,7 +42,7 @@
                 <button
                     wire:key="withdraw"
                     type="button"
-                    @click="if (armed || matchMedia('(hover: hover)').matches) { armed = false; refocus($wire.withdraw()) } else { armed = true; setTimeout(() => armed = false, 6000) }"
+                    @click="if (armed || matchMedia('(hover: hover)').matches) { armed = false; refocus($wire.withdraw()) } else { armed = true; clearTimeout(disarm); disarm = setTimeout(() => armed = false, 6000) }"
                     @blur="armed = false"
                     wire:loading.attr="disabled"
                     wire:target="withdraw"
@@ -137,7 +137,7 @@
                             type="button"
                             wire:click="remove({{ $assignment->id }})"
                             wire:confirm="Odstrániť zápis: {{ $assignment->user }} ({{ $this->shortDate }})? Nedostane o tom upozornenie."
-                            class="-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-700 hover:text-white [@media(hover:none)]:-my-2 [@media(hover:none)]:-mr-2 [@media(hover:none)]:h-10 [@media(hover:none)]:w-10 focus-visible:opacity-100 sm:[@media(hover:hover)]:opacity-0 sm:group-hover:opacity-100"
+                            class="-my-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-700 hover:text-white [@media(hover:none)]:-my-2 [@media(hover:none)]:-mr-2 [@media(hover:none)]:h-10 [@media(hover:none)]:w-10 focus-visible:opacity-100 sm:[@media(hover:hover)]:opacity-40 sm:group-hover:opacity-100"
                             title="Odpísať {{ $assignment->user }}"
                             aria-label="Odpísať {{ $assignment->user }} – {{ $this->dayName }} {{ $this->shortDate }}"
                         >

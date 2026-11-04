@@ -1,7 +1,7 @@
 <div class="grid grid-cols-3 gap-2 sm:gap-4">
     {{-- KPI 1: Total Days Worked --}}
     <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-3 sm:p-5 text-center sm:text-left shadow-sm min-w-0">
-        <p class="text-xs font-medium leading-tight text-neutral-400">Zapísané dni</p>
+        <p class="text-xs font-medium leading-tight text-neutral-400">Zapísané dni doteraz</p>
         <p class="text-xl sm:text-3xl font-bold text-white mt-0.5 sm:mt-1 tracking-tight truncate" x-text="currentPeriod.total">{{ $daysCount }}</p>
         <p class="hidden sm:block text-xs text-neutral-400 mt-1 truncate" x-text="currentPeriod.label">
             {{ match($activePeriod) { 'month' => 'Za posledný mesiac', 'year' => 'Za posledný rok', default => 'Za celé obdobie' } }}

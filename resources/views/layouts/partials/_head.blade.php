@@ -8,6 +8,12 @@
             var root = document.documentElement;
             if (!root.classList.contains('motion-ready')) root.classList.remove('js');
         }, 4000);
+        // The calendar's saved switches, before the first paint - set later, names flashed in and out.
+        // app.js re-syncs them with the checkboxes (syncCalendarToggles).
+        try {
+            if (localStorage.getItem('names_checkbox') === '0') document.documentElement.classList.add('hide-names');
+            if (localStorage.getItem('draw_checkbox') === '1') document.documentElement.classList.add('show-draw');
+        } catch (e) { /* storage blocked - defaults */ }
     </script>
     <title>{{ $title ? "{$title} | Cinemax Zmeny" : 'Cinemax Zmeny' }}</title>
     <meta charset="UTF-8"/>

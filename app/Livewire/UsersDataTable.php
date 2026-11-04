@@ -194,8 +194,9 @@ class UsersDataTable extends DataTableComponent
                         </div>';
                     }
 
+                    // Same height as the "Upraviť" button, so rows don't jump; a manager can't edit managers.
                     if (! auth()->user()?->can('update', $row)) {
-                        return '';
+                        return '<span class="inline-flex h-8 items-center text-neutral-500" title="Tento účet môžeš len zobraziť">–</span>';
                     }
 
                     $editUrl = route('admin.users.edit', ['user' => $row->id]);
