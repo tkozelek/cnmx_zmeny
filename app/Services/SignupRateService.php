@@ -21,7 +21,7 @@ class SignupRateService
      * Active, approved, non-super-admin members per cinema, largest first.
      *
      * @param  list<int>|null  $teamIds  null = every cinema
-     * @return Collection<int, int> team id => members
+     * @return Collection<int, positive-int> team id => members
      */
     public function memberCounts(?array $teamIds = null, ?int $limit = null): Collection
     {
@@ -36,15 +36,15 @@ class SignupRateService
             ->orderByDesc('total')
             ->when($limit !== null, fn ($query) => $query->limit($limit))
             ->pluck('total', 'team_id')
-            ->map(fn (mixed $total): int => (int) $total)
-            ->filter();
+            ->mapWithKeys(fn (mixed $total, mixed $teamId): array => [(int) $teamId => (int) $total])
+            ->filter(fn (int $total): bool => $total > 0);
     }
 
     /**
      * Percent of members signed up per ISO weekday (index 0 = Monday) over the last WEEKS
      * finished weeks' worth of days, ending yesterday.
      *
-     * @param  Collection<int, int>  $memberCounts  team id => members, from memberCounts()
+     * @param  Collection<int, positive-int>  $memberCounts  team id => members, from memberCounts()
      * @return array<int, list<float>> team id => 7 percentages
      */
     public function byWeekday(Collection $memberCounts): array
