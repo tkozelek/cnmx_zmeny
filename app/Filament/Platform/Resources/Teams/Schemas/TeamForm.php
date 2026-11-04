@@ -108,9 +108,10 @@ class TeamForm
             ->live()
             ->dehydrated(false)
             ->disabled(fn (Get $get): bool => $required !== null && ! $get("features.{$required->name}"))
-            ->afterStateHydrated(fn (Toggle $component, Team $record) => $component->state(Feature::for($record)->active($feature)))
-            ->saveRelationshipsUsing(function (Team $record, ?bool $state) use ($feature): void {
-                if ((bool) $state === Feature::for($record)->active($feature)) {
+            // The section is hidden on create, but Filament still hydrates it - with no record yet.
+            ->afterStateHydrated(fn (Toggle $component, ?Team $record) => $component->state($record !== null && Feature::for($record)->active($feature)))
+            ->saveRelationshipsUsing(function (?Team $record, ?bool $state) use ($feature): void {
+                if ($record === null || (bool) $state === Feature::for($record)->active($feature)) {
                     return;
                 }
 

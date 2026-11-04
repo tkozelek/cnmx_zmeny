@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Enums\TeamFeature;
+use App\Filament\Platform\Resources\Teams\Pages\CreateTeam;
 use App\Filament\Platform\Resources\Teams\Pages\EditTeam;
 use App\Filament\Platform\Resources\Teams\RelationManagers\MembersRelationManager;
 use App\Filament\Platform\Resources\Users\Pages\EditUser;
+use App\Models\Team;
 use App\Models\User;
 use App\Services\SuperAdminSession;
 use Filament\Facades\Filament;
@@ -114,6 +116,20 @@ class PlatformPanelTest extends TestCase
             ->assertNotified('Sám sebe super admina odobrať nemôžeš.');
 
         $this->assertTrue($superAdmin->fresh()->is_super_admin);
+    }
+
+    public function test_a_super_admin_creates_a_cinema_hidden_from_registration(): void
+    {
+        Livewire::actingAs(User::factory()->superAdmin()->create(), SuperAdminSession::GUARD)
+            ->test(CreateTeam::class)
+            ->fillForm(['name' => 'Nitra Max', 'slug' => 'nitra-max', 'is_active' => false])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $team = Team::where('slug', 'nitra-max')->sole();
+        $this->assertFalse($team->is_active);
+        $this->assertNotNull($team->settings()->withoutGlobalScope('team')->first(), 'A new cinema needs its settings row.');
+        $this->get(route('register'))->assertDontSee('Nitra Max');
     }
 
     /** The pivot row decides it: an approved member must not read "čaká" or offer "Schváliť" again. */
