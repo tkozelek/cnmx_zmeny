@@ -5,13 +5,59 @@ namespace App\Traits;
 use App\Enums\AbsenceStatus;
 use App\Models\Absence;
 use App\Support\SlovakDate;
+use Rappasoft\LaravelLivewireTables\Views\Column;
 
 /**
- * Shared "Stav" and "Akcie" column rendering for the absence data tables
- * (AbsencesDataTable, MyAbsencesDataTable) - identical in both.
+ * Shared column rendering for the absence data tables (AbsencesDataTable, MyAbsencesDataTable),
+ * including the stacked phone layout.
  */
 trait FormatsAbsenceColumns
 {
+    /**
+     * Phones get one stacked cell per row instead of the six columns, which needed a sideways
+     * scroll and left the "Deaktivovať" button out of sight at the far end. Every other column
+     * is collapseOnMobile(); this one shows only below md.
+     */
+    protected function mobileCardColumn(bool $asManager = false): Column
+    {
+        return Column::make('Absencia')
+            ->label(fn (Absence $row): string => $this->formatMobileCard($row, $asManager))
+            ->html();
+    }
+
+    /**
+     * For setThAttributes()/setTdAttributes(): the phone column is hidden from md up and may wrap.
+     *
+     * @return array{class?: string}
+     */
+    protected function mobileCardAttributes(Column $column, bool $cell): array
+    {
+        if ($column->getTitle() !== 'Absencia') {
+            return [];
+        }
+
+        return ['class' => $cell ? 'md:hidden !whitespace-normal' : 'md:hidden'];
+    }
+
+    protected function formatMobileCard(Absence $row, bool $asManager): string
+    {
+        $name = $asManager
+            ? '<p class="font-bold text-white">'.e(trim(($row->user->name ?? '').' '.($row->user->lastname ?? '')) ?: '-').'</p>'
+            : '';
+        $period = SlovakDate::full($row->date_from).' – '.($row->isOpenEnded() ? 'trvalá' : SlovakDate::full($row->date_to));
+        $recurrence = $row->isRecurring()
+            ? '<p class="flex items-center gap-1 text-xs font-medium text-brand-300"><i class="fa-solid fa-repeat text-[10px]" aria-hidden="true"></i> '.$row->recurrenceLabel().'</p>'
+            : '';
+        $reason = $row->reason ? '<p class="break-words text-neutral-300">'.e($row->reason).'</p>' : '';
+        $buttons = $this->actionButtons($row, $asManager);
+
+        return '<div class="space-y-1.5">'.$name
+            .'<div class="flex flex-wrap items-center gap-x-2 gap-y-1"><span class="font-semibold text-neutral-100">'.$period.'</span>'.$this->formatStatusColumn($row).'</div>'
+            .$recurrence.$reason
+            .($buttons !== '' ? '<div class="flex items-center gap-2 pt-1">'.$buttons.'</div>' : '')
+            .'</div>';
+    }
+
     protected function formatEndColumn(Absence $row): string
     {
         $end = '<span class="text-neutral-300">'.($row->isOpenEnded() ? 'Trvalá' : SlovakDate::full($row->date_to)).'</span>';
@@ -38,6 +84,11 @@ trait FormatsAbsenceColumns
 
     protected function formatActionsColumn(Absence $row, bool $asManager = false): string
     {
+        return '<div class="flex items-center justify-start gap-2">'.($this->actionButtons($row, $asManager) ?: '-').'</div>';
+    }
+
+    private function actionButtons(Absence $row, bool $asManager): string
+    {
         $user = auth()->user();
         $buttons = '';
         // Several rows carry the same buttons - the name says which absence each one acts on.
@@ -51,6 +102,6 @@ trait FormatsAbsenceColumns
             $buttons .= '<button wire:click="deleteAbsence('.$row->id.')" wire:confirm="Natrvalo vymazať túto absenciu?" title="Vymazať absenciu" aria-label="Vymazať absenciu '.$range.'" class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition"><i class="fa-solid fa-trash text-xs" aria-hidden="true"></i></button>';
         }
 
-        return '<div class="flex items-center justify-start gap-2">'.($buttons ?: '-').'</div>';
+        return $buttons;
     }
 }

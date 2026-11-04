@@ -41,6 +41,10 @@ class MyAbsencesDataTable extends DataTableComponent
             ->setSearchDebounce(250)
             ->setSearchPlaceholder('Vyhľadať v absenciách…')
             ->setLoadingPlaceholderContent('Načítavam absencie...')
+            // Phones: one stacked column instead of six - see FormatsAbsenceColumns::mobileCardColumn().
+            ->setCollapsingColumnsDisabled()
+            ->setThAttributes(fn (Column $column): array => $this->mobileCardAttributes($column, cell: false))
+            ->setTdAttributes(fn (Column $column): array => $this->mobileCardAttributes($column, cell: true))
             ->setEmptyMessage('Nemáš evidované žiadne absencie.');
     }
 
@@ -77,17 +81,22 @@ class MyAbsencesDataTable extends DataTableComponent
     public function columns(): array
     {
         return [
+            $this->mobileCardColumn(),
+
             Column::make('Začiatok', 'date_from')
+                ->collapseOnMobile()
                 ->sortable()
                 ->format(fn ($value) => '<span class="font-semibold text-neutral-100">'.($value ? SlovakDate::full($value) : '').'</span>')
                 ->html(),
 
             Column::make('Koniec', 'date_to')
+                ->collapseOnMobile()
                 ->sortable()
                 ->format(fn ($value, $row) => $this->formatEndColumn($row))
                 ->html(),
 
             Column::make('Stav', 'status')
+                ->collapseOnMobile()
                 ->sortable(function (Builder $query, string $direction) {
                     $today = now()->toDateString();
 
@@ -103,16 +112,19 @@ class MyAbsencesDataTable extends DataTableComponent
                 ->html(),
 
             Column::make('Dôvod', 'reason')
+                ->collapseOnMobile()
                 ->searchable()
                 ->format(fn ($value) => '<span class="max-w-xs truncate text-neutral-300">'.e($value ?: '-').'</span>')
                 ->html(),
 
             Column::make('Nahlásené', 'created_at')
+                ->collapseOnMobile()
                 ->sortable()
                 ->format(fn ($value) => '<span class="text-neutral-400 text-xs">'.($value ? SlovakDate::dateTime($value) : '').'</span>')
                 ->html(),
 
             Column::make('Akcie', 'id')
+                ->collapseOnMobile()
                 ->format(fn ($value, $row) => $this->formatActionsColumn($row))
                 ->html(),
         ];
