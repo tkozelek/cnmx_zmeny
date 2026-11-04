@@ -38,6 +38,7 @@ class MyAbsencesDataTable extends DataTableComponent
             // SELECT projection would otherwise drop them - select the whole row instead of
             // chasing every field the trait happens to touch.
             ->setAdditionalSelects(['absences.*'])
+            ->setSearchDebounce(250)
             ->setSearchPlaceholder('Vyhľadať v absenciách…')
             ->setLoadingPlaceholderContent('Načítavam absencie...')
             ->setEmptyMessage('Nemáš evidované žiadne absencie.');

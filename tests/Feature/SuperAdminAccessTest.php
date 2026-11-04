@@ -44,6 +44,20 @@ class SuperAdminAccessTest extends TestCase
         $this->assertGuest();
     }
 
+    /** 2FA is required unless a non-production copy explicitly switches it off. */
+    public function test_without_two_factor_the_panel_login_grants_nothing_unless_switched_off(): void
+    {
+        $superAdmin = User::factory()->superAdmin()->create();
+        $superAdmin->forceFill(['app_authentication_secret' => null])->save();
+        $this->actingAs($superAdmin, SuperAdminSession::GUARD);
+
+        $this->assertFalse(app(SuperAdminSession::class)->isActive($superAdmin));
+
+        config(['auth.platform_mfa_required' => false]);
+
+        $this->assertTrue(app(SuperAdminSession::class)->isActive($superAdmin));
+    }
+
     public function test_a_super_admin_never_lands_on_the_plan_or_in_the_people_lists(): void
     {
         $team = $this->tenant();

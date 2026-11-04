@@ -44,6 +44,7 @@ class UsersDataTable extends DataTableComponent
             ->setColumnSelectStatus(false)
             ->setFilterPillsStatus(false)
             ->setFilterLayoutSlideDown()
+            ->setSearchDebounce(250)
             ->setSearchPlaceholder('Vyhľadať používateľa...')
             ->setLoadingPlaceholderContent('Načítavam používateľov...')
             ->setEmptyMessage('Žiadni používatelia neboli nájdení.');

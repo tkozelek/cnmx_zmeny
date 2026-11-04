@@ -34,7 +34,7 @@ class PlatformPanelProvider extends PanelProvider
             ->authGuard(SuperAdminSession::GUARD)
             ->login()
             ->profile(EditProfile::class, isSimple: false)
-            ->multiFactorAuthentication([AppAuthentication::make()->recoverable()], isRequired: true)
+            ->multiFactorAuthentication([AppAuthentication::make()->recoverable()], isRequired: (bool) config('auth.platform_mfa_required'))
             ->brandName('Cinemax Zmeny · Platforma')
             ->colors(['primary' => Color::Sky])
             ->darkMode(true)

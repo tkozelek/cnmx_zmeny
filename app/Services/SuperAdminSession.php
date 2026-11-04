@@ -19,7 +19,7 @@ class SuperAdminSession
     {
         return $user->is_super_admin
             && $user->is_active
-            && filled($user->getAppAuthenticationSecret())
+            && (! config('auth.platform_mfa_required') || filled($user->getAppAuthenticationSecret()))
             && $this->auth->guard(self::GUARD)->id() === $user->getKey();
     }
 

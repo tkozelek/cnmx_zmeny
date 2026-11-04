@@ -126,4 +126,11 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+    | 2FA for the /platform panel. Only ever false on beta (behind its basic-auth gate) - the panel
+    | sees every cinema's data.
+    */
+
+    'platform_mfa_required' => (bool) env('PLATFORM_MFA_REQUIRED', true),
+
 ];
