@@ -58,21 +58,9 @@ class UserController extends Controller
             return $user;
         });
 
-        try {
-            $user->notify(new AddUserResetPassword(Password::broker('add_user')->createToken($user)));
-        } catch (\Throwable $e) {
-            report($e);
-
-            // Spatie's role rows and the invite token have no foreign key to cascade through.
-            DB::transaction(function () use ($user): void {
-                $user->syncRoles([]);
-                DB::table(config('auth.passwords.add_user.table'))->where('email', $user->email)->delete();
-                $user->teams()->detach();
-                $user->delete();
-            });
-
-            return back()->with(['error' => 'Pozvánku sa nepodarilo odoslať, účet nebol vytvorený. Skontroluj e-mail a skús to znova.']);
-        }
+        // Queued with retries. Should it still never arrive, the account is verified, so
+        // "Zabudnuté heslo" gets them in just the same.
+        $user->notify(new AddUserResetPassword(Password::broker('add_user')->createToken($user)));
 
         return back()->with(['success' => 'Používateľ bol vytvorený. Odkaz na nastavenie hesla platí 24 hodín.', 'message' => 'Používateľ bol vytvorený. Odkaz na nastavenie hesla platí 24 hodín.']);
     }

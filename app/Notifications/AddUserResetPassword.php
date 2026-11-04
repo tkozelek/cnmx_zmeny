@@ -4,12 +4,20 @@ namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\HtmlString;
 
-class AddUserResetPassword extends ResetPassword
+/** Queued: an SMTP outage no longer fails the manager's "add user" request - the worker retries. */
+class AddUserResetPassword extends ResetPassword implements ShouldQueue
 {
     use Queueable;
+
+    /** An SMTP hiccup must not lose the invite for good. */
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [60, 300];
 
     /**
      * Create a new notification instance.

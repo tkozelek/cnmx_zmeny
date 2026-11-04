@@ -53,6 +53,8 @@
 
     {{-- Registration Success Modal --}}
     @if(session('show_registration_modal'))
+        {{-- x-teleport only runs inside an Alpine component; without this wrapper the modal never rendered. --}}
+        <div x-data>
         <template x-teleport="body">
             <div
                 x-data="{ show: true }"
@@ -103,10 +105,13 @@
                 </div>
             </div>
         </template>
+        </div>
     @endif
 
     {{-- Unverified Email Modal --}}
     @if(session('show_unverified_modal'))
+        {{-- x-teleport only runs inside an Alpine component; without this wrapper the modal never rendered. --}}
+        <div x-data>
         <template x-teleport="body">
             <div
                 x-data="{ show: true }"
@@ -157,5 +162,6 @@
                 </div>
             </div>
         </template>
+        </div>
     @endif
 </x-layout>

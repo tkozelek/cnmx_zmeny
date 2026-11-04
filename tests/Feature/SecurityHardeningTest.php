@@ -305,7 +305,7 @@ class SecurityHardeningTest extends TestCase
             'email' => $user->email,
             'password' => 'new-password-123',
             'password_confirmation' => 'new-password-123',
-        ]);
+        ])->assertSessionHas('error', __(Password::INVALID_TOKEN)); // a red toast, not a green one
 
         $this->assertTrue(Hash::check('password', $user->fresh()->password));
     }
