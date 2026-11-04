@@ -47,3 +47,9 @@ satisfiable
 
 # Session handoff notes - local only, several agents write here, not meant for shared history
 /_planning/sessions/
+
+# Private notes - personal data, never commit (removed from history 2026-11-04)
+/.claude/handoffs/
+/_planning/sessions/
+/_planning/claude-memory/user-profile.md
+/_planning/claude-memory/user_profile.md
