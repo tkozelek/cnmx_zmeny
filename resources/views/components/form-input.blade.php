@@ -35,7 +35,9 @@
                 type="button"
                 class="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-xl text-neutral-400 hover:text-neutral-200 transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400"
                 onclick="togglePasswordVisibility('{{ $inputId }}', this)"
-                aria-label="Zobraziť heslo"
+                {{-- Named after its field: registration has two of these. --}}
+                aria-label="Zobraziť: {{ $label ?? 'Heslo' }}"
+                aria-controls="{{ $inputId }}"
                 aria-pressed="false"
             >
                 <i id="{{ $inputId }}Icon" class="fa-solid fa-eye" aria-hidden="true"></i>

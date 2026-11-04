@@ -43,13 +43,13 @@ class AbsenceService
     }
 
     /**
-     * End an absence: cancel it if it has not started yet, otherwise cut it short after
-     * yesterday (or after today when it began today). A running one stays active, so the days
+     * End an absence: cancel it if it has not started before today (no day of it is behind
+     * us yet), otherwise cut it short after yesterday. A running one stays active, so the days
      * already taken keep showing in past weeks, the managers' list and the rozpis.
      */
     public function end(Absence $absence): void
     {
-        if ($absence->date_from->isFuture()) {
+        if ($absence->date_from->gte(today())) {
             $absence->update([
                 'status' => AbsenceStatus::Cancelled,
             ]);
@@ -57,13 +57,8 @@ class AbsenceService
             return;
         }
 
-        $yesterday = now()->subDay()->startOfDay();
-        $newDateTo = $absence->date_from->gt($yesterday)
-            ? $absence->date_from
-            : $yesterday;
-
         $absence->update([
-            'date_to' => $newDateTo->toDateString(),
+            'date_to' => today()->subDay()->toDateString(),
         ]);
     }
 }

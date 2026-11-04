@@ -132,6 +132,25 @@ class SecurityHardeningTest extends TestCase
             $forUnknown->baseResponse->getSession()->get('message'),
             'A registered and an unregistered address must produce the same answer.',
         );
+
+        // The broker throttles only an address that exists - a "throttled" reply would tell.
+        $this->post(route('password.index'), ['email' => $known->email])->assertSessionMissing('error');
+    }
+
+    /** Keyed on the address alone, five bad passwords from anywhere locked the owner out. */
+    public function test_someone_elses_failed_logins_do_not_lock_out_the_account_owner(): void
+    {
+        $this->tenant();
+        $owner = User::factory()->create();
+
+        foreach (range(1, 6) as $attempt) {
+            $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.9'])
+                ->post(route('login.auth'), ['email' => $owner->email, 'password' => 'wrong-password']);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.7'])
+            ->post(route('login.auth'), ['email' => $owner->email, 'password' => 'password'])
+            ->assertRedirect(route('calendar.index'));
     }
 
     /** A blocked account could still authenticate and use the auth-only verification endpoints. */

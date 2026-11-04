@@ -84,6 +84,21 @@ class MembershipApprovalTest extends TestCase
         $this->assertNull($team->users()->find($pending->id)->pivot->approved_at);
     }
 
+    /** "Zamietnuť" is for registrations; replayed on a member it used to half-remove them. */
+    public function test_denying_an_already_approved_member_changes_nothing(): void
+    {
+        $team = $this->tenant();
+        $admin = $this->member($team, Role::HeadManager);
+        $member = $this->member($team);
+
+        Livewire::actingAs($admin)
+            ->test(UsersDataTable::class)
+            ->call('deny', $member->id);
+
+        $this->assertTrue($member->fresh()->is_active);
+        $this->assertNotNull($team->users()->find($member->id)->pivot->approved_at);
+    }
+
     /**
      * Registration is two gates and only the second one is a decision anybody makes here, so
      * somebody who has not confirmed their address is not yet a candidate and stays out of the

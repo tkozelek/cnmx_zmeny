@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enums\Role;
 use App\Models\User;
+use App\Services\AccountEraser;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class PrunePersonalData extends Command
 
     protected $description = 'Vymaže neschválených uchádzačov po 6 mesiacoch a neaktívnych členov po 12 mesiacoch';
 
-    public function handle(): int
+    public function handle(AccountEraser $eraser): int
     {
         $users = $this->rejectedApplicants()->get()->merge($this->membersGoneQuiet()->get())
             ->reject(fn (User $user): bool => $this->isManagerAnywhere($user));
@@ -47,7 +48,7 @@ class PrunePersonalData extends Command
             // One account that can't be deleted must not keep everyone after it (and the log and
             // activity pruning below) around past what the privacy page promises.
             try {
-                $this->delete($user);
+                $eraser->erase($user);
                 $deletedIds[] = $user->id;
             } catch (Throwable $e) {
                 report($e);
@@ -136,27 +137,5 @@ class PrunePersonalData extends Command
             ->where('model_has_roles.model_id', $user->id)
             ->whereIn('roles.name', [Role::Manager->value, Role::HeadManager->value])
             ->exists();
-    }
-
-    /**
-     * Spatie's role/permission links have no foreign key, and with teams on its own delete hook
-     * only detaches the current team's - so they are removed here for every team.
-     */
-    private function delete(User $user): void
-    {
-        DB::transaction(function () use ($user): void {
-            foreach (['model_has_roles', 'model_has_permissions'] as $table) {
-                DB::table($table)
-                    ->where('model_type', $user->getMorphClass())
-                    ->where('model_id', $user->id)
-                    ->delete();
-            }
-
-            DB::table('password_reset_tokens')->where('email', $user->email)->delete();
-            DB::table(config('auth.passwords.add_user.table'))->where('email', $user->email)->delete();
-            DB::table('sessions')->where('user_id', $user->id)->delete();
-
-            $user->delete();
-        });
     }
 }

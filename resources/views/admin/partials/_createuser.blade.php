@@ -1,6 +1,10 @@
 <form class="space-y-4" action="{{ route('admin.users.store') }}" method="POST">
     @csrf
 
+    <x-error-summary id="create-user-errors" title="Používateľa sa nepodarilo vytvoriť:" :fields="$createErrorFields" />
+
+    <p class="text-sm text-neutral-400">Na zadaný e-mail pošleme pozvánku s&nbsp;odkazom na nastavenie hesla. Odkaz platí 24&nbsp;hodín.</p>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <x-form-input
             name="name"

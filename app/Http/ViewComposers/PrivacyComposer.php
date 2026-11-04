@@ -18,7 +18,7 @@ class PrivacyComposer
             'logDays' => config('logging.channels.daily.days'),
             'sessionMinutes' => config('session.lifetime'),
             'sessionCookie' => config('session.cookie'),
-            'validFrom' => SlovakDate::full(CarbonImmutable::create(2026, 10, 21)),
+            'validFrom' => SlovakDate::full(CarbonImmutable::create(2026, 11, 4)),
         ]);
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Livewire\UsersDataTable;
+use App\Models\Absence;
 use App\Models\Assignment;
 use App\Models\Team;
 use App\Models\User;
@@ -382,6 +383,9 @@ class UserRoleManagementTest extends TestCase
         $teamA = $this->tenant();
         $manager = $this->member($teamA, Role::Manager);
         $shared = $this->sharedEmployee($teamA);
+        $teamB = $shared->teams()->where('teams.id', '!=', $teamA->id)->sole();
+        $absenceHere = Absence::factory()->create(['team_id' => $teamA->id, 'user_id' => $shared->id]);
+        $absenceThere = Absence::factory()->create(['team_id' => $teamB->id, 'user_id' => $shared->id]);
 
         $this->actingAs($manager)
             ->delete(route('admin.users.destroy', $shared))
@@ -391,6 +395,51 @@ class UserRoleManagementTest extends TestCase
         $this->assertTrue($shared->is_active);
         $this->assertFalse($shared->isMemberOf($teamA));
         $this->assertSame(1, $shared->teams()->count());
+        // This cinema's managers no longer see their absence reasons; the other cinema keeps its own.
+        $this->assertModelMissing($absenceHere);
+        $this->assertModelExists($absenceThere);
+    }
+
+    /** "Vymazať natrvalo": only an account already deactivated, and with everything in it. */
+    public function test_a_manager_erases_a_deactivated_brigadnik_for_good(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $active = $this->member($team);
+        $deactivated = $this->member($team);
+        $deactivated->update(['is_active' => false]);
+        Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $deactivated->id]);
+        Absence::factory()->create(['team_id' => $team->id, 'user_id' => $deactivated->id]);
+
+        $this->actingAs($manager)->delete(route('admin.users.erase', $active))->assertForbidden();
+
+        $this->actingAs($manager)
+            ->delete(route('admin.users.erase', $deactivated))
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertModelMissing($deactivated);
+        $this->assertModelExists($active);
+        $this->assertDatabaseMissing('assignments', ['user_id' => $deactivated->id]);
+        $this->assertDatabaseMissing('absences', ['user_id' => $deactivated->id]);
+        $this->assertDatabaseMissing('model_has_roles', ['model_id' => $deactivated->id]);
+    }
+
+    /** Erasing follows the deactivation tiers: managers are the head manager's to erase. */
+    public function test_only_a_head_manager_erases_a_deactivated_manager(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $headManager = $this->member($team, Role::HeadManager);
+        $formerManager = $this->member($team, Role::Manager);
+        $formerManager->update(['is_active' => false]);
+
+        $this->actingAs($manager)->delete(route('admin.users.erase', $formerManager))->assertForbidden();
+
+        $this->actingAs($headManager)
+            ->delete(route('admin.users.erase', $formerManager))
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertModelMissing($formerManager);
     }
 
     /** A blocked person must stop showing up in next week's plan, its export and the rozpis mails. */

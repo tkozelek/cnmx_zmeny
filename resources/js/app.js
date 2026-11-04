@@ -18,6 +18,19 @@ function nameDay(dayElem) {
     dayElem.setAttribute('aria-label', slovakDate.format(dayElem.dateObj));
 }
 
+/** flatpickr shows the chosen range and the days before the deadline with classes only. */
+function describeDayStates(fp) {
+    fp.days.querySelectorAll('.flatpickr-day').forEach((day) => {
+        const chosen = ['selected', 'startRange', 'endRange', 'inRange'].some((state) => day.classList.contains(state));
+        day.setAttribute('aria-pressed', String(chosen));
+        if (day.classList.contains('flatpickr-disabled')) {
+            day.setAttribute('aria-disabled', 'true');
+        } else {
+            day.removeAttribute('aria-disabled');
+        }
+    });
+}
+
 /** flatpickr's month arrows are plain spans with English labels - make them real buttons. */
 function makeMonthArrowsButtons(fp) {
     [[fp.prevMonthNav, 'Predchádzajúci mesiac'], [fp.nextMonthNav, 'Nasledujúci mesiac']].forEach(([arrow, label]) => {
@@ -54,10 +67,16 @@ function loadFlatpickr() {
                 shorthand: Slovak.months.shorthand.map((month) => month.toLowerCase()),
                 longhand: Slovak.months.longhand.map((month) => month.toLowerCase()),
             },
+            // The bundled "Ned Pon Ut Str…" mixes lengths; the rest of the app writes "Po Ut St…".
+            weekdays: { ...Slovak.weekdays, shorthand: ['Ne', 'Po', 'Ut', 'St', 'Št', 'Pi', 'So'] },
         });
         window.flatpickr = flatpickr;
         return flatpickr;
-    }).catch(forgetFailedLoad(() => { flatpickrLoading = null; }));
+    }).catch(forgetFailedLoad(() => {
+        flatpickrLoading = null;
+        // Every date field waits on this: one clear message instead of several silently dead ones.
+        window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Kalendár sa nenačítal – obnov stránku.', type: 'error' } }));
+    }));
 
     return flatpickrLoading;
 }
@@ -289,7 +308,8 @@ document.addEventListener('alpine:init', () => {
             first.setDate(from.getDate() + ((this.dayOfWeek - ((from.getDay() + 6) % 7) + 7) % 7));
             // Rounded to whole days: a range across the DST switch is an hour short of full weeks.
             const count = first > to ? 0 : Math.floor(Math.round((to - first) / 86400000) / 7) + 1;
-            const format = (d) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
+            // Non-breaking spaces: "27. 11. / 2026" must not wrap mid-date.
+            const format = (d) => `${d.getDate()}.\u00a0${d.getMonth() + 1}.\u00a0${d.getFullYear()}`;
             if (count === 0) return `V tomto období nie je žiadny deň ${repeat.names[this.dayOfWeek]}.`;
             return `${every[0].toUpperCase()}${every.slice(1)} od ${format(from)} do ${format(to)} – spolu ${count}×.`;
         },
@@ -317,6 +337,9 @@ document.addEventListener('alpine:init', () => {
                 onReady: (_dates, _str, fp) => {
                     makeMonthArrowsButtons(fp);
                     keepOneDayTabbable(fp);
+                    describeDayStates(fp);
+                    fp.calendarContainer.setAttribute('role', 'group');
+                    fp.calendarContainer.setAttribute('aria-label', 'Kalendár');
                     fp.monthsDropdownContainer?.setAttribute('aria-label', 'Mesiac');
                     fp.currentYearElement?.setAttribute('aria-label', 'Rok');
                     if (!fp.altInput) return;
@@ -325,9 +348,13 @@ document.addEventListener('alpine:init', () => {
                     fp.altInput.setAttribute('aria-describedby', document.getElementById('absence-errors') ? 'absence-range-hint absence-errors' : 'absence-range-hint');
                 },
                 onDayCreate: (_dates, _str, _fp, dayElem) => nameDay(dayElem),
-                onMonthChange: (_dates, _str, fp) => keepOneDayTabbable(fp),
+                onMonthChange: (_dates, _str, fp) => {
+                    keepOneDayTabbable(fp);
+                    describeDayStates(fp);
+                },
                 onChange: (selectedDates, _str, fp) => {
                     keepOneDayTabbable(fp);
+                    describeDayStates(fp);
                     if (!selectedDates.length) return;
                     this.dateFrom = toIsoDate(selectedDates[0]);
                     this.dateTo = selectedDates.length === 2 ? toIsoDate(selectedDates[1]) : this.dateFrom;

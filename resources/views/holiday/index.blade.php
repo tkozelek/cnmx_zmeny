@@ -53,7 +53,7 @@
                 <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-800 bg-neutral-950">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-calendar-plus text-brand-400 text-lg"></i>
-                        <h3 id="modal-absence-title" class="text-lg font-bold text-neutral-100">Pridať absenciu</h3>
+                        <h2 id="modal-absence-title" class="text-lg font-bold text-neutral-100">Pridať absenciu</h2>
                     </div>
                     <button @click="openModal = false" type="button" aria-label="Zatvoriť okno" class="text-neutral-400 hover:text-white rounded-lg p-1.5 transition">
                         <i class="fa-solid fa-xmark text-lg"></i>
@@ -156,7 +156,8 @@
                         <button @click="openModal = false" type="button" class="px-4 py-2.5 text-sm font-semibold text-neutral-300 hover:text-white rounded-lg hover:bg-neutral-800 transition">
                             Zrušiť
                         </button>
-                        <button type="submit" :disabled="sending" class="px-5 py-2.5 text-sm font-semibold text-neutral-900 bg-neutral-100 hover:bg-white rounded-lg transition disabled:opacity-60">
+                        {{-- Until the calendar has loaded, the hidden dates are only the defaults. --}}
+                        <button type="submit" :disabled="sending || ! picker" class="px-5 py-2.5 text-sm font-semibold text-neutral-900 bg-neutral-100 hover:bg-white rounded-lg transition disabled:opacity-60">
                             Nahlásiť absenciu
                         </button>
                     </div>

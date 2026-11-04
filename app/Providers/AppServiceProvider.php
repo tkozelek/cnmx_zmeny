@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
@@ -71,6 +72,9 @@ class AppServiceProvider extends ServiceProvider
      * action runs with no team in the registrar: `BelongsToTeam` stops filtering and
      * `app(Team::class)` builds an empty model. That fails open - a component would read and
      * write across every cinema - so it has to be registered explicitly.
+     *
+     * ThrottleRequests carries the page's `throttle:member-writes` over too, so sign-ups and
+     * approvals made through components count against the same write ceiling as forms.
      */
     private function persistTenantMiddlewareThroughLivewire(): void
     {
@@ -78,6 +82,7 @@ class AppServiceProvider extends ServiceProvider
             EnsureUserIsActive::class,
             SetCurrentTeam::class,
             EnsureFeaturesAreActive::class,
+            ThrottleRequests::class,
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\Role;
+use App\Models\Absence;
 use App\Models\Team;
 use App\Models\User;
 use DomainException;
@@ -72,6 +73,10 @@ class TeamMembershipService
         $this->inTeam($team, $user, fn () => $user->syncRoles([]));
         $user->teams()->detach($team->getKey());
         $user->withdrawFutureAssignments($team);
+
+        // Their reasons would otherwise stay in front of this cinema's managers for as long as
+        // the account lives on in another cinema - retention never reaches them.
+        Absence::withoutGlobalScope('team')->where('team_id', $team->getKey())->where('user_id', $user->getKey())->delete();
 
         if ($user->current_team_id === $team->getKey()) {
             $user->forceFill(['current_team_id' => null])->save();

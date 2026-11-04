@@ -62,8 +62,8 @@
                         <legend class="sr-only">Týždeň na mobile</legend>
 
                         @foreach([
-                            ['value' => 0, 'title' => 'Karty', 'text' => 'Každý deň ako samostatná karta s tlačidlom navrchu.'],
-                            ['value' => 1, 'title' => 'Kompaktný zoznam', 'text' => 'Celý týždeň na jednej obrazovke – deň, mená a tlačidlo v jednom riadku.'],
+                            ['value' => 0, 'title' => 'Karty', 'text' => 'Každý deň ako samostatná karta s tlačidlom navrchu.'],
+                            ['value' => 1, 'title' => 'Kompaktný zoznam', 'text' => 'Celý týždeň na jednej obrazovke – deň, mená a tlačidlo v jednom riadku.'],
                         ] as $option)
                             <label class="flex cursor-pointer items-start gap-4 rounded-xl border border-neutral-700 bg-neutral-950 p-4 transition hover:border-neutral-500 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-950/40">
                                 <input type="radio" name="compact_week" value="{{ $option['value'] }}" @checked((int) old('compact_week', (int) $user->compact_week) === $option['value'])

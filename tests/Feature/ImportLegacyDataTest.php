@@ -136,6 +136,53 @@ class ImportLegacyDataTest extends TestCase
         $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true])->assertFailed();
     }
 
+    /** Legacy never withdrew a blocked or pending person's sign-ups; the new app would show them working. */
+    public function test_future_sign_ups_of_blocked_and_pending_people_stay_behind(): void
+    {
+        $team = $this->tenant();
+        $past = now()->subWeek()->toDateString();
+        $future = now()->addWeek()->toDateString();
+
+        $this->legacyUser(1, 'aktivny@kino.sk', 2);
+        $this->legacyUser(2, 'blokovany@kino.sk', 4);
+        $this->legacyUser(3, 'cakajuci@kino.sk', 1);
+        DB::connection('legacy')->table('days')->insert([['id' => 1, 'date' => $past, 'id_week' => 1], ['id' => 2, 'date' => $future, 'id_week' => 2]]);
+        DB::connection('legacy')->table('user_days')->insert([
+            ['id_user' => 1, 'id_day' => 2, 'popis' => null],
+            ['id_user' => 2, 'id_day' => 1, 'popis' => null],
+            ['id_user' => 2, 'id_day' => 2, 'popis' => null],
+            ['id_user' => 3, 'id_day' => 2, 'popis' => null],
+        ]);
+
+        $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true])->assertSuccessful();
+
+        $blocked = User::where('email', 'blokovany@kino.sk')->sole();
+        $this->assertSame([$past], Assignment::where('user_id', $blocked->id)->get()->map(fn (Assignment $a): string => $a->date->toDateString())->all());
+        $this->assertSame(0, Assignment::where('user_id', User::where('email', 'cakajuci@kino.sk')->sole()->id)->count());
+        $this->assertSame(1, Assignment::where('user_id', User::where('email', 'aktivny@kino.sk')->sole()->id)->count());
+    }
+
+    public function test_the_import_refuses_a_super_admin_email_and_a_lock_off_the_week_start(): void
+    {
+        $team = $this->tenant();
+        $this->legacyUser(1, 'operator@kino.sk', 2);
+        User::factory()->create(['email' => 'operator@kino.sk'])->forceFill(['is_super_admin' => true])->save();
+
+        $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true])
+            ->expectsOutputToContain('super admina')
+            ->assertFailed();
+
+        User::where('email', 'operator@kino.sk')->update(['is_super_admin' => false]);
+        // 2026-10-05 is a Monday; the team's weeks start on Thursday.
+        DB::connection('legacy')->table('weeks')->insert(['id' => 1, 'date_from' => '2026-10-05', 'date_to' => '2026-10-11', 'locked' => true]);
+
+        $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true])
+            ->expectsOutputToContain('2026-10-05')
+            ->assertFailed();
+
+        $this->assertDatabaseCount('week_locks', 0);
+    }
+
     private function legacyUser(int $id, string $email, int $role, ?string $createdAt = null): void
     {
         DB::connection('legacy')->table('users')->insert([

@@ -17,18 +17,14 @@ class PasswordRequestController extends Controller
 
     /**
      * One answer whatever happened, so the form cannot be used to test whether an address has
-     * an account here. The only outcome worth distinguishing is being rate-limited, which the
-     * person can act on; "no such user" is exactly what an attacker wants to hear.
+     * an account here. Not even "throttled": the broker only throttles an address that exists,
+     * so asking twice in a minute would tell. The first link is still valid anyway.
      */
     public function send(Request $request): RedirectResponse
     {
         $request->validate(['email' => 'required|email']);
 
-        $status = Password::sendResetLink($request->only('email'));
-
-        if ($status === Password::RESET_THROTTLED) {
-            return back()->with(['error' => __($status)]);
-        }
+        Password::sendResetLink($request->only('email'));
 
         return back()->with([
             'message' => 'Ak k tejto adrese existuje účet, poslali sme na ňu odkaz na obnovu hesla.',

@@ -28,7 +28,8 @@
                     <span>Nie si členom kina</span>
                 </div>
             @elseif($absent && ! $this->mine)
-                <div class="flex min-h-11 w-full items-center justify-center gap-2 border-b border-neutral-800 bg-neutral-950 text-sm font-medium text-neutral-400">
+                {{-- Amber, not the grey of "Zamknutý": the day is open, just not for you. --}}
+                <div class="flex min-h-11 w-full items-center justify-center gap-2 border-b border-amber-500/20 bg-amber-500/10 text-sm font-medium text-amber-300">
                     <i class="fa-solid fa-umbrella-beach text-xs" aria-hidden="true"></i>
                     <span>Absencia</span>
                     <span class="sr-only">– {{ $this->dayName }} {{ $this->shortDate }}, na tento deň máš nahlásenú absenciu</span>
@@ -110,8 +111,9 @@
                      @class([
                         'rows group flex items-start justify-between gap-2 border-b border-neutral-800/60 py-1.5 text-sm leading-snug last:border-b-0',
                         'font-semibold text-white' => $this->isOwn($assignment),
-                        'text-neutral-400 line-through' => ! $assignment->user->is_active,
-                        'text-neutral-200' => $assignment->user->is_active,
+                        {{-- Whether a colleague's account is blocked is the managers' business only. --}}
+                        'text-neutral-400 line-through' => ! $assignment->user->is_active && $this->canViewUsers,
+                        'text-neutral-200' => $assignment->user->is_active || ! $this->canViewUsers,
                     ])>
                     <div class="flex min-w-0 flex-wrap items-baseline gap-x-1.5 text-left">
                         <span class="font-semibold text-sm {{ $this->isOwn($assignment) ? 'text-emerald-400 font-bold' : 'text-neutral-200' }}">

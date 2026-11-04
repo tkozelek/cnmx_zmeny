@@ -21,11 +21,11 @@
             <section class="space-y-3">
                 <h2 class="text-xl font-semibold text-white">Tvoj účet</h2>
                 <dl class="space-y-3">
-                    <div><dt class="font-semibold text-white">Aké údaje</dt><dd>Meno, priezvisko, e-mail, heslo (uložené len v&nbsp;podobe, z&nbsp;ktorej sa heslo nedá spätne zistiť), kino, ktoré si vyberieš, tvoja rola v&nbsp;ňom, kedy účet vznikol, kedy ťa kino schválilo, čas posledného prihlásenia a&nbsp;či je účet zablokovaný.</dd></div>
+                    <div><dt class="font-semibold text-white">Aké údaje</dt><dd>Meno, priezvisko, e-mail, heslo (uložené len v&nbsp;podobe, z&nbsp;ktorej sa heslo nedá spätne zistiť), kino, ktoré si vyberieš, tvoja rola v&nbsp;ňom, kedy účet vznikol, kedy ťa kino schválilo, čas posledného prihlásenia a&nbsp;či je účet zablokovaný. Ak ti účet vytvoril manažér kina, tvoje meno a&nbsp;e-mail zadal on.</dd></div>
                     <div><dt class="font-semibold text-white">Načo</dt><dd>Aby sa dalo prihlásiť, aby ťa manažér kina mohol schváliť a&nbsp;aby kino vedelo, kto sa na ktoré dni zapísal.</dd></div>
                     <div><dt class="font-semibold text-white">Kto ich vidí</dt><dd>Svoj profil vidíš ty a&nbsp;manažéri tvojho kina – tí vidia aj tvoj e-mail, rolu, kedy účet vznikol, čas posledného prihlásenia, štatistiku tvojich zápisov a&nbsp;tvoje absencie. Kolegovia z&nbsp;kina vidia pri dňoch, na ktoré máš zápis, tvoje priezvisko so začiatočným písmenom mena.</dd></div>
                     <div><dt class="font-semibold text-white">Právny základ</dt><dd>Poskytovanie aplikácie, o&nbsp;ktoré registráciou žiadaš (čl. 6 ods. 1 písm. b) GDPR).</dd></div>
-                    <div><dt class="font-semibold text-white">Ako dlho</dt><dd>Registrácia, ktorú žiadne kino neschváli, sa automaticky vymaže 6 mesiacov po vytvorení. Účet, z&nbsp;ktorého sa 12 mesiacov nikto neprihlásil a&nbsp;ktorý nemá zápis za posledných 12 mesiacov ani do budúcna, sa automaticky vymaže aj so zápismi a&nbsp;absenciami. Účty manažérov kina sa automaticky nemažú. O&nbsp;vymazanie účtu ma môžeš kedykoľvek požiadať.</dd></div>
+                    <div><dt class="font-semibold text-white">Ako dlho</dt><dd>Registrácia, ktorú žiadne kino neschváli, sa automaticky vymaže 6 mesiacov po vytvorení. Účet, z&nbsp;ktorého sa 12 mesiacov nikto neprihlásil a&nbsp;ktorý nemá zápis za posledných 12 mesiacov ani do budúcna, sa automaticky vymaže aj so zápismi a&nbsp;absenciami. Účty manažérov kina sa automaticky nemažú. Zablokovaný účet môže natrvalo vymazať aj manažér kina (účet manažéra len hlavný manažér). Ak ťa kino odoberie a&nbsp;si členom aj iného kina, tvoje absencie v&nbsp;tomto kine sa vymažú. O&nbsp;vymazanie účtu ma môžeš kedykoľvek požiadať.</dd></div>
                     <div><dt class="font-semibold text-white">Musíš ich uviesť?</dt><dd>Meno, priezvisko, e-mail, heslo a&nbsp;kino sú povinné – bez nich účet vytvoriť nejde.</dd></div>
                 </dl>
             </section>
@@ -49,14 +49,14 @@
                     <div><dt class="font-semibold text-white">Aké údaje</dt><dd>Na ktorej pozícii (napríklad bufet, pokladňa) a&nbsp;od kedy v&nbsp;daný deň pracuješ a&nbsp;kto ťa na ňu zaradil. Z&nbsp;tvojich zápisov sa počíta, koľko a&nbsp;aké náročné dni si odpracoval za posledné týždne – manažérovi to slúži ako odporúčanie, koho zaradiť.</dd></div>
                     <div><dt class="font-semibold text-white">Kto ich vidí</dt><dd>Zverejnený rozpis vidia kolegovia z&nbsp;tvojho kina. Rozpracovaný rozpis a&nbsp;poradie podľa odpracovaných dní vidia len manažéri kina.</dd></div>
                     <div><dt class="font-semibold text-white">História zmien</dt><dd>Aplikácia si zaznamenáva, kto a&nbsp;kedy v&nbsp;rozpise koho zaradil, presunul alebo odobral. Poznámky k&nbsp;zápisom sa do histórie nezapisujú. Históriu vidia manažéri kina a&nbsp;uchovávam ju 12 mesiacov.</dd></div>
-                    <div><dt class="font-semibold text-white">AI návrh</dt><dd>Ak má kino zapnutý aj AI návrh rozpisu, manažér si môže nechať navrhnúť zaradenia od služby Google Gemini. Služba nedostane tvoje meno, e-mail ani iný údaj, podľa ktorého by ťa spoznala – len náhodný kód platný pre jeden návrh, počet a&nbsp;náročnosť tvojich odpracovaných dní a&nbsp;zoznam voľných pozícií. Návrh nikoho nezaradí sám, rozhoduje manažér.</dd></div>
+                    <div><dt class="font-semibold text-white">AI návrh</dt><dd>Ak má kino zapnutý aj AI návrh rozpisu, manažér si môže nechať navrhnúť zaradenia od služby Google Gemini. Služba nedostane tvoje meno, e-mail ani iný kontakt – len náhodný kód platný pre jeden návrh, počet a&nbsp;náročnosť tvojich odpracovaných dní a&nbsp;zoznam voľných pozícií. Návrh nikoho nezaradí sám, rozhoduje manažér.</dd></div>
                     <div><dt class="font-semibold text-white">Právny základ</dt><dd>Poskytovanie aplikácie, ktorú používaš (čl. 6 ods. 1 písm. b) GDPR), pri histórii zmien môj oprávnený záujem na tom, aby sa dalo dohľadať, kto rozpis zmenil (čl. 6 ods. 1 písm. f) GDPR).</dd></div>
                 </dl>
             </section>
 
             <section class="space-y-3">
                 <h2 class="text-xl font-semibold text-white">Ak máš účet z&nbsp;pôvodnej verzie</h2>
-                <p>Tvoj účet, zápisy a&nbsp;absencie som do tejto verzie preniesol z&nbsp;pôvodnej aplikácie, ktorú som tiež prevádzkoval ja. Heslo ostalo rovnaké. Evidenciu odpracovaných hodín a&nbsp;nahrané súbory som nepreniesol.</p>
+                <p>Tvoj účet, zápisy a&nbsp;absencie som do tejto verzie preniesol z&nbsp;pôvodnej aplikácie, ktorú som tiež prevádzkoval ja. Heslo ostalo rovnaké. Evidenciu odpracovaných hodín a&nbsp;nahrané súbory som nepreniesol. Pôvodnú databázu (aj s&nbsp;evidenciou hodín a&nbsp;súbormi) uchovávam v&nbsp;zálohe 30 dní od prechodu na túto verziu, potom ju natrvalo vymažem.</p>
             </section>
 
             <section class="space-y-3">
@@ -69,9 +69,10 @@
                 <h2 class="text-xl font-semibold text-white">Bezpečnosť a&nbsp;prevádzka</h2>
                 <ul class="list-disc space-y-1.5 pl-5">
                     <li>Na ochranu prihlásenia a&nbsp;formulárov pred zneužitím si aplikácia najviac hodinu pamätá počet pokusov z&nbsp;tvojej IP adresy a&nbsp;pre zadaný e-mail – uložené len ako odtlačok (hash), nie v&nbsp;čitateľnej podobe. Potom tieto záznamy vymaže, najneskôr nasledujúci deň.</li>
-                    <li>Záznamy o&nbsp;tom, ktorý účet (podľa čísla) vytvoril, zmenil alebo vymazal ktorý záznam a&nbsp;ktoré polia, záznamy o&nbsp;prihláseniach, neúspešných pokusoch o&nbsp;prihlásenie, zmenách rolí a&nbsp;odmietnutých prístupoch a&nbsp;záznamy o&nbsp;chybách uchovávam {{ $logDays }} dní. IP adresa a&nbsp;e-mail zadaný pri neúspešnom prihlásení sa v&nbsp;nich ukladajú len ako odtlačok (hash). Mená, e-maily ani dôvody absencií sa do záznamov nezapisujú a&nbsp;e-mailové adresy sa zo záznamov o&nbsp;chybách automaticky odstraňujú. Záznam o&nbsp;chybe môže výnimočne obsahovať iné údaje z&nbsp;požiadavky, pri ktorej chyba vznikla.
+                    <li>Záznamy o&nbsp;tom, ktorý účet (podľa čísla) vytvoril, zmenil alebo vymazal ktorý záznam a&nbsp;ktoré polia, záznamy o&nbsp;prihláseniach, neúspešných pokusoch o&nbsp;prihlásenie, zmenách rolí a&nbsp;odmietnutých prístupoch a&nbsp;záznamy o&nbsp;chybách uchovávam {{ $logDays }} dní. IP adresa a&nbsp;e-mail zadaný pri neúspešnom prihlásení sa v&nbsp;nich ukladajú len ako odtlačok (hash). Mená, e-maily ani dôvody absencií sa do záznamov nezapisujú a&nbsp;e-mailové adresy sa zo záznamov o&nbsp;chybách automaticky odstraňujú. Záznam o&nbsp;chybe môže výnimočne obsahovať iné údaje z&nbsp;požiadavky, pri ktorej chyba vznikla.</li>
                     <li>Ako prevádzkovateľ spravujem všetky kiná cez správu platformy. Čo v&nbsp;nej zmením, sa zaznamená (kto, kedy, v&nbsp;ktorom kine, ktorý záznam a&nbsp;ktoré polia – bez mien, e-mailov a&nbsp;dôvodov absencií) a&nbsp;tieto záznamy uchovávam 12 mesiacov.</li>
                     <li>Aby som videl, či aplikácia funguje a&nbsp;ktoré stránky sú pomalé, 7 dní uchovávam počet požiadaviek podľa účtu (jeho čísla), adresy pomalých stránok a&nbsp;technické záznamy o&nbsp;chybách a&nbsp;výkone. Vidím ich len ja.</li>
+                    <li>Zálohy databázy uchovávam 30 dní – čo sa v&nbsp;aplikácii vymaže, zostane v&nbsp;nich najviac tak dlho.</li>
                     <li>Poskytovateľ webhostingu môže na zabezpečenie servera zaznamenávať technické údaje o&nbsp;prístupoch (IP adresu, čas, adresu stránky).</li>
                 </ul>
                 <p>Právnym základom je môj oprávnený záujem na bezpečnej a&nbsp;fungujúcej aplikácii (čl. 6 ods. 1 písm. f) GDPR).</p>
@@ -85,7 +86,7 @@
                     <li><strong class="font-semibold text-white">XSRF-TOKEN</strong> – chráni formuláre pred podvrhnutím z&nbsp;iných stránok. Platí {{ $sessionMinutes }} minút od poslednej aktivity.</li>
                     <li><strong class="font-semibold text-white">remember_web_…</strong> – len ak pri prihlásení zaškrtneš „Zapamätať si ma“. Drží prihlásenie približne 400 dní alebo do odhlásenia.</li>
                 </ul>
-                <p>V&nbsp;úložisku prehliadača si aplikácia pamätá, či máš v&nbsp;kalendári zapnuté zobrazenie mien a&nbsp;losovania (položky „names_checkbox“ a&nbsp;„draw_checkbox“), a&nbsp;po aktualizácii aplikácie jednu technickú značku, aby sa stránka obnovila len raz. Tieto údaje sa nikam neposielajú.</p>
+                <p>V&nbsp;úložisku prehliadača si aplikácia pamätá nastavenie, ktoré si sám zapneš – či máš v&nbsp;kalendári zapnuté zobrazenie mien a&nbsp;losovania (položky „names_checkbox“ a&nbsp;„draw_checkbox“), a&nbsp;po aktualizácii aplikácie jednu technickú značku, aby sa stránka obnovila len raz. Tieto údaje sa nikam neposielajú.</p>
                 <p>Nepoužívam analytické ani reklamné cookies. Písma a&nbsp;ikony sú uložené priamo na serveri aplikácie a&nbsp;stránky nenačítavajú nič zo serverov iných firiem – prehliadaču to zakazujú aj bezpečnostné hlavičky aplikácie.</p>
             </section>
 

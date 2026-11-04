@@ -29,7 +29,6 @@ class StoreAbsenceRequest extends FormRequest
             'date_to' => ['required', 'date', 'after_or_equal:date_from', 'before_or_equal:'.now()->addYears(2)->toDateString()],
             'recurring' => ['nullable', 'boolean'],
             'day_of_week' => ['nullable', 'required_if_accepted:recurring', 'integer', 'between:0,6'],
-            'open_ended' => ['nullable', 'boolean'],
             'reason' => ['required', 'string', 'max:500'],
         ];
     }
@@ -133,19 +132,11 @@ class StoreAbsenceRequest extends FormRequest
         return $from->addDays(($this->integer('day_of_week') - ($from->dayOfWeekIso - 1) + 7) % 7);
     }
 
-    /**
-     * An open-ended recurring absence ("every Tuesday, indefinitely") is stored with the
-     * FOREVER sentinel rather than a null date_to - see the Absence model for why.
-     */
+    /** A one-off absence must not keep a weekday left over from the weekly tab. */
     protected function prepareForValidation(): void
     {
-        // A one-off absence must not keep a weekday left over from the weekly tab.
         if (! $this->boolean('recurring')) {
             $this->merge(['day_of_week' => null]);
-        }
-
-        if ($this->boolean('open_ended') && $this->filled('day_of_week')) {
-            $this->merge(['date_to' => Absence::FOREVER]);
         }
     }
 

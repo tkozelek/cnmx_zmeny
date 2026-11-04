@@ -465,6 +465,18 @@ class AbsenceTest extends TestCase
 
         $this->assertModelExists($absence);
         $this->assertSame(AbsenceStatus::Cancelled, $absence->fresh()->status);
+
+        // Starting today, there is no earlier day to cut it back to - "Deaktivovať" used to change nothing.
+        $today = Absence::factory()->create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'date_from' => today()->toDateString(),
+            'date_to' => today()->toDateString(),
+        ]);
+
+        $this->actingAs($user)->patch(route('absences.end', $today));
+
+        $this->assertSame(AbsenceStatus::Cancelled, $today->fresh()->status);
     }
 
     public function test_a_weekly_absence_blocks_sign_ups_only_on_its_weekday(): void

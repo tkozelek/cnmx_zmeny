@@ -40,13 +40,15 @@ trait FormatsAbsenceColumns
     {
         $user = auth()->user();
         $buttons = '';
+        // Several rows carry the same buttons - the name says which absence each one acts on.
+        $range = e(SlovakDate::full($row->date_from).' – '.($row->isOpenEnded() ? 'trvalá' : SlovakDate::full($row->date_to)));
 
         if ($row->isActive() && $user?->can('end', $row)) {
-            $buttons .= '<button wire:click="endAbsence('.$row->id.')" wire:confirm="Deaktivovať túto absenciu? Odo dneška už nebude platiť." title="Deaktivovať absenciu" class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-semibold px-3 py-1.5 text-xs transition"><i class="fa-solid fa-power-off text-xs text-neutral-400" aria-hidden="true"></i> Deaktivovať</button>';
+            $buttons .= '<button wire:click="endAbsence('.$row->id.')" wire:confirm="Deaktivovať túto absenciu? Odo dneška už nebude platiť." title="Deaktivovať absenciu" aria-label="Deaktivovať absenciu '.$range.'" class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-semibold px-3 py-1.5 text-xs transition"><i class="fa-solid fa-power-off text-xs text-neutral-400" aria-hidden="true"></i> Deaktivovať</button>';
         }
 
         if ($user?->can('delete', [$row, $asManager])) {
-            $buttons .= '<button wire:click="deleteAbsence('.$row->id.')" wire:confirm="Natrvalo vymazať túto absenciu?" title="Vymazať absenciu" aria-label="Vymazať absenciu" class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition"><i class="fa-solid fa-trash text-xs" aria-hidden="true"></i></button>';
+            $buttons .= '<button wire:click="deleteAbsence('.$row->id.')" wire:confirm="Natrvalo vymazať túto absenciu?" title="Vymazať absenciu" aria-label="Vymazať absenciu '.$range.'" class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition"><i class="fa-solid fa-trash text-xs" aria-hidden="true"></i></button>';
         }
 
         return '<div class="flex items-center justify-start gap-2">'.($buttons ?: '-').'</div>';

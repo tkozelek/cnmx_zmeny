@@ -45,7 +45,11 @@ The import (`app:import-legacy-data --team=<id>`):
 - `--team` is required; `LEGACY_DB_USERNAME`/`LEGACY_DB_PASSWORD` are required (no fallback to `DB_*`),
 - `--dry-run` runs everything, prints the count table and rolls back,
 - every run ends with a **legacy-vs-new count table** and rolls back by itself on any mismatch,
-- aborts on two legacy users whose e-mails collide after trim/lowercase,
+- aborts on two legacy users whose e-mails collide after trim/lowercase, on a legacy e-mail that belongs
+  to the super admin, on a locked legacy week that doesn't start on the team's week-start day, and when
+  `DB_*` and `LEGACY_DB_*` name the same database,
+- leaves out sign-ups from today on of blocked (4) and pending (1) people - legacy never withdrew them,
+  and the new app would show them as working (the count table applies the same rule),
 - sends no mail and writes no audit lines for imported sign-ups,
 - creates the fixed test accounts only with `--with-test-users` (never in production),
 - records when it finished (a marker on the `local` disk – **`storage/` must be shared between releases**)
@@ -87,6 +91,7 @@ The import (`app:import-legacy-data --team=<id>`):
    in `DB_*` – `migrate` would run against it). `storage/` is shared between releases (the import
    marker lives there):
    ```bash
+   php8.4 $(which composer) audit     # must be clean; a fixed patch release -> update and re-test first
    php8.4 $(which composer) install --no-dev --optimize-autoloader
    npm ci && npm run build            # or upload a pre-built public/build (fonts and icons are bundled - no CDN)
    cp .env.production .env            # see env list below
@@ -107,7 +112,12 @@ The import (`app:import-legacy-data --team=<id>`):
    - `DB_*` → the **new** DB
    - `LEGACY_DB_*` → the read-only user from step 1; `LEGACY_DB_USERNAME`/`LEGACY_DB_PASSWORD` set
      **explicitly** (the import refuses to run without them)
-   - `BCRYPT_ROUNDS` unset or ≥ 10 – below 10 the legacy password hashes are rejected and the import aborts
+   - `BCRYPT_ROUNDS` ≥ the highest cost among the legacy hashes (P11; unset = 10). A legacy hash with a
+     higher cost than this is rejected and the import aborts on the first such user.
+   - `SESSION_DRIVER` / `CACHE_STORE` unset = `file` under the shared `storage/` (fine; sessions are
+     garbage-collected hourly)
+   - `PREVIEW_AUTH_USER` / `PREVIEW_AUTH_PASSWORD` – set them on a rehearsal host (built-in basic auth for
+     the whole app), **unset in production**
    - `MAIL_*` → a real mailer (not `log`); `MAIL_FROM_*` set
    - `QUEUE_CONNECTION=database`; **no** `TEST_USER_*`
    - `LOG_LEVEL=info` – the `Loggable` audit lines are info/warning
@@ -153,8 +163,9 @@ The import (`app:import-legacy-data --team=<id>`):
           (SELECT COUNT(*) FROM weeks WHERE locked = 1) locked_weeks;
    -- P7 names longer than 255 (the new columns are 255 again - this should return nothing)
    SELECT id FROM users WHERE CHAR_LENGTH(name) > 255 OR CHAR_LENGTH(lastname) > 255;
-   -- P8 duplicate sign-ups that get collapsed into one (know the number)
+   -- P8 duplicate sign-ups that get collapsed into one (know the number) - same day row, or two day rows with one date
    SELECT id_user, id_day, COUNT(*) c FROM user_days GROUP BY id_user, id_day HAVING c > 1;
+   SELECT date, COUNT(*) c FROM days GROUP BY date HAVING c > 1;
    -- P9 sign-ups on a day the same person has an active absence - kept as-is, but know them
    SELECT ud.id_user, d.date FROM user_days ud
      JOIN days d ON d.id = ud.id_day
@@ -169,6 +180,12 @@ The import (`app:import-legacy-data --team=<id>`):
       AND (u.last_login_at IS NULL OR u.last_login_at < NOW() - INTERVAL 12 MONTH)
       AND NOT EXISTS (SELECT 1 FROM user_days ud JOIN days d ON d.id = ud.id_day
                        WHERE ud.id_user = u.id AND d.date >= CURDATE() - INTERVAL 12 MONTH);
+   -- P11 password hash formats and bcrypt costs ("$2y$10$" = cost 10). Set BCRYPT_ROUNDS to at least the
+   --     highest cost; anything that isn't "$2y$"/"$2b$" is not bcrypt and aborts the import - fix it in legacy.
+   SELECT LEFT(password, 7) prefix, COUNT(*) FROM users GROUP BY prefix;
+   -- P12 future sign-ups of blocked/pending people - the import leaves these out (know the number)
+   SELECT COUNT(*) FROM user_days ud JOIN days d ON d.id = ud.id_day JOIN users u ON u.id = ud.id_user
+    WHERE u.id_role IN (1, 4) AND d.date >= CURDATE();
    ```
 7. **Rehearse the import** into the new DB (repeat until a run is clean with nothing to fix; add
    `--discard-new-data` if you tested sign-ups in between):
@@ -193,7 +210,8 @@ The import (`app:import-legacy-data --team=<id>`):
     behind HTTP basic auth or an IP allow-list. Run §6 as a real manager and a real brigádnik (ask them,
     and line the same two people up for the cutover day).
 11. **Announce it to staff** 2–3 days ahead (template in §8) – including the deadline to copy worked
-    hours and the new absence deadline (D9).
+    hours and the new absence deadline (D9). In the release you deploy, set the privacy page's
+    "platí od" date (`app/Http/ViewComposers/PrivacyComposer.php`) to the cutover day.
 
 ---
 
@@ -204,6 +222,7 @@ week gets locked. Times are rough.
 
 | Time | Step |
 |---|---|
+| T-12 | **Check the target DB**: `php8.4 artisan db:show` must name the NEW database, never `d40700_sys` – the next step wipes whatever it names. |
 | T-10 | **Clean target** in the new release: `php8.4 artisan migrate:fresh --force && php8.4 artisan permissions:sync`, create the cinema again (§3 step 4), note the new `--team` id. The final import must not sit on rehearsal leftovers. |
 | T-0 | **Freeze legacy**: in the legacy app folder `php artisan down --retry=60`. From now on nobody can write. |
 | T+1 | **Dump the legacy DB**: `mysqldump --single-transaction --no-tablespaces d40700_sys > legacy-<date>.sql`. Pack the legacy uploaded files with it (D4). |
@@ -236,6 +255,8 @@ password. Also:
 ```sql
 SELECT COUNT(*) FROM users WHERE email_verified_at IS NULL;   -- = 0
 ```
+And `ls storage/app/legacy-import/` shows `team-<id>.txt` – the import's marker; without it a later import
+would not notice data written in the new app (the command fails loudly if it can't write it).
 
 ## 6. Smoke test (~10 min)
 
@@ -269,7 +290,8 @@ Possible until the point of no return (D2):
 3. Switch the docroot back to the legacy release; point the queue worker back.
 4. Run `php artisan up` in the legacy folder.
 
-The legacy DB was never written to, so it's exactly as it was at T-0.
+The legacy DB was never written to, so it's exactly as it was at T-0. **To try the cutover again later,
+start over from T-12** (fresh target DB, new team, import) – never re-import on top of the abandoned attempt.
 
 ## 8. Staff announcement (template)
 
@@ -278,7 +300,9 @@ The legacy DB was never written to, so it's exactly as it was at T-0.
 > doteraz (budeš odhlásený/á, stačí sa znova prihlásiť). Tvoje zápisy aj absencie zostávajú.
 > Novinka: absenciu treba nahlásiť aspoň {N} dni vopred.
 > Evidencia odpracovaných hodín a nahrané súbory v novej verzii nebudú – ak si chceš svoje hodiny
-> ponechať, odpíš si ich do {dátum}.
+> ponechať, odpíš si ich do {dátum}. Pôvodné dáta (aj evidenciu hodín) uchovám v zálohe 30 dní, potom ich
+> vymažem. Účet bez prihlásenia a bez zápisu 12 mesiacov sa automaticky vymaže.
+> Ako s tvojimi údajmi zaobchádzam: {APP_URL}/ochrana-osobnych-udajov – kontakt {PRIVACY_OPERATOR_EMAIL}.
 
 ## 9. After the cutover
 
@@ -286,5 +310,6 @@ The legacy DB was never written to, so it's exactly as it was at T-0.
 - After the first night: check the retention run in `storage/logs` matches the step 8 preview.
 - Merge `feature/bootstrap` into `master` (and make it the default branch), so `master` is what production runs.
 - Remove `LEGACY_DB_*` from `.env` and drop the `cnmx_import` MySQL user once you're confident (no more imports).
-- Keep the legacy dump + files for the agreed period (D4), then delete them.
+- Keep the legacy dump + files for the agreed period (D4), then delete them – and at the same time drop the
+  `d40700_sys` database and remove the legacy app folder from the host (the privacy page promises 30 days).
 - Later: retire `ImportLegacyData`, its test and the `legacy` DB connection in one commit.

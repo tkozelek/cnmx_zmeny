@@ -9,7 +9,9 @@
      class="fixed inset-0 z-[100] grid h-full w-full place-items-center bg-neutral-950/60 backdrop-blur-xl lg:hidden overflow-y-auto p-4"
      style="display: none;">
 
-    <nav @click.stop x-trap.noscroll.inert="openn" role="dialog" aria-modal="true" aria-label="Menu" class="relative flex w-full max-w-xs flex-col items-center space-y-3 rounded-lg bg-neutral-900 border border-neutral-800 p-6 text-center shadow-xl">
+    {{-- The dialog wraps the nav: role="dialog" on the <nav> itself hid it as a navigation landmark. --}}
+    <div @click.stop x-trap.noscroll.inert="openn" role="dialog" aria-modal="true" aria-label="Menu" class="relative w-full max-w-xs rounded-lg bg-neutral-900 border border-neutral-800 p-6 shadow-xl">
+    <nav aria-label="Hlavné menu" class="flex w-full flex-col items-center space-y-3 text-center">
 
         <!-- Dedicated Close Button -->
         <button
@@ -149,4 +151,5 @@
             >Registrácia</a>
         @endif
     </nav>
+    </div>
 </div>

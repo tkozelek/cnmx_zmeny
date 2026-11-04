@@ -9,6 +9,7 @@ use App\Models\Assignment;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WeekLock;
+use App\Services\WeekService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
@@ -75,6 +76,18 @@ class ImportLegacyData extends Command
             return self::FAILURE;
         }
 
+        // The runbook runs `migrate:fresh` on whatever DB_* names - one copied line would make that
+        // the legacy production database. Refusing here makes every rehearsal catch it first.
+        $default = config('database.default');
+
+        if (config("database.connections.{$default}.driver") !== 'sqlite'
+            && config("database.connections.{$default}.database") === config('database.connections.legacy.database')
+            && config("database.connections.{$default}.host") === config('database.connections.legacy.host')) {
+            $this->error('DB_* a LEGACY_DB_* ukazujú na tú istú databázu - nová aplikácia musí mať vlastnú (pozri runbook).');
+
+            return self::FAILURE;
+        }
+
         $legacy = DB::connection('legacy');
 
         try {
@@ -123,6 +136,29 @@ class ImportLegacyData extends Command
 
         if ($duplicates->isNotEmpty()) {
             $this->error('Legacy e-maily sa po orezaní medzier a malých písmenách zhodujú (spojili by sa dvaja ľudia): '.$duplicates->implode(', '));
+
+            return self::FAILURE;
+        }
+
+        // The import would overwrite the password and make the account a head manager of the cinema.
+        $superAdmins = User::where('is_super_admin', true)
+            ->whereIn('email', $legacy->table('users')->pluck('email')->map($this->normalizeEmail(...)))
+            ->pluck('email');
+
+        if ($superAdmins->isNotEmpty()) {
+            $this->error('Legacy používateľ má e-mail super admina ('.$superAdmins->implode(', ').') - super admin musí mať samostatný e-mail.');
+
+            return self::FAILURE;
+        }
+
+        // A lock on a date that isn't the team's week start never matches a computed week, so
+        // that week would quietly show as open.
+        $misalignedLocks = $legacy->table('weeks')->where('locked', true)->pluck('date_from')
+            ->map(fn (string $dateFrom): string => Carbon::parse($dateFrom)->toDateString())
+            ->reject(fn (string $date): bool => app(WeekService::class)->start($team, Carbon::parse($date))->toDateString() === $date);
+
+        if ($misalignedLocks->isNotEmpty()) {
+            $this->error('Zamknuté legacy týždne nezačínajú v deň začiatku týždňa kina: '.$misalignedLocks->implode(', '));
 
             return self::FAILURE;
         }
@@ -186,7 +222,14 @@ class ImportLegacyData extends Command
 
         DB::commit();
 
-        Storage::disk('local')->put($this->markerPath($team), now()->toDateTimeString());
+        // The local disk doesn't throw: without this check a missing marker silently turns the
+        // re-run guard off.
+        if (! Storage::disk('local')->put($this->markerPath($team), now()->toDateTimeString())) {
+            $this->error('Dáta sú naimportované, ale nepodarilo sa zapísať storage/app/'.$this->markerPath($team).
+                ' - bez neho ochrana pred opakovaným importom nefunguje. Oprav práva k storage/.');
+
+            return self::FAILURE;
+        }
 
         Log::info('Import z legacy databázy dokončený.', ['team_id' => $team->id]);
 
@@ -364,6 +407,7 @@ class ImportLegacyData extends Command
             ->map(fn (string $date): string => Carbon::parse($date)->toDateString());
 
         $rows = $legacy->table('user_days')->get(['id_user', 'id_day', 'popis']);
+        $legacyRoles = $legacy->table('users')->pluck('id_role', 'id');
 
         // Keyed "userId|date" - legacy user_days has no unique (user, day) constraint, so a
         // duplicate signup silently overwrites the earlier one instead of failing the import.
@@ -373,7 +417,7 @@ class ImportLegacyData extends Command
             $userId = $userMap[$row->id_user] ?? null;
             $date = $dayDates[$row->id_day] ?? null;
 
-            if (! $userId || ! $date) {
+            if (! $userId || ! $date || ! $this->keepsSignup((int) $legacyRoles[$row->id_user], $date)) {
                 continue;
             }
 
@@ -485,6 +529,15 @@ class ImportLegacyData extends Command
         return [$from->max($to->min($canceled->copy()->subDay())), AbsenceStatus::Active];
     }
 
+    /**
+     * A blocked (4) or still-pending (1) person's sign-ups from today on stay behind: legacy
+     * never withdrew them, and the new app would show that person as working.
+     */
+    private function keepsSignup(int $legacyRole, string $date): bool
+    {
+        return ! in_array($legacyRole, [1, 4], true) || $date < today()->toDateString();
+    }
+
     private function normalizeEmail(string $email): string
     {
         return mb_strtolower(trim($email));
@@ -506,6 +559,7 @@ class ImportLegacyData extends Command
         $dayDates = $legacy->table('days')->pluck('date', 'id')
             ->map(fn (string $date): string => Carbon::parse($date)->toDateString());
         $legacyUserIds = $legacyUsers->pluck('id')->all();
+        $legacyRoles = $legacyUsers->pluck('id_role', 'id');
 
         $holidays = $legacy->table('user_holidays')->whereIn('id_user', $legacyUserIds)->get(['date_from', 'date_canceled']);
 
@@ -515,8 +569,9 @@ class ImportLegacyData extends Command
             ['  čakajúci na schválenie (rola 1)', $legacyUsers->where('id_role', 1)->count(), $imported->whereNull('pivot.approved_at')->count()],
             ['  zablokovaní (rola 4)', $legacyUsers->where('id_role', 4)->count(), $imported->where('is_active', false)->count()],
             ['  hlavní manažéri (rola 3)', $legacyUsers->where('id_role', 3)->count(), $imported->filter(fn (User $user): bool => $user->hasRole(RoleEnum::HeadManager->value))->count()],
-            ['Zápisy (bez duplicít)', $legacy->table('user_days')->whereIn('id_user', $legacyUserIds)->get(['id_user', 'id_day'])
-                ->filter(fn ($row): bool => isset($dayDates[$row->id_day]))
+            ['Zápisy (bez duplicít a budúcich zápisov zablokovaných/čakajúcich)', $legacy->table('user_days')->whereIn('id_user', $legacyUserIds)->get(['id_user', 'id_day'])
+                ->filter(fn ($row): bool => isset($dayDates[$row->id_day])
+                    && $this->keepsSignup((int) $legacyRoles[$row->id_user], $dayDates[$row->id_day]))
                 ->map(fn ($row): string => $row->id_user.'|'.$dayDates[$row->id_day])
                 ->unique()->count(),
                 Assignment::query()->whereIn('user_id', $importedIds)->count()],

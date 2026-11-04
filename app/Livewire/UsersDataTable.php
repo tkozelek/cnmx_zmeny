@@ -253,6 +253,15 @@ class UsersDataTable extends DataTableComponent
         $this->authorize('approve', $user);
 
         $team = app(Team::class);
+
+        // Only a pending registration is refused here; a member is removed or deactivated
+        // through the user's edit page. A replayed call would otherwise half-remove them.
+        if ($user->isApprovedIn($team)) {
+            $this->dispatch('toast', message: 'Používateľ už je schválený.');
+
+            return;
+        }
+
         $team->users()->updateExistingPivot($user->id, ['approved_at' => null]);
 
         if ($user->teams()->count() === 1) {

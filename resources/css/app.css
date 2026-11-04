@@ -36,6 +36,8 @@ html {
     scroll-padding-top: 5rem;
     /* Pages with and without a scrollbar keep the same width - the header no longer jumps. */
     scrollbar-gutter: stable;
+    /* Native scrollbars, select popups and autofill match the dark UI. */
+    color-scheme: dark;
 }
 
 /*
@@ -973,5 +975,24 @@ span.flatpickr-weekday {
     .day-card,
     .rozpis-day {
         break-inside: avoid;
+    }
+
+    /* Browsers drop backgrounds when printing, which left light-grey text on white paper. */
+    html {
+        color-scheme: light;
+    }
+
+    body,
+    .day-card,
+    .rozpis-day,
+    .day-card *,
+    .rozpis-day * {
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .day-card,
+    .rozpis-day {
+        border-color: #999 !important;
     }
 }

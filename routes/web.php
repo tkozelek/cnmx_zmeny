@@ -164,6 +164,7 @@ Route::middleware('tenant')->group(function () {
         Route::get('/{user}', [UserController::class, 'edit'])->name('edit');
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+        Route::delete('/{user}/natrvalo', [UserController::class, 'erase'])->name('erase');
     });
 
     Route::post('/week/{date}/lock', [WeekLockController::class, 'store'])->name('weeks.lock');

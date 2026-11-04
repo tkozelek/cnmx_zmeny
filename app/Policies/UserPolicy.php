@@ -104,6 +104,23 @@ class UserPolicy
     }
 
     /**
+     * "Vymazať natrvalo": the same tiers as deactivating (a manager erases brigádnici, a head
+     * manager also managers, never the last head manager), but only an account already
+     * deactivated here, and only someone with no other cinema - their data there is not this
+     * cinema's to delete.
+     */
+    public function erase(User $user, User $model): bool|Response
+    {
+        $canDeactivate = $this->delete($user, $model);
+
+        if ($canDeactivate !== true) {
+            return $canDeactivate;
+        }
+
+        return ! $model->is_active && ! $model->is_super_admin && ! $model->belongsToSeveralTeams();
+    }
+
+    /**
      * Accept or refuse a membership.
      *
      * Tier-checked like update() and delete(), which it was not: `user.approve` is a permission a

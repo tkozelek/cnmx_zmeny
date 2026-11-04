@@ -104,6 +104,21 @@
             </form>
 
             <div class="pt-4 border-t border-neutral-800">
+                @if($canErase)
+                <form action="{{ route('admin.users.erase', ['user' => $user->id]) }}" method="POST">
+                    @method('DELETE')
+                    @csrf
+                    <button
+                        type="submit"
+                        class="w-full py-2.5 px-4 text-white bg-rose-600 hover:bg-rose-500 rounded-xl text-xs font-semibold tracking-wide transition flex items-center justify-center gap-2"
+                        onclick="return confirm(@js('Natrvalo vymazať účet – '.$user->name.' '.$user->lastname.'? Zmažú sa aj jeho zápisy a absencie. Toto sa nedá vrátiť späť.'));"
+                    >
+                        <i class="fa-solid fa-trash text-xs" aria-hidden="true"></i>
+                        <span>Vymazať natrvalo</span>
+                    </button>
+                    <p class="mt-2 text-xs text-neutral-400">Účet je deaktivovaný. Vymazaním zmiznú aj jeho zápisy a&nbsp;absencie.</p>
+                </form>
+                @else
                 <form action="{{ route('admin.users.destroy', ['user' => $user->id]) }}" method="POST">
                     @method('DELETE')
                     @csrf
@@ -118,6 +133,7 @@
                         <span>{{ $isShared ? 'Odobrať z kina' : 'Deaktivovať účet' }}</span>
                     </button>
                 </form>
+                @endif
             </div>
         </div>
     </div>

@@ -9,10 +9,12 @@ use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\Team;
 use App\Models\User;
 use App\Notifications\AddUserResetPassword;
+use App\Services\AccountEraser;
 use App\Services\TeamMembershipService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -28,6 +30,8 @@ class UserController extends Controller
 
         return view('admin.index', [
             'roles' => $this->assignableRoles(),
+            // Error key -> input id in the "Pridať používateľa" dialog, for the error summary's links.
+            'createErrorFields' => ['name' => 'create_name', 'lastname' => 'create_lastname', 'email' => 'create_email', 'role' => 'create_roles'],
         ]);
     }
 
@@ -73,7 +77,20 @@ class UserController extends Controller
             'user' => $user,
             'roles' => $this->assignableRoles(),
             'isShared' => $user->belongsToSeveralTeams(),
+            'canErase' => auth()->user()->can('erase', $user),
         ]);
+    }
+
+    /** "Vymazať natrvalo" - a deactivated account and everything in it, for good. */
+    public function erase(User $user, Team $team, AccountEraser $eraser): RedirectResponse
+    {
+        $this->authorize('erase', $user);
+
+        $eraser->erase($user);
+
+        Log::channel('security')->info('Účet natrvalo vymazaný.', ['user_id' => $user->id, 'team_id' => $team->id, 'by' => auth()->id()]);
+
+        return to_route('admin.users.index')->with(['success' => 'Účet bol natrvalo vymazaný.', 'message' => 'Účet bol natrvalo vymazaný.']);
     }
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse

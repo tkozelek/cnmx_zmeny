@@ -37,9 +37,9 @@
                      aria-labelledby="modal-adduser-title"
                      class="relative w-full max-w-2xl rounded-lg border border-neutral-800 bg-neutral-900 shadow-xl overflow-hidden my-auto">
                     <div class="flex items-center justify-between p-4 md:p-5 border-b border-neutral-800">
-                        <h3 id="modal-adduser-title" class="text-lg font-bold text-white">
+                        <h2 id="modal-adduser-title" class="text-lg font-bold text-white">
                             Pridať používateľa
-                        </h3>
+                        </h2>
                         <button @click="openModal = false" type="button" aria-label="Zatvoriť okno" class="text-neutral-400 bg-transparent rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center hover:bg-neutral-800 hover:text-white">
                             <i class="fa-solid fa-xmark text-lg"></i>
                             <span class="sr-only">Zavrieť okno</span>

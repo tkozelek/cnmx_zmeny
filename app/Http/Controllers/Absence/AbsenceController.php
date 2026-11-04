@@ -55,7 +55,7 @@ class AbsenceController extends Controller
 
     public function store(StoreAbsenceRequest $request): RedirectResponse
     {
-        $request->user()->absences()->create($request->safe()->except(['open_ended', 'recurring']));
+        $request->user()->absences()->create($request->safe()->except('recurring'));
 
         return back()->with(['message' => 'Absencia nahlásená.']);
     }

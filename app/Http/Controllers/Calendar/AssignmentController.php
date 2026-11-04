@@ -41,8 +41,9 @@ class AssignmentController extends Controller
         $userId = $target->getKey();
 
         // Keyed on (user_id, date), matching the table's unique index: one signup per person
-        // per day, so a resubmitted form is idempotent rather than an integrity error.
-        $assignment = Assignment::firstOrCreate(
+        // per day, so a resubmitted form - or two at once, which a select-then-insert would race -
+        // is idempotent rather than an integrity error.
+        $assignment = Assignment::createOrFirst(
             [
                 'user_id' => $userId,
                 'date' => $date->toDateString(),

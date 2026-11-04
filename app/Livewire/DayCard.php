@@ -70,7 +70,7 @@ class DayCard extends Component
             return;
         }
 
-        Assignment::firstOrCreate(
+        Assignment::createOrFirst(
             [
                 'user_id' => auth()->id(),
                 'date' => $this->date,
