@@ -56,6 +56,7 @@ class Absence extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -63,6 +64,9 @@ class Absence extends Model
 
     /**
      * Absences touching the given range.
+     *
+     * @param  Builder<Absence>  $query
+     * @return Builder<Absence>
      */
     public function scopeOverlapping(Builder $query, CarbonInterface $from, CarbonInterface $to): Builder
     {
@@ -71,14 +75,24 @@ class Absence extends Model
             ->where('date_to', '>=', $from->toDateString());
     }
 
-    /** Not over yet. */
+    /**
+     * Not over yet.
+     *
+     * @param  Builder<Absence>  $query
+     * @return Builder<Absence>
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', AbsenceStatus::Active->value)
             ->where('date_to', '>=', now()->toDateString());
     }
 
-    /** Already finished - either it ran out or it was ended early / cancelled. */
+    /**
+     * Already finished - either it ran out or it was ended early / cancelled.
+     *
+     * @param  Builder<Absence>  $query
+     * @return Builder<Absence>
+     */
     public function scopePast(Builder $query): Builder
     {
         return $query->where(function (Builder $q) {
@@ -87,7 +101,12 @@ class Absence extends Model
         });
     }
 
-    /** Running and upcoming first (nearest start first), then ended (latest first), cancelled last. */
+    /**
+     * Running and upcoming first (nearest start first), then ended (latest first), cancelled last.
+     *
+     * @param  Builder<Absence>  $query
+     * @return Builder<Absence>
+     */
     public function scopeOrderByRelevance(Builder $query): Builder
     {
         $today = now()->toDateString();

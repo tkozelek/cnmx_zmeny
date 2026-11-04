@@ -137,8 +137,12 @@ The import (`app:import-legacy-data`):
 7. **Rehearse the import** into the new DB (repeat until clean; add `--discard-new-data` if you tested
    sign-ups in between):
    ```bash
-   php artisan app:import-legacy-data --team=<id> --force
+   php8.4 artisan app:import-legacy-data --team=<id> --dry-run   # full run + count check, then rolled back
+   php8.4 artisan app:import-legacy-data --team=<id> --force
    ```
+   `--team` is required, and `LEGACY_DB_USERNAME`/`LEGACY_DB_PASSWORD` must be set (there is no
+   fallback to `DB_*`). Every run ends with a legacy-vs-new count table and rolls back by itself if a
+   count doesn't match - that table replaces the manual SQL in section 5.
    Then run the **post-import checks** (section 5) and compare them with P6.
 8. **Preview the retention cleanup** on the imported data – its first real run deletes legacy accounts
    with no login and no sign-up in 12 months (managers are never pruned):
@@ -159,7 +163,7 @@ The import (`app:import-legacy-data`):
 |---|---|
 | T-0 | **Freeze legacy**: in the legacy app folder `php artisan down --retry=60`. From now on nobody can write. |
 | T+1 | **Back up both DBs**: `mysqldump --single-transaction --no-tablespaces d40700_sys > legacy-<date>.sql` (a SELECT-only user needs `--no-tablespaces` on MySQL ≥ 8.0.21); also dump the new DB (the rehearsal state). |
-| T+3 | **Final import**: `php artisan app:import-legacy-data --team=<id> --force` |
+| T+3 | **Final import**: `php8.4 artisan app:import-legacy-data --team=<id> --force` – it prints the count table and rolls back by itself on any mismatch. |
 | T+4 | **Verify**: post-import checks (section 5) must equal the P6 baseline taken *now* during the freeze – re-run P6. |
 | T+6 | **Optimise** the new release: `php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache`, then `php artisan queue:restart`. |
 | T+7 | **Switch the domain** to the new release (docroot/symlink → `<new>/public`, reload nginx/PHP-FPM, clear OPcache). |

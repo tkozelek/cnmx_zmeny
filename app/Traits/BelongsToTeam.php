@@ -4,7 +4,6 @@ namespace App\Traits;
 
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -23,11 +22,12 @@ trait BelongsToTeam
             }
         });
 
-        static::creating(function (Model $model): void {
+        static::creating(function (self $model): void {
             $model->team_id ??= static::currentTeamId();
         });
     }
 
+    /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);

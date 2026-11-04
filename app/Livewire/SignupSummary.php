@@ -6,6 +6,7 @@ use App\Models\Assignment;
 use App\Models\Team;
 use App\Support\SlovakPlural;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -13,6 +14,9 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
+/**
+ * @property-read Collection<int, Assignment> $signupCounts
+ */
 class SignupSummary extends Component
 {
     #[Locked]
@@ -25,7 +29,7 @@ class SignupSummary extends Component
     }
 
     /**
-     * @return Collection<int, object>
+     * @return Collection<int, Assignment>
      */
     #[Computed]
     public function signupCounts(): Collection
@@ -53,7 +57,7 @@ class SignupSummary extends Component
             ]);
     }
 
-    public function render()
+    public function render(): View
     {
         $people = $this->signupCounts->count();
 

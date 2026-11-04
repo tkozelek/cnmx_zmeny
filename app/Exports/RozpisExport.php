@@ -25,6 +25,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  *
  * Distinct from WeeklyScheduleExport, which exports the *signup* stage: who put their name down,
  * before anyone was placed on a position.
+ *
+ * @phpstan-import-type DayPlan from RozpisService
  */
 class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
 {
@@ -71,7 +73,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
 
     private const RULE = 'FFBFBFBF';
 
-    /** @var Collection<int, array<string, mixed>> */
+    /** @var Collection<int, DayPlan> */
     private Collection $plan;
 
     public function __construct(
@@ -156,7 +158,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
      * manager's reminder that the day is short, and the reference sheet shows exactly that.
      *
      * @param  array<int, array<int, string>>  $grid
-     * @param  array<string, mixed>  $day
+     * @param  DayPlan  $day
      */
     private function writeDay(array &$grid, array $day, int $startRow, int $column): void
     {
@@ -237,7 +239,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
     /**
      * Borders, fills and row heights for one day block.
      *
-     * @param  array<string, mixed>  $day
+     * @param  DayPlan  $day
      */
     private function styleBlock(Worksheet $sheet, array $day, int $startRow, int $column): void
     {

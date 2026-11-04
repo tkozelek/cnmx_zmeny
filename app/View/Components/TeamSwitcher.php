@@ -19,7 +19,7 @@ class TeamSwitcher extends Component
         $user = auth()->user();
 
         $this->teams = $user?->accessibleTeams() ?? new Collection;
-        $this->currentTeam = $user?->currentTeam ?? $this->teams->first();
+        $this->currentTeam = $user->currentTeam ?? $this->teams->first();
     }
 
     public function shouldRender(): bool

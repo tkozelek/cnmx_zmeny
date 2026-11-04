@@ -8,6 +8,7 @@ use App\Notifications\ResetPasswordNotification;
 use App\Notifications\VerifyEmailAddress;
 use App\Services\SuperAdminSession;
 use App\Traits\Loggable;
+use Database\Factories\UserFactory;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
@@ -42,7 +43,12 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasName, MustVerifyEmail
 {
-    use CanResetPassword, HasFactory, HasRoles, InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery, Loggable, Notifiable;
+    use CanResetPassword;
+
+    /** @use HasFactory<UserFactory> */
+    use HasFactory;
+
+    use HasRoles, InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery, Loggable, Notifiable;
 
     /** Roles live on `web`; without this Spatie would look them up under `platform` inside the panel. */
     protected string $guard_name = 'web';
@@ -60,7 +66,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     ];
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -81,7 +87,11 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         ];
     }
 
-    /** Every membership, approved or not. */
+    /**
+     * Every membership, approved or not.
+     *
+     * @return BelongsToMany<Team, $this>
+     */
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class)
@@ -95,7 +105,11 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return $this->teams()->count() > 1;
     }
 
-    /** The team this user is currently acting in. */
+    /**
+     * The team this user is currently acting in.
+     *
+     * @return BelongsTo<Team, $this>
+     */
     public function currentTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'current_team_id');
@@ -110,6 +124,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         });
     }
 
+    /** @return HasMany<Assignment, $this> */
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
@@ -130,6 +145,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             ->each->delete();
     }
 
+    /** @return HasMany<Absence, $this> */
     public function absences(): HasMany
     {
         return $this->hasMany(Absence::class);
@@ -141,6 +157,8 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
      * desktop + mobile nav), and once per row when rendering action columns, and membership
      * approval changes rarely. Also memoized on the instance so one request never hits the
      * cache store twice.
+     *
+     * @var Collection<int, Team>|null
      */
     private ?Collection $approvedTeamsCache = null;
 

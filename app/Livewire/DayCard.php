@@ -12,6 +12,7 @@ use App\Support\SlovakDate;
 use App\Support\SlovakPlural;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -20,6 +21,12 @@ use Livewire\Component;
 
 /**
  * One day of the week plan. Seven of these make up the calendar.
+ *
+ * @property-read Collection<int, Assignment> $assignments
+ * @property-read Assignment|null $mine
+ * @property-read bool $isAdmin
+ * @property-read CarbonImmutable $dayCarbon
+ * @property-read string $shortDate
  */
 class DayCard extends Component
 {
@@ -30,7 +37,11 @@ class DayCard extends Component
     #[Locked]
     public bool $locked = false;
 
-    /** Preloaded assignments passed from parent page on initial load to eliminate N+1 queries. */
+    /**
+     * Preloaded assignments passed from parent page on initial load to eliminate N+1 queries.
+     *
+     * @var Collection<int, Assignment>|null
+     */
     #[Locked]
     public ?Collection $initialAssignments = null;
 
@@ -259,7 +270,7 @@ class DayCard extends Component
         return $this->isAdmin && $assignment->user_id !== auth()->id();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.day-card');
     }

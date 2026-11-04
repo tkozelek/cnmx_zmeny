@@ -59,6 +59,7 @@ class EmailChangeController extends Controller
         return $user;
     }
 
+    /** @param  'approved'|'declined'|'completed'|'taken'|null  $status */
     private function page(User $user, ?string $status): View
     {
         $outcome = match ($status) {

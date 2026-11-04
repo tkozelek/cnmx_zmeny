@@ -47,11 +47,13 @@ class WeekLock extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function lockedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'locked_by');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function publishedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'published_by');
@@ -98,7 +100,12 @@ class WeekLock extends Model
             ->first();
     }
 
-    /** Same team-agnostic lookup both statics need - see locked() for why the scope is dropped. */
+    /**
+     * Same team-agnostic lookup both statics need - see locked() for why the scope is dropped.
+     *
+     * @param  Builder<WeekLock>  $query
+     * @return Builder<WeekLock>
+     */
     public function scopeForTeamWeek(Builder $query, int $teamId, CarbonInterface|string $weekStart): Builder
     {
         return $query->withoutGlobalScope('team')

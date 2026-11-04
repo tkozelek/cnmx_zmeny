@@ -41,6 +41,8 @@ class Team extends Model
 
     /**
      * Every membership, approved or not. Use `approvedUsers()` for people who may log in.
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function users(): BelongsToMany
     {
@@ -49,11 +51,13 @@ class Team extends Model
             ->withTimestamps();
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function approvedUsers(): BelongsToMany
     {
         return $this->users()->wherePivotNotNull('approved_at');
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function pendingUsers(): BelongsToMany
     {
         return $this->users()
@@ -64,27 +68,33 @@ class Team extends Model
 
     /**
      * Always present - created together with the team, so unsaved defaults never leak.
+     *
+     * @return HasOne<TeamSetting, $this>
      */
     public function settings(): HasOne
     {
         return $this->hasOne(TeamSetting::class);
     }
 
+    /** @return HasMany<Position, $this> */
     public function positions(): HasMany
     {
         return $this->hasMany(Position::class);
     }
 
+    /** @return HasMany<Assignment, $this> */
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
     }
 
+    /** @return HasMany<Absence, $this> */
     public function absences(): HasMany
     {
         return $this->hasMany(Absence::class);
     }
 
+    /** @return HasMany<WeekLock, $this> */
     public function weekLocks(): HasMany
     {
         return $this->hasMany(WeekLock::class);
@@ -103,25 +113,25 @@ class Team extends Model
     /** 0 = Monday … 6 = Sunday. */
     public function weekStartDay(): int
     {
-        return $this->cachedSettings()?->week_start_day ?? TeamSetting::DEFAULT_WEEK_START_DAY;
+        return $this->cachedSettings()->week_start_day ?? TeamSetting::DEFAULT_WEEK_START_DAY;
     }
 
     /** How many weeks past the current one the calendar may navigate. */
     public function weekLookahead(): int
     {
-        return $this->cachedSettings()?->week_lookahead ?? TeamSetting::DEFAULT_WEEK_LOOKAHEAD;
+        return $this->cachedSettings()->week_lookahead ?? TeamSetting::DEFAULT_WEEK_LOOKAHEAD;
     }
 
     /** Days before the first absent day that a submission is still accepted. */
     public function absenceDeadlineDays(): int
     {
-        return $this->cachedSettings()?->absence_deadline_days ?? TeamSetting::DEFAULT_ABSENCE_DEADLINE_DAYS;
+        return $this->cachedSettings()->absence_deadline_days ?? TeamSetting::DEFAULT_ABSENCE_DEADLINE_DAYS;
     }
 
     /** Number of days after an inactive absence ends where the owner may still delete it. 0 = no limit. */
     public function staleAbsenceDeletionDays(): int
     {
-        return $this->cachedSettings()?->stale_absence_deletion_days ?? TeamSetting::DEFAULT_STALE_ABSENCE_DELETION_DAYS;
+        return $this->cachedSettings()->stale_absence_deletion_days ?? TeamSetting::DEFAULT_STALE_ABSENCE_DELETION_DAYS;
     }
 
     /**
@@ -143,13 +153,13 @@ class Team extends Model
     /** How many weeks of history the fairness ranking counts. */
     public function fairnessWindowWeeks(): int
     {
-        return $this->cachedSettings()?->fairness_window_weeks ?? TeamSetting::DEFAULT_FAIRNESS_WINDOW_WEEKS;
+        return $this->cachedSettings()->fairness_window_weeks ?? TeamSetting::DEFAULT_FAIRNESS_WINDOW_WEEKS;
     }
 
     /** How hard a Slovak public holiday is to staff, in place of its weekday's weight. */
     public function holidayWeight(): float
     {
-        return $this->cachedSettings()?->holiday_weight ?? TeamSetting::DEFAULT_HOLIDAY_WEIGHT;
+        return $this->cachedSettings()->holiday_weight ?? TeamSetting::DEFAULT_HOLIDAY_WEIGHT;
     }
 
     /**

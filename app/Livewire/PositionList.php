@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Position;
 use App\Models\PositionGroup;
 use App\Models\Team;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -16,6 +17,9 @@ use Livewire\Component;
  *
  * Until this existed the only way to add a position was editing the seeder by hand, which is
  * why it is a prerequisite for the rozpis builder rather than a nice-to-have.
+ *
+ * @property-read Collection<int, Position> $positions
+ * @property-read Collection<int, PositionGroup> $groups
  */
 class PositionList extends Component
 {
@@ -332,7 +336,7 @@ class PositionList extends Component
         return auth()->user()?->can('create', Position::class) ?? false;
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.position-list');
     }

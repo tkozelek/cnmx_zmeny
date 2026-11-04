@@ -78,11 +78,19 @@ class FairnessService
         // Team passed explicitly, so the tenant scope is dropped - same reasoning as
         // WeekLock::locked(): asking about another team from console or tests must not
         // silently answer "nobody worked here".
-        $worked = Assignment::withoutGlobalScope('team')
+        $signups = Assignment::withoutGlobalScope('team')
             ->where('team_id', $team->getKey())
-            ->whereNotNull('position_id')
             ->whereBetween('date', [$since->toDateString(), $asOf->toDateString()])
-            ->get(['user_id', 'date']);
+            ->get(['user_id', 'date', 'position_id']);
+
+        // A day that went through the rozpis counts only the people placed on it. A day nobody was
+        // ever placed on (imported legacy history, or a cinema without the module) counts every
+        // sign-up - there, signing up was the plan.
+        $plannedDates = $signups->whereNotNull('position_id')
+            ->mapWithKeys(fn (Assignment $assignment): array => [$assignment->date->toDateString() => true]);
+
+        $worked = $signups->filter(fn (Assignment $assignment): bool => $assignment->position_id !== null
+            || ! $plannedDates->has($assignment->date->toDateString()));
 
         // Routed through dayWeight() rather than indexing $team->fairnessDayWeights() directly,
         // so a worked Slovak public holiday counts at holiday_weight instead of its weekday's -

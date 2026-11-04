@@ -9,6 +9,7 @@ use App\Traits\FormatsAbsenceColumns;
 use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
+use Rappasoft\LaravelLivewireTables\Views\Filter;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class MyAbsencesDataTable extends DataTableComponent
@@ -18,6 +19,7 @@ class MyAbsencesDataTable extends DataTableComponent
 
     use FormatsAbsenceColumns;
 
+    /** @var class-string<Absence> */
     protected $model = Absence::class;
 
     public function configure(): void
@@ -41,6 +43,7 @@ class MyAbsencesDataTable extends DataTableComponent
             ->setEmptyMessage('Nemáš evidované žiadne absencie.');
     }
 
+    /** @return Builder<Absence> */
     public function builder(): Builder
     {
         return Absence::query()
@@ -48,6 +51,7 @@ class MyAbsencesDataTable extends DataTableComponent
             ->when($this->getSorts() === [], fn (Builder $query) => $query->orderByRelevance());
     }
 
+    /** @return list<Filter> */
     public function filters(): array
     {
         return [
@@ -68,6 +72,7 @@ class MyAbsencesDataTable extends DataTableComponent
         ];
     }
 
+    /** @return list<Column> */
     public function columns(): array
     {
         return [

@@ -21,11 +21,11 @@ trait NotifiesRozpisChange
                 return;
             }
 
-            static::scheduleRozpisChangeNotification($model);
+            self::scheduleRozpisChangeNotification($model);
         });
 
         static::deleted(function (self $model): void {
-            static::scheduleRozpisChangeNotification($model);
+            self::scheduleRozpisChangeNotification($model);
         });
     }
 

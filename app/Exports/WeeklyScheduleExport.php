@@ -6,6 +6,7 @@ use App\Models\Assignment;
 use App\Models\Team;
 use App\Traits\EscapesSpreadsheetFormulas;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -31,7 +32,7 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
 {
     use EscapesSpreadsheetFormulas;
 
-    /** @var Collection<string, Collection<int, Assignment>> */
+    /** @var Collection<array-key, EloquentCollection<int, Assignment>> */
     private Collection $byDate;
 
     public function __construct(
@@ -47,6 +48,8 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
     /**
      * The grid, transposed: a spreadsheet is written row by row but the layout is a column
      * per day, so the day columns are zipped into rows here.
+     *
+     * @return Collection<int, array<int, string>>
      */
     public function collection(): Collection
     {
@@ -125,7 +128,11 @@ class WeeklyScheduleExport implements FromCollection, ShouldAutoSize, WithDefaul
         return 'Zapísaní ľudia';
     }
 
-    /** "Kozelek T. (môže až od 18:00)" - surname, initial, the signup note. */
+    /**
+     * "Kozelek T. (môže až od 18:00)" - surname, initial, the signup note.
+     *
+     * @return array<int, string>
+     */
     private function cellsFor(CarbonImmutable $date): array
     {
         return $this->byDate->get($date->toDateString(), collect())

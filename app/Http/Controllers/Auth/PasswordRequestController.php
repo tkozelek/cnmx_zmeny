@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Illuminate\View\View;
 
 class PasswordRequestController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         return view('passwordreset.index');
     }
@@ -18,7 +20,7 @@ class PasswordRequestController extends Controller
      * an account here. The only outcome worth distinguishing is being rate-limited, which the
      * person can act on; "no such user" is exactly what an attacker wants to hear.
      */
-    public function send(Request $request)
+    public function send(Request $request): RedirectResponse
     {
         $request->validate(['email' => 'required|email']);
 

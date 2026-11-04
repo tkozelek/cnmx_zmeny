@@ -10,6 +10,7 @@ use App\Traits\FormatsAbsenceColumns;
 use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
+use Rappasoft\LaravelLivewireTables\Views\Filter;
 use Rappasoft\LaravelLivewireTables\Views\Filters\DateFilter;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
@@ -20,6 +21,7 @@ class AbsencesDataTable extends DataTableComponent
 
     use FormatsAbsenceColumns;
 
+    /** @var class-string<Absence> */
     protected $model = Absence::class;
 
     /**
@@ -55,6 +57,7 @@ class AbsencesDataTable extends DataTableComponent
             ->setEmptyMessage('Žiadne absencie neboli nájdené.');
     }
 
+    /** @return Builder<Absence> */
     public function builder(): Builder
     {
         $team = app(Team::class);
@@ -65,6 +68,7 @@ class AbsencesDataTable extends DataTableComponent
             ->when($this->getSorts() === [], fn (Builder $query) => $query->orderByRelevance());
     }
 
+    /** @return list<Filter> */
     public function filters(): array
     {
         return [
@@ -106,6 +110,7 @@ class AbsencesDataTable extends DataTableComponent
         ];
     }
 
+    /** @return list<Column> */
     public function columns(): array
     {
         return [
@@ -113,7 +118,7 @@ class AbsencesDataTable extends DataTableComponent
                 ->sortable()
                 ->searchable(fn (Builder $query, string $term) => $query->whereHas('user', fn (Builder $q) => $q->whereAny(['name', 'lastname', 'email'], 'LIKE', "%{$term}%")))
                 ->format(function ($value, $row) {
-                    $fullName = trim(($row->user?->name ?? '').' '.($row->user?->lastname ?? ''));
+                    $fullName = trim(($row->user->name ?? '').' '.($row->user->lastname ?? ''));
 
                     return '<span class="font-bold text-white">'.e($fullName ?: '-').'</span>';
                 })

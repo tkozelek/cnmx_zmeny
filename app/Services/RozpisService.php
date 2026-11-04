@@ -21,6 +21,9 @@ use Spatie\Activitylog\Models\Activity;
  * Same shape and reasoning as CalendarService::forWeek(): everything the seven day components
  * need is fetched in bulk here, because seven components each querying for themselves is seven
  * times the queries.
+ *
+ * @phpstan-type PlanRow array{label: string, group: ?string, time: ?string, name: ?string, user_id: ?int}
+ * @phpstan-type DayPlan array{date: CarbonImmutable, dayName: string, rows: list<array{label: string, group: ?string, time: ?string, name: ?string, user_id: ?int, startsGroup: bool}>, managerRows: list<PlanRow>, manager: ?string, substitutes: list<string>, eligible: list<array{name: string, score: float}>, unfilled: int}
  */
 class RozpisService
 {
@@ -72,7 +75,7 @@ class RozpisService
      * edits most worth auditing are the ones that deleted their own subject - see
      * LogsRozpisActivity for why team and date are carried in the activity itself.
      *
-     * @return list<array{causer: string, at: CarbonImmutable, day: ?string, changes: list<string>}>
+     * @return Collection<int, array{causer: string, at: CarbonImmutable, day: ?string, changes: list<string>}>
      */
     private function history(Team $team, CarbonImmutable $from, CarbonImmutable $to): Collection
     {
@@ -206,7 +209,7 @@ class RozpisService
      * `earnedCredit` on a desirable or an ordinary one. It is not gated here - the published view
      * decides who gets to see it, this just supplies the data.
      *
-     * @return Collection<int, array{date: CarbonImmutable, dayName: string, manager: ?string, managerRows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, rows: list<array{label: string, time: ?string, name: ?string, user_id: ?int}>, substitutes: list<string>, eligible: list<array{name: string, score: float}>, unfilled: int}>
+     * @return Collection<int, DayPlan>
      */
     public function plan(Team $team, CarbonImmutable $weekStart, bool $preferCode = true): Collection
     {

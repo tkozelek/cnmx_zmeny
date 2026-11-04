@@ -12,12 +12,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * One person planned to work one position on one date.
  *
  * Replaces the whole legacy weeks -> days -> user_days chain: there is no Day row to
  * create first, signup keys straight off `date`.
+ *
+ * @property Carbon $date
  */
 class Assignment extends Model
 {
@@ -55,11 +58,13 @@ class Assignment extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Position, $this> */
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class);
@@ -71,18 +76,28 @@ class Assignment extends Model
      * Distinct from `position()` on purpose: a day can offer the same position several times
      * (bufet 1, bufet 2), so the slot says *which* bufet, while `position_id` says what the work
      * was and survives the slot being deleted.
+     *
+     * @return BelongsTo<PositionSlot, $this>
      */
     public function positionSlot(): BelongsTo
     {
         return $this->belongsTo(PositionSlot::class);
     }
 
-    /** The admin who assigned this person. Null when they signed themselves up. */
+    /**
+     * The admin who assigned this person. Null when they signed themselves up.
+     *
+     * @return BelongsTo<User, $this>
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * @param  Builder<Assignment>  $query
+     * @return Builder<Assignment>
+     */
     public function scopeBetweenDates(Builder $query, CarbonInterface $from, CarbonInterface $to): Builder
     {
         return $query->whereBetween('date', [$from->toDateString(), $to->toDateString()]);

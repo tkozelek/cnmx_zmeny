@@ -13,6 +13,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use UnitEnum;
 
@@ -30,12 +31,12 @@ class ActivityResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Bezpečnosť';
 
-    public static function canEdit($record): bool
+    public static function canEdit(Model $record): bool
     {
         return false;
     }
 
-    public static function canDelete($record): bool
+    public static function canDelete(Model $record): bool
     {
         return false;
     }

@@ -20,7 +20,7 @@ trait Loggable
         static::created(function (Model $model): void {
             $user = Auth::user();
 
-            Log::info('Účet #'.($user?->id ?? '-').' vytvoril model "'.get_class($model).'" (ID: '.$model->getKey().').', [
+            Log::info('Účet #'.($user->id ?? '-').' vytvoril model "'.get_class($model).'" (ID: '.$model->getKey().').', [
                 'user_id' => $user?->id,
                 'model' => get_class($model),
                 'target_id' => $model->getKey(),
@@ -47,7 +47,7 @@ trait Loggable
                 return;
             }
 
-            Log::info('Účet #'.($user?->id ?? '-').' upravil model "'.get_class($model).'" (ID: '.$model->getKey().').', [
+            Log::info('Účet #'.($user->id ?? '-').' upravil model "'.get_class($model).'" (ID: '.$model->getKey().').', [
                 'user_id' => $user?->id,
                 'model' => get_class($model),
                 'target_id' => $model->getKey(),
@@ -62,7 +62,7 @@ trait Loggable
             $attributes = AuditRedactor::redact($model->getAttributes());
             unset($attributes['updated_at']);
 
-            Log::warning('Účet #'.($user?->id ?? '-').' vymazal model "'.get_class($model).'" (ID: '.$model->getKey().').', [
+            Log::warning('Účet #'.($user->id ?? '-').' vymazal model "'.get_class($model).'" (ID: '.$model->getKey().').', [
                 'user_id' => $user?->id,
                 'model' => get_class($model),
                 'target_id' => $model->getKey(),

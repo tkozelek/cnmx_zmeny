@@ -188,8 +188,26 @@ class FairnessServiceTest extends TestCase
         $this->assertSame(2, $scores[$user->id]['totalDays'], 'Widening fairness_window_weeks must pull the older day back in.');
     }
 
-    /** Signed up but never placed on a position is not work done, so it must not score. */
-    public function test_unplaced_signups_do_not_count(): void
+    /** On a day the rozpis was built for, signing up without being placed is not work done. */
+    public function test_unplaced_signups_do_not_count_on_a_planned_day(): void
+    {
+        $team = $this->tenant();
+        $position = Position::factory()->create(['team_id' => $team->id]);
+        $placed = $this->member($team);
+        $unplaced = $this->member($team);
+        $day = CarbonImmutable::parse(self::AS_OF)->subWeek()->toDateString();
+
+        $this->worked($placed, $position, [$day]);
+        Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $unplaced->id, 'position_id' => null, 'date' => $day]);
+
+        $scores = app(FairnessService::class)->scores($team, CarbonImmutable::parse(self::AS_OF));
+
+        $this->assertTrue($scores->has($placed->id));
+        $this->assertFalse($scores->has($unplaced->id));
+    }
+
+    /** Imported legacy weeks have no positions at all - there a sign-up was the shift. */
+    public function test_signups_count_on_a_day_nobody_was_ever_placed_on(): void
     {
         $team = $this->tenant();
         $user = $this->member($team);
@@ -203,7 +221,7 @@ class FairnessServiceTest extends TestCase
 
         $scores = app(FairnessService::class)->scores($team, CarbonImmutable::parse(self::AS_OF));
 
-        $this->assertFalse($scores->has($user->id));
+        $this->assertSame(1, $scores[$user->id]['totalDays']);
     }
 
     /**

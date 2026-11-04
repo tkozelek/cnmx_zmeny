@@ -20,6 +20,8 @@ use Illuminate\View\View;
  *
  * Gated the opposite way to the calendar - the builder opens only *once the week is locked*,
  * because locking is what closes self-signup. Before that there is nothing stable to assign.
+ *
+ * @phpstan-import-type DayPlan from RozpisService
  */
 class RozpisController extends Controller
 {
@@ -160,8 +162,8 @@ class RozpisController extends Controller
     }
 
     /**
-     * @param  Collection<int, array<string, mixed>>  $plan
-     * @return Collection<int, array<string, mixed>>
+     * @param  Collection<int, DayPlan>  $plan
+     * @return Collection<int, array{date: CarbonImmutable, dayName: string, rows: list<array{label: string, group: ?string, time: ?string, name: ?string, user_id: ?int, startsGroup: bool, isMine: bool}>, managerRows: list<array{label: string, group: ?string, time: ?string, name: ?string, user_id: ?int}>, manager: ?string, substitutes: list<string>, eligible: list<array{name: string, score: float}>, unfilled: int, isToday: bool, isMine: bool, managerIsMe: bool}>
      */
     private function markViewer(Collection $plan, int $viewerId): Collection
     {

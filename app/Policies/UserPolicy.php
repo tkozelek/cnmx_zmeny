@@ -187,6 +187,6 @@ class UserPolicy
 
     private function roleOf(User $model): ?Role
     {
-        return Role::tryFrom($model->roles->first()?->name ?? '');
+        return Role::tryFrom($model->roles->first()->name ?? '');
     }
 }

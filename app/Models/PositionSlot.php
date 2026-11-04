@@ -63,12 +63,15 @@ class PositionSlot extends Model
      * slot or a factory. Normalised on write so the column never holds both - MySQL would coerce
      * silently, but SQLite stores whatever it is given, and an assignment copying the value out
      * would inherit the difference.
+     *
+     * @return Attribute<string|null, string|null>
      */
     protected function startTime(): Attribute
     {
         return Attribute::set(fn (?string $time): ?string => self::normaliseTime($time));
     }
 
+    /** @return Attribute<string|null, string|null> */
     protected function endTime(): Attribute
     {
         return Attribute::set(fn (?string $time): ?string => self::normaliseTime($time));
@@ -83,6 +86,7 @@ class PositionSlot extends Model
         return preg_match('/^\d{1,2}:\d{2}$/', $time) === 1 ? $time.':00' : $time;
     }
 
+    /** @return BelongsTo<Position, $this> */
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class);
@@ -101,6 +105,7 @@ class PositionSlot extends Model
         return (bool) $this->position->is_manager;
     }
 
+    /** @return HasOne<Assignment, $this> */
     public function occupant(): HasOne
     {
         return $this->hasOne(Assignment::class);
@@ -119,6 +124,10 @@ class PositionSlot extends Model
             : $this->position->label($preferCode);
     }
 
+    /**
+     * @param  Builder<PositionSlot>  $query
+     * @return Builder<PositionSlot>
+     */
     public function scopeBetweenDates(Builder $query, CarbonInterface $from, CarbonInterface $to): Builder
     {
         return $query->whereBetween('date', [$from->toDateString(), $to->toDateString()]);

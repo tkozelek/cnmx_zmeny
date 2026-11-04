@@ -19,6 +19,7 @@ trait EscapesSpreadsheetFormulas
     /** The characters Excel reads as "a formula starts here". */
     private const FORMULA_TRIGGERS = ['=', '+', '-', '@', "\t", "\r"];
 
+    /** @return ($value is null ? null : string) */
     protected function escapeFormula(?string $value): ?string
     {
         if ($value === null || $value === '') {

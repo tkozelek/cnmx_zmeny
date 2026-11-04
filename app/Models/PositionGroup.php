@@ -39,12 +39,18 @@ class PositionGroup extends Model
         ];
     }
 
+    /** @return HasMany<Position, $this> */
     public function positions(): HasMany
     {
         return $this->hasMany(Position::class);
     }
 
-    /** The order the cinema arranged them in, which is the order the rozpis prints. */
+    /**
+     * The order the cinema arranged them in, which is the order the rozpis prints.
+     *
+     * @param  Builder<PositionGroup>  $query
+     * @return Builder<PositionGroup>
+     */
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('sort_order')->orderBy('name');

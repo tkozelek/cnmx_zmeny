@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\AbsenceStatus;
 use App\Enums\Role;
 use App\Models\Absence;
 use App\Models\Assignment;
@@ -83,6 +84,55 @@ class ImportLegacyDataTest extends TestCase
 
         $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true, '--discard-new-data' => true])->assertSuccessful();
         $this->assertDatabaseCount('assignments', 0);
+    }
+
+    /**
+     * Legacy stamped date_canceled on any "ukončiť", even mid-absence: those days were taken and
+     * must stay; only an absence ended before it started is a real cancellation.
+     */
+    public function test_ended_absences_keep_the_days_already_taken_and_emails_are_normalised(): void
+    {
+        $team = $this->tenant();
+        $this->legacyUser(1, '  Jana.Novakova@Kino.SK ', 2);
+
+        DB::connection('legacy')->table('user_holidays')->insert([
+            ['id_user' => 1, 'popis' => 'skúšky', 'date_from' => '2026-09-01', 'date_to' => '2026-09-10', 'date_canceled' => '2026-09-05 10:00:00', 'created_at' => null, 'updated_at' => null],
+            ['id_user' => 1, 'popis' => 'výlet', 'date_from' => '2026-09-20', 'date_to' => '2026-09-22', 'date_canceled' => '2026-09-15 10:00:00', 'created_at' => null, 'updated_at' => null],
+        ]);
+
+        $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true])->assertSuccessful();
+
+        $this->assertDatabaseHas('users', ['email' => 'jana.novakova@kino.sk']);
+
+        $endedEarly = Absence::where('date_from', '2026-09-01')->sole();
+        $this->assertSame(AbsenceStatus::Active, $endedEarly->status);
+        $this->assertSame('2026-09-04', $endedEarly->date_to->toDateString());
+
+        $this->assertSame(AbsenceStatus::Cancelled, Absence::where('date_from', '2026-09-20')->sole()->status);
+    }
+
+    public function test_a_dry_run_checks_the_counts_and_changes_nothing(): void
+    {
+        $team = $this->tenant();
+        $this->legacyUser(1, 'brigadnik@kino.sk', 2);
+
+        $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--dry-run' => true])->assertSuccessful();
+
+        $this->assertDatabaseMissing('users', ['email' => 'brigadnik@kino.sk']);
+    }
+
+    /** A rollback-and-reimport must not silently delete someone who registered in the new app. */
+    public function test_a_rerun_refuses_after_someone_joined_in_the_new_app(): void
+    {
+        $team = $this->tenant();
+        $this->legacyUser(1, 'brigadnik@kino.sk', 2);
+
+        $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true])->assertSuccessful();
+
+        $this->travel(10)->minutes();
+        User::factory()->pendingIn($team)->create();
+
+        $this->artisan('app:import-legacy-data', ['--team' => $team->id, '--force' => true])->assertFailed();
     }
 
     private function legacyUser(int $id, string $email, int $role, ?string $createdAt = null): void

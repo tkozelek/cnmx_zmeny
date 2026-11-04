@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 /**
@@ -61,7 +62,7 @@ class ExtraNote extends Component
         $this->dispatch('toast', message: 'Poznámka vymazaná.', type: 'info');
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.extra-note', ['maxLength' => self::MAX_LENGTH]);
     }

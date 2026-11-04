@@ -42,7 +42,8 @@ use Throwable;
 class ImportLegacyData extends Command
 {
     protected $signature = 'app:import-legacy-data
-        {--team=1 : ID tímu, ktorý dostane reálne dáta}
+        {--team= : ID tímu, ktorý dostane reálne dáta (povinné)}
+        {--dry-run : Celý import prebehne a skontroluje počty, potom sa všetko vráti späť}
         {--with-test-users : Vytvoriť aj testovacie účty (TEST_USER_* v .env) - nie na produkcii}
         {--discard-new-data : Prepísať aj dáta zapísané v novej aplikácii od posledného importu}
         {--force : Preskočiť potvrdzovaciu otázku}';
@@ -67,6 +68,13 @@ class ImportLegacyData extends Command
 
     public function handle(): int
     {
+        // Only a real server needs real credentials; the tests point `legacy` at in-memory SQLite.
+        if (config('database.connections.legacy.driver') !== 'sqlite' && blank(config('database.connections.legacy.username'))) {
+            $this->error('Chýba LEGACY_DB_USERNAME - zadaj používateľa, ktorý má na legacy databáze len SELECT.');
+
+            return self::FAILURE;
+        }
+
         $legacy = DB::connection('legacy');
 
         try {
@@ -77,8 +85,20 @@ class ImportLegacyData extends Command
             return self::FAILURE;
         }
 
+        // Enforced by MySQL itself, whatever the user's grants: the legacy DB is production and
+        // this command must never be able to write to it, not even through a bug here.
+        if ($legacy->getDriverName() === 'mysql') {
+            $legacy->statement('SET SESSION TRANSACTION READ ONLY');
+        }
+
         if (! Schema::connection('legacy')->hasTable('users')) {
             $this->error('Legacy databáza neobsahuje tabuľku "users" - skontroluj LEGACY_DB_* v .env.');
+
+            return self::FAILURE;
+        }
+
+        if (blank($this->option('team'))) {
+            $this->error('Zadaj --team=<id> - import nikdy nehádže dáta do predvoleného kina.');
 
             return self::FAILURE;
         }
@@ -97,21 +117,33 @@ class ImportLegacyData extends Command
             return self::FAILURE;
         }
 
-        if (! $this->option('discard-new-data') && ($since = $this->newDataSinceLastRun($team))) {
-            $this->error("Tím '{$team->name}' má od posledného importu ({$since}) nové zápisy, absencie alebo zámky - ".
-                'import by ich zmazal. Ak to naozaj chceš, spusti ho s --discard-new-data.');
+        $duplicates = $legacy->table('users')->pluck('email')
+            ->map($this->normalizeEmail(...))
+            ->duplicates();
+
+        if ($duplicates->isNotEmpty()) {
+            $this->error('Legacy e-maily sa po orezaní medzier a malých písmenách zhodujú (spojili by sa dvaja ľudia): '.$duplicates->implode(', '));
 
             return self::FAILURE;
         }
 
-        if (! $this->option('force') && ! $this->confirm(
+        if (! $this->option('discard-new-data') && ($since = $this->newDataSinceLastRun($team))) {
+            $this->error("Tím '{$team->name}' má od posledného importu ({$since}) nové alebo upravené zápisy, absencie, zámky či členov - ".
+                'import by ich zmazal alebo prepísal. Ak to naozaj chceš, spusti ho s --discard-new-data.');
+
+            return self::FAILURE;
+        }
+
+        if (! $this->option('force') && ! $this->option('dry-run') && ! $this->confirm(
             "Toto nahradí brigádnikov a absencie tímu '{$team->name}' reálnymi dátami z legacy databázy. ".
             'Zapísané zmeny sa zlúčia. Pokračovať?'
         )) {
             return self::SUCCESS;
         }
 
-        DB::transaction(function () use ($team, $legacy): void {
+        DB::beginTransaction();
+
+        try {
             setPermissionsTeamId($team->id);
 
             // A few thousand historical rows landing in the activity log would bury the real
@@ -124,11 +156,35 @@ class ImportLegacyData extends Command
                     $this->ensureTestUsers($team);
                 }
 
-                $this->importAssignments($legacy, $userMap);
+                // No model events: a re-run over a published week would otherwise queue "rozpis
+                // changed" mails, and every row would write an audit line.
+                Assignment::withoutEvents(fn () => $this->importAssignments($legacy, $userMap));
                 $this->importAbsences($legacy, $userMap);
                 $this->importWeekLocks($legacy);
             });
-        });
+
+            $mismatches = $this->reconcile($team, $legacy);
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            throw $e;
+        }
+
+        if ($mismatches > 0) {
+            DB::rollBack();
+            $this->error("Počty nesedia ({$mismatches}) - import bol vrátený späť, nič sa nezmenilo.");
+
+            return self::FAILURE;
+        }
+
+        if ($this->option('dry-run')) {
+            DB::rollBack();
+            $this->info('Skúšobný beh (--dry-run): počty sedia, všetko bolo vrátené späť.');
+
+            return self::SUCCESS;
+        }
+
+        DB::commit();
 
         Storage::disk('local')->put($this->markerPath($team), now()->toDateTimeString());
 
@@ -150,8 +206,9 @@ class ImportLegacyData extends Command
     }
 
     /**
-     * When the previous run finished, if anything in this team has been written since - a sign-up,
-     * an absence or a lock made in the new app, which the next run would wipe.
+     * When the previous run finished, if anything in this team has been written or changed since -
+     * a sign-up, an absence, a lock, a new or edited member - which the next run would wipe or
+     * overwrite. The marker lives on the `local` disk, so `storage/` must be shared between releases.
      */
     private function newDataSinceLastRun(Team $team): ?string
     {
@@ -161,9 +218,19 @@ class ImportLegacyData extends Command
             return null;
         }
 
-        $hasNewData = Assignment::query()->withoutGlobalScope('team')->where('team_id', $team->id)->where('created_at', '>', $finishedAt)->exists()
-            || Absence::query()->withoutGlobalScope('team')->where('team_id', $team->id)->where('created_at', '>', $finishedAt)->exists()
-            || WeekLock::query()->withoutGlobalScope('team')->where('team_id', $team->id)->where('created_at', '>', $finishedAt)->exists();
+        $touchedSince = fn ($query) => $query->where(fn ($query) => $query
+            ->where('created_at', '>', $finishedAt)
+            ->orWhere('updated_at', '>', $finishedAt));
+
+        $hasNewData = Assignment::query()->withoutGlobalScope('team')->where('team_id', $team->id)->where($touchedSince)->exists()
+            || Absence::query()->withoutGlobalScope('team')->where('team_id', $team->id)->where($touchedSince)->exists()
+            || WeekLock::query()->withoutGlobalScope('team')->where('team_id', $team->id)->where('created_at', '>', $finishedAt)->exists()
+            // A registration, an approval or a profile edit in the new app - clearSeededData()
+            // would delete the newcomer, importUsers() would overwrite the edit.
+            || DB::table('team_user')->where('team_id', $team->id)->where($touchedSince)->exists()
+            || $team->users()->where(fn ($query) => $query
+                ->where('users.created_at', '>', $finishedAt)
+                ->orWhere('users.updated_at', '>', $finishedAt))->exists();
 
         return $hasNewData ? $finishedAt : null;
     }
@@ -183,6 +250,7 @@ class ImportLegacyData extends Command
         Absence::query()->delete();
 
         $keepEmails = $legacy->table('users')->pluck('email')
+            ->map($this->normalizeEmail(...))
             ->merge(array_column($this->testUsers(), 'email'));
 
         $demoUsers = $team->users()->whereNotIn('users.email', $keepEmails)->get();
@@ -215,7 +283,7 @@ class ImportLegacyData extends Command
             $legacyRole = (int) $legacyUser->id_role;
 
             $user = User::updateOrCreate(
-                ['email' => $legacyUser->email],
+                ['email' => $this->normalizeEmail($legacyUser->email)],
                 [
                     'name' => $legacyUser->name,
                     'lastname' => $legacyUser->lastname,
@@ -336,8 +404,8 @@ class ImportLegacyData extends Command
     }
 
     /**
-     * user_holidays -> absences. A cancelled legacy holiday (date_canceled set) becomes a
-     * cancelled absence rather than being dropped, so the history stays visible.
+     * user_holidays -> absences. A legacy "ukončiť" (date_canceled set) is mapped the way
+     * AbsenceService::end() works now - see endedAbsence().
      *
      * @param  array<int, int>  $userMap
      */
@@ -355,14 +423,20 @@ class ImportLegacyData extends Command
                 continue;
             }
 
+            [$dateTo, $status] = $this->endedAbsence(
+                Carbon::parse($row->date_from)->startOfDay(),
+                Carbon::parse($row->date_to)->startOfDay(),
+                $row->date_canceled !== null ? Carbon::parse($row->date_canceled)->startOfDay() : null,
+            );
+
             $insert[] = [
                 'team_id' => getPermissionsTeamId(),
                 'user_id' => $userId,
                 'date_from' => Carbon::parse($row->date_from)->toDateString(),
-                'date_to' => Carbon::parse($row->date_to)->toDateString(),
+                'date_to' => $dateTo->toDateString(),
                 'day_of_week' => null,
                 'reason' => $row->popis !== null ? mb_substr($row->popis, 0, 500) : null,
-                'status' => $row->date_canceled !== null ? AbsenceStatus::Cancelled->value : AbsenceStatus::Active->value,
+                'status' => $status->value,
                 // The original time, not "now": AbsencePolicy lets a fresh absence be deleted outright.
                 'created_at' => $row->created_at ?? $now,
                 'updated_at' => $row->updated_at ?? $now,
@@ -385,5 +459,75 @@ class ImportLegacyData extends Command
                 'team_id' => getPermissionsTeamId(),
                 'week_start' => Carbon::parse($dateFrom)->toDateString(),
             ]));
+    }
+
+    /**
+     * Legacy stamped `date_canceled` on any "ukončiť", even on an absence already running. The
+     * new app cancels only one that hasn't started; a running one stays active, cut short
+     * after the day before it was ended - so the days actually taken still count.
+     *
+     * @return array{0: Carbon, 1: AbsenceStatus}
+     */
+    private function endedAbsence(Carbon $from, Carbon $to, ?Carbon $canceled): array
+    {
+        if ($canceled === null) {
+            return [$to, AbsenceStatus::Active];
+        }
+
+        if ($canceled->lt($from)) {
+            return [$to, AbsenceStatus::Cancelled];
+        }
+
+        return [$from->max($to->min($canceled->copy()->subDay())), AbsenceStatus::Active];
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return mb_strtolower(trim($email));
+    }
+
+    /**
+     * Legacy counts vs what landed in the team, computed straight from the legacy tables rather
+     * than from the import's own bookkeeping, so a mapping bug can't agree with itself.
+     *
+     * @return int number of mismatching rows
+     */
+    private function reconcile(Team $team, Connection $legacy): int
+    {
+        $legacyUsers = $legacy->table('users')->get(['id', 'email', 'id_role']);
+        $emails = $legacyUsers->pluck('email')->map($this->normalizeEmail(...));
+        $imported = $team->users()->whereIn('users.email', $emails)->get();
+        $importedIds = $imported->modelKeys();
+
+        $dayDates = $legacy->table('days')->pluck('date', 'id')
+            ->map(fn (string $date): string => Carbon::parse($date)->toDateString());
+        $legacyUserIds = $legacyUsers->pluck('id')->all();
+
+        $holidays = $legacy->table('user_holidays')->whereIn('id_user', $legacyUserIds)->get(['date_from', 'date_canceled']);
+
+        $rows = [
+            ['Používatelia', $legacyUsers->count(), $imported->count()],
+            ['  s overeným e-mailom', $legacyUsers->count(), $imported->whereNotNull('email_verified_at')->count()],
+            ['  čakajúci na schválenie (rola 1)', $legacyUsers->where('id_role', 1)->count(), $imported->whereNull('pivot.approved_at')->count()],
+            ['  zablokovaní (rola 4)', $legacyUsers->where('id_role', 4)->count(), $imported->where('is_active', false)->count()],
+            ['  hlavní manažéri (rola 3)', $legacyUsers->where('id_role', 3)->count(), $imported->filter(fn (User $user): bool => $user->hasRole(RoleEnum::HeadManager->value))->count()],
+            ['Zápisy (bez duplicít)', $legacy->table('user_days')->whereIn('id_user', $legacyUserIds)->get(['id_user', 'id_day'])
+                ->filter(fn ($row): bool => isset($dayDates[$row->id_day]))
+                ->map(fn ($row): string => $row->id_user.'|'.$dayDates[$row->id_day])
+                ->unique()->count(),
+                Assignment::query()->whereIn('user_id', $importedIds)->count()],
+            ['Absencie', $holidays->count(), Absence::query()->whereIn('user_id', $importedIds)->count()],
+            ['  zrušené pred začiatkom', $holidays->filter(fn ($row): bool => $row->date_canceled !== null
+                && Carbon::parse($row->date_canceled)->startOfDay()->lt(Carbon::parse($row->date_from)->startOfDay()))->count(),
+                Absence::query()->whereIn('user_id', $importedIds)->where('status', AbsenceStatus::Cancelled->value)->count()],
+            ['Zamknuté týždne', $legacy->table('weeks')->where('locked', true)->distinct()->count('date_from'), WeekLock::query()->count()],
+        ];
+
+        $this->table(['', 'legacy', 'nová DB', ''], array_map(
+            fn (array $row): array => [...$row, $row[1] === $row[2] ? 'OK' : 'NESEDÍ'],
+            $rows,
+        ));
+
+        return count(array_filter($rows, fn (array $row): bool => $row[1] !== $row[2]));
     }
 }

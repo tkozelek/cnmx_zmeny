@@ -44,12 +44,17 @@ class Position extends Model
         ];
     }
 
+    /** @return HasMany<Assignment, $this> */
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
     }
 
-    /** Which heading this position prints under. Null for an ungrouped position, which sorts last. */
+    /**
+     * Which heading this position prints under. Null for an ungrouped position, which sorts last.
+     *
+     * @return BelongsTo<PositionGroup, $this>
+     */
     public function group(): BelongsTo
     {
         return $this->belongsTo(PositionGroup::class, 'position_group_id');
@@ -63,7 +68,7 @@ class Position extends Model
      */
     public function groupOrder(): int
     {
-        return $this->group?->sort_order ?? PHP_INT_MAX;
+        return $this->group->sort_order ?? PHP_INT_MAX;
     }
 
     public function groupName(): ?string
@@ -76,6 +81,9 @@ class Position extends Model
      *
      * Grouped first, so the "add position" dropdown reads in the same order as the printed sheet.
      * The group is eager-loaded because every caller goes on to ask for its name or order.
+     *
+     * @param  Builder<Position>  $query
+     * @return Builder<Position>
      */
     public function scopeSelectable(Builder $query): Builder
     {

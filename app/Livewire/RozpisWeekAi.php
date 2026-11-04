@@ -6,6 +6,7 @@ use App\Models\PositionSlot;
 use App\Models\Team;
 use App\Services\AiRozpisSuggestionService;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -56,7 +57,7 @@ class RozpisWeekAi extends Component
             && (auth()->user()?->canBuildRozpis() ?? false);
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.rozpis-week-ai');
     }

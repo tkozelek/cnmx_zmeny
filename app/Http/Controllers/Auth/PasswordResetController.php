@@ -5,15 +5,17 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
+use Illuminate\View\View;
 
 class PasswordResetController extends Controller
 {
-    public function show($token, Request $request)
+    public function show(string $token, Request $request): View
     {
         return view('passwordreset.passwordform', [
             'token' => $token,
@@ -21,7 +23,7 @@ class PasswordResetController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'token' => 'required',

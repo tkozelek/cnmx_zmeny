@@ -4,6 +4,7 @@ includes:
 
 parameters:
     level: 6
+    parseModelCastsMethod: true
     paths:
         - app
     tmpDir: storage/framework/cache/phpstan

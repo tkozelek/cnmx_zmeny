@@ -380,3 +380,19 @@ The eight-agent audit has been fixed apart from the decisions listed below.
   - The `PRIVACY_MAIL_PROVIDER` value.
   - Fairness history after import (only placed sign-ups count).
   - Importer gaps G1–G11 (§4).
+
+### Importer fixes (2026-11-04)
+
+- **Done:**
+  - G1: `users.name`/`lastname` widened back to 255.
+  - G2: `--dry-run` plus a built-in count table; any mismatch rolls back.
+  - G3 (partly): model events off for assignments, so no mails and no audit lines; the per-row speed is accepted.
+  - G5: e-mails trimmed and lowercased, with an abort on collisions.
+  - G8: `--team` is required.
+  - G9: the guard also catches updates, new members and approvals.
+  - G10: no `DB_*` fallback for the legacy credentials.
+  - G11: an absence ended mid-way stays active and is shortened; only one ended before it started is cancelled.
+- **Left as is (Tomáš):**
+  - G4: locks.
+  - G6: `cache:clear` in the runbook.
+  - G7: the super-admin account is handled manually.

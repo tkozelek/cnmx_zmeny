@@ -11,11 +11,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
+use Rappasoft\LaravelLivewireTables\Views\Filter;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 use Spatie\Permission\Models\Role;
 
 class UsersDataTable extends DataTableComponent
 {
+    /** @var class-string<User> */
     protected $model = User::class;
 
     /**
@@ -54,6 +56,8 @@ class UsersDataTable extends DataTableComponent
      * the second one is a decision anybody makes here. Somebody who has not passed the first is
      * not yet a candidate, so they stay out of the queue rather than sitting in it as a row
      * nobody is allowed to accept.
+     *
+     * @return Builder<User>
      */
     public function builder(): Builder
     {
@@ -75,6 +79,7 @@ class UsersDataTable extends DataTableComponent
             ->with(['roles', 'teams']);
     }
 
+    /** @return list<Filter> */
     public function filters(): array
     {
         return [
@@ -102,6 +107,7 @@ class UsersDataTable extends DataTableComponent
         ];
     }
 
+    /** @return list<Column> */
     public function columns(): array
     {
         return [

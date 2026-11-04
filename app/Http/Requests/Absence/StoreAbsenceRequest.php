@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -39,6 +40,8 @@ class StoreAbsenceRequest extends FormRequest
      *
      * And nobody may report an absence over a day they are still signed up for - they would
      * stay in the plan while also being away.
+     *
+     * @return list<Closure(Validator): void>
      */
     public function after(): array
     {

@@ -14,6 +14,7 @@ use App\Services\RozpisService;
 use App\Services\WeekService;
 use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,17 @@ use Livewire\Component;
  * released after first use) but writes `position_id`/`start_time` instead of creating rows.
  * Nobody is ever placed who did not sign up for this exact date themselves - the pool is built
  * from real Assignment rows, never invented.
+ *
+ * @property-read Collection<int, User> $leadershipRoster
+ * @property-read Collection<int, PositionSlot> $daySlots
+ * @property-read Collection<int, Assignment> $assignments
+ * @property-read Collection<int, Assignment> $unassignedPool
+ * @property-read array<int, string> $slotLabels
+ * @property-read list<array{date: string, label: string}> $copyTargets
+ * @property-read Team $team
+ * @property-read CarbonImmutable $dayCarbon
+ * @property-read array<int, array{totalDays: int, avgWeight: float, earnedCredit: float, hardDayDebt: float}> $fairness
+ * @property-read string|null $rankingKey
  */
 class RozpisDay extends Component
 {
@@ -39,10 +51,15 @@ class RozpisDay extends Component
     #[Locked]
     public string $date;
 
-    /** Preloaded by RozpisService so seven of these do not each query for themselves. Locked: read instead of the DB. */
+    /**
+     * Preloaded by RozpisService so seven of these do not each query for themselves. Locked: read instead of the DB.
+     *
+     * @var Collection<int, PositionSlot>|null
+     */
     #[Locked]
     public ?Collection $initialSlots = null;
 
+    /** @var Collection<int, Assignment>|null */
     #[Locked]
     public ?Collection $initialAssignments = null;
 
@@ -774,7 +791,7 @@ class RozpisDay extends Component
             ?? ['totalDays' => 0, 'avgWeight' => 0.0, 'earnedCredit' => 0.0, 'hardDayDebt' => 0.0];
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.rozpis-day');
     }

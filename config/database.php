@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
+use Pdo\Mysql;
 
 return [
 
@@ -59,7 +60,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -73,8 +74,9 @@ return [
             'host' => env('LEGACY_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port' => env('LEGACY_DB_PORT', env('DB_PORT', '3306')),
             'database' => env('LEGACY_DB_DATABASE', 'd40700_sys'),
-            'username' => env('LEGACY_DB_USERNAME', env('DB_USERNAME', 'forge')),
-            'password' => env('LEGACY_DB_PASSWORD', env('DB_PASSWORD', '')),
+            // No fallback to DB_*: that user can write, and this connection must only ever read.
+            'username' => env('LEGACY_DB_USERNAME'),
+            'password' => env('LEGACY_DB_PASSWORD'),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
