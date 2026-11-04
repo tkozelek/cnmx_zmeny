@@ -295,10 +295,14 @@ class ImportLegacyData extends Command
                 ]
             );
 
-            if ($legacyUser->created_at !== null) {
-                $user->created_at = $legacyUser->created_at;
-                $user->save();
-            }
+            // The legacy timestamps, not the import's: otherwise "Naposledy upravený" reads the
+            // cutover time for everybody.
+            $user->timestamps = false;
+            $user->forceFill([
+                'created_at' => $legacyUser->created_at ?? $user->created_at,
+                'updated_at' => $legacyUser->updated_at ?? $legacyUser->created_at ?? $user->updated_at,
+            ])->save();
+            $user->timestamps = true;
 
             $user->teams()->syncWithoutDetaching([
                 $team->id => ['approved_at' => $legacyRole === 1 ? null : ($legacyUser->created_at ?? now())],

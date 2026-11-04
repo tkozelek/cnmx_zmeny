@@ -54,6 +54,7 @@ class ImportLegacyDataTest extends TestCase
         $admin = User::where('email', 'admin@kino.sk')->sole();
         $this->assertTrue($admin->hasRole(Role::HeadManager->value));
         $this->assertSame('2024-05-01', $admin->created_at->toDateString());
+        $this->assertSame('2024-05-01', $admin->updated_at->toDateString(), 'The import time must not become everyone\'s "last updated".');
         $this->assertNotNull(User::where('email', 'brigadnik@kino.sk')->sole()->email_verified_at);
         $this->assertFalse(User::where('email', 'blokovany@kino.sk')->sole()->is_active);
         $this->assertNull(User::where('email', 'cakajuci@kino.sk')->sole()->teams()->sole()->pivot->approved_at);
