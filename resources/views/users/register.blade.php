@@ -12,6 +12,7 @@
             <div class="field-row">
                 <x-form-input
                     name="name"
+                    placeholder="Napr. Jana"
                     autocomplete="given-name"
                     label="Meno"
                     :value="old('name')"
@@ -21,6 +22,7 @@
 
                 <x-form-input
                     name="lastname"
+                    placeholder="Napr. Nováková"
                     autocomplete="family-name"
                     label="Priezvisko"
                     :value="old('lastname')"
@@ -85,6 +87,7 @@
                 <x-form-input
                     type="password"
                     name="password"
+                    placeholder="••••••••"
                     autocomplete="new-password"
                     label="Heslo"
                     hint="Aspoň 8 znakov."
@@ -95,6 +98,7 @@
                 <x-form-input
                     type="password"
                     name="password_confirmation"
+                    placeholder="••••••••"
                     autocomplete="new-password"
                     id="password_confirmation"
                     label="Potvrď heslo"

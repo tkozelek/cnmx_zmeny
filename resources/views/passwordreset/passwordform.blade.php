@@ -13,6 +13,7 @@
             <x-form-input
                 type="email"
                 name="email"
+                placeholder="tvoj@email.sk"
                 autocomplete="username"
                 spellcheck="false"
                 label="E-mail"
@@ -24,6 +25,7 @@
             <x-form-input
                 type="password"
                 name="password"
+                placeholder="••••••••"
                 autocomplete="new-password"
                 label="Nové heslo"
                 icon="fa-key"
@@ -34,6 +36,7 @@
             <x-form-input
                 type="password"
                 name="password_confirmation"
+                placeholder="••••••••"
                 autocomplete="new-password"
                 label="Nové heslo znova"
                 icon="fa-check-double"

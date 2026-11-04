@@ -190,6 +190,7 @@
                                             @disabled(! $canEdit)
                                             required
                                             title="{{ $day['name'] }}"
+                                            placeholder="1.0"
                                             class="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-3 text-sm text-white transition hover:border-neutral-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60 disabled:cursor-not-allowed disabled:opacity-60"
                                         >
                                         @error('fairness_day_weights.'.$day['index'])

@@ -10,8 +10,8 @@
                     @csrf
                     @method('PUT')
 
-                    <x-form-input name="name" label="Meno" icon="fa-user" autocomplete="given-name" :value="old('name', $user->name)" required />
-                    <x-form-input name="lastname" label="Priezvisko" icon="fa-user" autocomplete="family-name" :value="old('lastname', $user->lastname)" required />
+                    <x-form-input name="name" placeholder="Napr. Jana" label="Meno" icon="fa-user" autocomplete="given-name" :value="old('name', $user->name)" required />
+                    <x-form-input name="lastname" placeholder="Napr. Nováková" label="Priezvisko" icon="fa-user" autocomplete="family-name" :value="old('lastname', $user->lastname)" required />
 
                     <x-submit-button busy-label="Ukladám…" class="sm:w-auto sm:self-start">Uložiť meno</x-submit-button>
                 </form>
@@ -46,8 +46,8 @@
                     @csrf
                     @method('PUT')
 
-                    <x-form-input type="email" name="email" id="new-email" label="Nová e-mailová adresa" icon="fa-envelope" autocomplete="email" :value="old('email')" required />
-                    <x-form-input type="password" name="password" id="email-password" label="Aktuálne heslo" icon="fa-lock" autocomplete="current-password" required />
+                    <x-form-input type="email" name="email" placeholder="nova@adresa.sk" id="new-email" label="Nová e-mailová adresa" icon="fa-envelope" autocomplete="email" :value="old('email')" required />
+                    <x-form-input type="password" name="password" placeholder="••••••••" id="email-password" label="Aktuálne heslo" icon="fa-lock" autocomplete="current-password" required />
 
                     <x-submit-button busy-label="Odosielam…" class="sm:w-auto sm:self-start">Zmeniť e-mail</x-submit-button>
                 </form>
@@ -110,9 +110,9 @@
                     @csrf
                     @method('PUT')
 
-                    <x-form-input type="password" name="current_password" autocomplete="current-password" label="Aktuálne heslo" icon="fa-lock" required />
-                    <x-form-input type="password" name="new_password" autocomplete="new-password" label="Nové heslo" icon="fa-key" hint="Aspoň 8 znakov." required />
-                    <x-form-input type="password" name="new_password_confirmation" autocomplete="new-password" label="Nové heslo znova" icon="fa-check-double" required />
+                    <x-form-input type="password" name="current_password" placeholder="••••••••" autocomplete="current-password" label="Aktuálne heslo" icon="fa-lock" required />
+                    <x-form-input type="password" name="new_password" placeholder="••••••••" autocomplete="new-password" label="Nové heslo" icon="fa-key" hint="Aspoň 8 znakov." required />
+                    <x-form-input type="password" name="new_password_confirmation" placeholder="••••••••" autocomplete="new-password" label="Nové heslo znova" icon="fa-check-double" required />
 
                     <x-submit-button busy-label="Ukladám…" class="sm:w-auto sm:self-start">Zmeniť heslo</x-submit-button>
                 </form>

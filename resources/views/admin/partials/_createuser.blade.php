@@ -8,6 +8,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <x-form-input
             name="name"
+            placeholder="Napr. Jana"
             id="create_name"
             label="Meno"
             :value="old('name')"
@@ -17,6 +18,7 @@
 
         <x-form-input
             name="lastname"
+            placeholder="Napr. Nováková"
             id="create_lastname"
             label="Priezvisko"
             :value="old('lastname')"
@@ -28,6 +30,7 @@
     <x-form-input
         type="email"
         name="email"
+        placeholder="meno@email.sk"
         id="create_email"
         label="E-mail"
         :value="old('email')"
