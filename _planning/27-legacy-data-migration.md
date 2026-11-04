@@ -249,7 +249,8 @@ between legacy and new.
 1. **Harden the importer (G1–G11) + tests** on `feature/bootstrap`, where the importer lives. Fix the
    §10 pre-launch items alongside it.
    → verify: the new test cases fail before and pass after; `ImportLegacyDataTest` green; Pint clean.
-2. **Update the runbook** `docs/deploy-cutover-legacy-to-new.md`:
+2. **Update the runbook** `docs/deploy-cutover-legacy-to-new.md` (**done 2026-11-04**; the reset mail is
+   queued since M4, so the password-reset check does prove the queue):
    - **Checks:** add P7–P10 and drop P4. Use `--dry-run` + the built-in reconciliation instead of §5's
      manual SQL, whose `users = legacy users` count also drifts once the super admin exists.
    - **Import:** run `cache:clear` after every import. Create the super admin per D8 after the final import.
