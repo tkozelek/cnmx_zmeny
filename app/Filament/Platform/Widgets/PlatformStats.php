@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class PlatformStats extends StatsOverviewWidget
 {
+    protected static ?int $sort = 1;
+
     /** Four counts across every cinema; they don't need re-running every 5 s per open tab. */
     protected ?string $pollingInterval = null;
 

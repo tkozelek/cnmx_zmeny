@@ -8,6 +8,10 @@ use App\Filament\Platform\Resources\Teams\Pages\CreateTeam;
 use App\Filament\Platform\Resources\Teams\Pages\EditTeam;
 use App\Filament\Platform\Resources\Teams\RelationManagers\MembersRelationManager;
 use App\Filament\Platform\Resources\Users\Pages\EditUser;
+use App\Filament\Platform\Widgets\CinemaOverview;
+use App\Filament\Platform\Widgets\NewAccountsPerWeekChart;
+use App\Filament\Platform\Widgets\SignupsPerWeekChart;
+use App\Models\Assignment;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\SuperAdminSession;
@@ -116,6 +120,27 @@ class PlatformPanelTest extends TestCase
             ->assertNotified('Sám sebe super admina odobrať nemôžeš.');
 
         $this->assertTrue($superAdmin->fresh()->is_super_admin);
+    }
+
+    public function test_the_dashboard_widgets_count_sign_ups_per_cinema(): void
+    {
+        $team = $this->tenant();
+        $member = $this->member($team);
+        foreach (range(1, 14) as $daysAgo) {
+            Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $member->id, 'date' => today()->subDays($daysAgo)->toDateString()]);
+        }
+
+        $superAdmin = User::factory()->superAdmin()->create();
+
+        // 14 sign-ups over the 28-day window = 0,5 a day.
+        Livewire::actingAs($superAdmin, SuperAdminSession::GUARD)
+            ->test(CinemaOverview::class)
+            ->assertOk()
+            ->assertSee($team->name)
+            ->assertSee('0,5');
+
+        Livewire::actingAs($superAdmin, SuperAdminSession::GUARD)->test(SignupsPerWeekChart::class)->assertOk()->assertSee($team->name);
+        Livewire::actingAs($superAdmin, SuperAdminSession::GUARD)->test(NewAccountsPerWeekChart::class)->assertOk();
     }
 
     public function test_a_super_admin_creates_a_cinema_hidden_from_registration(): void
