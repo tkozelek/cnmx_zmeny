@@ -116,6 +116,24 @@ class PlatformPanelTest extends TestCase
         $this->assertTrue($superAdmin->fresh()->is_super_admin);
     }
 
+    /** The pivot row decides it: an approved member must not read "čaká" or offer "Schváliť" again. */
+    public function test_members_tab_shows_who_is_approved_and_offers_approval_only_for_pending(): void
+    {
+        $team = $this->tenant();
+        $approved = $this->member($team);
+        $pending = User::factory()->pendingIn($team)->create();
+
+        // The listing itself, not assertTableColumnStateSet(): that resolves each record through a
+        // separate query that always selects the pivot, which is how this bug slipped past.
+        $rows = Livewire::actingAs(User::factory()->superAdmin()->create(), SuperAdminSession::GUARD)
+            ->test(MembersRelationManager::class, ['ownerRecord' => $team, 'pageClass' => EditTeam::class])
+            ->instance()
+            ->getTableRecords();
+
+        $this->assertNotNull($rows->firstWhere('id', $approved->id)->pivot->approved_at);
+        $this->assertNull($rows->firstWhere('id', $pending->id)->pivot->approved_at);
+    }
+
     /** Handing over a whole cinema is guarded like granting super admin. */
     public function test_making_someone_head_manager_needs_the_acting_admins_password(): void
     {

@@ -34,7 +34,9 @@ class MembersRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->select('users.*')->addSelect(['team_role' => $this->roleSubquery()]))
+            // addSelect only: a select() here would drop the pivot columns Filament adds, and every
+            // member would read "čaká" with a "Schváliť" button.
+            ->modifyQueryUsing(fn (Builder $query) => $query->addSelect(['team_role' => $this->roleSubquery()]))
             ->defaultSort('lastname')
             ->columns([
                 TextColumn::make('lastname')->label('Priezvisko')->searchable()->sortable(),
