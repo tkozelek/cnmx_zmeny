@@ -29,7 +29,8 @@ return [
     */
 
     'bcrypt' => [
-        'rounds' => env('BCRYPT_ROUNDS', 10),
+        // 12, not Laravel's 10: imported legacy hashes (cost 10) are upgraded on each first login.
+        'rounds' => env('BCRYPT_ROUNDS', 12),
     ],
 
     /*

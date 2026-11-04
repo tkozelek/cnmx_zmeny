@@ -34,7 +34,7 @@ Background and the data mapping: `_planning/27-legacy-data-migration.md`.
 | `shifts`, `rates`, `file_storage` (+ files), `bugs` | – | **scrapped** (decided) – files go into the legacy archive (D4) |
 | `sessions`, `password_reset_tokens`, `jobs`, `failed_jobs`, `cache` | – | not needed – everyone logs in again |
 
-Passwords: legacy hashes are bcrypt (cost 10), the new app uses bcrypt too, so **everyone keeps
+Passwords: legacy hashes are bcrypt (cost 10), the new app uses bcrypt (cost 12) too, so **everyone keeps
 their password**. `LoginController` rehashes to the current cost on first login.
 
 E-mail verification: in legacy, the manager's approval was the check (there was no e-mail
@@ -113,8 +113,8 @@ The import (`app:import-legacy-data --team=<id>`):
    - `DB_*` → the **new** DB
    - `LEGACY_DB_*` → the read-only user from step 1; `LEGACY_DB_USERNAME`/`LEGACY_DB_PASSWORD` set
      **explicitly** (the import refuses to run without them)
-   - `BCRYPT_ROUNDS` unset (= 10) or higher. Legacy hashes of any bcrypt cost are imported as they are
-     and re-hashed at this cost on each person's first login.
+   - `BCRYPT_ROUNDS=12` (also the default when unset). Legacy hashes (cost 10) are imported as they are
+     and upgraded to cost 12 on each person's first login - no migration, nobody notices.
    - `SESSION_DRIVER` / `CACHE_STORE` unset = `file` under the shared `storage/` (fine; sessions are
      garbage-collected hourly)
    - `PREVIEW_AUTH_USER` / `PREVIEW_AUTH_PASSWORD` – set them on a rehearsal host (built-in basic auth for
