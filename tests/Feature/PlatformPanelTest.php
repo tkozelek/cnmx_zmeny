@@ -10,11 +10,13 @@ use App\Filament\Platform\Resources\Teams\RelationManagers\MembersRelationManage
 use App\Filament\Platform\Resources\Users\Pages\EditUser;
 use App\Filament\Platform\Widgets\CinemaOverview;
 use App\Filament\Platform\Widgets\NewAccountsPerWeekChart;
+use App\Filament\Platform\Widgets\SignupRateByWeekdayChart;
 use App\Filament\Platform\Widgets\SignupsPerWeekChart;
 use App\Models\Assignment;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\SuperAdminSession;
+use Carbon\CarbonImmutable;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Pennant\Feature;
@@ -141,6 +143,28 @@ class PlatformPanelTest extends TestCase
 
         Livewire::actingAs($superAdmin, SuperAdminSession::GUARD)->test(SignupsPerWeekChart::class)->assertOk()->assertSee($team->name);
         Livewire::actingAs($superAdmin, SuperAdminSession::GUARD)->test(NewAccountsPerWeekChart::class)->assertOk();
+    }
+
+    /** Normalised by members: one of two people on every Friday is 50 %, whatever the cinema's size. */
+    public function test_the_weekday_chart_shows_the_share_of_members_signed_up(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-04 10:00'));
+        $team = $this->tenant();
+        $regular = $this->member($team);
+        $this->member($team);
+
+        for ($friday = CarbonImmutable::parse('2026-09-11'); $friday->lt(today()); $friday = $friday->addWeek()) {
+            Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $regular->id, 'date' => $friday->toDateString()]);
+        }
+
+        $widget = Livewire::actingAs(User::factory()->superAdmin()->create(), SuperAdminSession::GUARD)
+            ->test(SignupRateByWeekdayChart::class)
+            ->assertOk()
+            ->instance();
+
+        $data = (fn (): array => $this->getData())->call($widget);
+
+        $this->assertSame([0.0, 0.0, 0.0, 0.0, 50.0, 0.0, 0.0], $data['datasets'][0]['data']);
     }
 
     public function test_a_super_admin_creates_a_cinema_hidden_from_registration(): void

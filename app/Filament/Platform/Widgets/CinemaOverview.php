@@ -15,7 +15,7 @@ class CinemaOverview extends TableWidget
     /** Days the sign-up average is taken over - four whole weeks, so every weekday counts equally. */
     private const int AVERAGE_DAYS = 28;
 
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 4;
 
     protected int|string|array $columnSpan = 'full';
 
