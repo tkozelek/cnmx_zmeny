@@ -9,6 +9,7 @@ use App\Models\Assignment;
 use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
 class AbsenceTest extends TestCase
@@ -464,6 +465,90 @@ class AbsenceTest extends TestCase
 
         $this->assertModelExists($absence);
         $this->assertSame(AbsenceStatus::Cancelled, $absence->fresh()->status);
+    }
+
+    public function test_a_weekly_absence_blocks_sign_ups_only_on_its_weekday(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $monday = CarbonImmutable::now()->addWeeks(2)->startOfWeek();
+
+        $this->actingAs($user)
+            ->post(route('absences.store'), [
+                'recurring' => '1',
+                'day_of_week' => 0,
+                'date_from' => $monday->toDateString(),
+                'date_to' => $monday->addWeeks(6)->toDateString(),
+                'reason' => 'Škola od 18:00',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('absences', ['user_id' => $user->id, 'day_of_week' => 0]);
+        $this->assertTrue(Gate::forUser($user)->denies('create', [Assignment::class, $team, $monday->addWeeks(3)]));
+        $this->assertTrue(Gate::forUser($user)->allows('create', [Assignment::class, $team, $monday->addWeeks(3)->addDay()]));
+    }
+
+    /** The deadline counts from the first day actually missed, not from the start of the range. */
+    public function test_a_weekly_absence_meets_the_deadline_by_its_first_weekday(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $team->settings->update(['absence_deadline_days' => 3]);
+        $tomorrow = CarbonImmutable::today()->addDay();
+        $weekdayInFourDays = CarbonImmutable::today()->addDays(4)->dayOfWeekIso - 1;
+
+        $this->actingAs($user)
+            ->post(route('absences.store'), [
+                'recurring' => '1',
+                'day_of_week' => $weekdayInFourDays,
+                'date_from' => $tomorrow->toDateString(),
+                'date_to' => $tomorrow->addWeeks(4)->toDateString(),
+                'reason' => 'Škola',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseCount('absences', 1);
+    }
+
+    public function test_a_one_off_absence_drops_a_leftover_weekday(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $from = CarbonImmutable::now()->addWeek();
+
+        $this->actingAs($user)
+            ->post(route('absences.store'), [
+                'recurring' => '0',
+                'day_of_week' => 2,
+                'date_from' => $from->toDateString(),
+                'date_to' => $from->addWeeks(2)->toDateString(),
+                'reason' => 'Dovolenka',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('absences', ['user_id' => $user->id, 'day_of_week' => null]);
+    }
+
+    public function test_a_weekly_absence_needs_its_weekday_inside_the_range(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $tuesday = CarbonImmutable::now()->addWeeks(2)->startOfWeek()->addDay();
+        $absence = [
+            'recurring' => '1',
+            'date_from' => $tuesday->toDateString(),
+            'date_to' => $tuesday->addDays(2)->toDateString(),
+            'reason' => 'Škola',
+        ];
+
+        $this->actingAs($user)->post(route('absences.store'), $absence)
+            ->assertSessionHasErrors(['day_of_week' => 'Vyber deň, v ktorý sa absencia opakuje.']);
+
+        $this->actingAs($user)->post(route('absences.store'), [...$absence, 'day_of_week' => 0])
+            ->assertSessionHasErrors(['day_of_week' => 'Vo zvolenom období nie je žiadny deň pondelok.']);
+
+        $this->assertDatabaseCount('absences', 0);
     }
 
     /**

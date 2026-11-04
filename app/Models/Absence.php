@@ -34,6 +34,11 @@ class Absence extends Model
      */
     public const FOREVER = '9999-12-31';
 
+    /** Indexed by day_of_week (0 = Monday). */
+    public const array WEEKDAYS = ['pondelok', 'utorok', 'streda', 'štvrtok', 'piatok', 'sobota', 'nedeľa'];
+
+    public const array EVERY_WEEKDAY = ['každý pondelok', 'každý utorok', 'každú stredu', 'každý štvrtok', 'každý piatok', 'každú sobotu', 'každú nedeľu'];
+
     protected $fillable = [
         'team_id',
         'user_id',
@@ -131,6 +136,12 @@ class Absence extends Model
     public function isRecurring(): bool
     {
         return $this->day_of_week !== null;
+    }
+
+    /** "každý pondelok", "každú stredu"; null for a one-off absence. */
+    public function recurrenceLabel(): ?string
+    {
+        return $this->isRecurring() ? self::EVERY_WEEKDAY[$this->day_of_week] : null;
     }
 
     public function isOpenEnded(): bool

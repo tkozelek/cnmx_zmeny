@@ -27,7 +27,8 @@ class StoreAbsenceRequest extends FormRequest
         return [
             'date_from' => ['required', 'date', 'after_or_equal:'.now()->subYear()->toDateString()],
             'date_to' => ['required', 'date', 'after_or_equal:date_from', 'before_or_equal:'.now()->addYears(2)->toDateString()],
-            'day_of_week' => ['nullable', 'integer', 'between:0,6'],
+            'recurring' => ['nullable', 'boolean'],
+            'day_of_week' => ['nullable', 'required_if_accepted:recurring', 'integer', 'between:0,6'],
             'open_ended' => ['nullable', 'boolean'],
             'reason' => ['required', 'string', 'max:500'],
         ];
@@ -46,6 +47,15 @@ class StoreAbsenceRequest extends FormRequest
     public function after(): array
     {
         return [
+            function (Validator $validator): void {
+                if ($validator->errors()->isNotEmpty() || ! $this->filled('day_of_week')) {
+                    return;
+                }
+
+                if ($this->firstAbsentDay()->gt(CarbonImmutable::parse($this->date('date_to')))) {
+                    $validator->errors()->add('day_of_week', 'Vo zvolenom období nie je žiadny deň '.Absence::WEEKDAYS[$this->integer('day_of_week')].'.');
+                }
+            },
             function (Validator $validator): void {
                 if ($validator->errors()->isNotEmpty()) {
                     return;
@@ -67,7 +77,7 @@ class StoreAbsenceRequest extends FormRequest
 
                 $team = app(Team::class);
                 $days = $team->absenceDeadlineDays();
-                $from = CarbonImmutable::parse($this->date('date_from'))->startOfDay();
+                $from = $this->firstAbsentDay();
                 $deadline = now()->startOfDay()->addDays($days);
 
                 if ($from->lt($deadline)) {
@@ -111,12 +121,29 @@ class StoreAbsenceRequest extends FormRequest
             ->all();
     }
 
+    /** The first day the absence actually covers: date_from, or for a weekly one its first matching weekday. */
+    private function firstAbsentDay(): CarbonImmutable
+    {
+        $from = CarbonImmutable::parse($this->date('date_from'))->startOfDay();
+
+        if (! $this->filled('day_of_week')) {
+            return $from;
+        }
+
+        return $from->addDays(($this->integer('day_of_week') - ($from->dayOfWeekIso - 1) + 7) % 7);
+    }
+
     /**
      * An open-ended recurring absence ("every Tuesday, indefinitely") is stored with the
      * FOREVER sentinel rather than a null date_to - see the Absence model for why.
      */
     protected function prepareForValidation(): void
     {
+        // A one-off absence must not keep a weekday left over from the weekly tab.
+        if (! $this->boolean('recurring')) {
+            $this->merge(['day_of_week' => null]);
+        }
+
         if ($this->boolean('open_ended') && $this->filled('day_of_week')) {
             $this->merge(['date_to' => Absence::FOREVER]);
         }
@@ -132,6 +159,7 @@ class StoreAbsenceRequest extends FormRequest
             'date_to.required' => 'Zadaj, dokedy budeš chýbať.',
             'date_to.after_or_equal' => 'Koniec absencie nemôže byť pred jej začiatkom.',
             'reason.required' => 'Uveď dôvod absencie.',
+            'day_of_week.required_if_accepted' => 'Vyber deň, v ktorý sa absencia opakuje.',
         ];
     }
 }

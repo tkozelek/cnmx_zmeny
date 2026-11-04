@@ -146,6 +146,9 @@
                                                                 – {{ SlovakDate::short($absence->date_to) }}
                                                             @endif
                                                         </span>
+                                                        @if($absence->isRecurring())
+                                                            <span class="block text-xs text-brand-300">{{ $absence->recurrenceLabel() }}</span>
+                                                        @endif
                                                     </td>
                                                     <td class="px-4 py-2.5 hidden sm:table-cell max-w-xs">
                                                         @if($absence->reason)

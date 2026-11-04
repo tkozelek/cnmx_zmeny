@@ -7,7 +7,7 @@
     @endpush
 
     <div
-        x-data="absenceRangePicker(@js(old('date_from', $firstAllowedDay)), @js(old('date_to', $firstAllowedDay)), @js($errors->any() || $openDialog), @js($minDate))"
+        x-data="absenceRangePicker(@js(old('date_from', $firstAllowedDay)), @js(old('date_to', $firstAllowedDay)), @js($errors->any() || $openDialog), @js($minDate), @js($repeat))"
         x-init="$nextTick(() => initFlatpickr())"
         {{-- Back from the next page restores this one from bfcache with the button still disabled. --}}
         @pageshow.window="sending = false"
@@ -64,30 +64,108 @@
                 <form action="{{ route('absences.store') }}" method="POST" class="p-6 space-y-5" @submit="sending = true">
                     @csrf
 
-                    <x-error-summary id="absence-errors" title="Absenciu sa nepodarilo uložiť:" :fields="['date_from' => 'absence-range', 'date_to' => 'absence-range']" />
+                    <x-error-summary id="absence-errors" title="Absenciu sa nepodarilo uložiť:" :fields="$errorFields" />
+
+                    <input type="hidden" name="date_from" :value="recurring ? repeatFrom : dateFrom">
+                    <input type="hidden" name="date_to" :value="recurring ? repeatTo : dateTo">
+
+                    <fieldset>
+                        <legend class="sr-only">Typ absencie</legend>
+                        <div class="grid grid-cols-2 gap-1 rounded-lg border border-neutral-800 bg-neutral-950 p-1">
+                            <label>
+                                <input type="radio" name="recurring" value="0" x-model.boolean="recurring" class="peer sr-only">
+                                <span class="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-semibold text-neutral-400 transition hover:text-neutral-200 peer-checked:bg-neutral-800 peer-checked:text-white peer-checked:shadow peer-focus-visible:ring-2 peer-focus-visible:ring-brand-400">
+                                    <i class="fa-solid fa-calendar-days text-xs" aria-hidden="true"></i> Jednorazová
+                                </span>
+                            </label>
+                            <label>
+                                <input type="radio" name="recurring" value="1" x-model.boolean="recurring" class="peer sr-only">
+                                <span class="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-semibold text-neutral-400 transition hover:text-neutral-200 peer-checked:bg-neutral-800 peer-checked:text-white peer-checked:shadow peer-focus-visible:ring-2 peer-focus-visible:ring-brand-400">
+                                    <i class="fa-solid fa-repeat text-xs" aria-hidden="true"></i> Každý týždeň
+                                </span>
+                            </label>
+                        </div>
+                    </fieldset>
 
                     {{-- Flatpickr Range Select --}}
-                    <div>
+                    <div x-show="!recurring">
                         <label for="absence-range" class="block mb-2 text-sm font-semibold text-neutral-200">
-                            Rozsah dátumov absencie <span class="text-rose-400" aria-hidden="true">*</span>
+                            Dni absencie <span class="text-rose-400" aria-hidden="true">*</span>
                         </label>
-                        <div class="relative">
-                            <input x-ref="rangeInput" type="text" placeholder="Vyber rozsah dátumov…" aria-label="Rozsah dátumov absencie" class="w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer">
-                            <input type="hidden" name="date_from" :value="dateFrom">
-                            <input type="hidden" name="date_to" :value="dateTo">
-                        </div>
+                        <input x-ref="rangeInput" type="text" placeholder="Vyber rozsah dátumov…" aria-label="Dni absencie" class="w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer">
                         <p id="absence-range-hint" class="text-xs text-neutral-400 mt-1">
-                            Vyber prvý a&nbsp;posledný deň (pri jednom dni ten istý deň dvakrát).
+                            Klikni na prvý a&nbsp;posledný deň. Jeden deň = klikni naň dvakrát.
                             @if($deadlineLabel)
-                                Absenciu treba nahlásiť aspoň {{ $deadlineLabel }} vopred.
+                                Nahlás aspoň {{ $deadlineLabel }} vopred.
                             @endif
                         </p>
+                    </div>
+
+                    <div x-show="recurring" x-cloak class="space-y-5">
+                        <fieldset>
+                            <legend class="mb-2 text-sm font-semibold text-neutral-200">
+                                Ktorý deň <span class="text-rose-400" aria-hidden="true">*</span>
+                            </legend>
+                            <div class="grid grid-cols-7 gap-1.5">
+                                @foreach($weekdays as $value => $weekday)
+                                    <label>
+                                        <input type="radio"
+                                               id="absence-weekday-{{ $value }}"
+                                               name="day_of_week"
+                                               value="{{ $value }}"
+                                               x-model.number="dayOfWeek"
+                                               class="peer sr-only"
+                                               :disabled="!recurring"
+                                               :required="recurring">
+                                        <span class="flex h-11 cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 text-sm font-semibold text-neutral-300 transition hover:border-neutral-500 peer-checked:border-brand-400 peer-checked:bg-brand-500/15 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand-400">
+                                            <span aria-hidden="true">{{ $weekday['short'] }}</span>
+                                            <span class="sr-only">{{ $weekday['name'] }}</span>
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </fieldset>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="absence-repeat-from" class="mb-2 block text-sm font-semibold text-neutral-200">
+                                    Od <span class="text-rose-400" aria-hidden="true">*</span>
+                                </label>
+                                <input type="date"
+                                       id="absence-repeat-from"
+                                       x-model="repeatFrom"
+                                       :min="minDate"
+                                       :disabled="!recurring"
+                                       :required="recurring"
+                                       class="h-11 w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3 text-base sm:text-sm text-neutral-100 [color-scheme:dark] focus:border-neutral-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label for="absence-repeat-to" class="mb-2 block text-sm font-semibold text-neutral-200">
+                                    Do <span class="text-rose-400" aria-hidden="true">*</span>
+                                </label>
+                                <input type="date"
+                                       id="absence-repeat-to"
+                                       x-model="repeatTo"
+                                       :min="repeatFrom"
+                                       :disabled="!recurring"
+                                       :required="recurring"
+                                       class="h-11 w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3 text-base sm:text-sm text-neutral-100 [color-scheme:dark] focus:border-neutral-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <p class="flex items-start gap-2 rounded-lg border border-brand-500/30 bg-brand-500/10 px-3.5 py-2.5 text-sm text-brand-200" aria-live="polite">
+                            <i class="fa-solid fa-repeat mt-0.5 text-xs" aria-hidden="true"></i>
+                            <span x-text="recurrenceSummary"></span>
+                        </p>
+                        @if($deadlineLabel)
+                            <p class="-mt-3 text-xs text-neutral-400">Nahlás aspoň {{ $deadlineLabel }} vopred.</p>
+                        @endif
                     </div>
 
                     {{-- Required Reason --}}
                     <div>
                         <label for="reason" class="block mb-2 text-sm font-semibold text-neutral-200">
-                            Dôvod absencie <span class="text-rose-400" aria-hidden="true">*</span>
+                            Dôvod <span class="text-rose-400" aria-hidden="true">*</span>
                         </label>
                         <input
                             type="text"
@@ -96,12 +174,10 @@
                             value="{{ old('reason') }}"
                             required
                             maxlength="500"
-                            aria-describedby="reason-hint @error('reason') absence-errors @enderror"
-                            @error('reason') aria-invalid="true" @enderror
-                            placeholder="Napr. dovolenka, skúškové…"
+                            @error('reason') aria-invalid="true" aria-describedby="absence-errors" @enderror
+                            :placeholder="recurring ? 'Napr. škola' : 'Napr. dovolenka, skúškové…'"
                             class="w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none"
                         >
-                        <p id="reason-hint" class="text-xs text-neutral-400 mt-1">Neuvádzaj zdravotné dôvody ani diagnózy – pri chorobe stačí „osobné dôvody“. Maximálne 500&nbsp;znakov.</p>
                     </div>
 
                     {{-- Action Buttons --}}

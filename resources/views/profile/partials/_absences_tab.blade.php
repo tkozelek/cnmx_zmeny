@@ -27,7 +27,7 @@
                             <span>{{ SlovakDate::full($absence->date_from) }} &ndash; {{ $absence->isOpenEnded() ? 'Neurčito' : SlovakDate::full($absence->date_to) }}</span>
                             @if($absence->isRecurring())
                                 <span class="text-neutral-400">&bull;</span>
-                                <span class="text-neutral-300 font-medium">Opakujúca sa</span>
+                                <span class="text-neutral-300 font-medium">{{ $absence->recurrenceLabel() }}</span>
                             @endif
                         </div>
                     </div>

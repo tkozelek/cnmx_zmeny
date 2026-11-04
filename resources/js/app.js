@@ -274,8 +274,27 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    Alpine.data('absenceRangePicker', (dateFrom, dateTo, openModal = false, minDate = null) => ({
+    Alpine.data('absenceRangePicker', (dateFrom, dateTo, openModal = false, minDate = null, repeat = {}) => ({
         openModal,
+        minDate,
+        recurring: repeat.enabled ?? false,
+        dayOfWeek: repeat.dayOfWeek ?? null,
+        repeatFrom: dateFrom,
+        repeatTo: repeat.enabled ? dateTo : '',
+        get recurrenceSummary() {
+            if (this.dayOfWeek === null) return 'Vyber deň v týždni.';
+            const every = repeat.every[this.dayOfWeek];
+            if (!this.repeatFrom || !this.repeatTo) return `${every[0].toUpperCase()}${every.slice(1)} – vyber, odkedy a dokedy.`;
+            const from = new Date(`${this.repeatFrom}T00:00:00`);
+            const to = new Date(`${this.repeatTo}T00:00:00`);
+            const first = new Date(from);
+            first.setDate(from.getDate() + ((this.dayOfWeek - ((from.getDay() + 6) % 7) + 7) % 7));
+            // Rounded to whole days: a range across the DST switch is an hour short of full weeks.
+            const count = first > to ? 0 : Math.floor(Math.round((to - first) / 86400000) / 7) + 1;
+            const format = (d) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
+            if (count === 0) return `V tomto období nie je žiadny deň ${repeat.names[this.dayOfWeek]}.`;
+            return `${every[0].toUpperCase()}${every.slice(1)} od ${format(from)} do ${format(to)} – spolu ${count}×.`;
+        },
         dateFrom,
         dateTo,
         sending: false,

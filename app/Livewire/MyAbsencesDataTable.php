@@ -84,7 +84,7 @@ class MyAbsencesDataTable extends DataTableComponent
 
             Column::make('Koniec', 'date_to')
                 ->sortable()
-                ->format(fn ($value, $row) => '<span class="text-neutral-300">'.($row->isOpenEnded() ? 'Trvalá' : ($value ? SlovakDate::full($value) : '')).'</span>')
+                ->format(fn ($value, $row) => $this->formatEndColumn($row))
                 ->html(),
 
             Column::make('Stav', 'status')

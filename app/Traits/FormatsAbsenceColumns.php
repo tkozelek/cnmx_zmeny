@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Enums\AbsenceStatus;
 use App\Models\Absence;
+use App\Support\SlovakDate;
 
 /**
  * Shared "Stav" and "Akcie" column rendering for the absence data tables
@@ -11,6 +12,17 @@ use App\Models\Absence;
  */
 trait FormatsAbsenceColumns
 {
+    protected function formatEndColumn(Absence $row): string
+    {
+        $end = '<span class="text-neutral-300">'.($row->isOpenEnded() ? 'Trvalá' : SlovakDate::full($row->date_to)).'</span>';
+
+        if (! $row->isRecurring()) {
+            return $end;
+        }
+
+        return $end.'<span class="mt-0.5 flex items-center gap-1 text-xs font-medium text-brand-300"><i class="fa-solid fa-repeat text-[10px]" aria-hidden="true"></i> '.$row->recurrenceLabel().'</span>';
+    }
+
     protected function formatStatusColumn(Absence $row): string
     {
         if ($row->status === AbsenceStatus::Cancelled) {

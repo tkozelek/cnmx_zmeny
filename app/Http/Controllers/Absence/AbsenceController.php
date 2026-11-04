@@ -26,6 +26,7 @@ class AbsenceController extends Controller
         $isManager = $request->user()->hasPermissionInTeam('absence.manage', $team);
         $deadlineDays = $isManager ? 0 : $team->absenceDeadlineDays();
         $firstAllowedDay = now()->addDays($deadlineDays)->toDateString();
+        $recurring = (bool) $request->old('recurring');
 
         return view('holiday.index', [
             'firstAllowedDay' => $firstAllowedDay,
@@ -34,12 +35,27 @@ class AbsenceController extends Controller
             // Nothing reported yet: an empty state instead of a search, filters and headers over zero rows.
             'hasOwnAbsences' => $request->user()->absences()->exists(),
             'openDialog' => $request->boolean('nova'),
+            'repeat' => [
+                'enabled' => $recurring,
+                'dayOfWeek' => $request->old('day_of_week') === null ? null : (int) $request->old('day_of_week'),
+                'every' => Absence::EVERY_WEEKDAY,
+                'names' => Absence::WEEKDAYS,
+            ],
+            'errorFields' => [
+                'date_from' => $recurring ? 'absence-repeat-from' : 'absence-range',
+                'date_to' => $recurring ? 'absence-repeat-to' : 'absence-range',
+                'day_of_week' => 'absence-weekday-0',
+            ],
+            'weekdays' => collect(Absence::WEEKDAYS)->map(fn (string $name): array => [
+                'short' => mb_convert_case(mb_substr($name, 0, 2), MB_CASE_TITLE),
+                'name' => $name,
+            ])->all(),
         ]);
     }
 
     public function store(StoreAbsenceRequest $request): RedirectResponse
     {
-        $request->user()->absences()->create($request->safe()->except('open_ended'));
+        $request->user()->absences()->create($request->safe()->except(['open_ended', 'recurring']));
 
         return back()->with(['message' => 'Absencia nahlásená.']);
     }
