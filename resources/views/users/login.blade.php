@@ -25,6 +25,7 @@
                 name="password"
                 autocomplete="current-password"
                 label="Heslo"
+                placeholder="••••••••"
                 icon="fa-lock"
                 enterkeyhint="go"
                 required
