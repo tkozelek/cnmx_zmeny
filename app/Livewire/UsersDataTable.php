@@ -232,7 +232,7 @@ class UsersDataTable extends DataTableComponent
 
         Log::channel('security')->info('Členstvo schválené.', ['user_id' => $user->id, 'team_id' => $team->id, 'by' => auth()->id()]);
 
-        $user->notify(new UserAllowedToLogin($user));
+        $user->notify(new UserAllowedToLogin($user, $team->name));
         $this->dispatch('toast', message: 'Používateľ schválený.');
     }
 

@@ -328,7 +328,10 @@ Fix before cutover:
 | M4 | Mail | Make `ResetPasswordNotification` `ShouldQueue` (timing leak, SMTP failure = 500). Add `$tries`/`$backoff` to notifications and `--tries=3` to the cron worker. Sign the e-mail-change URL in `toMail()`. | `app/Notifications/*` |
 | M5 | Mail | Add a per-target rate limit on e-mail change requests (spam relay). | `EmailController::update` |
 
-After launch (low): hash `pending_email_token`; fail-closed `BelongsToTeam` scope; strip approval and role
+Done 2026-11-04: `pending_email_token` stored hashed; cinema name in the rozpis and approval mail
+subjects; `APP_NAME` fallback "Cinemax Zmeny"; `/week/{date}` past the lookahead redirects.
+
+After launch (low): fail-closed `BelongsToTeam` scope; strip approval and role
 on single-cinema deactivation; cinema name and a cinema-switching link in mails; Slovak copy fixes
 (date format `5. 11. – 11. 11. 2026`, "zmena" ambiguity); a working plain-text mail version;
 `color-scheme: light dark`; `auth:clear-resets add_user` + pruning invite tokens; debounce `uniqueFor`

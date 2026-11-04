@@ -155,6 +155,16 @@ class CalendarPageTest extends TestCase
             ->assertViewHas('available', []);
     }
 
+    public function test_a_date_past_the_lookahead_redirects_to_the_last_open_week(): void
+    {
+        $team = $this->tenant();
+        $lastOpenWeek = app(WeekService::class)->lastOpenWeek($team);
+
+        $this->actingAs($this->member($team))
+            ->get(route('calendar.show', ['date' => $lastOpenWeek->addWeeks(3)->toDateString()]))
+            ->assertRedirect(route('calendar.show', ['date' => $lastOpenWeek->toDateString()]));
+    }
+
     public function test_a_weekly_absence_greys_out_only_its_weekday(): void
     {
         $team = $this->tenant();

@@ -30,7 +30,7 @@ class RozpisNotificationService
             return;
         }
 
-        Notification::send($this->usersForWeek($team, $weekStart), new RozpisPublished($weekStart));
+        Notification::send($this->usersForWeek($team, $weekStart), new RozpisPublished($weekStart, $team->name));
     }
 
     /**
@@ -46,7 +46,7 @@ class RozpisNotificationService
             return;
         }
 
-        Notification::send($this->usersForWeek($team, $weekStart, $affectedUserIds), new RozpisChanged($weekStart));
+        Notification::send($this->usersForWeek($team, $weekStart, $affectedUserIds), new RozpisChanged($weekStart, $team->name));
     }
 
     /**

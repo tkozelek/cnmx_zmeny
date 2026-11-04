@@ -25,7 +25,7 @@ class EmailChangeController extends Controller
     {
         $user = $this->pendingUser($id, $token);
 
-        $this->emailChanges->approve($user);
+        $this->emailChanges->approve($user, $token);
 
         return $this->page($user, 'approved');
     }

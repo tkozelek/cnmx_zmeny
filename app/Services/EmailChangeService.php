@@ -17,17 +17,22 @@ class EmailChangeService
 {
     public function request(User $user, string $newEmail): void
     {
+        $token = Str::random(40);
+
         $user->forceFill([
             'pending_email' => $newEmail,
-            'pending_email_token' => Str::random(40),
+            'pending_email_token' => $this->hash($token),
             'pending_email_approved_at' => null,
         ])->save();
 
-        $user->notify(new ConfirmEmailChange($newEmail, $this->signedUrl('email-change.show', $user)));
+        $user->notify(new ConfirmEmailChange($newEmail, $this->signedUrl('email-change.show', $user, $token)));
     }
 
-    /** Conditional update, so a double click or a newer request cannot inherit this approval. */
-    public function approve(User $user): void
+    /**
+     * Conditional update, so a double click or a newer request cannot inherit this approval.
+     * $token is the plain one from the old inbox's link - the new inbox's link carries it on.
+     */
+    public function approve(User $user, string $token): void
     {
         $approved = User::query()
             ->whereKey($user->getKey())
@@ -40,7 +45,7 @@ class EmailChangeService
         }
 
         Notification::route('mail', $user->pending_email)
-            ->notify(new VerifyNewEmail($this->signedUrl('email-change.verify', $user)));
+            ->notify(new VerifyNewEmail($this->signedUrl('email-change.verify', $user, $token)));
     }
 
     /** False, and the change dropped, when another account took the address meanwhile. */
@@ -80,15 +85,21 @@ class EmailChangeService
     public function isPending(User $user, string $token): bool
     {
         return $user->pending_email_token !== null
-            && hash_equals($user->pending_email_token, $token);
+            && hash_equals($user->pending_email_token, $this->hash($token));
     }
 
-    private function signedUrl(string $route, User $user): string
+    /** Only the hash is stored, so a leaked users row can't be turned into a working link. */
+    private function hash(string $token): string
+    {
+        return hash('sha256', $token);
+    }
+
+    private function signedUrl(string $route, User $user, string $token): string
     {
         return URL::temporarySignedRoute(
             $route,
             now()->addMinutes(config('auth.verification.expire', 60)),
-            ['id' => $user->getKey(), 'token' => $user->pending_email_token],
+            ['id' => $user->getKey(), 'token' => $token],
         );
     }
 }

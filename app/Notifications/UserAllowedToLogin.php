@@ -22,7 +22,7 @@ class UserAllowedToLogin extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(private readonly User $user) {}
+    public function __construct(private readonly User $user, private readonly string $teamName) {}
 
     /**
      * Get the notification's delivery channels.
@@ -40,9 +40,9 @@ class UserAllowedToLogin extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Cinemax Zmeny | Účet schválený')
+            ->subject('Cinemax Zmeny | Účet schválený – '.$this->teamName)
             ->greeting('Ahoj '.$this->user->name.',')
-            ->line('Manažér kina schválil tvoj účet. Môžeš sa prihlásiť a zapisovať sa na dni.')
+            ->line('Manažér kina '.$this->teamName.' schválil tvoj účet. Môžeš sa prihlásiť a zapisovať sa na dni.')
             ->action('Prihlásiť sa', route('login'))
             ->line(new HtmlString('Ak potrebuješ poradiť, pozri si sekciu <b>Pomoc</b> v navigácii.'))
             ->salutation(new HtmlString('S pozdravom,<br><strong>Cinemax Zmeny</strong>'));

@@ -433,6 +433,8 @@ class RozpisPublishTest extends TestCase
         }
 
         Notification::assertSentToTimes($employee, RozpisPublished::class, 1);
+        // Someone in two cinemas has to tell from the subject which one published.
+        Notification::assertSentTo($employee, RozpisPublished::class, fn (RozpisPublished $mail): bool => str_contains($mail->toMail($employee)->subject, $team->name));
     }
 
     /** The person taken off a published week is the one who most needs the "changed" mail. */

@@ -96,6 +96,7 @@ The import (`app:import-legacy-data --team=<id>`):
    php8.4 artisan storage:link
    ```
    `.env` essentials:
+   - `APP_NAME="Cinemax Zmeny"` – mails use it as the sender name and footer
    - `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://<production-domain>` – in production the app
      forces https and this root for every link, and sends HSTS
    - `SESSION_SECURE_COOKIE=true`, `SESSION_ENCRYPT=true`; `SESSION_DOMAIN` unset unless needed

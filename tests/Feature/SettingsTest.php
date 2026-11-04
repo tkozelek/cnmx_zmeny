@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Notifications\ConfirmEmailChange;
 use App\Notifications\VerifyNewEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
@@ -85,12 +86,15 @@ class SettingsTest extends TestCase
         $this->post($staleUrl)->assertForbidden();
 
         // Even holding the current token, the new inbox's link is refused until the old inbox approved.
+        $currentToken = app('router')->getRoutes()->match(Request::create($this->sentConfirmationUrl($user)))->parameter('token');
+
         $this->get(URL::temporarySignedRoute('email-change.verify', now()->addHour(), [
             'id' => $user->id,
-            'token' => $user->fresh()->pending_email_token,
+            'token' => $currentToken,
         ]))->assertForbidden();
 
         $this->assertNotSame('nova@kino.test', $user->fresh()->email);
+        $this->assertNotSame($currentToken, $user->fresh()->pending_email_token, 'Only a hash of the link token is stored.');
     }
 
     /** Someone registered the address while the change waited - the change is dropped, not a 500. */

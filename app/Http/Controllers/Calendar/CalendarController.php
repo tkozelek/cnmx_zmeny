@@ -8,6 +8,8 @@ use App\Services\CalendarService;
 use App\Services\WeekService;
 use App\Support\SlovakDate;
 use App\Support\SlovakPlural;
+use Carbon\CarbonImmutable;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -23,18 +25,25 @@ class CalendarController extends Controller
 
     public function index(Request $request, Team $team): View
     {
-        return $this->week($request, $team, null);
+        return $this->week($request, $team, $this->weeks->alignFromRequest($team, null));
     }
 
     /** `/week/{date}` - any date inside the wanted week, realigned before use. */
-    public function show(Request $request, Team $team, string $date): View
-    {
-        return $this->week($request, $team, $date);
-    }
-
-    private function week(Request $request, Team $team, ?string $date): View
+    public function show(Request $request, Team $team, string $date): View|RedirectResponse
     {
         $weekStart = $this->weeks->alignFromRequest($team, $date);
+        $requested = rescue(fn (): CarbonImmutable => CarbonImmutable::parse($date)->startOfDay(), report: false);
+
+        // A date past the lookahead (or no date at all) shows another week - give it that week's own URL.
+        if ($requested === null || $requested->gt($this->weeks->end($weekStart))) {
+            return redirect()->route('calendar.show', ['date' => $weekStart->toDateString()]);
+        }
+
+        return $this->week($request, $team, $weekStart);
+    }
+
+    private function week(Request $request, Team $team, CarbonImmutable $weekStart): View
+    {
         $next = $this->weeks->next($weekStart);
         $week = $this->calendar->forWeek($team, $weekStart, $request->user());
 

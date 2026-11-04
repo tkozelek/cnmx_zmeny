@@ -27,7 +27,7 @@ class RozpisPublished extends Notification implements ShouldQueue
     /** @var list<int> */
     public array $backoff = [60, 300];
 
-    public function __construct(private readonly CarbonImmutable $weekStart) {}
+    public function __construct(private readonly CarbonImmutable $weekStart, private readonly string $teamName) {}
 
     /**
      * @return array<int, string>
@@ -42,9 +42,9 @@ class RozpisPublished extends Notification implements ShouldQueue
         $weekEnd = $this->weekStart->addDays(6);
 
         return (new MailMessage)
-            ->subject('Cinemax Zmeny | Rozpis zverejnený')
+            ->subject('Cinemax Zmeny | Rozpis zverejnený – '.$this->teamName)
             ->greeting('Ahoj '.$notifiable->name.',')
-            ->line('Rozpis pre týždeň '.SlovakDate::range($this->weekStart, $weekEnd).' bol zverejnený.')
+            ->line('Rozpis kina '.$this->teamName.' pre týždeň '.SlovakDate::range($this->weekStart, $weekEnd).' bol zverejnený.')
             ->action('Zobraziť rozpis', route('rozpis.published', ['date' => $this->weekStart->toDateString()]))
             ->line('Rozpis sa ešte môže meniť, preto si ho pred nástupom do práce vždy skontroluj v aplikácii.')
             ->salutation(new HtmlString('S pozdravom,<br><strong>Cinemax Zmeny</strong>'));
