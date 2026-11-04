@@ -407,7 +407,8 @@ export function mountSeatField(canvas) {
         const yours = seats.filter((s) => s.taken).length;
         label.classList.toggle('is-taken', yours > 0);
         if (seat?.taken) {
-            label.textContent = `Rad ${rows - seat.row}, miesto ${seat.col + 1} je tvoje.`;
+            // Rows are lettered from the one nearest the viewer (A at the bottom), seats numbered left to right.
+            label.textContent = `Rad ${String.fromCharCode(65 + rows - 1 - seat.row)}, miesto ${seat.col + 1} je tvoje.`;
         } else if (yours === 0) {
             label.textContent = label.dataset.idle;
         }
