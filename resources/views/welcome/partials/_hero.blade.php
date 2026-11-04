@@ -1,12 +1,3 @@
-@php
-    // Split into words server-side so each one can slide up from behind its own mask on
-    // load; the accent flag paints the second line in the brand color.
-    $headline = [
-        ['Tvoje', false], ['zmeny', false], ['v', false], ['kine,', false],
-        ['na', true], ['jedno', true], ['ťuknutie.', true],
-    ];
-@endphp
-
 <link rel="preload" as="image" fetchpriority="high"
       imagesrcset="{{ asset('images/welcome_hero_960.webp') }} 960w, {{ asset('images/welcome_hero_1600.webp') }} 1600w, {{ asset('images/welcome_hero_2400.webp') }} 2400w"
       imagesizes="100vw">
@@ -41,7 +32,7 @@
     <div id="hero-content" class="container relative mx-auto px-4 pb-24 pt-16 sm:pb-32">
         <h1 class="mx-auto max-w-5xl text-[2.375rem] font-extrabold leading-[1.05] tracking-tight text-neutral-50 sm:text-6xl lg:text-7xl">
             @foreach($headline as $i => [$word, $isAccent])
-                @if($i === 4)<br>@endif
+                @if($i === 3)<br>@endif
                 <span class="split-word"><span class="split-word-inner {{ $isAccent ? 'text-brand-400' : '' }}" style="--i: {{ $i }}">{{ $word }}</span></span>
             @endforeach
         </h1>

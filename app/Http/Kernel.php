@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\AddRequestLogContext;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -50,6 +51,8 @@ class Kernel extends HttpKernel
         // point at their own domain. TrustHosts allows this app's URL and its subdomains only.
         TrustHosts::class,
         TrustProxies::class,
+        // After TrustProxies, or ip_hash would be the load balancer's address for everyone.
+        AddRequestLogContext::class,
         // Global, not in `web`: a 404 for an unknown URL never reaches the web group.
         SecurityHeaders::class,
         HandleCors::class,
@@ -75,12 +78,6 @@ class Kernel extends HttpKernel
             // record from another cinema is simply not found (404) instead of found-then-refused (403).
         ],
 
-        'api' => [
-            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            ThrottleRequests::class.':api',
-            SubstituteBindings::class,
-        ],
-
         /**
          * Everything behind the login. One group instead of three aliases, because these
          * three always belong together: be logged in, be allowed in, and have a team
@@ -95,6 +92,7 @@ class Kernel extends HttpKernel
             EnsureUserIsActive::class,
             SetCurrentTeam::class,
             SubstituteBindings::class,
+            'throttle:member-writes',
         ],
     ];
 

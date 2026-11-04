@@ -35,6 +35,11 @@ trait NotifiesRozpisChange
             return;
         }
 
-        app(RozpisNotificationService::class)->scheduleChangeNotification($model->team_id, $model->date);
+        $affectedUserIds = array_values(array_map(intval(...), array_filter(
+            [$model->getAttribute('user_id'), $model->getOriginal('user_id')],
+            is_numeric(...),
+        )));
+
+        app(RozpisNotificationService::class)->scheduleChangeNotification($model->team_id, $model->date, $affectedUserIds);
     }
 }

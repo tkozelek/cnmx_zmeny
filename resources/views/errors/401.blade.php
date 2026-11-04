@@ -2,7 +2,7 @@
 
 @section('code', '401')
 @section('title', 'Neprihlásený')
-@section('caption', 'Vstup len s lístkom')
+@section('caption', 'Vstup len s lístkom')
 @section('heading', 'Najprv sa prihlás')
 @section('message', 'Táto stránka je dostupná iba prihláseným používateľom.')
 

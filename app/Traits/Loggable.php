@@ -17,6 +17,17 @@ trait Loggable
 {
     public static function bootLoggable(): void
     {
+        static::created(function (Model $model): void {
+            $user = Auth::user();
+
+            Log::info('Účet #'.($user?->id ?? '-').' vytvoril model "'.get_class($model).'" (ID: '.$model->getKey().').', [
+                'user_id' => $user?->id,
+                'model' => get_class($model),
+                'target_id' => $model->getKey(),
+                'attributes' => AuditRedactor::redact($model->getAttributes()),
+            ]);
+        });
+
         static::updated(function (Model $model): void {
             $user = Auth::user();
             $changes = $model->getChanges();

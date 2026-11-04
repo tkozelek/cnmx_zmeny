@@ -16,11 +16,11 @@
 </main>
 
 <footer class="border-t border-neutral-900 bg-neutral-950">
-    <div class="container mx-auto flex flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-neutral-400 sm:flex-row">
-        <p>&copy; {{ now()->year }} {{ config('privacy.operator.name') }}</p>
-        <nav aria-label="Pätička" class="flex gap-5">
-            <a href="{{ route('help') }}" class="hover:text-white">Pomoc</a>
-            <a href="{{ route('privacy') }}" class="hover:text-white">Ochrana osobných údajov</a>
+    <div class="container mx-auto flex flex-col items-center justify-between gap-2 px-4 py-4 text-sm text-neutral-400 sm:flex-row md:px-6 lg:px-8">
+        <p>&copy; {{ $currentYear }} {{ $operatorName }}</p>
+        <nav aria-label="Pätička" class="flex gap-3">
+            <a href="{{ route('help') }}" class="inline-flex min-h-10 items-center px-1 hover:text-white">Pomoc</a>
+            <a href="{{ route('privacy') }}" class="inline-flex min-h-10 items-center px-1 hover:text-white">Ochrana osobných údajov</a>
         </nav>
     </div>
 </footer>

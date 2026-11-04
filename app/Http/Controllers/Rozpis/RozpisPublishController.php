@@ -33,6 +33,11 @@ class RozpisPublishController extends Controller
         $lock = $this->lockFor($request, $team, $date);
         abort_unless($lock->is_locked, 404);
 
+        // A double click or a replayed form must not mail the whole cinema twice.
+        if ($lock->isRozpisPublished()) {
+            return $this->back($lock->week_start->toDateString(), 'Rozpis už je zverejnený.', 'fa fa-bullhorn');
+        }
+
         $lock->update([
             'rozpis_published_at' => now(),
             'published_by' => $request->user()->id,
@@ -42,7 +47,7 @@ class RozpisPublishController extends Controller
 
         return $this->back(
             $lock->week_start->toDateString(),
-            'Rozpis zverejnený – zamestnanci ho už vidia.',
+            'Rozpis zverejnený – brigádnici ho už vidia.',
             'fa fa-bullhorn',
         );
     }

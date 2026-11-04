@@ -166,7 +166,7 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
         $grid[$top][$column] = mb_strtoupper($day['dayName']);
         $grid[$top][$column + 1] = $day['date']->format('d.m.Y');
         $grid[$top][$column + 2] = 'manažér:';
-        $grid[$top][$column + 3] = $day['manager'] ?? '';
+        $grid[$top][$column + 3] = $this->escapeFormula($day['manager'] ?? null) ?? '';
 
         $grid[$top + 1][$column] = 'meno';
         $grid[$top + 1][$column + 1] = 'pozícia';
@@ -192,11 +192,11 @@ class RozpisExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
                 // An em dash rather than a blank: an unfilled row must read as "nobody yet", not
                 // as a cell somebody forgot to write to.
                 $grid[$row][$column] = $this->escapeFormula($rows[$i]['name'] ?? null) ?? '-';
-                $grid[$row][$column + 1] = $rows[$i]['label'];
+                $grid[$row][$column + 1] = $this->escapeFormula($rows[$i]['label']);
                 $grid[$row][$column + 2] = $rows[$i]['time'] ?? '';
             }
 
-            $grid[$row][$column + 3] = $substitutes[$i] ?? '';
+            $grid[$row][$column + 3] = $this->escapeFormula($substitutes[$i] ?? null) ?? '';
         }
 
         // A day taller than its block would overwrite the neighbouring one, so it is truncated -

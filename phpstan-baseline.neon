@@ -1,0 +1,1363 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method App\\Console\\Commands\\ClearAllCaches\:\:handle\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Console/Commands/ClearAllCaches.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/ImportLegacyData.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:teams\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Console/Commands/ImportLegacyData.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/ImportLegacyData.php
+
+		-
+			message: '#^Parameter &\$grid by\-ref type of method App\\Exports\\RozpisExport\:\:writeDay\(\) expects array\<int, array\<int, string\>\>, array\<int, array\<int, mixed\>\> given\.$#'
+			identifier: parameterByRef.type
+			count: 13
+			path: app/Exports/RozpisExport.php
+
+		-
+			message: '#^Property App\\Exports\\RozpisExport\:\:\$plan \(Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\) does not accept Illuminate\\Support\\Collection\<int, array\{date\: Carbon\\CarbonImmutable, dayName\: string, manager\: string\|null, managerRows\: list\<array\{label\: string, time\: string\|null, name\: string\|null, user_id\: int\|null\}\>, rows\: list\<array\{label\: string, time\: string\|null, name\: string\|null, user_id\: int\|null\}\>, substitutes\: list\<string\>, eligible\: list\<array\{name\: string, score\: float\}\>, unfilled\: int\}\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Exports/RozpisExport.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Exports/WeeklyScheduleExport.php
+
+		-
+			message: '#^Method App\\Exports\\WeeklyScheduleExport\:\:cellsFor\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Exports/WeeklyScheduleExport.php
+
+		-
+			message: '#^Method App\\Exports\\WeeklyScheduleExport\:\:collection\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Exports/WeeklyScheduleExport.php
+
+		-
+			message: '#^Property App\\Exports\\WeeklyScheduleExport\:\:\$byDate \(Illuminate\\Support\\Collection\<string, Illuminate\\Support\\Collection\<int, App\\Models\\Assignment\>\>\) does not accept Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\), Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Assignment\>\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Exports/WeeklyScheduleExport.php
+
+		-
+			message: '#^Property App\\Exports\\WeeklyScheduleExport\:\:\$team is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Exports/WeeklyScheduleExport.php
+
+		-
+			message: '#^Method App\\Filament\\Platform\\Resources\\Activities\\ActivityResource\:\:canDelete\(\) has parameter \$record with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Filament/Platform/Resources/Activities/ActivityResource.php
+
+		-
+			message: '#^Method App\\Filament\\Platform\\Resources\\Activities\\ActivityResource\:\:canEdit\(\) has parameter \$record with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Filament/Platform/Resources/Activities/ActivityResource.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:forgetApprovedTeamsCache\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Platform/Resources/Teams/Pages/EditTeam.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Platform/Resources/Teams/RelationManagers/MembersRelationManager.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$team_role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Platform/Resources/Teams/RelationManagers/MembersRelationManager.php
+
+		-
+			message: '#^Method App\\Filament\\Platform\\Resources\\Teams\\RelationManagers\\MembersRelationManager\:\:team\(\) should return App\\Models\\Team but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Filament/Platform/Resources/Teams/RelationManagers/MembersRelationManager.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hasFeature\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Platform/Resources/Teams/Schemas/TeamForm.php
+
+		-
+			message: '#^Parameter \#1 \$team of class App\\Rules\\WeekStartDayChangeable constructor expects App\\Models\\Team, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Platform/Resources/Teams/Schemas/TeamForm.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Team\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Platform/Resources/Users/RelationManagers/TeamsRelationManager.php
+
+		-
+			message: '#^Method App\\Filament\\Platform\\Resources\\Users\\RelationManagers\\TeamsRelationManager\:\:user\(\) should return App\\Models\\User but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Filament/Platform/Resources/Users/RelationManagers/TeamsRelationManager.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Http/Controllers/Auth/EmailChangeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\PasswordRequestController\:\:index\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Http/Controllers/Auth/PasswordRequestController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\PasswordRequestController\:\:send\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Http/Controllers/Auth/PasswordRequestController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\PasswordResetController\:\:show\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Http/Controllers/Auth/PasswordResetController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\PasswordResetController\:\:show\(\) has parameter \$token with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/Auth/PasswordResetController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Auth\\PasswordResetController\:\:store\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Http/Controllers/Auth/PasswordResetController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\HelpController\:\:index\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Http/Controllers/HelpController.php
+
+		-
+			message: '#^Parameter \#2 \$key of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:pluck\(\) expects string\|null, Illuminate\\Contracts\\Database\\Query\\Expression given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Profile/ProfileController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Rozpis\\RozpisController\:\:markViewer\(\) should return Illuminate\\Support\\Collection\<int, array\<string, mixed\>\> but returns Illuminate\\Support\\Collection\<int, non\-empty\-array\<string, mixed\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Rozpis/RozpisController.php
+
+		-
+			message: '#^Parameter \#1 \$plan of method App\\Http\\Controllers\\Rozpis\\RozpisController\:\:markViewer\(\) expects Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>, Illuminate\\Support\\Collection\<int, array\{date\: Carbon\\CarbonImmutable, dayName\: string, manager\: string\|null, managerRows\: list\<array\{label\: string, time\: string\|null, name\: string\|null, user_id\: int\|null\}\>, rows\: list\<array\{label\: string, time\: string\|null, name\: string\|null, user_id\: int\|null\}\>, substitutes\: list\<string\>, eligible\: list\<array\{name\: string, score\: float\}\>, unfilled\: int\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Rozpis/RozpisController.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/Rozpis/RozpisController.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/Rozpis/RozpisController.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Http/Controllers/Rozpis/RozpisPublishController.php
+
+		-
+			message: '#^Parameter \#1 \$team of method App\\Models\\User\:\:canEnter\(\) expects App\\Models\\Team, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Middleware/SetCurrentTeam.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:betweenDates\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Requests/Absence/StoreAbsenceRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Absence\\StoreAbsenceRequest\:\:after\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/Absence/StoreAbsenceRequest.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\MustVerifyEmail\:\:getAuthIdentifier\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Listeners/LogApplicationEvents.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Contracts\\Auth\\Authenticatable\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Listeners/LogApplicationEvents.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$last_login_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Listeners/LogSuccessfulLogin.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$timestamps\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Listeners/LogSuccessfulLogin.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:active\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/AbsencesDataTable.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:past\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/AbsencesDataTable.php
+
+		-
+			message: '#^Call to an undefined method Rappasoft\\LaravelLivewireTables\\Views\\Filter\:\:options\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/AbsencesDataTable.php
+
+		-
+			message: '#^Method App\\Livewire\\AbsencesDataTable\:\:builder\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Livewire/AbsencesDataTable.php
+
+		-
+			message: '#^Method App\\Livewire\\AbsencesDataTable\:\:columns\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/AbsencesDataTable.php
+
+		-
+			message: '#^Method App\\Livewire\\AbsencesDataTable\:\:filters\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/AbsencesDataTable.php
+
+		-
+			message: '#^Property App\\Livewire\\AbsencesDataTable\:\:\$model has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/AbsencesDataTable.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>lastname" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/AbsencesDataTable.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/AbsencesDataTable.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\DayCard\:\:\$assignments\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Livewire/DayCard.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\DayCard\:\:\$dayCarbon\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Livewire/DayCard.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\DayCard\:\:\$isAdmin\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/DayCard.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\DayCard\:\:\$mine\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/DayCard.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\DayCard\:\:\$shortDate\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/DayCard.php
+
+		-
+			message: '#^Method App\\Livewire\\DayCard\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/DayCard.php
+
+		-
+			message: '#^Property App\\Livewire\\DayCard\:\:\$initialAssignments with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Livewire/DayCard.php
+
+		-
+			message: '#^Method App\\Livewire\\ExtraNote\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/ExtraNote.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:active\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/MyAbsencesDataTable.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:past\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/MyAbsencesDataTable.php
+
+		-
+			message: '#^Call to an undefined method Rappasoft\\LaravelLivewireTables\\Views\\Filter\:\:options\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/MyAbsencesDataTable.php
+
+		-
+			message: '#^Method App\\Livewire\\MyAbsencesDataTable\:\:builder\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Livewire/MyAbsencesDataTable.php
+
+		-
+			message: '#^Method App\\Livewire\\MyAbsencesDataTable\:\:columns\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/MyAbsencesDataTable.php
+
+		-
+			message: '#^Method App\\Livewire\\MyAbsencesDataTable\:\:filters\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/MyAbsencesDataTable.php
+
+		-
+			message: '#^Property App\\Livewire\\MyAbsencesDataTable\:\:\$model has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/MyAbsencesDataTable.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\PositionList\:\:\$groups\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/PositionList.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\PositionList\:\:\$positions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/PositionList.php
+
+		-
+			message: '#^Method App\\Livewire\\PositionList\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/PositionList.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$assignments\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$copyTargets\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$dayCarbon\.$#'
+			identifier: property.notFound
+			count: 17
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$daySlots\.$#'
+			identifier: property.notFound
+			count: 9
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$fairness\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$leadershipRoster\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$rankingKey\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$slotLabels\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$team\.$#'
+			identifier: property.notFound
+			count: 11
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\RozpisDay\:\:\$unassignedPool\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PositionSlot\:\:\$end_time\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PositionSlot\:\:\$start_time\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:groupName\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Method App\\Livewire\\RozpisDay\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Property App\\Livewire\\RozpisDay\:\:\$initialAssignments with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Property App\\Livewire\\RozpisDay\:\:\$initialSlots with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Livewire/RozpisDay.php
+
+		-
+			message: '#^Method App\\Livewire\\RozpisWeekAi\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/RozpisWeekAi.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\SignupSummary\:\:\$signupCounts\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/SignupSummary.php
+
+		-
+			message: '#^Method App\\Livewire\\SignupSummary\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/SignupSummary.php
+
+		-
+			message: '#^Method App\\Livewire\\SignupSummary\:\:signupCounts\(\) should return Illuminate\\Support\\Collection\<int, object\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Assignment\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Livewire/SignupSummary.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:role\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/UsersDataTable.php
+
+		-
+			message: '#^Method App\\Livewire\\UsersDataTable\:\:builder\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Livewire/UsersDataTable.php
+
+		-
+			message: '#^Method App\\Livewire\\UsersDataTable\:\:columns\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/UsersDataTable.php
+
+		-
+			message: '#^Method App\\Livewire\\UsersDataTable\:\:filters\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/UsersDataTable.php
+
+		-
+			message: '#^Property App\\Livewire\\UsersDataTable\:\:\$model has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/UsersDataTable.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Cannot call method gte\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:scopeActive\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:scopeActive\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:scopeOrderByRelevance\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:scopeOrderByRelevance\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:scopeOverlapping\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:scopeOverlapping\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:scopePast\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:scopePast\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:team\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Method App\\Models\\Absence\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\AbsenceStatus\:\:Cancelled will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Models/Absence.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hasFeature\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Method App\\Models\\Assignment\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Method App\\Models\\Assignment\:\:position\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Method App\\Models\\Assignment\:\:positionSlot\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Method App\\Models\\Assignment\:\:scopeBetweenDates\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Method App\\Models\\Assignment\:\:scopeBetweenDates\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Method App\\Models\\Assignment\:\:team\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Method App\\Models\\Assignment\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Parameter \#2 \$date of method App\\Services\\RozpisNotificationService\:\:scheduleChangeNotification\(\) expects Carbon\\CarbonInterface, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Unsafe call to private method App\\Models\\Assignment\:\:scheduleRozpisChangeNotification\(\) through static\:\:\.$#'
+			identifier: staticClassAccess.privateMethod
+			count: 2
+			path: app/Models/Assignment.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Position.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sort_order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Position.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Position.php
+
+		-
+			message: '#^Method App\\Models\\Position\:\:assignments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Position.php
+
+		-
+			message: '#^Method App\\Models\\Position\:\:group\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Position.php
+
+		-
+			message: '#^Method App\\Models\\Position\:\:scopeSelectable\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Position.php
+
+		-
+			message: '#^Method App\\Models\\Position\:\:scopeSelectable\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Position.php
+
+		-
+			message: '#^Method App\\Models\\Position\:\:team\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Position.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sort_order" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Position.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PositionGroup.php
+
+		-
+			message: '#^Method App\\Models\\PositionGroup\:\:positions\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionGroup.php
+
+		-
+			message: '#^Method App\\Models\\PositionGroup\:\:scopeOrdered\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionGroup.php
+
+		-
+			message: '#^Method App\\Models\\PositionGroup\:\:scopeOrdered\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionGroup.php
+
+		-
+			message: '#^Method App\\Models\\PositionGroup\:\:team\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionGroup.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_manager\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hasFeature\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:label\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Method App\\Models\\PositionSlot\:\:endTime\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Method App\\Models\\PositionSlot\:\:occupant\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasOne does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Method App\\Models\\PositionSlot\:\:position\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Method App\\Models\\PositionSlot\:\:scopeBetweenDates\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Method App\\Models\\PositionSlot\:\:scopeBetweenDates\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Method App\\Models\\PositionSlot\:\:startTime\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Method App\\Models\\PositionSlot\:\:team\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Parameter \#2 \$date of method App\\Services\\RozpisNotificationService\:\:scheduleChangeNotification\(\) expects Carbon\\CarbonInterface, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Unsafe call to private method App\\Models\\PositionSlot\:\:scheduleRozpisChangeNotification\(\) through static\:\:\.$#'
+			identifier: staticClassAccess.privateMethod
+			count: 2
+			path: app/Models/PositionSlot.php
+
+		-
+			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: app/Models/Team.php
+
+		-
+			message: '#^Method App\\Models\\Team\:\:absences\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Method App\\Models\\Team\:\:approvedUsers\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Method App\\Models\\Team\:\:assignments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Method App\\Models\\Team\:\:cachedSettings\(\) should return App\\Models\\TeamSetting\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Method App\\Models\\Team\:\:pendingUsers\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Method App\\Models\\Team\:\:positions\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Method App\\Models\\Team\:\:settings\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasOne does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Method App\\Models\\Team\:\:users\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Method App\\Models\\Team\:\:weekLocks\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between \*NEVER\* and array\{\} will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between \*NEVER\* and 7 will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>absence_deadline_days" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>fairness_window_weeks" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>holiday_weight" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stale_absence_deletion_days" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>week_lookahead" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>week_start_day" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Team.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/TeamSetting.php
+
+		-
+			message: '#^Method App\\Models\\TeamSetting\:\:team\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TeamSetting.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Class App\\Models\\User uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:absences\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:approvedTeams\(\) should return Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Team\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:assignments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:currentTeam\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:teams\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\User\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Parameter \#1 \$team of method App\\Models\\User\:\:isApprovedIn\(\) expects App\\Models\\Team, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Property App\\Models\\User\:\:\$approvedTeamsCache with generic class Illuminate\\Database\\Eloquent\\Collection does not specify its types\: TKey, TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/WeekLock.php
+
+		-
+			message: '#^Method App\\Models\\WeekLock\:\:lockedBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WeekLock.php
+
+		-
+			message: '#^Method App\\Models\\WeekLock\:\:publishedBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WeekLock.php
+
+		-
+			message: '#^Method App\\Models\\WeekLock\:\:scopeForTeamWeek\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WeekLock.php
+
+		-
+			message: '#^Method App\\Models\\WeekLock\:\:scopeForTeamWeek\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WeekLock.php
+
+		-
+			message: '#^Method App\\Models\\WeekLock\:\:team\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WeekLock.php
+
+		-
+			message: '#^Cannot call method gte\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Policies/AbsencePolicy.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 2
+			path: app/Policies/AbsencePolicy.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\AbsenceStatus\:\:Active will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Policies/AbsencePolicy.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\AbsenceStatus\:\:Cancelled will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Policies/AbsencePolicy.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:overlapping\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Policies/AssignmentPolicy.php
+
+		-
+			message: '#^Cannot call method lt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Policies/AssignmentPolicy.php
+
+		-
+			message: '#^Parameter \#1 \$team of method App\\Policies\\AssignmentPolicy\:\:weekLocked\(\) expects App\\Models\\Team, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Policies/AssignmentPolicy.php
+
+		-
+			message: '#^Parameter \#2 \$date of method App\\Policies\\AssignmentPolicy\:\:weekLocked\(\) expects Carbon\\CarbonInterface, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Policies/AssignmentPolicy.php
+
+		-
+			message: '#^Parameter \#2 \$date of method App\\Policies\\PositionSlotPolicy\:\:mayBuild\(\) expects Carbon\\CarbonInterface, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Policies/PositionSlotPolicy.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/UserPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Policies/UserPolicy.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Cannot call method gt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AbsenceService.php
+
+		-
+			message: '#^Cannot call method isFuture\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AbsenceService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PositionSlot\:\:\$start_time\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AiRozpisSuggestionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AiRozpisSuggestionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sort_order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AiRozpisSuggestionService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 5
+			path: app/Services/AiRozpisSuggestionService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\PositionSlot\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/AiRozpisSuggestionService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,App\\Models\\PositionSlot\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/AiRozpisSuggestionService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/AiRozpisSuggestionService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/CalendarService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/FairnessService.php
+
+		-
+			message: '#^Parameter \#2 \$date of method App\\Services\\FairnessService\:\:dayWeight\(\) expects Carbon\\CarbonInterface, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/FairnessService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PositionSlot\:\:\$end_time\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PositionSlot\:\:\$start_time\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sort_order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:groupName\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:groupOrder\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 4
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Method App\\Services\\RozpisService\:\:history\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Method App\\Services\\RozpisService\:\:plan\(\) should return Illuminate\\Support\\Collection\<int, array\{date\: Carbon\\CarbonImmutable, dayName\: string, manager\: string\|null, managerRows\: list\<array\{label\: string, time\: string\|null, name\: string\|null, user_id\: int\|null\}\>, rows\: list\<array\{label\: string, time\: string\|null, name\: string\|null, user_id\: int\|null\}\>, substitutes\: list\<string\>, eligible\: list\<array\{name\: string, score\: float\}\>, unfilled\: int\}\> but returns Illuminate\\Support\\Collection\<int, array\{date\: Carbon\\CarbonImmutable, dayName\: string, rows\: list\<array\<string, mixed\>\>, managerRows\: array\<int, array\{label\: string, group\: mixed, time\: string\|null, name\: string\|null, user_id\: mixed\}\>, manager\: mixed, substitutes\: array\<int, string\>, eligible\: array\<int, array\{name\: string, score\: float\}\>, unfilled\: int\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^PHPDoc tag @return with type list\<array\<string, Carbon\\CarbonImmutable\|list\<string\>\|string\|null\>\> is incompatible with native type Illuminate\\Support\\Collection\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\PositionSlot\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Carbon\\CarbonImmutable\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Return type of call to function collect contains unresolvable type\.$#'
+			identifier: function.unresolvableReturnType
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,App\\Models\\PositionSlot\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 2
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,Carbon\\CarbonImmutable\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 2
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 2
+			path: app/Services/RozpisService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\AbsenceStatus\:\:Cancelled will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Traits/FormatsAbsenceColumns.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Traits/Loggable.php
+
+		-
+			message: '#^Property App\\View\\Components\\TeamSwitcher\:\:\$currentTeam \(App\\Models\\Team\|null\) does not accept Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/View/Components/TeamSwitcher.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>currentTeam" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/View/Components/TeamSwitcher.php

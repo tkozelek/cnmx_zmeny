@@ -71,6 +71,7 @@ class TeamMembershipService
 
         $this->inTeam($team, $user, fn () => $user->syncRoles([]));
         $user->teams()->detach($team->getKey());
+        $user->withdrawFutureAssignments($team);
 
         if ($user->current_team_id === $team->getKey()) {
             $user->forceFill(['current_team_id' => null])->save();

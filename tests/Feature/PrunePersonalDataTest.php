@@ -30,6 +30,7 @@ class PrunePersonalDataTest extends TestCase
         Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $activeMember->id, 'date' => now()->subMonth()->toDateString()]);
 
         $quietManager = User::factory()->memberOf($team, Role::HeadManager->value)->create(['created_at' => $longAgo, 'last_login_at' => $longAgo]);
+        $superAdmin = User::factory()->create(['is_super_admin' => true, 'created_at' => $longAgo, 'last_login_at' => $longAgo]);
 
         $this->artisan('app:prune-personal-data')->assertSuccessful();
 
@@ -41,6 +42,7 @@ class PrunePersonalDataTest extends TestCase
         $this->assertModelExists($freshApplicant);
         $this->assertModelExists($activeMember);
         $this->assertModelExists($quietManager);
+        $this->assertModelExists($superAdmin);
     }
 
     public function test_old_log_files_activity_and_expired_cache_entries_are_removed(): void

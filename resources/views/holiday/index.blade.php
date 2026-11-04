@@ -1,16 +1,16 @@
-@php
-    // Managers are exempt from the deadline (StoreAbsenceRequest::after). For everyone else the
-    // picker opens on the first day they may still report, instead of a today that always fails.
-    $isManager = auth()->user()->hasPermissionInTeam('absence.manage');
-    $deadlineDays = $isManager ? 0 : $currentTeam->absenceDeadlineDays();
-    $firstAllowedDay = now()->addDays($deadlineDays)->format('Y-m-d');
-    // Nothing reported yet: an empty state instead of a search, filters and headers over zero rows.
-    $hasOwnAbsences = auth()->user()->absences()->exists();
-@endphp
-<x-layout title="Absencie" description="Nahlás a spravuj svoje absencie a dovolenky.">
+<x-layout title="Absencie" description="Nahlás a spravuj svoje absencie.">
+    @push('head')
+        @rappasoftTableStyles
+        @rappasoftTableThirdPartyStyles
+        @rappasoftTableScripts
+        @rappasoftTableThirdPartyScripts
+    @endpush
+
     <div
-        x-data="absenceRangePicker('{{ old('date_from', $firstAllowedDay) }}', '{{ old('date_to', $firstAllowedDay) }}', @js($errors->any() || request()->boolean('nova')), @js($isManager ? null : $firstAllowedDay))"
+        x-data="absenceRangePicker(@js(old('date_from', $firstAllowedDay)), @js(old('date_to', $firstAllowedDay)), @js($errors->any() || $openDialog), @js($minDate))"
         x-init="$nextTick(() => initFlatpickr())"
+        {{-- Back from the next page restores this one from bfcache with the button still disabled. --}}
+        @pageshow.window="sending = false"
         class="container mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-8"
     >
 
@@ -64,20 +64,7 @@
                 <form action="{{ route('absences.store') }}" method="POST" class="p-6 space-y-5" @submit="sending = true">
                     @csrf
 
-                    {{-- Error Alert --}}
-                    @if($errors->any())
-                        <div id="absence-errors" role="alert" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm space-y-1">
-                            <p class="font-bold flex items-center gap-2">
-                                <i class="fa-solid fa-circle-exclamation text-rose-400" aria-hidden="true"></i>
-                                Chyba pri ukladaní absencie:
-                            </p>
-                            <ul class="list-disc list-inside text-sm space-y-0.5 pl-1">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+                    <x-error-summary id="absence-errors" title="Absenciu sa nepodarilo uložiť:" :fields="['date_from' => 'absence-range', 'date_to' => 'absence-range']" />
 
                     {{-- Flatpickr Range Select --}}
                     <div>
@@ -90,9 +77,9 @@
                             <input type="hidden" name="date_to" :value="dateTo">
                         </div>
                         <p id="absence-range-hint" class="text-xs text-neutral-400 mt-1">
-                            Vyber prvý a posledný deň (pri jednom dni ten istý deň dvakrát).
-                            @if($deadlineDays > 0)
-                                Absenciu treba nahlásiť aspoň {{ $deadlineDays }} {{ $deadlineDays === 1 ? 'deň' : ($deadlineDays <= 4 ? 'dni' : 'dní') }} vopred.
+                            Vyber prvý a&nbsp;posledný deň (pri jednom dni ten istý deň dvakrát).
+                            @if($deadlineLabel)
+                                Absenciu treba nahlásiť aspoň {{ $deadlineLabel }} vopred.
                             @endif
                         </p>
                     </div>
@@ -114,7 +101,7 @@
                             placeholder="Napr. dovolenka, skúškové…"
                             class="w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none"
                         >
-                        <p id="reason-hint" class="text-xs text-neutral-400 mt-1">Neuvádzaj zdravotné dôvody ani diagnózy – pri chorobe stačí „osobné dôvody“. Maximálne 500 znakov.</p>
+                        <p id="reason-hint" class="text-xs text-neutral-400 mt-1">Neuvádzaj zdravotné dôvody ani diagnózy – pri chorobe stačí „osobné dôvody“. Maximálne 500&nbsp;znakov.</p>
                     </div>
 
                     {{-- Action Buttons --}}
@@ -132,12 +119,12 @@
         </template>
 
 
-        {{-- 1. Table visible strictly to MANAGERS and ADMINS: Všetky absencie zamestnancov --}}
+        {{-- 1. Table visible strictly to MANAGERS and ADMINS: Všetky absencie brigádnikov --}}
         @can('viewAny', App\Models\Absence::class)
             <div class="space-y-3">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-users text-brand-400 text-base"></i>
-                    <h2 class="text-lg font-bold text-neutral-100">Všetky absencie zamestnancov</h2>
+                    <h2 class="text-lg font-bold text-neutral-100">Všetky absencie brigádnikov</h2>
                 </div>
                 <livewire:absences-data-table />
             </div>
@@ -154,19 +141,8 @@
             @else
                 <x-empty-state icon="fa-umbrella-beach" message="Zatiaľ nemáš nahlásenú žiadnu absenciu.">
                     Keď nebudeš môcť prísť, nahlás to vopred – manažér to uvidí pri týždni.
-                    @can('create', App\Models\Absence::class)
-                        <x-slot:action>
-                            <button @click="openModal = true" type="button" aria-haspopup="dialog"
-                                    class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-neutral-600 px-4 text-sm font-semibold text-neutral-100 transition hover:border-neutral-400 hover:bg-neutral-800">
-                                <i class="fa-solid fa-plus text-xs" aria-hidden="true"></i> Pridať absenciu
-                            </button>
-                        </x-slot:action>
-                    @endcan
                 </x-empty-state>
             @endif
         </div>
-
-
-
     </div>
 </x-layout>

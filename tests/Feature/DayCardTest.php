@@ -60,6 +60,23 @@ class DayCardTest extends TestCase
         $this->assertDatabaseHas('assignments', ['date' => $date, 'note' => 'od 15:00']);
     }
 
+    /** A note typed just before the tap travels with the signup - its debounced save may not have landed yet. */
+    public function test_a_note_sent_with_the_signup_wins_over_the_stored_one(): void
+    {
+        $team = $this->tenant();
+        $user = $this->member($team);
+        $date = CarbonImmutable::now()->addDays(3)->toDateString();
+
+        session([ExtraNote::SESSION_KEY => 'od 15:00']);
+
+        Livewire::actingAs($user)
+            ->test(DayCard::class, $this->props($date))
+            ->call('signUp', 'od 17:00');
+
+        $this->assertDatabaseHas('assignments', ['date' => $date, 'note' => 'od 17:00']);
+        $this->assertSame('od 17:00', session(ExtraNote::SESSION_KEY));
+    }
+
     /** One signup per person per day, and a double click must not blow up on the unique key. */
     public function test_signing_up_twice_is_idempotent(): void
     {
@@ -222,7 +239,7 @@ class DayCardTest extends TestCase
         ]);
 
         $this->assertSame([$free->id => (string) $free], $card->instance()->drawable);
-        $card->assertSee('K dispozícii na losovanie (1)');
+        $card->assertSeeHtml('K&nbsp;dispozícii na losovanie (1)');
     }
 
     private function props(string $date, bool $locked = false): array

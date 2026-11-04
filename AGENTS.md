@@ -168,7 +168,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ## Repository Overview & Architecture
 
-This repository contains **CNMX Zmeny**, a multi-tenant shift-scheduling system for cinema staff built on Laravel 13, Livewire 3, Tailwind CSS v3, and Spatie Permission (teams mode).
+This repository contains **CNMX Zmeny**, a multi-tenant shift-scheduling system for cinema staff built on Laravel 13, Livewire 4, Filament 5 (/platform), Tailwind CSS v3, and Spatie Permission (teams mode).
 
 - **`app/`, `routes/`, `resources/`, `database/`, `tests/`**: The modern multi-tenant Laravel 13 application backend and views.
 - **`_planning/`**: Comprehensive specifications, architecture decision records, handoff notes, and implementation roadmaps for the application rewrite.

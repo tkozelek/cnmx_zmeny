@@ -5,7 +5,7 @@
             <x-page-header
                 icon="fa-list-check"
                 title="Pozície"
-                subtitle="Pracovné pozície tohto kina - z nich sa skladá rozpis zmien."
+                subtitle="Pracovné pozície tohto kina - z nich sa skladá rozpis zmien."
             />
 
             <livewire:position-list />

@@ -1,8 +1,8 @@
 /**
  * Scroll choreography for the welcome page. Two kinds of motion, kept deliberately apart:
  *
- * - one-shot reveals (`.reveal`, the hero headline) - IntersectionObserver flips a class and
- *   CSS transitions do the rest, see the "Welcome-page motion" block in app.css;
+ * - one-shot reveals (`.reveal`) - IntersectionObserver flips a class and CSS transitions do
+ *   the rest, see the "Welcome-page motion" block in app.css (the hero headline is CSS-only);
  * - scroll-linked values (hero zoom/shade, the steps track, the progress hairline) - one
  *   passive scroll listener, batched into a single requestAnimationFrame per frame, writing
  *   only transform/opacity so nothing triggers layout.
@@ -12,14 +12,12 @@
  */
 
 const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+const HERO_DRIFT_PX = 14;
 
 export function mountWelcome() {
     document.documentElement.classList.add('motion-ready');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const hero = document.getElementById('hero');
-
-    // The hero headline plays on load, not on scroll - it is already on screen.
-    requestAnimationFrame(() => hero?.classList.add('is-ready'));
 
     const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
@@ -32,7 +30,7 @@ export function mountWelcome() {
     document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
 
     const steps = mountSteps(reducedMotion);
-    mountWeekScene(reducedMotion);
+    const weekBoard = mountWeekScene(reducedMotion);
 
     if (reducedMotion) {
         return;
@@ -42,8 +40,10 @@ export function mountWelcome() {
     const heroShade = document.getElementById('hero-shade');
     const heroContent = document.getElementById('hero-content');
     const heroCue = document.getElementById('hero-cue');
+    const heroHeadline = heroContent?.querySelector('h1');
     const progressBar = document.querySelector('[data-scroll-progress]');
-    const drift = mountHeroDrift(hero, () => requestUpdate());
+    const drift = mountPointerDrift(hero, () => requestUpdate());
+    const boardDrift = mountPointerDrift(weekBoard?.scene, () => requestUpdate());
     const hasHero = hero && heroMedia && heroShade && heroContent && heroCue;
     let ticking = false;
     let heroParked = false;
@@ -57,6 +57,7 @@ export function mountWelcome() {
         const heroHeight = hero?.offsetHeight || 1;
         const scrollable = document.documentElement.scrollHeight - viewport;
         const stepsProgress = steps?.measure(viewport);
+        const boardTop = weekBoard?.stage.getBoundingClientRect().top;
         const heroInView = scrollY < heroHeight;
 
         // Once the hero is scrolled past, its final state is written once and then left alone.
@@ -67,18 +68,29 @@ export function mountWelcome() {
             // The pointer drift moves it a few px the other way, so the room has depth at rest too.
             const p = clamp(scrollY / heroHeight);
             const { x, y } = drift.offset();
-            heroMedia.style.transform = `translate3d(${x}px, ${Math.min(scrollY, heroHeight) * 0.4 + y}px, 0) scale(${1.04 + p * 0.12})`;
+            heroMedia.style.transform = `translate3d(${x * HERO_DRIFT_PX}px, ${Math.min(scrollY, heroHeight) * 0.4 + y * HERO_DRIFT_PX * 0.6}px, 0) scale(${1.04 + p * 0.12})`;
             // The hero's mask already feathers the bottom edge, so the shade can trail the
             // scroll and leave the parallax visible for most of the way out.
             heroShade.style.opacity = String(clamp(p * 1.2) * 0.85);
             const contentOpacity = clamp(1 - p * 1.8);
             heroContent.style.opacity = String(contentOpacity);
-            heroContent.style.transform = `translateY(${p * 70}px)`;
-            // Faded-out buttons must not stay clickable or tabbable.
-            heroContent.style.visibility = contentOpacity <= 0.01 ? 'hidden' : '';
+            // The copy turns toward the pointer against the photo's drift, then tips back and
+            // recedes into the room as the page scrolls on.
+            heroContent.style.transform = `perspective(1100px) translate3d(0, ${p * 40}px, ${p * -260}px) rotateX(${p * 22 + y * 3}deg) rotateY(${x * -4}deg)`;
+            heroHeadline.style.transform = `translate3d(${x * -10}px, ${y * -6}px, 0)`;
+            // Faded-out buttons must not take blind clicks; keyboard focus scrolls them back into view.
+            heroContent.style.pointerEvents = contentOpacity <= 0.05 ? 'none' : '';
             const cueOpacity = clamp(1 - p * 4);
             heroCue.style.opacity = String(cueOpacity);
-            heroCue.style.visibility = cueOpacity <= 0.01 ? 'hidden' : '';
+            heroCue.style.pointerEvents = cueOpacity <= 0.05 ? 'none' : '';
+        }
+
+        if (weekBoard && boardTop !== undefined) {
+            // The board lies back like a sheet on a desk and stands up as it scrolls in.
+            const enter = clamp((viewport - boardTop) / (viewport * 0.7));
+            const rise = enter * enter * (3 - 2 * enter);
+            const { x, y } = boardDrift.offset();
+            weekBoard.board.style.transform = `perspective(1400px) translateY(${(1 - rise) * 60}px) rotateX(${(1 - rise) * 38 + y * -4}deg) rotateY(${x * 6}deg) rotateZ(${(1 - rise) * -5}deg) scale(${0.9 + rise * 0.1})`;
         }
 
         if (progressBar) {
@@ -96,6 +108,12 @@ export function mountWelcome() {
             requestAnimationFrame(update);
         }
     };
+
+    hero?.addEventListener('focusin', () => {
+        if (window.scrollY > 0) {
+            window.scrollTo({ top: 0 });
+        }
+    });
 
     window.addEventListener('scroll', requestUpdate, { passive: true });
     window.addEventListener('resize', () => {
@@ -168,15 +186,14 @@ function mountSteps(reducedMotion) {
 }
 
 /**
- * The hero photo drifts a few px against the pointer (mouse only), eased over time so it glides
- * after the hand stops. It only produces the offset; the scroll update owns the transform.
+ * Pointer position over an element as -1..1 offsets from its centre (mouse only), eased over time so
+ * it glides after the hand stops. It only produces the numbers; the scroll update owns the transforms.
  */
-function mountHeroDrift(hero, requestUpdate) {
-    const MAX_PX = 14;
+function mountPointerDrift(el, requestUpdate) {
     const current = { x: 0, y: 0 };
     const target = { x: 0, y: 0 };
 
-    if (!hero || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    if (!el || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
         return { offset: () => current };
     }
 
@@ -191,7 +208,7 @@ function mountHeroDrift(hero, requestUpdate) {
         current.y += (target.y - current.y) * ease;
         requestUpdate();
 
-        const settled = Math.abs(target.x - current.x) < 0.05 && Math.abs(target.y - current.y) < 0.05;
+        const settled = Math.abs(target.x - current.x) < 0.003 && Math.abs(target.y - current.y) < 0.003;
         frame = settled ? 0 : requestAnimationFrame(step);
     };
 
@@ -204,10 +221,11 @@ function mountHeroDrift(hero, requestUpdate) {
         }
     };
 
-    hero.addEventListener('pointermove', (event) => {
-        aim((0.5 - event.clientX / window.innerWidth) * 2 * MAX_PX, (0.5 - event.clientY / window.innerHeight) * 2 * MAX_PX * 0.6);
+    el.addEventListener('pointermove', (event) => {
+        const rect = el.getBoundingClientRect();
+        aim(1 - ((event.clientX - rect.left) / rect.width) * 2, 1 - ((event.clientY - rect.top) / rect.height) * 2);
     });
-    hero.addEventListener('pointerleave', () => aim(0, 0));
+    el.addEventListener('pointerleave', () => aim(0, 0));
 
     return { offset: () => current };
 }
@@ -271,4 +289,6 @@ function mountWeekScene(reducedMotion) {
     tallEnough.addEventListener('change', setup);
     desktop.addEventListener('change', setup);
     setup();
+
+    return { scene, board: scene.querySelector('[data-week-board]'), stage: scene.querySelector('.week-scene__stage') };
 }

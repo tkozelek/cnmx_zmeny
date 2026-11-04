@@ -1,8 +1,8 @@
 <x-layout
-    :title="auth()->id() === $user->id ? 'Môj profil' : 'Profil používateľa'"
+    :title="$title"
     description="Prehľad odpracovaných zmien a absencií."
 >
-    <div class="w-full min-w-0 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-3.5 sm:space-y-6"
+    <div class="w-full min-w-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-3.5 sm:space-y-6"
          x-data="{
              tab: 'stats',
              period: @js($activePeriod),
@@ -21,22 +21,22 @@
 
         <x-page-header
             icon="fa-user"
-            :title="auth()->id() === $user->id ? 'Môj profil' : 'Profil používateľa'"
+            :title="$title"
         >
             <x-slot:breadcrumb>
-                <nav class="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-neutral-400" aria-label="Navigácia">
-                    <a href="{{ route('calendar.index') }}" class="hover:text-neutral-200 transition">Týždne</a>
-                    <i class="fa-solid fa-chevron-right text-[9px] text-neutral-400"></i>
-                    @if(auth()->user()->can('viewAny', \App\Models\User::class))
-                        <a href="{{ route('admin.users.index') }}" class="hover:text-neutral-200 transition">Používatelia</a>
-                        <i class="fa-solid fa-chevron-right text-[9px] text-neutral-400"></i>
+                <nav class="flex items-center gap-1 sm:gap-1.5 text-xs font-medium text-neutral-400" aria-label="Omrvinková navigácia">
+                    <a href="{{ route('calendar.index') }}" class="-mx-1 inline-flex min-h-10 items-center px-1 hover:text-neutral-200 transition">Týždne</a>
+                    <i class="fa-solid fa-chevron-right text-[9px] text-neutral-400" aria-hidden="true"></i>
+                    @if($canViewUsers)
+                        <a href="{{ route('admin.users.index') }}" class="-mx-1 inline-flex min-h-10 items-center px-1 hover:text-neutral-200 transition">Používatelia</a>
+                        <i class="fa-solid fa-chevron-right text-[9px] text-neutral-400" aria-hidden="true"></i>
                     @endif
-                    <span class="text-neutral-300">Profil</span>
+                    <span class="text-neutral-300" aria-current="page">Profil</span>
                 </nav>
             </x-slot:breadcrumb>
 
             <a href="{{ $backUrl }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-semibold text-neutral-400 bg-neutral-900 border border-neutral-800 rounded-lg hover:bg-neutral-800 hover:text-neutral-200 transition shadow-sm">
-                <i class="fa-solid fa-arrow-left text-[11px]"></i>
+                <i class="fa-solid fa-arrow-left text-[11px]" aria-hidden="true"></i>
                 <span>Späť</span>
             </a>
         </x-page-header>
@@ -59,13 +59,4 @@
             @include('profile.partials._absences_tab')
         </div>
     </div>
-
-    <script>
-        window.chartData = @json($arr);
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof window.renderProfileChart === 'function') {
-                window.renderProfileChart();
-            }
-        });
-    </script>
 </x-layout>

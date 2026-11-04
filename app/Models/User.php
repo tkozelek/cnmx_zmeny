@@ -101,9 +101,33 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return $this->belongsTo(Team::class, 'current_team_id');
     }
 
+    protected static function booted(): void
+    {
+        static::updated(function (self $user): void {
+            if ($user->wasChanged('is_active') && ! $user->is_active) {
+                $user->withdrawFutureAssignments();
+            }
+        });
+    }
+
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
+    }
+
+    /**
+     * Drops sign-ups from today on - in one cinema, or in all of them - so a removed or blocked
+     * person stops showing up in plans, exports and fairness targets. Deleted one by one, so the
+     * audit log and the "rozpis changed" mail see each removal.
+     */
+    public function withdrawFutureAssignments(?Team $team = null): void
+    {
+        $this->assignments()
+            ->withoutGlobalScope('team')
+            ->where('date', '>=', today()->toDateString())
+            ->when($team, fn ($query) => $query->where('team_id', $team->getKey()))
+            ->get()
+            ->each->delete();
     }
 
     public function absences(): HasMany

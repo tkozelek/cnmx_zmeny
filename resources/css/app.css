@@ -53,10 +53,11 @@ html {
         scroll-behavior: auto;
     }
 
+    /* Short fades and colour changes stay - they move nothing. Movement, scaling and blur snap. */
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow !important;
     }
 
     /* A spinner is the only sign a request is running - it has to keep turning. */
@@ -98,6 +99,7 @@ body {
 .split-word {
     display: inline-block;
     overflow: hidden;
+    perspective: 32rem;
     vertical-align: top;
     padding-bottom: 0.14em;
     margin-bottom: -0.14em;
@@ -105,36 +107,49 @@ body {
 
 .split-word-inner {
     display: inline-block;
+    transform-origin: 50% 100%;
 }
 
-.js .split-word-inner {
-    transform: translateY(110%);
+/* Words fold up into place like a cinema seat being let down. */
+.js .reveal .split-word-inner {
+    transform: translateY(70%) rotateX(-85deg);
     transition: transform 1.1s var(--ease-out-soft);
     transition-delay: calc(var(--i, 0) * 70ms);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .js #hero-media {
-        will-change: transform;
-    }
-}
-
-.js .is-ready .split-word-inner,
 .js .reveal.active .split-word-inner {
     transform: none;
 }
 
-/* Hero copy below the headline follows the words in once the last one is about half way. */
-.js .hero-follow {
-    opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 1s var(--ease-out-soft), transform 1.1s var(--ease-out-soft);
-    transition-delay: calc((var(--n, 6) - 1) * 70ms + 400ms + var(--extra, 0ms));
+/*
+ * The hero is already on screen, so it plays on load with CSS alone - the headline and the
+ * buttons never wait for a script. The copy below follows once the last word is about half way.
+ */
+@media (prefers-reduced-motion: no-preference) {
+    .js #hero-media {
+        will-change: transform;
+    }
+
+    #hero .split-word-inner {
+        animation: hero-word-in 1.1s var(--ease-out-soft) calc(var(--i, 0) * 70ms) both;
+    }
+
+    #hero .hero-follow {
+        animation: hero-follow-in 1s var(--ease-out-soft) calc((var(--n, 6) - 1) * 70ms + 400ms + var(--extra, 0ms)) both;
+    }
 }
 
-.js .is-ready .hero-follow {
-    opacity: 1;
-    transform: none;
+@keyframes hero-word-in {
+    from {
+        transform: translateY(70%) rotateX(-85deg);
+    }
+}
+
+@keyframes hero-follow-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
 }
 
 /* "How it works" steps light up as the scroll-driven track reaches them. */
@@ -153,6 +168,19 @@ body {
 
 .step-copy {
     transition: opacity 0.6s ease;
+}
+
+/* The last step is the one where a shift becomes yours - it lights in the "mine" colour. */
+.step:last-child .step-icon {
+    @apply border-emerald-400 bg-emerald-500/10 text-emerald-300;
+}
+
+.seat-label {
+    transition: color 0.3s ease;
+}
+
+.seat-label.is-taken {
+    @apply text-emerald-300;
 }
 
 /*
@@ -284,7 +312,6 @@ body {
 @media print {
     .js .reveal,
     .js .split-word-inner,
-    .js .hero-follow,
     .js .week-scene.is-live [data-from],
     .js .week-scene.is-live .scene-step > * {
         opacity: 1 !important;
@@ -302,8 +329,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
     .js .reveal,
-    .js .split-word-inner,
-    .js .hero-follow {
+    .js .split-word-inner {
         opacity: 1;
         transform: none;
         transition: none;
@@ -406,7 +432,7 @@ body {
     transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .cta-button:hover {
         transform: scale(1.05);
     }
@@ -707,9 +733,11 @@ span.flatpickr-weekday {
     @apply text-neutral-500 font-medium transition-colors cursor-pointer !important;
 }
 
-.flatpickr-day.prevMonthDay:hover,
-.flatpickr-day.nextMonthDay:hover {
-    @apply bg-neutral-800 text-neutral-200 border-transparent !important;
+@media (hover: hover) {
+    .flatpickr-day.prevMonthDay:hover,
+    .flatpickr-day.nextMonthDay:hover {
+        @apply bg-neutral-800 text-neutral-200 border-transparent !important;
+    }
 }
 
 .flatpickr-day.today {
@@ -722,10 +750,12 @@ span.flatpickr-weekday {
     @apply bg-neutral-100 text-neutral-900 font-bold shadow-md border-transparent !important;
 }
 
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover {
-    @apply bg-neutral-200 text-neutral-950 border-transparent !important;
+@media (hover: hover) {
+    .flatpickr-day.selected:hover,
+    .flatpickr-day.startRange:hover,
+    .flatpickr-day.endRange:hover {
+        @apply bg-neutral-200 text-neutral-950 border-transparent !important;
+    }
 }
 
 .flatpickr-day.inRange {
@@ -815,8 +845,10 @@ span.flatpickr-weekday {
 }
 
 /* flatpickr's own .selected:hover would otherwise paint the current week's first day light grey. */
-.flatpickr-day.is-active-week-day.selected:hover {
-    @apply bg-brand-800 text-white !important;
+@media (hover: hover) {
+    .flatpickr-day.is-active-week-day.selected:hover {
+        @apply bg-brand-800 text-white !important;
+    }
 }
 
 /* Keyboard focus inside the calendar - flatpickr itself only changes the background. */
@@ -918,4 +950,22 @@ span.flatpickr-weekday {
 
 .flatpickr-quick-time {
     @apply rounded-lg border border-neutral-700 bg-neutral-800 px-2 py-1 text-xs font-semibold tabular-nums text-neutral-300 transition hover:border-brand-500/50 hover:text-white !important;
+}
+
+/* Week view and rozpis on paper: the plan only - no chrome, controls or toasts, no day split across pages. */
+@media print {
+    body > header,
+    body > footer,
+    [data-print-hide],
+    .flatpickr-calendar,
+    .day-card button,
+    .rozpis-day button,
+    .rozpis-day form {
+        display: none !important;
+    }
+
+    .day-card,
+    .rozpis-day {
+        break-inside: avoid;
+    }
 }

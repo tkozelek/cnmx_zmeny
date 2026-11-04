@@ -8,7 +8,9 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Spatie\Activitylog\Models\Activity;
+use Throwable;
 
 /**
  * Retention as promised on the privacy page (/ochrana-osobnych-udajov): accounts nobody needs any
@@ -33,17 +35,31 @@ class PrunePersonalData extends Command
         $users = $this->rejectedApplicants()->get()->merge($this->membersGoneQuiet()->get())
             ->reject(fn (User $user): bool => $this->isManagerAnywhere($user));
 
+        $deletedIds = [];
+
         foreach ($users as $user) {
             $this->line(($this->option('dry-run') ? 'Vymazal by: ' : 'Vymazaný: ')."#{$user->id} {$user->email}");
 
-            if (! $this->option('dry-run')) {
+            if ($this->option('dry-run')) {
+                continue;
+            }
+
+            // One account that can't be deleted must not keep everyone after it (and the log and
+            // activity pruning below) around past what the privacy page promises.
+            try {
                 $this->delete($user);
+                $deletedIds[] = $user->id;
+            } catch (Throwable $e) {
+                report($e);
+                $this->error("Nepodarilo sa vymazať #{$user->id}.");
             }
         }
 
         $this->info("Spolu: {$users->count()}");
 
         if (! $this->option('dry-run')) {
+            Log::info('Retencia: vymazané účty.', ['count' => count($deletedIds), 'user_ids' => $deletedIds]);
+
             $this->pruneOldLogs();
             $this->pruneOldActivity();
             $this->pruneExpiredCache();
@@ -137,6 +153,8 @@ class PrunePersonalData extends Command
             }
 
             DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+            DB::table(config('auth.passwords.add_user.table'))->where('email', $user->email)->delete();
+            DB::table('sessions')->where('user_id', $user->id)->delete();
 
             $user->delete();
         });

@@ -12,7 +12,7 @@
     <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-3 sm:p-5 text-center sm:text-left shadow-sm min-w-0">
         <p class="text-xs font-medium leading-tight text-neutral-400">Najčastejší deň</p>
         <p class="text-xl sm:text-3xl font-bold text-white mt-0.5 sm:mt-1 tracking-tight truncate" x-text="currentPeriod.mostActiveDay">{{ $mostActiveDay ?? '—' }}</p>
-        <p class="hidden sm:block text-xs text-neutral-400 mt-1 truncate">Deň s najviac zápismi</p>
+        <p class="hidden sm:block text-xs text-neutral-400 mt-1 truncate">Deň s&nbsp;najviac zápismi</p>
     </div>
 
     {{-- KPI 3: Active Absences --}}

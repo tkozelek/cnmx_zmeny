@@ -7,7 +7,7 @@
             </h1>
 
             <p class="mt-3 text-sm leading-relaxed text-neutral-300">
-                Na adresu <strong class="text-neutral-100">{{ auth()->user()?->email ?? session('unverified_email', 'tvoj e-mail') }}</strong> sme poslali
+                Na adresu <strong class="text-neutral-100">{{ $unverifiedEmail }}</strong> sme poslali
                 overovací odkaz. Klikni naň a&nbsp;vráť sa sem.
             </p>
 
@@ -25,19 +25,16 @@
             <div class="mt-6 flex flex-wrap items-center gap-3">
                 <form method="POST" action="{{ route('verification.send') }}">
                     @csrf
-                    <button type="submit"
-                            class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-brand-500/60 bg-brand-500/10 px-4 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/20">
-                        <i class="fa-solid fa-paper-plane text-xs"></i>
-                        Poslať znova
-                    </button>
+                    <x-submit-button variant="custom" busy-label="Posielam…" class="min-h-11 rounded-xl border border-brand-500/60 bg-brand-500/10 px-4 text-sm text-brand-300 hover:bg-brand-500/20">
+                        <i class="fa-solid fa-paper-plane mr-2 text-xs" aria-hidden="true"></i>Poslať znova
+                    </x-submit-button>
                 </form>
 
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit"
-                            class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm font-semibold text-neutral-300 transition hover:border-neutral-700 hover:text-white">
+                    <x-submit-button variant="custom" busy-label="Odhlasujem…" class="min-h-11 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm text-neutral-300 hover:border-neutral-700 hover:text-white">
                         Odhlásiť sa
-                    </button>
+                    </x-submit-button>
                 </form>
             </div>
         </div>

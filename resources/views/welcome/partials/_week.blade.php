@@ -1,32 +1,8 @@
-@php
-    // A sample of the real calendar's next week (default team week starts on Thursday), drawn
-    // with the same day-card language. `mine` = the visitor signed up, `others` = teammates.
-    $weekStart = now()->toImmutable()->locale('sk')->next(\Carbon\CarbonInterface::THURSDAY);
-    $weekEnd = $weekStart->addDays(6);
-    $sampleDays = [
-        ['mine' => true, 'others' => ['Lucia K.', 'Matej P.']],
-        ['mine' => false, 'others' => ['Simona D.', 'Adam R.', 'Nina V.']],
-        ['mine' => true, 'others' => ['Adam R.']],
-        ['mine' => true, 'others' => ['Lucia K.', 'Peter H.']],
-        ['mine' => false, 'others' => ['Matej P.']],
-        ['mine' => false, 'others' => ['Nina V.']],
-        ['mine' => false, 'others' => ['Simona D.', 'Peter H.']],
-    ];
-    $absenceFrom = $weekStart->addDays(5);
-
-    $sceneSteps = [
-        ['title' => 'Vyberieš si dni', 'text' => 'Pri dni, kedy môžeš, ťukneš na „Zapísať sa“. Zmeníš plány? Odpíšeš sa rovnako rýchlo.'],
-        ['title' => 'Vidíš, kto ide s tebou', 'text' => 'Pri každom dni sú mená kolegov, ktorí sú zapísaní. Celý tím vidí ten istý týždeň.'],
-        ['title' => 'Absenciu nahlásiš vopred', 'text' => 'Dovolenku či skúškové zapíšeš raz a manažér ju uvidí priamo pri týždni.'],
-        ['title' => 'Týždeň sa zamkne', 'text' => 'Keď je rozpis hotový, manažér týždeň zamkne. Zápisy potom platia a nič sa už nepresúva.'],
-    ];
-@endphp
-
 <section id="ako-to-funguje" class="bg-neutral-950 pt-24 sm:pt-32">
     <div class="container mx-auto px-4">
         <div class="reveal mx-auto mb-12 max-w-2xl text-center lg:mb-4">
             <h2 class="mb-3 text-3xl font-bold text-neutral-100 md:text-5xl">
-                <span class="split-word"><span class="split-word-inner">Tvoj týždeň v kine</span></span>
+                <span class="split-word"><span class="split-word-inner">Tvoj týždeň v&nbsp;kine</span></span>
             </h2>
             <p class="text-neutral-400 md:text-lg">Takto vyzerá rozpis, keď sa prihlásiš.</p>
         </div>
@@ -39,7 +15,7 @@
                 <div data-week-board class="week-board overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900 shadow-2xl shadow-black/40" aria-hidden="true">
                     <div class="flex items-center justify-between gap-3 border-b border-neutral-800 bg-neutral-950 px-4 py-3">
                         <p class="text-sm font-semibold text-neutral-100">
-                            Týždeň {{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}
+                            {{ $sampleWeekLabel }}
                         </p>
                         <p data-from="4" class="week-pop flex items-center gap-1.5 text-xs font-medium text-neutral-300">
                             <i class="fa-solid fa-lock text-[0.65rem] text-neutral-400"></i>
@@ -49,11 +25,10 @@
 
                     <ul>
                         @foreach($sampleDays as $i => $day)
-                            @php($date = $weekStart->addDays($i))
                             <li class="grid grid-cols-[4.75rem_minmax(0,1fr)_6.25rem] items-center gap-3 border-b border-neutral-800/70 px-3 py-1.5 sm:grid-cols-[5.5rem_minmax(0,1fr)_7rem] sm:px-4 sm:py-2.5" style="--row: {{ $i }}">
                                 <div class="min-w-0">
-                                    <p class="truncate text-[0.8125rem] font-bold leading-tight text-neutral-100 sm:text-sm">{{ Str::title($date->dayName) }}</p>
-                                    <p class="text-[0.6875rem] font-semibold text-neutral-400 sm:text-xs">{{ $date->format('d.m.') }}</p>
+                                    <p class="truncate text-[0.8125rem] font-bold leading-tight text-neutral-100 sm:text-sm">{{ $day['dayName'] }}</p>
+                                    <p class="text-[0.6875rem] font-semibold text-neutral-400 sm:text-xs">{{ $day['date'] }}</p>
                                 </div>
 
                                 <p class="flex min-w-0 flex-wrap gap-x-2 gap-y-0.5 text-xs leading-tight sm:text-sm sm:leading-snug">
@@ -80,13 +55,13 @@
                     </ul>
 
                     <div class="grid">
-                        <p class="flex items-center px-4 py-3 text-xs text-neutral-400 [grid-area:1/1]">Žiadne absencie v tomto týždni</p>
+                        <p class="flex items-center px-4 py-3 text-xs text-neutral-400 [grid-area:1/1]">Žiadne absencie v&nbsp;tomto týždni</p>
                         <div data-from="3" class="week-swap flex items-center justify-between gap-3 bg-neutral-900 px-4 py-3 text-xs [grid-area:1/1]">
                             <span class="flex items-center gap-2 font-semibold text-neutral-100">
                                 <i class="fa-solid fa-calendar-xmark text-neutral-400"></i>
                                 Absencia
                             </span>
-                            <span class="text-neutral-300"><span class="font-semibold text-white">Ty</span> · {{ $absenceFrom->format('d.m.') }} – {{ $weekEnd->format('d.m.') }} · skúškové</span>
+                            <span class="text-neutral-300"><span class="font-semibold text-white">Ty</span> · {{ $sampleAbsenceLabel }} · skúškové</span>
                         </div>
                     </div>
                 </div>

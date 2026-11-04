@@ -34,17 +34,23 @@ class ExtraNote extends Component
      */
     public function updatedNote(string $value): void
     {
-        $trimmed = trim($value);
-
-        if ($trimmed === '') {
+        if (trim($value) === '') {
             $this->clear();
 
             return;
         }
 
-        $this->note = mb_substr($trimmed, 0, self::MAX_LENGTH);
+        $this->note = self::remember($value);
+    }
 
-        session([self::SESSION_KEY => $this->note]);
+    /** Stores the note for the next signups; DayCard calls it with the value sent along with a signup. */
+    public static function remember(string $value): string
+    {
+        $note = mb_substr(trim($value), 0, self::MAX_LENGTH);
+
+        $note === '' ? session()->forget(self::SESSION_KEY) : session([self::SESSION_KEY => $note]);
+
+        return $note;
     }
 
     public function clear(): void
@@ -57,6 +63,6 @@ class ExtraNote extends Component
 
     public function render()
     {
-        return view('livewire.extra-note');
+        return view('livewire.extra-note', ['maxLength' => self::MAX_LENGTH]);
     }
 }

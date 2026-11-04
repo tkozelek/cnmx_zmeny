@@ -1,7 +1,3 @@
-@php
-    $dayName = Str::title($this->dayCarbon->locale('sk')->dayName);
-    $shortDate = $this->dayCarbon->format('d.m.');
-@endphp
 <div @class([
     'day-card relative flex flex-col overflow-hidden rounded-lg border bg-neutral-900 transition',
     'day-card--mine' => $this->mine,
@@ -12,8 +8,9 @@
 ])>
     {{-- Day card content, blurred while this card's own request is running --}}
     <div wire:loading.class.delay="blur-sm pointer-events-none select-none" class="day-card__body flex flex-col flex-1 transition-[filter] duration-200">
-        {{-- `armed` lives here, not on the button: this wrapper survives the morph between the two buttons. --}}
-        <div x-data="{ armed: false }" class="day-card__action">
+        {{-- `armed` lives here, not on the button: this wrapper survives the morph between the two buttons.
+             `refocus` hands keyboard focus from the clicked button to the one that replaces it. --}}
+        <div x-data="{ armed: false, refocus(call) { const had = this.$root.contains(document.activeElement); call.then(() => had && requestAnimationFrame(() => this.$root.querySelector('button')?.focus())) } }" class="day-card__action">
             @if($locked || $this->isPastForMe)
                 @if($this->mine)
                     <div class="flex min-h-11 w-full items-center justify-center gap-2 bg-emerald-700 text-sm font-semibold text-white">
@@ -34,14 +31,17 @@
                 {{-- With a mouse the hover already says "Odpísať sa", so one click withdraws. On touch
                      there is no hover: the first tap turns the button into the question, the second
                      tap within 6 s withdraws. Leaving the button disarms it as well. --}}
+                {{-- Distinct keys: morphing one button into the other kept stale wrappers and hid the label. --}}
                 <button
+                    wire:key="withdraw"
                     type="button"
-                    @click="if (armed || matchMedia('(hover: hover)').matches) { armed = false; $wire.withdraw() } else { armed = true; setTimeout(() => armed = false, 6000) }"
+                    @click="if (armed || matchMedia('(hover: hover)').matches) { armed = false; refocus($wire.withdraw()) } else { armed = true; setTimeout(() => armed = false, 6000) }"
                     @blur="armed = false"
+                    wire:loading.attr="disabled"
                     wire:target="withdraw"
                     :class="armed && '!bg-rose-700'"
                     {{-- Starts with the visible text (voice control), then says what the button does. --}}
-                    :aria-label="armed ? 'Ťukni znova na odpísanie – {{ $dayName }} {{ $shortDate }}' : 'Zapísaný – {{ $dayName }} {{ $shortDate }}, odpísať sa'"
+                    :aria-label="armed ? 'Ťukni znova na odpísanie – {{ $this->dayName }} {{ $this->shortDate }}' : 'Zapísaný – {{ $this->dayName }} {{ $this->shortDate }}, odpísať sa'"
                     class="group/btn flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 bg-emerald-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 focus-visible:bg-rose-700 focus-visible:outline-offset-[-4px] focus-visible:!outline-white"
                 >
                     <span wire:loading.remove wire:target="withdraw">
@@ -50,7 +50,7 @@
                             <span class="hidden group-hover/btn:inline group-focus-visible/btn:inline">Odpísať sa</span>
                         </span>
                         <span x-show="armed" x-cloak>Ťukni znova na odpísanie</span>
-                        <span class="sr-only">– {{ $dayName }} {{ $shortDate }}</span>
+                        <span class="sr-only">– {{ $this->dayName }} {{ $this->shortDate }}</span>
                     </span>
                     <span wire:loading wire:target="withdraw"><i class="fa-solid fa-circle-notch fa-spin text-xs" aria-hidden="true"></i></span>
                 </button>
@@ -58,13 +58,16 @@
                 <span class="sr-only" aria-live="polite" x-text="armed ? 'Ťukni znova na odpísanie' : ''"></span>
             @else
                 <button
+                    wire:key="sign-up"
                     type="button"
-                    wire:click="signUp"
+                    {{-- The note goes along with the tap: its own debounced save may still be on its way. --}}
+                    @click="refocus($wire.signUp(document.getElementById('extra-note')?.value ?? null))"
+                    wire:loading.attr="disabled"
                     wire:target="signUp"
                     class="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 bg-brand-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-800 focus-visible:outline-offset-[-4px] focus-visible:!outline-white"
                 >
                     <span wire:loading.remove wire:target="signUp">
-                        Zapísať sa<span class="sr-only"> – {{ $dayName }} {{ $shortDate }}</span>
+                        Zapísať sa<span class="sr-only"> – {{ $this->dayName }} {{ $this->shortDate }}</span>
                     </span>
                     <span wire:loading wire:target="signUp"><i class="fa-solid fa-circle-notch fa-spin text-xs" aria-hidden="true"></i></span>
                 </button>
@@ -83,14 +86,14 @@
                 'text-emerald-200' => $this->mine && ! $this->isToday,
                 'text-neutral-100' => ! ($this->mine && ! $this->isToday),
             ])>
-                {{ $dayName }}@if($this->isToday)<span class="sr-only">, dnes</span>@endif
+                {{ $this->dayName }}@if($this->isToday)<span class="sr-only">, dnes</span>@endif
             </h2>
             <p @class([
                 'mt-0.5 text-xs font-semibold',
                 'text-emerald-300/80' => $this->mine && ! $this->isToday,
                 'text-neutral-400' => ! ($this->mine && ! $this->isToday),
             ])>
-                {{ $this->dayCarbon->format('d.m.Y') }}@if($this->isHoliday)<span class="text-brand-300"> · Sviatok</span>@endif
+                {{ $this->fullDate }}@if($this->isHoliday)<span class="text-brand-300"> · Sviatok</span>@endif
             </p>
         </div>
 
@@ -100,15 +103,15 @@
                 <div wire:key="assignment-{{ $assignment->id }}"
                      @class([
                         'rows group flex items-start justify-between gap-2 border-b border-neutral-800/60 py-1.5 text-sm leading-snug last:border-b-0',
-                        'font-semibold text-white' => $assignment->user_id === auth()->id(),
+                        'font-semibold text-white' => $this->isOwn($assignment),
                         'text-neutral-400 line-through' => ! $assignment->user->is_active,
                         'text-neutral-200' => $assignment->user->is_active,
                     ])>
                     <div class="flex min-w-0 flex-wrap items-baseline gap-x-1.5 text-left">
-                        <span class="font-semibold text-sm {{ $assignment->user_id === auth()->id() ? 'text-emerald-400 font-bold' : 'text-neutral-200' }}">
+                        <span class="font-semibold text-sm {{ $this->isOwn($assignment) ? 'text-emerald-400 font-bold' : 'text-neutral-200' }}">
                             @if($this->canViewUsers)
                                 <a href="{{ route('profile.show', $assignment->user) }}"
-                                   class="transition {{ $assignment->user_id === auth()->id() ? 'hover:text-emerald-300' : 'hover:text-white' }}">{{ $assignment->user }}</a>
+                                   class="transition {{ $this->isOwn($assignment) ? 'hover:text-emerald-300' : 'hover:text-white' }}">{{ $assignment->user }}</a>
                             @else
                                 <span>{{ $assignment->user }}</span>
                             @endif
@@ -125,10 +128,10 @@
                         <button
                             type="button"
                             wire:click="remove({{ $assignment->id }})"
-                            wire:confirm="Odstrániť zápis: {{ $assignment->user }} ({{ $shortDate }})? Nedostane o tom upozornenie."
+                            wire:confirm="Odstrániť zápis: {{ $assignment->user }} ({{ $this->shortDate }})? Nedostane o tom upozornenie."
                             class="-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-rose-700 hover:text-white [@media(hover:none)]:-my-2 [@media(hover:none)]:-mr-2 [@media(hover:none)]:h-10 [@media(hover:none)]:w-10 focus-visible:opacity-100 sm:[@media(hover:hover)]:opacity-0 sm:group-hover:opacity-100"
                             title="Odpísať {{ $assignment->user }}"
-                            aria-label="Odpísať {{ $assignment->user }} – {{ $dayName }} {{ $shortDate }}"
+                            aria-label="Odpísať {{ $assignment->user }} – {{ $this->dayName }} {{ $this->shortDate }}"
                         >
                             <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
                         </button>
@@ -144,16 +147,16 @@
         @if($this->assignments->isNotEmpty())
             <div class="day-card-footer mt-auto border-t border-neutral-800 bg-neutral-950 px-3 py-1.5 text-center">
                 <span class="text-xs font-semibold text-neutral-400">
-                    {{ $this->assignments->count() }} {{ $this->countLabel }}
+                    {{ $this->countLabel }}
                 </span>
             </div>
         @endif
 
         {{-- Manager-only, shown by the "losovanie" toggle (see app.css .show-draw) --}}
-        @can('lock', \App\Models\Assignment::class)
+        @if($this->canLock)
             <div class="draw-list border-t border-neutral-800 px-3 py-2">
                 <p class="text-xs font-medium text-neutral-300">
-                    K dispozícii na losovanie ({{ count($this->drawable) }})
+                    K&nbsp;dispozícii na losovanie ({{ count($this->drawable) }})
                 </p>
                 <p class="mt-1 text-xs leading-relaxed text-neutral-400">
                     @forelse($this->drawable as $name)
@@ -163,6 +166,6 @@
                     @endforelse
                 </p>
             </div>
-        @endcan
+        @endif
     </div>
 </div>

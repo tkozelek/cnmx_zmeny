@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\WeekLock;
 use App\Services\SlovakHolidays;
 use App\Services\WeekService;
+use App\Support\SlovakDate;
+use App\Support\SlovakPlural;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Collection;
@@ -41,7 +43,11 @@ class DayCard extends Component
     #[Locked]
     public array $available = [];
 
-    public function signUp(): void
+    /**
+     * The card sends the "Poznámka" field's current value along: its own debounced save may not
+     * have reached the server yet when the button is tapped right after typing.
+     */
+    public function signUp(?string $note = null): void
     {
         $team = app(Team::class);
 
@@ -55,7 +61,7 @@ class DayCard extends Component
                 'date' => $this->date,
             ],
             [
-                'note' => $this->sharedNote(),
+                'note' => $this->sharedNote($note),
                 'created_by' => null,
             ],
         );
@@ -63,7 +69,7 @@ class DayCard extends Component
         unset($this->assignments, $this->mine);
 
         $this->dispatch('assignment-updated')->to(SignupSummary::class);
-        $this->dispatch('toast', message: 'Máš zápis na '.$this->dayCarbon->format('d.m.'), type: 'success');
+        $this->dispatch('toast', message: 'Máš zápis na '.$this->shortDate, type: 'success');
     }
 
     public function withdraw(): void
@@ -89,7 +95,7 @@ class DayCard extends Component
 
         $this->dispatch('assignment-updated')->to(SignupSummary::class);
 
-        $day = $this->dayCarbon->format('d.m.');
+        $day = $this->shortDate;
 
         $this->dispatch('toast', type: 'info', message: $isOwn
             ? "Zápis na {$day} zrušený"
@@ -214,13 +220,36 @@ class DayCard extends Component
     #[Computed]
     public function countLabel(): string
     {
-        $count = $this->assignments->count();
+        return SlovakPlural::of($this->assignments->count(), 'zapísaný', 'zapísaní', 'zapísaných');
+    }
 
-        return match (true) {
-            $count === 1 => 'zapísaný',
-            $count >= 2 && $count <= 4 => 'zapísaní',
-            default => 'zapísaných',
-        };
+    #[Computed]
+    public function dayName(): string
+    {
+        return SlovakDate::dayName($this->dayCarbon);
+    }
+
+    #[Computed]
+    public function shortDate(): string
+    {
+        return SlovakDate::short($this->dayCarbon);
+    }
+
+    #[Computed]
+    public function fullDate(): string
+    {
+        return SlovakDate::full($this->dayCarbon);
+    }
+
+    #[Computed]
+    public function canLock(): bool
+    {
+        return Gate::allows('lock', Assignment::class);
+    }
+
+    public function isOwn(Assignment $assignment): bool
+    {
+        return $assignment->user_id === auth()->id();
     }
 
     /** The × next to a name: a manager taking somebody else off the day. Your own row has the big button. */
@@ -235,8 +264,12 @@ class DayCard extends Component
         return view('livewire.day-card');
     }
 
-    private function sharedNote(): ?string
+    private function sharedNote(?string $sent): ?string
     {
+        if ($sent !== null) {
+            ExtraNote::remember($sent);
+        }
+
         $note = trim((string) session(ExtraNote::SESSION_KEY, ''));
 
         return $note === '' ? null : mb_substr($note, 0, ExtraNote::MAX_LENGTH);

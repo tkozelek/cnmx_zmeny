@@ -5,7 +5,7 @@
             <x-page-header
                 icon="fa-sliders"
                 :title="'Správa kina – '.$team->name"
-                subtitle="Konfigurácia parametrov týždňa, absencií a nastavení prevádzky"
+                subtitle="Konfigurácia parametrov týždňa, absencií a nastavení prevádzky"
             />
 
             <!-- Form Card -->
@@ -28,6 +28,8 @@
                     @csrf
                     @method('PUT')
 
+                    <x-error-summary />
+
                     <!-- Cinema Name -->
                     <x-form-input
                         type="text"
@@ -45,7 +47,7 @@
                     <div class="space-y-4">
                         <h2 class="text-base font-semibold text-neutral-100 flex items-center gap-2">
                             <i class="fa-solid fa-calendar-week text-xs text-neutral-400" aria-hidden="true"></i>
-                            Plánovanie a týždne
+                            Plánovanie a&nbsp;týždne
                         </h2>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -95,7 +97,7 @@
                                     :disabled="!$canEdit"
                                     required
                                 />
-                                <p class="text-xs text-neutral-400 mt-1">Koľko týždňov dopredu sa dá v kalendári pozerať a zapisovať.</p>
+                                <p class="text-xs text-neutral-400 mt-1">Koľko týždňov dopredu sa dá v&nbsp;kalendári pozerať a&nbsp;zapisovať.</p>
                             </div>
                         </div>
                     </div>
@@ -106,7 +108,7 @@
                     <div class="space-y-4">
                         <h2 class="text-base font-semibold text-neutral-100 flex items-center gap-2">
                             <i class="fa-solid fa-user-clock text-xs text-neutral-400" aria-hidden="true"></i>
-                            Absencie a uzávierky
+                            Absencie a&nbsp;uzávierky
                         </h2>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -161,13 +163,13 @@
                             <p class="text-xs text-neutral-400">
                                 Koľko „váži“ odpracovaný deň. Vyššia váha = deň, na ktorý sa málokto hlási
                                 dobrovoľne – kto ho odpracuje, má to započítané viac. Nižšia váha ako
-                                <strong>1,0</strong> = deň, o ktorý je záujem (typicky víkend) – ten sa počíta za menej,
+                                <strong>1,0</strong> = deň, o&nbsp;ktorý je záujem (typicky víkend) – ten sa počíta za menej,
                                 lebo ho netreba nikomu nanútiť.
-                                Ako <strong>neobľúbený</strong> sa označí deň s váhou nad priemerom týždňa: v ňom sa
+                                Ako <strong>neobľúbený</strong> sa označí deň s&nbsp;váhou nad priemerom týždňa: v&nbsp;ňom sa
                                 zoznam nezaradených zoradí podľa toho, kto takých dní odrobil najmenej – ten je na rade.
-                                Ako <strong>obľúbený</strong> sa označí deň s váhou pod 1,0: v ňom sa zoradí podľa zásluh,
-                                teda kto pre kino odrobil najviac dní a najviac tých neobľúbených. Pri menách sa v oboch
-                                prípadoch zobrazí príslušné číslo, vyššie je vždy vyššie v poradí. Ak sú všetky váhy
+                                Ako <strong>obľúbený</strong> sa označí deň s&nbsp;váhou pod 1,0: v&nbsp;ňom sa zoradí podľa zásluh,
+                                teda kto pre kino odrobil najviac dní a&nbsp;najviac tých neobľúbených. Pri menách sa v&nbsp;oboch
+                                prípadoch zobrazí príslušné číslo, vyššie je vždy vyššie v&nbsp;poradí. Ak sú všetky váhy
                                 rovnaké, neoznačí sa žiadny deň.
                             </p>
 
@@ -233,7 +235,7 @@
                                         required
                                     />
                                     <p class="text-xs text-neutral-400 mt-1">
-                                        Váha slovenského štátneho sviatku – platí namiesto váhy jeho dňa v týždni,
+                                        Váha slovenského štátneho sviatku – platí namiesto váhy jeho dňa v&nbsp;týždni,
                                         nech vyjde na ktorýkoľvek deň.
                                     </p>
                                 </div>
@@ -248,7 +250,7 @@
                                 Časy nástupu
                             </h2>
                             <p class="text-xs text-neutral-400">
-                                Rýchle tlačidlá pri zadávaní času nástupu v rozpise, aby si nemusel čas vždy vypisovať ručne.
+                                Rýchle tlačidlá pri zadávaní času nástupu v&nbsp;rozpise, aby si nemusel čas vždy vypisovať ručne.
                             </p>
 
                             <table class="w-full text-sm text-left text-neutral-300">
@@ -291,10 +293,9 @@
 
                     @if($canEdit)
                         <div class="pt-4 flex justify-end">
-                            <button type="submit" class="min-h-12 py-2.5 px-5 bg-neutral-100 hover:bg-white text-neutral-900 font-semibold rounded-lg text-sm transition flex items-center gap-2">
-                                <i class="fa-solid fa-floppy-disk text-xs" aria-hidden="true"></i>
-                                <span>Uložiť nastavenia</span>
-                            </button>
+                            <x-submit-button busy-label="Ukladám…" class="sm:w-auto">
+                                <i class="fa-solid fa-floppy-disk mr-2 text-xs" aria-hidden="true"></i>Uložiť nastavenia
+                            </x-submit-button>
                         </div>
                     @endif
                 </form>

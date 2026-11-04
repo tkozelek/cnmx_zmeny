@@ -11,10 +11,13 @@ use App\Models\Position;
 use App\Models\PositionSlot;
 use App\Models\Team;
 use App\Models\User;
+use App\Notifications\RozpisChanged;
+use App\Notifications\RozpisPublished;
 use App\Services\RozpisService;
 use App\Services\WeekService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Pennant\Feature;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\TestCase;
@@ -411,6 +414,49 @@ class RozpisPublishTest extends TestCase
             ->assertSee('id="day-'.$today.'"', false)
             ->assertSee('border-neutral-500')
             ->assertDontSee('Dnes');
+    }
+
+    public function test_publishing_twice_mails_the_staff_only_once(): void
+    {
+        Notification::fake();
+
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $employee = $this->member($team);
+        $weekStart = $this->weekStart($team);
+
+        $this->lockWeek($team, $weekStart);
+        $this->placeSomeone($team, $employee, $weekStart->addDay()->toDateString(), 'Bufet', '16:30:00');
+
+        foreach ([1, 2] as $click) {
+            $this->actingAs($manager)->post(route('rozpis.publish', ['date' => $weekStart->toDateString()]));
+        }
+
+        Notification::assertSentToTimes($employee, RozpisPublished::class, 1);
+    }
+
+    /** The person taken off a published week is the one who most needs the "changed" mail. */
+    public function test_a_change_reaches_whoever_was_taken_off_but_never_a_deactivated_member(): void
+    {
+        Notification::fake();
+
+        $team = $this->tenant();
+        $removed = $this->member($team);
+        $staying = $this->member($team);
+        $blocked = $this->member($team);
+        $weekStart = $this->weekStart($team);
+        $date = $weekStart->addDay()->toDateString();
+
+        $this->lockWeek($team, $weekStart, published: true);
+        $this->placeSomeone($team, $removed, $date, 'Bufet', '16:30:00');
+        $this->placeSomeone($team, $staying, $date, 'Pokladňa', '16:30:00');
+        $this->placeSomeone($team, $blocked, $date, 'Uvádzač', '16:30:00');
+        $blocked->forceFill(['is_active' => false])->save();
+
+        Assignment::where('user_id', $removed->id)->sole()->delete();
+
+        Notification::assertSentTo([$removed, $staying], RozpisChanged::class);
+        Notification::assertNotSentTo($blocked, RozpisChanged::class);
     }
 
     private function weekStart(Team $team): CarbonImmutable

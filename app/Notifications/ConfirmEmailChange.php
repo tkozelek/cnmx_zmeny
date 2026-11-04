@@ -12,6 +12,12 @@ class ConfirmEmailChange extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    /** An SMTP hiccup must not lose a verification or reset link for good. */
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [60, 300];
+
     public function __construct(
         private readonly string $newEmail,
         private readonly string $url,

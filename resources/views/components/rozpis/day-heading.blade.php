@@ -6,6 +6,7 @@
     once already. Whatever each view wants underneath - the filled count, who is in charge - goes
     in the slot.
 --}}
+@use('App\Support\SlovakDate')
 @props(['name', 'date'])
 
 <div @class([
@@ -13,8 +14,8 @@
     'border-neutral-500' => $date->isToday(),
     'border-neutral-800' => ! $date->isToday(),
 ])>
-    <p class="truncate text-lg font-bold text-neutral-100 max-w-full">{{ $name }}</p>
-    <p class="mt-0.5 text-sm font-bold tracking-wide text-neutral-200">{{ $date->format('d.m.Y') }}</p>
+    <h2 class="truncate text-lg font-bold text-neutral-100 max-w-full">{{ $name }}@if($date->isToday())<span class="sr-only">, dnes</span>@endif</h2>
+    <p class="mt-0.5 text-sm font-bold tracking-wide text-neutral-200">{{ SlovakDate::full($date) }}</p>
 
     {{ $slot }}
 </div>

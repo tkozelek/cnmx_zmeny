@@ -77,6 +77,9 @@ class RozpisService
     private function history(Team $team, CarbonImmutable $from, CarbonImmutable $to): Collection
     {
         $activities = Activity::with('causer')
+            // A date can only be edited while it is inside the sign-up window, so nothing about this
+            // week was written earlier than that - the bound lets the created_at index do the work.
+            ->where('created_at', '>=', $from->subWeeks($team->weekLookahead() + 1))
             ->where('properties->team_id', $team->getKey())
             ->whereBetween('properties->date', [$from->toDateString(), $to->toDateString()])
             ->latest()
@@ -137,7 +140,7 @@ class RozpisService
         }
 
         // An Assignment. Placement is the change worth naming; the rest is bookkeeping.
-        $person = $who ? '"'.$who.'"' : 'zamestnanca';
+        $person = $who ? '"'.$who.'"' : 'brigádnika';
 
         return match (true) {
             $activity->event === 'created' && ($new['position_slot_id'] ?? null) === null => 'zapísal '.$person.' na deň',

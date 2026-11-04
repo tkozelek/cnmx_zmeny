@@ -1,24 +1,10 @@
-@props(['weekStart', 'weekEnd', 'previous', 'next' => null, 'locked' => false, 'lockedWeekStarts' => []])
-
-@php
-    $navBtnStyle = 'inline-flex h-11 sm:h-12 w-11 sm:w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-600 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink-0 leading-none';
-
-    $weeks = app(\App\Services\WeekService::class);
-    $pickerOptions = [
-        'maxDate' => $weeks->end($weeks->lastOpenWeek($currentTeam))->toDateString(),
-        'weekUrl' => route('calendar.show', ['date' => '__DATE__']),
-        'currentWeekUrl' => route('calendar.index'),
-    ];
-
-    $triggerStyle = $locked
-        ? 'border-neutral-500 bg-neutral-900 hover:border-neutral-400 text-white'
-        : 'border-neutral-700 bg-neutral-900 hover:border-neutral-600 hover:text-white';
-@endphp
+@use('App\Support\SlovakDate')
+@props(['weekStart', 'weekEnd', 'previous', 'next' => null, 'locked' => false, 'lockedWeekStarts' => [], 'pickerOptions' => []])
 
 <div class="flex items-center justify-between sm:justify-center gap-2 sm:gap-3 w-full sm:w-auto my-2">
     {{-- Previous Week --}}
-    <a href="{{ route('calendar.show', ['date' => $previous->toDateString()]) }}"
-       class="{{ $navBtnStyle }}"
+    <a href="{{ route('calendar.show', ['date' => $previous->toDateString()]) }}" data-print-hide
+       class="inline-flex h-11 sm:h-12 w-11 sm:w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-600 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink-0 leading-none"
        aria-label="Predchádzajúci týždeň"
        title="Predchádzajúci týždeň">
         <i class="fa-solid fa-chevron-left text-sm sm:text-base leading-none m-auto"></i>
@@ -37,14 +23,15 @@
             :aria-expanded="isOpen.toString()"
             @class([
                 'inline-flex h-11 sm:h-12 w-full sm:w-auto items-center justify-center rounded-lg border font-semibold text-neutral-100 transition focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink min-w-0 leading-none text-xs sm:text-base gap-2 sm:gap-3 px-2.5 sm:px-6 py-0',
-                $triggerStyle,
+                'border-neutral-500 bg-neutral-900 hover:border-neutral-400 text-white' => $locked,
+                'border-neutral-700 bg-neutral-900 hover:border-neutral-600 hover:text-white' => ! $locked,
             ])
             title="Vyber týždeň"
         >
             <i class="fa-regular fa-calendar text-xs sm:text-base text-neutral-400 shrink-0" aria-hidden="true"></i>
             <span class="sr-only">Vybrať týždeň, zobrazený:</span>
             <span class="truncate tracking-wide font-bold">
-                {{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}
+                {{ SlovakDate::range($weekStart, $weekEnd) }}
             </span>
 
             @if($locked)
@@ -63,14 +50,14 @@
 
     {{-- Next Week --}}
     @if($next)
-        <a href="{{ route('calendar.show', ['date' => $next->toDateString()]) }}"
-           class="{{ $navBtnStyle }}"
+        <a href="{{ route('calendar.show', ['date' => $next->toDateString()]) }}" data-print-hide
+           class="inline-flex h-11 sm:h-12 w-11 sm:w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-600 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink-0 leading-none"
            aria-label="Nasledujúci týždeň"
            title="Nasledujúci týždeň">
             <i class="fa-solid fa-chevron-right text-sm sm:text-base leading-none m-auto"></i>
         </a>
     @else
-        <span class="{{ $navBtnStyle }} cursor-not-allowed opacity-30" role="link" aria-disabled="true" aria-label="Ďalšie týždne ešte nie sú otvorené" title="Ďalšie týždne ešte nie sú otvorené.">
+        <span data-print-hide class="inline-flex h-11 sm:h-12 w-11 sm:w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-600 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink-0 leading-none cursor-not-allowed opacity-30" role="link" aria-disabled="true" aria-label="Ďalšie týždne ešte nie sú otvorené" title="Ďalšie týždne ešte nie sú otvorené.">
             <i class="fa-solid fa-chevron-right text-sm sm:text-base leading-none m-auto" aria-hidden="true"></i>
         </span>
     @endif

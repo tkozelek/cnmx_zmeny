@@ -26,7 +26,7 @@
 
 
 
-        @if(auth()->check() && auth()->user()->hasVerifiedEmail())
+        @if($navUser)
             <div class="w-full mb-2 flex justify-center">
                 <x-team-switcher />
             </div>
@@ -72,7 +72,7 @@
             Pomoc
         </x-nav-link>
 
-        @if(auth()->check() && auth()->user()->hasVerifiedEmail())
+        @if($navUser)
             <div class="my-2 w-full border-t border-neutral-800"></div>
 
             <x-nav-link
@@ -83,7 +83,7 @@
                 Môj profil
             </x-nav-link>
 
-            @can('viewSettings', app(\App\Models\Team::class))
+            @if($canManageTeam)
                 <x-nav-link
                     route="team.settings.edit"
                     :is-mobile="true"
@@ -91,7 +91,7 @@
                 >
                     Správa kina
                 </x-nav-link>
-            @endcan
+            @endif
 
             @can('accessPlatform')
                 <x-nav-link
@@ -127,10 +127,26 @@
             >
                 Odhlásiť sa
             </x-logout-button>
-        @elseif(! auth()->check())
+        @elseif($isGuest)
             <div class="my-2 w-full border-t border-neutral-800"></div>
-            <a class="w-full rounded-lg bg-neutral-900 border border-neutral-800 py-3 text-base font-semibold text-neutral-200 transition hover:bg-neutral-800" href="{{ route('login') }}">Prihlásenie</a>
-            <a class="w-full rounded-lg bg-neutral-100 py-3 text-base font-semibold text-neutral-900 transition hover:bg-white" href="{{ route('register') }}">Registrácia</a>
+            <a
+                href="{{ route('login') }}"
+                @if($activeGuestLink === 'login') aria-current="page" @endif
+                @class([
+                    'w-full rounded-lg border py-3 text-base font-semibold transition hover:bg-neutral-800',
+                    'border-brand-500/40 bg-brand-500/15 text-brand-300' => $activeGuestLink === 'login',
+                    'border-neutral-800 bg-neutral-900 text-neutral-200' => $activeGuestLink !== 'login',
+                ])
+            >Prihlásenie</a>
+            <a
+                href="{{ route('register') }}"
+                @if($activeGuestLink === 'register') aria-current="page" @endif
+                @class([
+                    'w-full rounded-lg border py-3 text-base font-semibold transition',
+                    'border-brand-500/40 bg-brand-500/15 text-brand-300' => $activeGuestLink === 'register',
+                    'border-transparent bg-neutral-100 text-neutral-900 hover:bg-white' => $activeGuestLink !== 'register',
+                ])
+            >Registrácia</a>
         @endif
     </nav>
 </div>

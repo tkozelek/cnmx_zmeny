@@ -1,5 +1,6 @@
+@use('App\Support\SlovakDate')
 <div @class([
-    'flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm transition',
+    'rozpis-day flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm transition',
     'border-white ring-2 ring-white/50 shadow-md shadow-white/5' => $this->isToday,
     'border-amber-500/40 ring-1 ring-amber-500/20' => ! $this->isToday && $this->isHardToStaff,
     'border-emerald-500/40 ring-1 ring-emerald-500/20' => ! $this->isToday && $this->isDesirableDay,
@@ -59,20 +60,20 @@
                             {{-- Accessible keyboard/single-pointer alternative to the drag handle
                                  (WCAG 2.5.7 Dragging Movements) - stacked into one narrow stepper
                                  so it stays out of the way of the drag handle it backs up. --}}
-                            <span class="flex flex-col sm:opacity-0 sm:group-hover/slot:opacity-100 focus-within:opacity-100 transition-opacity">
+                            <span class="flex sm:opacity-0 sm:group-hover/slot:opacity-100 focus-within:opacity-100 transition-opacity">
                                 <button type="button"
                                         wire:click="moveSlotUp({{ $row['slot']->id }})"
                                         aria-label="Posunúť pozíciu {{ $row['label'] }} nahor"
                                         title="Posunúť nahor"
-                                        class="flex h-4 w-5 items-center justify-center rounded-t text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
-                                    <i class="fa-solid fa-chevron-up text-[0.55rem]"></i>
+                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
+                                    <i class="fa-solid fa-chevron-up text-[0.6rem]" aria-hidden="true"></i>
                                 </button>
                                 <button type="button"
                                         wire:click="moveSlotDown({{ $row['slot']->id }})"
                                         aria-label="Posunúť pozíciu {{ $row['label'] }} nadol"
                                         title="Posunúť nadol"
-                                        class="flex h-4 w-5 items-center justify-center rounded-b text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
-                                    <i class="fa-solid fa-chevron-down text-[0.55rem]"></i>
+                                        class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition focus:outline-none">
+                                    <i class="fa-solid fa-chevron-down text-[0.6rem]" aria-hidden="true"></i>
                                 </button>
                             </span>
                         @endif
@@ -95,6 +96,7 @@
                             <div x-data="slotTimePicker({{ $row['slot']->id }}, @js($row['time']), @js($this->quickTimes))" class="shrink-0">
                                 <input x-ref="input" type="text" readonly
                                        placeholder="+ čas" title="Čas nástupu – kliknutím zmeníš"
+                                       aria-label="Čas nástupu – {{ $row['label'] }}"
                                        class="w-[3.75rem] cursor-pointer rounded bg-neutral-800/80 px-1.5 py-0.5 text-center text-[0.7rem] font-semibold tabular-nums text-neutral-300 transition hover:bg-neutral-700 hover:text-white focus:outline-none focus:ring-1 focus:ring-brand-500">
                             </div>
                         @elseif($row['time'])
@@ -109,6 +111,7 @@
                             @if($this->copyTargets)
                                 <div x-data="{ open: false, days: [] }" class="relative" @keydown.escape="open = false">
                                     <button type="button" @click="open = ! open"
+                                            :aria-expanded="open.toString()"
                                             title="Skopírovať túto pozíciu do iných dní"
                                             aria-label="Skopírovať pozíciu {{ $row['label'] }} do iných dní"
                                             class="flex h-6 w-6 items-center justify-center rounded text-neutral-400 transition hover:bg-brand-500/20 hover:text-brand-300">
@@ -199,7 +202,7 @@
                         {{-- The vedúci row picks from who may lead a shift, not from who signed
                              up: leadership does not write itself into the daily pool. --}}
                         <select wire:change="placeLeader($event.target.value, {{ $row['slot']->id }})"
-                                aria-label="Vedúci zmeny: {{ $row['slot']->position->label() }}, {{ $this->dayName }} {{ $this->dayCarbon->format('j.n.') }}"
+                                aria-label="Vedúci zmeny: {{ $row['slot']->position->label() }}, {{ $this->dayName }} {{ SlovakDate::short($this->dayCarbon) }}"
                                 class="w-full rounded border border-violet-500/30 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
                             <option value="">- vybrať vedúceho -</option>
                             @foreach($this->leadershipRoster as $leader)
@@ -213,7 +216,7 @@
                              means something it is appended to the option text instead - otherwise
                              touch users would build blind to the one thing that decides the order. --}}
                         <select wire:change="place($event.target.value, {{ $row['slot']->id }})"
-                                aria-label="Priradiť na {{ $row['slot']->position->label() }}, {{ $this->dayName }} {{ $this->dayCarbon->format('j.n.') }}"
+                                aria-label="Priradiť na {{ $row['slot']->position->label() }}, {{ $this->dayName }} {{ SlovakDate::short($this->dayCarbon) }}"
                                 @if($this->isHardToStaff)
                                     title="Zoradené podľa spravodlivosti – vyššie číslo znamená, že tento človek odpracoval menej ťažkých dní, než je v kine zvykom, a je na rade."
                                 @elseif($this->isDesirableDay)
@@ -252,7 +255,7 @@
                     Prijať všetky ({{ count($suggestions) }})
                 </button>
 
-                <button type="button" wire:click="dismissSuggestions" title="Zahodiť návrh"
+                <button type="button" wire:click="dismissSuggestions" title="Zahodiť návrh" aria-label="Zahodiť návrh"
                         class="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-neutral-700 bg-neutral-800 text-neutral-400 transition hover:text-white">
                     <i class="fa-solid fa-xmark text-[0.7rem]"></i>
                 </button>
@@ -273,7 +276,7 @@
     @if($this->canBuild && $this->availablePositions->isNotEmpty())
         <form wire:submit="addSlot" class="flex items-center gap-1 border-t border-neutral-800/80 px-2.5 py-2">
             <select wire:model="newPositionId"
-                    aria-label="Pridať pozíciu – {{ $this->dayName }} {{ $this->dayCarbon->format('j.n.') }}"
+                    aria-label="Pridať pozíciu – {{ $this->dayName }} {{ SlovakDate::short($this->dayCarbon) }}"
                     class="min-w-0 flex-1 rounded border border-neutral-600 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-300 focus:border-brand-500 focus:outline-none">
                 <option value="">+ pozícia</option>
                 @foreach($this->availablePositions as $position)
@@ -284,11 +287,11 @@
             {{-- flatpickr, not <input type="time">: the native control renders AM/PM from the OS
                  locale and no HTML attribute can force 24-hour. --}}
             <div x-data="timePicker('newStartTime', @js($newStartTime), @js($this->quickTimes))" x-on:rozpis-slot-added.window="clear()" class="shrink-0">
-                <input x-ref="input" type="text" readonly placeholder="čas" title="Čas nástupu"
+                <input x-ref="input" type="text" readonly placeholder="čas" title="Čas nástupu" aria-label="Čas nástupu novej pozície"
                        class="w-[5rem] cursor-pointer rounded border border-neutral-800 bg-neutral-900 px-2 py-1.5 text-center text-xs tabular-nums text-neutral-300 focus:border-brand-500 focus:outline-none">
             </div>
 
-            <button type="submit" wire:loading.attr="disabled" title="Pridať pozíciu"
+            <button type="submit" wire:loading.attr="disabled" title="Pridať pozíciu" aria-label="Pridať pozíciu"
                     class="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white disabled:opacity-50">
                 <i class="fa-solid fa-plus text-[0.7rem]"></i>
             </button>
@@ -344,7 +347,7 @@
               class="flex items-center gap-1 border-t border-neutral-800/80 px-2.5 py-2">
             @csrf
             <select name="source_date"
-                    aria-label="Kopírovať celý deň z… – do {{ $this->dayName }} {{ $this->dayCarbon->format('j.n.') }}"
+                    aria-label="Kopírovať celý deň z… – do {{ $this->dayName }} {{ SlovakDate::short($this->dayCarbon) }}"
                     class="min-w-0 flex-1 rounded border border-neutral-600 bg-neutral-900 px-1.5 py-1 text-xs text-neutral-400 focus:border-brand-500 focus:outline-none">
                 <option value="">kopírovať celý deň z…</option>
                 @foreach($this->copySources as $source)
@@ -352,7 +355,7 @@
                 @endforeach
             </select>
 
-            <button type="submit" title="Skopírovať všetky pozície z vybraného dňa"
+            <button type="submit" title="Skopírovať všetky pozície z vybraného dňa" aria-label="Skopírovať celý deň"
                     class="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-neutral-700 bg-neutral-800 text-neutral-300 transition hover:text-white">
                 <i class="fa-solid fa-copy text-[0.7rem]"></i>
             </button>

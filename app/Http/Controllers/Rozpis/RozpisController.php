@@ -189,7 +189,7 @@ class RozpisController extends Controller
             'settings' => [
                 ['Názov kina', $team->name, 'Zobrazuje sa v hlavičke a v exportoch.'],
                 ['Začiatok týždňa', $weekDayNames[$team->weekStartDay()] ?? '-', 'Deň, ktorým sa začína pracovný týždeň – od neho sa odvíja aj rozpis.'],
-                ['Počet týždňov dopredu', $team->weekLookahead().' týž.', 'Koľko týždňov do budúcna sa zamestnanci môžu zapisovať.'],
+                ['Počet týždňov dopredu', $team->weekLookahead().' týž.', 'Koľko týždňov do budúcna sa brigádnici môžu zapisovať.'],
                 ['Uzávierka absencií', $team->absenceDeadlineDays().' dní', 'Koľko dní pred prvým dňom absencie sa dá ešte nahlásiť.'],
                 ['Uchovanie absencie', $team->staleAbsenceDeletionDays().' dní', 'Ako dlho po skončení sa neaktívna absencia dá ešte zmazať. 0 = bez čakania.'],
                 ['Obdobie hodnotenia', $team->fairnessWindowWeeks().' týž.', 'Ako ďaleko do minulosti sa počítajú odpracované dni pre zásluhy aj pre poradie na neobľúbené dni.'],

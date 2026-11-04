@@ -15,6 +15,7 @@ use Gemini\Enums\ResponseMimeType;
 use Gemini\Laravel\Facades\Gemini;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -33,6 +34,8 @@ use Throwable;
  */
 class AiRozpisSuggestionService
 {
+    private const int MAX_CALLS_PER_HOUR = 40;
+
     /** Enough for a day's worth of placements as JSON; the reply is a short list, not prose. */
     private const int MAX_OUTPUT_TOKENS = 2048;
 
@@ -63,6 +66,18 @@ class AiRozpisSuggestionService
         private readonly WeekService $weeks,
     ) {}
 
+    /** Every call is billed - a cap per cinema stops a stuck client or a script from running up the bill. */
+    private function withinHourlyBudget(Team $team): bool
+    {
+        $allowed = RateLimiter::attempt("ai-rozpis:{$team->id}", self::MAX_CALLS_PER_HOUR, fn (): bool => true, 3600);
+
+        if (! $allowed) {
+            Log::warning('AI rozpis: hodinový limit volaní vyčerpaný.', ['team_id' => $team->id]);
+        }
+
+        return $allowed;
+    }
+
     /** No key configured or the module off for this cinema: the button never renders and nothing calls out. */
     public function enabled(Team $team): bool
     {
@@ -80,7 +95,7 @@ class AiRozpisSuggestionService
      */
     public function suggest(Team $team, CarbonImmutable $date): array
     {
-        if (! $this->enabled($team)) {
+        if (! $this->enabled($team) || ! $this->withinHourlyBudget($team)) {
             return [];
         }
 
@@ -128,7 +143,7 @@ class AiRozpisSuggestionService
      */
     public function suggestWeek(Team $team, CarbonImmutable $weekStart): array
     {
-        if (! $this->enabled($team)) {
+        if (! $this->enabled($team) || ! $this->withinHourlyBudget($team)) {
             return [];
         }
 

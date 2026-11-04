@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Notifications\AddUserResetPassword;
 use App\Services\TeamMembershipService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -49,15 +50,26 @@ class UserController extends Controller
         // account they never asked for would only lock them out.
         $fields['email_verified_at'] = now();
 
-        $user = User::create($fields);
-        $user->teams()->attach($team, ['approved_at' => now()]);
-        $user->assignRole($role->value);
+        $user = DB::transaction(function () use ($fields, $team, $role): User {
+            $user = User::create($fields);
+            $user->teams()->attach($team, ['approved_at' => now()]);
+            $user->assignRole($role->value);
+
+            return $user;
+        });
 
         try {
             $user->notify(new AddUserResetPassword(Password::broker('add_user')->createToken($user)));
-        } catch (\Throwable) {
-            $user->teams()->detach();
-            $user->delete();
+        } catch (\Throwable $e) {
+            report($e);
+
+            // Spatie's role rows and the invite token have no foreign key to cascade through.
+            DB::transaction(function () use ($user): void {
+                $user->syncRoles([]);
+                DB::table(config('auth.passwords.add_user.table'))->where('email', $user->email)->delete();
+                $user->teams()->detach();
+                $user->delete();
+            });
 
             return back()->with(['error' => 'Pozvánku sa nepodarilo odoslať, účet nebol vytvorený. Skontroluj e-mail a skús to znova.']);
         }

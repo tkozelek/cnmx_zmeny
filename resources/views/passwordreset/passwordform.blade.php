@@ -8,6 +8,8 @@
                 <x-alert>{{ session('error') }}</x-alert>
             @endif
 
+            <x-error-summary />
+
             <x-form-input
                 type="email"
                 name="email"

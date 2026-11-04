@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Team;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\View;
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
@@ -57,6 +58,7 @@ class SetCurrentTeam
         }
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($team->getKey());
+        Context::add('team_id', $team->getKey());
 
         // Loaded once here so views and services do not each re-query the settings row.
         $team->loadMissing('settings');

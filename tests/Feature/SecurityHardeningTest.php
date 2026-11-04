@@ -210,6 +210,14 @@ class SecurityHardeningTest extends TestCase
     }
 
     /** Laravel's `throttle:6,1` keyed guests on the IP alone, so failed logins also locked out registration. */
+    public function test_an_array_in_the_email_field_is_a_validation_error_not_a_crash(): void
+    {
+        $this->from(route('login'))
+            ->post(route('login.auth'), ['email' => ['x@kino.sk'], 'password' => 'heslo1234'])
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('email');
+    }
+
     public function test_failed_logins_do_not_lock_the_same_ip_out_of_registration(): void
     {
         $this->tenant();

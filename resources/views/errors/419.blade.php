@@ -4,7 +4,7 @@
 @section('title', 'Platnosť stránky vypršala')
 @section('caption', 'Lístok vypršal')
 @section('heading', 'Platnosť stránky vypršala')
-@section('message', 'Stránka bola otvorená príliš dlho, preto sme formulár z bezpečnostných dôvodov neodoslali. Vráť sa späť a skús to znova.')
+@section('message', 'Stránka bola otvorená príliš dlho, preto sme formulár z bezpečnostných dôvodov neodoslali. Vráť sa späť a skús to znova.')
 
 {{-- The form page itself, freshly loaded, carries a new CSRF token - not the expired POST URL. --}}
 @section('actions')

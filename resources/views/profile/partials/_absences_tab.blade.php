@@ -1,12 +1,13 @@
+@use('App\Support\SlovakDate')
 <div x-show="tab === 'absences'" class="p-3.5 sm:p-6 space-y-5 sm:space-y-8" style="display: none;">
     {{-- Active Absences --}}
     <div>
         <div class="flex items-center justify-between gap-2 mb-3">
             <h3 class="text-sm sm:text-base font-semibold text-white flex items-center gap-2">
                 <i class="fa-solid fa-calendar-xmark text-xs text-neutral-400" aria-hidden="true"></i>
-                Aktívne a nadchádzajúce absencie
+                Aktívne a&nbsp;nadchádzajúce absencie
             </h3>
-            @if(auth()->id() === $user->id)
+            @if($isOwnProfile)
                 <a href="{{ route('absences.index', ['nova' => 1]) }}" class="text-xs font-semibold text-brand-300 hover:text-brand-200 transition flex items-center gap-1 shrink-0">
                     <i class="fa-solid fa-plus text-xs" aria-hidden="true"></i>
                     <span>Nová</span>
@@ -23,7 +24,7 @@
                         </p>
                         <div class="flex items-center gap-2 text-xs text-neutral-400 mt-0.5 sm:mt-1">
                             <i class="fa-regular fa-calendar text-neutral-400 text-[10px]"></i>
-                            <span>{{ $absence->date_from->format('d.m.Y') }} &ndash; {{ $absence->isOpenEnded() ? 'Neurčito' : $absence->date_to->format('d.m.Y') }}</span>
+                            <span>{{ SlovakDate::full($absence->date_from) }} &ndash; {{ $absence->isOpenEnded() ? 'Neurčito' : SlovakDate::full($absence->date_to) }}</span>
                             @if($absence->isRecurring())
                                 <span class="text-neutral-400">&bull;</span>
                                 <span class="text-neutral-300 font-medium">Opakujúca sa</span>
@@ -60,7 +61,7 @@
                         </p>
                         <div class="flex items-center gap-2 text-xs text-neutral-400 mt-0.5 sm:mt-1">
                             <i class="fa-regular fa-calendar text-neutral-400 text-[10px]"></i>
-                            <span>{{ $absence->date_from->format('d.m.Y') }} &ndash; {{ $absence->date_to->format('d.m.Y') }}</span>
+                            <span>{{ SlovakDate::full($absence->date_from) }} &ndash; {{ SlovakDate::full($absence->date_to) }}</span>
                         </div>
                     </div>
                     @if($absence->status === \App\Enums\AbsenceStatus::Cancelled)

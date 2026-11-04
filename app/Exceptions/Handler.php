@@ -3,6 +3,9 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -27,6 +30,16 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        // Both are on the framework's never-report list, so they are logged on the way to the
+        // response instead. Returning nothing leaves the normal 403/429 page untouched.
+        $this->renderable(function (AccessDeniedHttpException $e): void {
+            Log::channel('security')->warning('Prístup zamietnutý (403).', ['reason' => $e->getMessage()]);
+        });
+
+        $this->renderable(function (ThrottleRequestsException $e): void {
+            Log::channel('security')->warning('Príliš veľa požiadaviek (429).');
         });
     }
 }

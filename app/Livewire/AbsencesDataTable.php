@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Absence;
 use App\Models\Team;
 use App\Services\AbsenceService;
+use App\Support\SlovakDate;
 use App\Traits\FormatsAbsenceColumns;
 use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
@@ -84,7 +85,7 @@ class AbsencesDataTable extends DataTableComponent
 
             SelectFilter::make('Zobraziť')
                 ->options([
-                    '' => 'Všetci zamestnanci',
+                    '' => 'Všetci brigádnici',
                     'mine' => 'Iba moje absencie',
                 ])
                 ->filter(function (Builder $builder, string $value) {
@@ -120,12 +121,12 @@ class AbsencesDataTable extends DataTableComponent
 
             Column::make('Začiatok', 'date_from')
                 ->sortable()
-                ->format(fn ($value) => '<span class="text-neutral-300">'.$value?->format('d.m.Y').'</span>')
+                ->format(fn ($value) => '<span class="text-neutral-300">'.($value ? SlovakDate::full($value) : '').'</span>')
                 ->html(),
 
             Column::make('Koniec', 'date_to')
                 ->sortable()
-                ->format(fn ($value, $row) => '<span class="text-neutral-300">'.($row->isOpenEnded() ? 'Trvalá' : $value?->format('d.m.Y')).'</span>')
+                ->format(fn ($value, $row) => '<span class="text-neutral-300">'.($row->isOpenEnded() ? 'Trvalá' : ($value ? SlovakDate::full($value) : '')).'</span>')
                 ->html(),
 
             Column::make('Stav', 'status')
@@ -150,7 +151,7 @@ class AbsencesDataTable extends DataTableComponent
 
             Column::make('Nahlásené', 'created_at')
                 ->sortable()
-                ->format(fn ($value) => '<span class="text-neutral-400 text-xs">'.$value?->format('d.m.Y H:i').'</span>')
+                ->format(fn ($value) => '<span class="text-neutral-400 text-xs">'.($value ? SlovakDate::dateTime($value) : '').'</span>')
                 ->html(),
 
             Column::make('Akcie', 'id')

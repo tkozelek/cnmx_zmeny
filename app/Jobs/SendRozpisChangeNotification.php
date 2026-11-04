@@ -27,8 +27,11 @@ class SendRozpisChangeNotification implements ShouldBeUnique, ShouldQueue
     /** How long after the first change the mail goes out - also the window later edits get absorbed into. */
     public const int DEBOUNCE_MINUTES = 30;
 
-    /** Safety cap on the uniqueness lock, in case a job never runs (e.g. queue paused). */
-    public int $uniqueFor = self::DEBOUNCE_MINUTES * 60;
+    /**
+     * Safety cap on the uniqueness lock, in case a job never runs (e.g. queue paused). Longer than
+     * the delay, so a worker running a little late doesn't let a second job in.
+     */
+    public int $uniqueFor = (self::DEBOUNCE_MINUTES + 10) * 60;
 
     public function __construct(private readonly int $teamId, private readonly string $weekStart) {}
 

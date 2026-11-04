@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\LogApplicationEvents;
 use App\Listeners\LogSuccessfulLogin;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
@@ -23,6 +24,13 @@ class EventServiceProvider extends ServiceProvider
         Login::class => [
             LogSuccessfulLogin::class,
         ],
+    ];
+
+    /**
+     * @var array<int, class-string>
+     */
+    protected $subscribe = [
+        LogApplicationEvents::class,
     ];
 
     /**

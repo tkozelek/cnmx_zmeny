@@ -1,3 +1,4 @@
+@use('App\Support\SlovakDate')
 <x-layout :title="$title" description="Zverejnený rozpis zmien a pozícií na tento týždeň.">
     {{-- The finished plan, read-only. Deliberately has no drag handles, no selects and no forms:
          everything here is text, so there is nothing to accidentally change. Mirrors the printed
@@ -8,50 +9,50 @@
             <header class="flex flex-col gap-4 border-b border-neutral-800 pb-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h1 class="flex items-center gap-2.5 text-2xl font-bold text-white">
-                        <i class="fa-solid fa-clipboard-list text-emerald-400"></i>
+                        <i class="fa-solid fa-clipboard-list text-emerald-400" aria-hidden="true"></i>
                         Rozpis zmien
                     </h1>
 
                     @if($publishedAt)
                         <p class="mt-1 flex items-center gap-1.5 text-xs text-neutral-400">
                             <i class="fa-solid fa-circle-check text-[0.7rem] text-emerald-500"></i>
-                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }}. Toto je konečná verzia – len na čítanie.
+                            Zverejnené {{ SlovakDate::full($publishedAt) }} o&nbsp;{{ SlovakDate::time($publishedAt) }}. Toto je konečná verzia – len na čítanie.
                         </p>
                     @else
                         <p class="mt-1 flex items-center gap-1.5 text-xs text-amber-400">
                             <i class="fa-solid fa-pen-ruler text-[0.7rem]"></i>
-                            Pracovná verzia – zamestnanci ju zatiaľ nevidia.
+                            Pracovná verzia – brigádnici ju zatiaľ nevidia.
                         </p>
                     @endif
                 </div>
 
                 <div class="flex flex-wrap items-center justify-center gap-2">
-                    <x-rozpis.week-arrow direction="previous"
+                    <x-rozpis.week-arrow data-print-hide direction="previous"
                                         :href="route('rozpis.published', ['date' => $previousWeek->toDateString()])" />
 
                     <span class="inline-flex h-11 items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-5 text-base font-bold tracking-wide text-neutral-100">
                         <i class="fa-regular fa-calendar text-neutral-400"></i>
-                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}</span>
+                        <span class="whitespace-nowrap tabular-nums">{{ SlovakDate::range($weekStart, $weekEnd) }}</span>
                     </span>
 
-                    <x-rozpis.week-arrow direction="next"
+                    <x-rozpis.week-arrow data-print-hide direction="next"
                                         :href="route('rozpis.published', ['date' => $nextWeek->toDateString()])" />
 
                     @if($canBuild)
-                        <a href="{{ route('rozpis.export', ['date' => $weekStart->toDateString()]) }}"
+                        <a href="{{ route('rozpis.export', ['date' => $weekStart->toDateString()]) }}" data-print-hide
                            class="ml-1 inline-flex h-11 items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
                             <i class="fa-solid fa-file-excel"></i>
                             Excel
                         </a>
 
-                        <a href="{{ route('rozpis.show', ['date' => $weekStart->toDateString()]) }}"
+                        <a href="{{ route('rozpis.show', ['date' => $weekStart->toDateString()]) }}" data-print-hide
                            class="inline-flex h-11 items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm font-semibold text-neutral-300 transition hover:border-neutral-700 hover:text-white">
                             <i class="fa-solid fa-pen-to-square text-xs"></i>
                             Upraviť
                         </a>
                     @endif
 
-                    <a href="{{ route('calendar.show', ['date' => $weekStart->toDateString()]) }}"
+                    <a href="{{ route('calendar.show', ['date' => $weekStart->toDateString()]) }}" data-print-hide
                        class="inline-flex h-11 items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm font-semibold text-neutral-300 transition hover:border-neutral-700 hover:text-white">
                         <i class="fa-solid fa-arrow-left text-xs"></i>
                         Kalendár
@@ -61,13 +62,13 @@
 
             @if($isEmpty)
                 <x-empty-state message="Na tento týždeň zatiaľ nie je zostavený žiadny rozpis." icon="fa-clipboard-question">
-                    Keď vedúci rozpis zostaví a zverejní, uvidíš ho tu.
+                    Keď vedúci rozpis zostaví a&nbsp;zverejní, uvidíš ho tu.
                 </x-empty-state>
             @else
                 <div class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 2xl:gap-4">
                     @foreach($plan as $day)
                         <section id="day-{{ $day['date']->toDateString() }}" @class([
-                            'flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm transition',
+                            'rozpis-day flex flex-col overflow-hidden rounded-md border bg-neutral-900 shadow-sm transition',
                             'border-white ring-2 ring-white/50 shadow-md shadow-white/5' => $day['isToday'],
                             'border-brand-500/60 ring-1 ring-brand-500/60' => ! $day['isToday'] && $day['isMine'],
                             'border-neutral-800' => ! $day['isToday'] && ! $day['isMine'],
@@ -125,7 +126,7 @@
                                                 'text-amber-400/80 italic' => $row['name'] === null,
                                                 'text-brand-300' => $row['isMine'],
                                             ])>
-                                                {{ $row['name'] ?? 'neobsadené' }}
+                                                {{ $row['name'] ?? 'neobsadené' }}@if($row['isMine'])<span class="sr-only"> (ty)</span>@endif
                                             </span>
                                             <span class="block truncate text-[0.7rem] text-neutral-400">{{ $row['label'] }}</span>
                                         </span>
@@ -181,7 +182,7 @@
                 @if($todayAnchor)
                     <script>
                         document.getElementById('day-{{ $todayAnchor->toDateString() }}')
-                            ?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                            ?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
                     </script>
                 @endif
             @endif

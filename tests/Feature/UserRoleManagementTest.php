@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Livewire\UsersDataTable;
+use App\Models\Assignment;
 use App\Models\Team;
 use App\Models\User;
 use App\Notifications\AddUserResetPassword;
@@ -390,6 +391,25 @@ class UserRoleManagementTest extends TestCase
         $this->assertTrue($shared->is_active);
         $this->assertFalse($shared->isMemberOf($teamA));
         $this->assertSame(1, $shared->teams()->count());
+    }
+
+    /** A blocked person must stop showing up in next week's plan, its export and the rozpis mails. */
+    public function test_deactivating_a_brigadnik_drops_their_future_signups_but_keeps_history(): void
+    {
+        $team = $this->tenant();
+        $manager = $this->member($team, Role::Manager);
+        $employee = $this->member($team);
+
+        $past = Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $employee->id, 'date' => now()->subWeek()->toDateString()]);
+        $future = Assignment::factory()->create(['team_id' => $team->id, 'user_id' => $employee->id, 'date' => now()->addWeek()->toDateString()]);
+
+        $this->actingAs($manager)
+            ->delete(route('admin.users.destroy', $employee))
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertFalse($employee->refresh()->is_active);
+        $this->assertModelExists($past);
+        $this->assertModelMissing($future);
     }
 
     public function test_a_shared_accounts_name_cannot_be_changed_from_one_cinema(): void

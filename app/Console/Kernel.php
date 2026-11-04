@@ -16,7 +16,9 @@ class Kernel extends ConsoleKernel
         // Needs the server cron: * * * * * php artisan schedule:run
         $schedule->command('app:prune-personal-data')->dailyAt('03:30');
         $schedule->command('auth:clear-resets')->daily();
-        $schedule->command('queue:prune-failed', ['--hours' => 24 * 30])->daily();
+        $schedule->command('auth:clear-resets', ['add_user'])->daily();
+        // Failed mail jobs carry addresses and signed links - kept only long enough to notice and retry.
+        $schedule->command('queue:prune-failed', ['--hours' => 24 * 7])->daily();
 
         // Laravel only clears expired session files by lottery, and Pulse trims the same way - on a
         // quiet site both can linger for weeks past what the privacy page promises.

@@ -87,7 +87,12 @@ class FairnessService
         // Routed through dayWeight() rather than indexing $team->fairnessDayWeights() directly,
         // so a worked Slovak public holiday counts at holiday_weight instead of its weekday's -
         // same rule isHardToStaffDay()/isDesirableDay() already apply.
-        $weightOf = fn (Assignment $assignment): float => $this->dayWeight($team, $assignment->date);
+        // Memoised per date: dayWeight() reads the cached settings and recomputes holidays, and
+        // a 12-week window holds thousands of rows but under a hundred distinct dates.
+        $weightsByDate = [];
+        $weightOf = function (Assignment $assignment) use ($team, &$weightsByDate): float {
+            return $weightsByDate[$assignment->date->toDateString()] ??= $this->dayWeight($team, $assignment->date);
+        };
 
         // The team's own typical day mix as actually worked, not a hand-tuned constant and not
         // the mean of the configured weights: "under-carrying" has to mean under-carrying

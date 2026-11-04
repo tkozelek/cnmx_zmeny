@@ -4,14 +4,6 @@
      "your password was wrong". --}}
 @props(['type' => 'error'])
 
-@php
-    $icon = match ($type) {
-        'success' => 'fa-circle-check',
-        'warning' => 'fa-triangle-exclamation',
-        default => 'fa-circle-exclamation',
-    };
-@endphp
-
 <div role="alert" @class([
     'rounded-lg border px-4 py-3 text-sm',
     'border-rose-500/40 bg-rose-500/10 text-rose-300' => $type === 'error',
@@ -19,7 +11,12 @@
     'border-amber-500/40 bg-amber-500/10 text-amber-300' => $type === 'warning',
 ])>
     <div class="flex items-start gap-2">
-        <i class="fa-solid {{ $icon }} mt-0.5"></i>
+        <i @class([
+            'fa-solid mt-0.5',
+            'fa-circle-check' => $type === 'success',
+            'fa-triangle-exclamation' => $type === 'warning',
+            'fa-circle-exclamation' => $type === 'error',
+        ]) aria-hidden="true"></i>
         <div class="space-y-1">{{ $slot }}</div>
     </div>
 </div>

@@ -6,7 +6,9 @@ use App\Enums\Role as RoleEnum;
 use App\Models\Team;
 use App\Models\User;
 use App\Notifications\UserAllowedToLogin;
+use App\Support\SlovakDate;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
@@ -162,7 +164,7 @@ class UsersDataTable extends DataTableComponent
             Column::make('Naposledy upravený', 'updated_at')
                 ->collapseOnTablet()
                 ->sortable()
-                ->format(fn ($value) => '<span class="text-neutral-400">'.$value?->format('d.m.Y H:i').'</span>')
+                ->format(fn ($value) => '<span class="text-neutral-400">'.($value ? SlovakDate::dateTime($value) : '').'</span>')
                 ->html(),
 
             Column::make('Akcie', 'id')
@@ -210,8 +212,18 @@ class UsersDataTable extends DataTableComponent
         }
 
         $team = app(Team::class);
+
+        // A second click (or a replayed request) must not send the "approved" mail again.
+        if ($user->isApprovedIn($team)) {
+            $this->dispatch('toast', message: 'Používateľ už je schválený.');
+
+            return;
+        }
+
         $team->users()->updateExistingPivot($user->id, ['approved_at' => now()]);
         $user->forgetApprovedTeamsCache();
+
+        Log::channel('security')->info('Členstvo schválené.', ['user_id' => $user->id, 'team_id' => $team->id, 'by' => auth()->id()]);
 
         $user->notify(new UserAllowedToLogin($user));
         $this->dispatch('toast', message: 'Používateľ schválený.');
@@ -241,6 +253,8 @@ class UsersDataTable extends DataTableComponent
         }
 
         $user->forgetApprovedTeamsCache();
+
+        Log::channel('security')->info('Členstvo zamietnuté.', ['user_id' => $user->id, 'team_id' => $team->id, 'by' => auth()->id()]);
 
         $this->dispatch('toast', message: 'Používateľ zamietnutý.');
     }

@@ -5,7 +5,6 @@ use App\Providers\AuthServiceProvider;
 use App\Providers\EventServiceProvider;
 use App\Providers\Filament\PlatformPanelProvider;
 use App\Providers\RouteServiceProvider;
-use App\Providers\SearchServiceProvider;
 use App\Providers\ViewServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
@@ -181,10 +180,8 @@ return [
          */
         AppServiceProvider::class,
         AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
         EventServiceProvider::class,
         RouteServiceProvider::class,
-        SearchServiceProvider::class,
         ExcelServiceProvider::class,
         ViewServiceProvider::class,
         PlatformPanelProvider::class,

@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\Absence;
 use App\Models\Assignment;
 use App\Services\WeekService;
+use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -74,7 +75,7 @@ class CalendarPageTest extends TestCase
         $this->actingAs($user)
             ->get(route('calendar.index'))
             ->assertOk()
-            ->assertSee($nextWeek->format('d.m.Y'));
+            ->assertSee(SlovakDate::full($nextWeek));
     }
 
     public function test_default_landing_page_skips_every_locked_week(): void
@@ -88,7 +89,7 @@ class CalendarPageTest extends TestCase
         $this->actingAs($this->member($team))
             ->get(route('calendar.index'))
             ->assertOk()
-            ->assertSee($currentWeek->addWeeks(2)->format('d.m.Y'));
+            ->assertSee(SlovakDate::full($currentWeek->addWeeks(2)));
     }
 
     public function test_a_mid_week_url_resolves_to_the_containing_week(): void
@@ -101,7 +102,7 @@ class CalendarPageTest extends TestCase
         $this->actingAs($this->member($team))
             ->get(route('calendar.show', ['date' => $midWeek->toDateString()]))
             ->assertOk()
-            ->assertSee($weekStart->format('d.m.Y'));
+            ->assertSee(SlovakDate::full($weekStart));
     }
 
     public function test_signed_up_people_are_listed_on_their_day(): void

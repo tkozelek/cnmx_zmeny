@@ -6,6 +6,7 @@ use App\Enums\AbsenceStatus;
 use App\Enums\Role;
 use App\Models\Absence;
 use App\Models\Assignment;
+use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -397,7 +398,7 @@ class AbsenceTest extends TestCase
                 'date_to' => $day->addDay()->toDateString(),
                 'reason' => 'Skúškové',
             ])
-            ->assertSessionHasErrors(['date_from' => 'Na tieto dni máš zápis: '.$day->format('j.n.').'. Najprv sa z nich odpíš – v zamknutom týždni ťa odpíše manažér.']);
+            ->assertSessionHasErrors(['date_from' => 'Na tieto dni máš zápis: '.SlovakDate::short($day)." Najprv sa z nich odpíš – v\u{00A0}zamknutom týždni ťa odpíše manažér."]);
 
         $this->assertDatabaseCount('absences', 0);
     }

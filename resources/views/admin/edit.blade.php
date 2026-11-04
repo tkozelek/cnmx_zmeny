@@ -24,6 +24,8 @@
                 @csrf
                 @method('PUT')
 
+                <x-error-summary :fields="['name' => 'meno', 'lastname' => 'priezvisko', 'role' => 'roles']" />
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <x-form-input
                         name="name"
@@ -47,7 +49,7 @@
                 </div>
 
                 @if($isShared)
-                    <p class="text-sm text-neutral-400">Účet patrí aj do iného kina, preto meno a priezvisko môže zmeniť len správca platformy.</p>
+                    <p class="text-sm text-neutral-400">Účet patrí aj do iného kina, preto meno a&nbsp;priezvisko môže zmeniť len správca platformy.</p>
                 @endif
 
                 {{-- Read-only: an account can belong to several cinemas, and whoever controls the

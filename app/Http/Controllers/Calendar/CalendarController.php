@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Services\CalendarService;
 use App\Services\WeekService;
+use App\Support\SlovakDate;
+use App\Support\SlovakPlural;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -34,11 +36,20 @@ class CalendarController extends Controller
     {
         $weekStart = $this->weeks->alignFromRequest($team, $date);
         $next = $this->weeks->next($weekStart);
+        $week = $this->calendar->forWeek($team, $weekStart, $request->user());
 
         return view('calendar.index', array_merge(
-            $this->calendar->forWeek($team, $weekStart, $request->user()),
+            $week,
             [
-                'title' => 'Týždeň '.$weekStart->format('d.m.').' – '.$this->weeks->end($weekStart)->format('d.m.Y'),
+                'title' => 'Týždeň '.SlovakDate::range($weekStart, $week['weekEnd']),
+                'viewerId' => $request->user()->id,
+                'canViewSummary' => $request->user()->hasPermissionInTeam('user.view-any', $team),
+                'absenceCountLabel' => SlovakPlural::of($week['absences']->count(), 'absencia', 'absencie', 'absencií'),
+                'weekPickerOptions' => [
+                    'maxDate' => $this->weeks->end($this->weeks->lastOpenWeek($team))->toDateString(),
+                    'weekUrl' => route('calendar.show', ['date' => '__DATE__']),
+                    'currentWeekUrl' => route('calendar.index'),
+                ],
                 'previousWeek' => $this->weeks->previous($weekStart),
 
                 // Null past the team's week_lookahead, so the view simply hides the arrow

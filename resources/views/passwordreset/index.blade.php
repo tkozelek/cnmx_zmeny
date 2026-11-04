@@ -1,7 +1,9 @@
 <x-layout title="Zabudnuté heslo" description="Obnov si zabudnuté heslo do účtu Cinemax Zmeny.">
-    <x-auth-card title="Zabudnuté heslo" subtitle="Zadaj svoj e-mail a pošleme ti odkaz na nastavenie nového hesla.">
+    <x-auth-card title="Zabudnuté heslo" subtitle="Zadaj svoj e-mail a pošleme ti odkaz na nastavenie nového hesla.">
         <form class="flex flex-col gap-6" action="{{ route('password.send') }}" method="POST">
             @csrf
+
+            <x-error-summary />
 
             <x-form-input
                 type="email"

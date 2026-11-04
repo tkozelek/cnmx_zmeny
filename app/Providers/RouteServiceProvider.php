@@ -24,29 +24,32 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
-        });
+        // A crafted `email[]=` would otherwise hit "Array to string conversion" here - a 500 before validation.
+        $email = fn (Request $request): string => is_string($value = $request->input('email')) ? mb_strtolower($value) : '';
+
+        // Signed-in writes: generous for real use, a ceiling for a script or a stuck double-submit loop.
+        RateLimiter::for('member-writes', fn (Request $request) => $request->isMethodSafe()
+            ? Limit::none()
+            : Limit::perMinute(60)->by('member:'.($request->user()?->id ?: $request->ip())));
+
+        // Each invite sends a mail to an address the manager typed in.
+        RateLimiter::for('invites', fn (Request $request) => Limit::perHour(30)->by('invites:'.$request->user()?->id));
 
         // Per form, not one bucket per IP: Laravel's `throttle:6,1` keys guests on the IP alone,
         // so a few bad logins also locked the same IP out of registration and password reset.
         RateLimiter::for('guest-form', fn (Request $request) => [
             Limit::perMinute(10)->by($request->route()?->getName().'|ip:'.$request->ip()),
-            Limit::perMinute(5)->by($request->route()?->getName().'|email:'.mb_strtolower((string) $request->input('email'))),
+            Limit::perMinute(5)->by($request->route()?->getName().'|email:'.$email($request)),
         ]);
 
         // Forms that send an e-mail to the typed address: capped per recipient, so nobody can
         // flood someone's inbox by rotating IPs.
         RateLimiter::for('mail-recipient', fn (Request $request) => [
             Limit::perMinute(6)->by($request->route()?->getName().'|ip:'.$request->ip()),
-            Limit::perHour(3)->by($request->route()?->getName().'|email:'.mb_strtolower((string) $request->input('email'))),
+            Limit::perHour(3)->by($request->route()?->getName().'|email:'.$email($request)),
         ]);
 
         $this->routes(function () {
-            Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/api.php'));
-
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });

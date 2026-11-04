@@ -9,7 +9,7 @@
                 id="extra-note"
                 type="text"
                 wire:model.live.debounce.500ms="note"
-                maxlength="{{ \App\Livewire\ExtraNote::MAX_LENGTH }}"
+                maxlength="{{ $maxLength }}"
                 placeholder="Napr. od 15:00"
                 aria-describedby="extra-note-hint"
                 @class([

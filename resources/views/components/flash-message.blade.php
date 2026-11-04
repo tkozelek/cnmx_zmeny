@@ -47,25 +47,26 @@
     x-init="
         setTimeout(() => {
         @if(session('success'))
-            addToast(@json(session('success')), 'success', @json(session('icon', '')));
+            addToast({{ Js::from(session('success')) }}, 'success', {{ Js::from(session('icon', '')) }});
         @elseif(session('message'))
-            addToast(@json(session('message')), 'success', @json(session('icon', '')));
+            addToast({{ Js::from(session('message')) }}, 'success', {{ Js::from(session('icon', '')) }});
         @endif
         @if(session('error'))
-            addToast(@json(session('error')), 'error', @json(session('icon', '')));
+            addToast({{ Js::from(session('error')) }}, 'error', {{ Js::from(session('icon', '')) }});
         @endif
         @if(session('status') && !session('success') && !session('message'))
-            addToast(@json(session('status')), 'info', @json(session('icon', '')));
+            addToast({{ Js::from(session('status')) }}, 'info', {{ Js::from(session('icon', '')) }});
         @endif
         @if(session('info'))
-            addToast(@json(session('info')), 'info', @json(session('icon', '')));
+            addToast({{ Js::from(session('info')) }}, 'info', {{ Js::from(session('icon', '')) }});
         @endif
         @if(session('warning'))
-            addToast(@json(session('warning')), 'warning', @json(session('icon', '')));
+            addToast({{ Js::from(session('warning')) }}, 'warning', {{ Js::from(session('icon', '')) }});
         @endif
         }, 500);
     "
     @toast.window="handleToastEvent($event)"
+    data-print-hide
     role="status" aria-live="polite" class="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-4 z-[110] flex flex-col gap-2 sm:w-full sm:max-w-sm pointer-events-none"
 >
     <template x-for="toast in toasts" :key="toast.id">
@@ -94,7 +95,7 @@
             <button
                 type="button"
                 @click="removeToast(toast.id)"
-                class="shrink-0 text-neutral-400 hover:text-white transition-colors focus:outline-none ml-2"
+                class="-my-2 -mr-2.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white focus:outline-none"
                 aria-label="Zavrieť oznam"
             >
                 <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\ScrubPersonalData;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -54,7 +55,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => explode(',', (string) env('LOG_STACK', 'daily')),
             'ignore_exceptions' => false,
         ],
 
@@ -63,6 +64,7 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'tap' => [ScrubPersonalData::class],
         ],
 
         'daily' => [
@@ -71,6 +73,17 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 21),
             'replace_placeholders' => true,
+            'tap' => [ScrubPersonalData::class],
+        ],
+
+        // Logins, failed logins, role changes, refused (403) and throttled (429) requests.
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', 21),
+            'replace_placeholders' => true,
+            'tap' => [ScrubPersonalData::class],
         ],
 
         'slack' => [

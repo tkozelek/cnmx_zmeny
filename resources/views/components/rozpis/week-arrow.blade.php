@@ -9,6 +9,7 @@
 
 <a href="{{ $href }}"
    title="{{ $direction === 'previous' ? 'Predchádzajúci týždeň' : 'Nasledujúci týždeň' }}"
-   class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900 text-neutral-200 transition hover:border-neutral-700 hover:text-white">
-    <i class="fa-solid fa-chevron-{{ $direction === 'previous' ? 'left' : 'right' }}"></i>
+   aria-label="{{ $direction === 'previous' ? 'Predchádzajúci týždeň' : 'Nasledujúci týždeň' }}"
+   {{ $attributes->class('inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900 text-neutral-200 transition hover:border-neutral-700 hover:text-white') }}>
+    <i class="fa-solid fa-chevron-{{ $direction === 'previous' ? 'left' : 'right' }}" aria-hidden="true"></i>
 </a>

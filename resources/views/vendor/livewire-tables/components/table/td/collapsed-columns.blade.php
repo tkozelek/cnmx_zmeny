@@ -24,6 +24,8 @@
                 x-on:click.prevent="$dispatch('toggle-row-content', {'tableName': '{{ $tableName }}', 'row': {{ $rowIndex }}}); open = !open"
                 :aria-expanded="open.toString()"
                 aria-label="Podrobnosti riadku {{ $rowIndex + 1 }}"
+                {{-- The row's first filled cell is the person's name - "Podrobnosti: Nováková J." beats a row number. --}}
+                x-init="const name = [...$el.closest('tr').cells].find((cell) => cell !== $el.closest('td') && cell.textContent.trim())?.textContent.trim(); if (name) $el.setAttribute('aria-label', 'Podrobnosti: ' + name)"
                 @class([
                     'border-0 bg-transparent p-0' => $isBootstrap
                 ])

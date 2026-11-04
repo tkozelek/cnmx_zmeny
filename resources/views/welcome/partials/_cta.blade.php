@@ -1,12 +1,3 @@
-@php
-    $steps = [
-        ['icon' => 'fa-user-plus', 'title' => 'Založíš si účet', 'text' => 'Vyplníš krátky formulár: meno, e-mail, heslo.'],
-        ['icon' => 'fa-envelope-circle-check', 'title' => 'Potvrdíš e-mail', 'text' => 'Klikneš na odkaz, ktorý ti pošleme, aby sme vedeli, že účet je tvoj.'],
-        ['icon' => 'fa-user-check', 'title' => 'Počkáš na schválenie', 'text' => 'Manažér kina ti účet potvrdí, potom sa už len prihlásiš.'],
-        ['icon' => 'fa-calendar-days', 'title' => 'Zapíšeš si zmeny', 'text' => 'Označíš dni, kedy môžeš pracovať, a vidíš, kto ďalší je zapísaný.'],
-    ];
-@endphp
-
 <section id="registracia" class="relative overflow-hidden bg-neutral-950 pt-28 sm:pt-40">
     <div class="container relative z-10 mx-auto px-4">
         <div class="reveal mx-auto mb-16 max-w-2xl text-center lg:mb-20">
@@ -26,7 +17,7 @@
             </div>
 
             <ol class="grid grid-cols-1 gap-10 lg:grid-cols-4 lg:gap-8">
-                @foreach($steps as $i => $step)
+                @foreach($registrationSteps as $i => $step)
                     <li class="step relative flex items-start gap-5 lg:flex-col lg:items-center lg:text-center">
                         <div data-step-icon class="step-icon relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-brand-500/60 bg-neutral-900 text-xl text-brand-400">
                             <i class="fa-solid {{ $step['icon'] }}" aria-hidden="true"></i>
@@ -51,12 +42,12 @@
             </a>
         </div>
 
-        <p class="mt-20 text-center text-sm text-neutral-400" aria-hidden="true">
+        <p data-seat-label data-idle="Kým sa rozhodneš, vyber si miesto v&nbsp;sále." class="seat-label mt-20 text-center text-sm font-medium text-neutral-400" aria-hidden="true">
             Kým sa rozhodneš, vyber si miesto v&nbsp;sále.
         </p>
     </div>
 
     {{-- Interactive auditorium, see resources/js/seat-field.js. Purely decorative, so it is
          hidden from assistive tech; the real actions are the buttons above. --}}
-    <canvas data-seat-field class="mt-2 block h-[300px] w-full touch-pan-y sm:h-[380px] lg:h-[440px]" aria-hidden="true"></canvas>
+    <canvas data-seat-field class="mt-4 block h-[360px] w-full touch-pan-y sm:h-[460px] lg:h-[580px]" aria-hidden="true"></canvas>
 </section>

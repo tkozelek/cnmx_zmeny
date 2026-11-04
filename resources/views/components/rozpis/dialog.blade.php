@@ -1,8 +1,8 @@
 {{--
     The shell both rozpis panels sit in: the guide and the change history.
 
-    A native <dialog> rather than <x-modal>: that component routes opening through an Alpine custom
-    event and an x-teleport, and these panels are read-only text with no Livewire state in them.
+    A native <dialog> rather than an Alpine modal (custom open event plus x-teleport): these panels
+    are read-only text with no Livewire state in them.
     showModal() gives the backdrop, Esc, the focus trap and inertness for free, and cannot be broken
     by whatever else on the page Alpine is or is not managing.
 

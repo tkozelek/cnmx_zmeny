@@ -59,12 +59,8 @@
     </div>
 
     <div class="pt-2">
-        <button
-            type="submit"
-            class="w-full min-h-12 py-3 px-5 bg-neutral-100 hover:bg-white text-neutral-900 font-bold rounded-xl text-sm transition shadow-md flex items-center justify-center gap-2"
-        >
-            <i class="fa-solid fa-user-plus text-xs"></i>
-            <span>Vytvoriť používateľa</span>
-        </button>
+        <x-submit-button busy-label="Vytváram…" class="shadow-md">
+            <i class="fa-solid fa-user-plus mr-2 text-xs" aria-hidden="true"></i>Vytvoriť používateľa
+        </x-submit-button>
     </div>
 </form>

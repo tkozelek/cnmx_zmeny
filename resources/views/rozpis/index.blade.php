@@ -1,3 +1,4 @@
+@use('App\Support\SlovakDate')
 <x-layout :title="$title" description="Zostav rozpis zmien a pozícií na tento týždeň.">
     {{-- Desktop-first and deliberately full-bleed: seven columns of drop targets need the width,
          so this page opts out of the app's usual centred container. --}}
@@ -6,19 +7,22 @@
 
             <header class="flex flex-col gap-4 border-b border-neutral-800 pb-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <h1 class="flex items-center gap-2.5 text-2xl font-bold text-white">
-                        <i class="fa-solid fa-table-list text-brand-400"></i>
-                        Rozpis zmien
+                    <div class="flex items-center gap-2.5">
+                        <h1 class="flex items-center gap-2.5 text-2xl font-bold text-white">
+                            <i class="fa-solid fa-table-list text-brand-400" aria-hidden="true"></i>
+                            Rozpis zmien
+                        </h1>
 
-                        <button type="button" onclick="document.getElementById('rozpis-guide').showModal()"
+                        <button type="button" onclick="document.getElementById('rozpis-guide').showModal()" data-print-hide
                                 title="Ako sa rozpis zostavuje a čo sa dá nastaviť"
+                                aria-label="Ako sa rozpis zostavuje a čo sa dá nastaviť"
                                 class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900 text-sm text-neutral-400 transition hover:border-brand-500/60 hover:text-brand-300">
-                            <i class="fa-solid fa-question text-xs"></i>
+                            <i class="fa-solid fa-question text-xs" aria-hidden="true"></i>
                         </button>
-                    </h1>
+                    </div>
                     <p class="mt-1 text-xs text-neutral-400">
-                        Presuň zapísaných zamestnancov na pozície. Pozície sa dajú preusporiadať uchopením
-                        <i class="fa-solid fa-grip-vertical text-[0.65rem]"></i>.
+                        Presuň zapísaných brigádnikov na pozície. Pozície sa dajú preusporiadať uchopením
+                        <i class="fa-solid fa-grip-vertical text-[0.65rem]" aria-hidden="true"></i>.
                     </p>
 
                     {{-- The state of the week, spelled out. Whether the staff can already see this
@@ -26,29 +30,30 @@
                     @if($publishedAt)
                         <p class="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
                             <i class="fa-solid fa-circle-check text-[0.7rem]"></i>
-                            Zverejnené {{ $publishedAt->format('d.m.Y') }} o {{ $publishedAt->format('H:i') }} – zamestnanci rozpis vidia,
+                            Zverejnené {{ SlovakDate::full($publishedAt) }} o&nbsp;{{ SlovakDate::time($publishedAt) }} – brigádnici rozpis vidia,
                             ďalšie úpravy sa prejavia okamžite.
                         </p>
                     @else
                         <p class="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-amber-400">
                             <i class="fa-solid fa-pen-ruler text-[0.7rem]"></i>
-                            Pracovná verzia – zamestnanci ju zatiaľ nevidia.
+                            Pracovná verzia – brigádnici ju zatiaľ nevidia.
                         </p>
                     @endif
                 </div>
 
                 {{-- Own week nav: x-date links to calendar.show, which would leave the builder.
                      flex-wrap: this row has ~9 buttons, too many to fit one line under lg. --}}
-                <div class="flex flex-wrap items-center gap-2"
+                <div class="flex flex-wrap items-center gap-2" data-print-hide
                      x-data="weekJump(@js($weekStart->toDateString()), @js(route('rozpis.show', ['date' => '__DATE__'])))">
                     <x-rozpis.week-arrow direction="previous"
                                         :href="route('rozpis.show', ['date' => $previousWeek->toDateString()])" />
 
                     <button type="button" x-ref="trigger" @click="open()"
                             title="Kliknutím vyber týždeň"
+                            aria-label="Vybrať týždeň, zobrazený {{ SlovakDate::range($weekStart, $weekEnd) }}"
                             class="inline-flex h-11 items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-5 text-base font-bold tracking-wide text-neutral-100 transition hover:border-neutral-700 hover:text-white">
                         <i class="fa-regular fa-calendar text-neutral-400"></i>
-                        <span class="whitespace-nowrap tabular-nums">{{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}</span>
+                        <span class="whitespace-nowrap tabular-nums">{{ SlovakDate::range($weekStart, $weekEnd) }}</span>
                         <i class="fa-solid fa-chevron-down text-xs text-neutral-400"></i>
                     </button>
                     <input x-ref="input" type="text" class="sr-only" tabindex="-1" aria-hidden="true">
@@ -64,7 +69,7 @@
                     </a>
 
                     <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}"
-                       title="Pozrieť rozpis tak, ako ho vidia zamestnanci"
+                       title="Pozrieť rozpis tak, ako ho vidia brigádnici"
                        class="inline-flex h-11 items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm font-semibold text-neutral-300 transition hover:border-neutral-700 hover:text-white">
                         <i class="fa-solid fa-eye text-xs"></i>
                         Náhľad
@@ -74,19 +79,18 @@
                         <button type="button" onclick="document.getElementById('rozpis-history').showModal()"
                                 title="Kto čo v tomto týždni zmenil"
                                 class="inline-flex h-11 items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm font-semibold text-neutral-300 transition hover:border-neutral-700 hover:text-white">
-                            <i class="fa-solid fa-clock-rotate-left text-xs"></i>
+                            <i class="fa-solid fa-clock-rotate-left text-xs" aria-hidden="true"></i>
                             História
                         </button>
                     @endif
 
                     <form method="POST" action="{{ route('rozpis.copy-week', ['date' => $weekStart->toDateString()]) }}">
                         @csrf
-                        <button type="submit"
+                        <x-submit-button variant="custom" busy-label="Kopírujem…"
                                 title="Skopírovať rozloženie pozícií z minulého týždňa"
-                                class="inline-flex h-11 items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm font-semibold text-neutral-300 transition hover:border-neutral-700 hover:text-white">
-                            <i class="fa-solid fa-copy text-xs text-brand-400"></i>
-                            Kopírovať z minulého týždňa
-                        </button>
+                                class="h-11 rounded-xl border border-neutral-800 bg-neutral-900 px-4 text-sm text-neutral-300 hover:border-neutral-700 hover:text-white">
+                            <i class="fa-solid fa-copy mr-2 text-xs text-brand-400" aria-hidden="true"></i>Kopírovať z&nbsp;minulého týždňa
+                        </x-submit-button>
                     </form>
 
                     {{-- Week-wide draft. Lives here rather than in a day card because the point of
@@ -95,22 +99,19 @@
 
                     {{-- Publish / withdraw. The wording says what happens next, not what the row
                          is called: "zverejniť" is the promise that the staff will see it. --}}
-                    <form method="POST" action="{{ route($publishedAt ? 'rozpis.unpublish' : 'rozpis.publish', ['date' => $weekStart->toDateString()]) }}">
+                    <form method="POST" action="{{ route($publishedAt ? 'rozpis.unpublish' : 'rozpis.publish', ['date' => $weekStart->toDateString()]) }}"
+                          @if($publishedAt) onsubmit="return confirm('Stiahnuť rozpis zo zverejnenia? Brigádnici ho prestanú vidieť.')" @endif>
                         @csrf
                         @if($publishedAt)
                             @method('DELETE')
                         @endif
 
-                        <button type="submit"
-                                @if($publishedAt) onclick="return confirm('Stiahnuť rozpis zo zverejnenia? Zamestnanci ho prestanú vidieť.')" @endif
-                                @class([
-                                    'inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-semibold transition',
-                                    'border-neutral-800 bg-neutral-900 text-neutral-300 hover:border-neutral-700 hover:text-white' => (bool) $publishedAt,
-                                    'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20' => ! $publishedAt,
-                                ])>
-                            <i class="fa-solid {{ $publishedAt ? 'fa-eye-slash' : 'fa-bullhorn' }} text-xs"></i>
-                            {{ $publishedAt ? 'Stiahnuť zo zverejnenia' : 'Zverejniť rozpis' }}
-                        </button>
+                        <x-submit-button variant="custom" :busy-label="$publishedAt ? 'Sťahujem…' : 'Zverejňujem…'"
+                                :class="'h-11 rounded-xl border px-4 text-sm '.($publishedAt
+                                    ? 'border-neutral-800 bg-neutral-900 text-neutral-300 hover:border-neutral-700 hover:text-white'
+                                    : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20')">
+                            <i class="fa-solid {{ $publishedAt ? 'fa-eye-slash' : 'fa-bullhorn' }} mr-2 text-xs" aria-hidden="true"></i>{{ $publishedAt ? 'Stiahnuť zo zverejnenia' : 'Zverejniť rozpis' }}
+                        </x-submit-button>
                     </form>
 
                     <a href="{{ route('calendar.show', ['date' => $weekStart->toDateString()]) }}"
@@ -136,9 +137,9 @@
 
                     <div class="overflow-x-auto border-t border-neutral-800/80 px-4 py-3">
                         <p class="mb-2.5 text-xs leading-relaxed text-neutral-400">
-                            Vychádza z toho, na koľko dní sa človek zapísal – kto je k dispozícii viac, dostane viac –
-                            a zo zásluh, ktoré rozdiel medzi rovnako dostupnými ľuďmi nakloní v prospech toho,
-                            kto pre kino odrobil viac: viac dní a viac tých neobľúbených. Nikdy neodporučí viac
+                            Vychádza z&nbsp;toho, na koľko dní sa človek zapísal – kto je k&nbsp;dispozícii viac, dostane viac –
+                            a&nbsp;zo zásluh, ktoré rozdiel medzi rovnako dostupnými ľuďmi nakloní v&nbsp;prospech toho,
+                            kto pre kino odrobil viac: viac dní a&nbsp;viac tých neobľúbených. Nikdy neodporučí viac
                             dní, než na koľko sa zapísal. Je to odporúčanie, nie pravidlo.
                         </p>
 

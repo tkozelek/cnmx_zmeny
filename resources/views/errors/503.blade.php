@@ -4,7 +4,7 @@
 @section('title', 'Prebieha údržba')
 @section('caption', 'Prestávka')
 @section('heading', 'Prebieha údržba')
-@section('message', 'Aplikáciu práve aktualizujeme. O pár minút by mala znova fungovať.')
+@section('message', 'Aplikáciu práve aktualizujeme. O pár minút by mala znova fungovať.')
 
 @section('actions')
     <a href="{{ url()->current() }}" class="button button-primary">

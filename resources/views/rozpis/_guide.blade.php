@@ -4,7 +4,7 @@
 <x-rozpis.dialog id="rozpis-guide"
                  icon="fa-circle-question"
                  title="Rozpis – návod a nastavenia"
-                 subtitle="Ako sa rozpis zostavuje a čo sa kde dá nastaviť.">
+                 subtitle="Ako sa rozpis zostavuje a čo sa kde dá nastaviť.">
     <x-slot:footer>
         <button type="submit"
                 class="inline-flex min-h-10 items-center gap-2 rounded-md border border-brand-500/60 bg-brand-500/10 px-4 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/20">
@@ -27,7 +27,7 @@
             ['fa-grip-vertical', 'Zmeň poradie', 'Uchop <i class="fa-solid fa-grip-vertical text-[0.65rem]"></i> a potiahni pozíciu vyššie alebo nižšie. Poradie platí len pre daný deň a len v rámci skupiny – riadok potiahnutý do cudzej skupiny sa vráti späť.'],
             ['fa-triangle-exclamation', 'Doplň neobsadené', 'Pozícia, na ktorej nikto nestojí, je v náhľade aj v Exceli označená ako <strong>neobsadené</strong> a v hlavičke dňa vidíš ich počet. Pozície vedúceho sa do tohto počtu nerátajú – tie sa riešia zvlášť.'],
             ['fa-wand-magic-sparkles', 'AI návrh (voliteľné)', 'Tlačidlom <strong>AI navrhni rozpis</strong> dostaneš čiarkovaný náhľad. Nič sa neuloží, kým návrh nepotvrdíš – jednotlivo <i class="fa-solid fa-check text-[0.65rem] text-emerald-400"></i> alebo naraz.'],
-            ['fa-bullhorn', 'Zverejni rozpis', 'Keď je rozpis hotový, klikni na <strong>Zverejniť rozpis</strong>. Až vtedy ho uvidia zamestnanci – v režime len na čítanie. Zverejnenie sa dá kedykoľvek stiahnuť späť.'],
+            ['fa-bullhorn', 'Zverejni rozpis', 'Keď je rozpis hotový, klikni na <strong>Zverejniť rozpis</strong>. Až vtedy ho uvidia brigádnici – v režime len na čítanie. Zverejnenie sa dá kedykoľvek stiahnuť späť.'],
             ['fa-file-excel', 'Stiahni Excel', 'Tlačidlom <strong>Excel</strong> získaš rozpis vo formáte na tlač – štyri dni na stranu, papier A4 naležato. Druhý hárok <em>Zoznam</em> je ten istý týždeň ako plochý zoznam zmien s filtrom na každom stĺpci.'],
         ] as $step)
             <li class="flex gap-3">
@@ -51,8 +51,8 @@
 
     <div class="rounded-lg border border-neutral-800 bg-neutral-950/50 px-4 py-3">
         <p class="text-xs leading-relaxed text-neutral-300">
-            Je to jedno číslo, jeden rebríček – <strong>koho tím ešte "dlhuje" ťažký deň, a koho naopak
-            už netreba na ďalší naháňať</strong>. Zobrazuje sa dvakrát, s opačným poradím:
+            Je to jedno číslo, jeden rebríček – <strong>koho tím ešte "dlhuje" ťažký deň, a&nbsp;koho naopak
+            už netreba na ďalší naháňať</strong>. Zobrazuje sa dvakrát, s&nbsp;opačným poradím:
         </p>
 
         <ul class="mt-2.5 flex flex-col gap-1.5 text-xs leading-relaxed text-neutral-400">
@@ -69,9 +69,8 @@
         </ul>
 
         <p class="mt-2.5 text-xs leading-relaxed text-neutral-300">
-            Je to len odporúčanie, nikoho nepriradí samo – rozhoduješ ty. To isté číslo vidíš aj v
-            rozbaľovacom zozname <em>- priradiť -</em> pri každom mene v zátvorke, takže platí aj na dotykovom
-            zariadení. Na obyčajný všedný deň sa nezobrazuje nikde, tam poradie nerozhoduje o ničom.
+            Je to len odporúčanie, nikoho nepriradí samo – rozhoduješ ty. To isté číslo vidíš aj v&nbsp;rozbaľovacom zozname <em>- priradiť -</em> pri každom mene v&nbsp;zátvorke, takže platí aj na dotykovom
+            zariadení. Na obyčajný všedný deň sa nezobrazuje nikde, tam poradie nerozhoduje o&nbsp;ničom.
         </p>
 
         <p class="mt-2.5 rounded border border-neutral-800 bg-neutral-900/60 px-2.5 py-2 text-[0.7rem] leading-relaxed text-neutral-400">
@@ -81,8 +80,8 @@
         </p>
 
         <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-400">
-            Počíta sa z priradení za posledných {{ $guide['windowWeeks'] }} týždňov a z váh
-            jednotlivých dní – obe hodnoty nastavíš v správe kina.
+            Počíta sa z&nbsp;priradení za posledných {{ $guide['windowWeeks'] }} týždňov a&nbsp;z&nbsp;váh
+            jednotlivých dní – obe hodnoty nastavíš v&nbsp;správe kina.
         </p>
     </div>
 
@@ -94,27 +93,27 @@
     <div class="rounded-lg border border-neutral-800 bg-neutral-950/50 px-4 py-3">
         <p class="text-xs leading-relaxed text-neutral-300">
             Panel nad dňami ukáže pre každého zapísaného, koľko zmien by mal tento týždeň dostať.
-            Počíta sa z dvoch vecí, v tomto poradí dôležitosti:
+            Počíta sa z&nbsp;dvoch vecí, v&nbsp;tomto poradí dôležitosti:
         </p>
 
         <ul class="mt-2.5 flex flex-col gap-1.5 text-xs leading-relaxed text-neutral-400">
             <li class="flex gap-2">
                 <i class="fa-solid fa-1 mt-0.5 text-[0.6rem] text-neutral-400"></i>
-                <span><strong class="text-neutral-200">Počet zapísaných dní</strong> – kto je k dispozícii viac,
-                    dostane viac. Voľné pozície týždňa sa rozdelia v tomto pomere.</span>
+                <span><strong class="text-neutral-200">Počet zapísaných dní</strong> – kto je k&nbsp;dispozícii viac,
+                    dostane viac. Voľné pozície týždňa sa rozdelia v&nbsp;tomto pomere.</span>
             </li>
             <li class="flex gap-2">
                 <i class="fa-solid fa-2 mt-0.5 text-[0.6rem] text-neutral-400"></i>
                 <span><strong class="text-neutral-200">Zásluhy</strong> – medzi dvoma rovnako dostupnými ľuďmi
-                    nakloní rozdelenie o max. ±25 % v prospech toho, kto pre kino odrobil viac – viac dní
-                    a viac tých neobľúbených (piatok sa počíta za 1,6 dňa, víkend za 0,8).</span>
+                    nakloní rozdelenie o&nbsp;max. ±25 % v&nbsp;prospech toho, kto pre kino odrobil viac – viac dní
+                    a&nbsp;viac tých neobľúbených (piatok sa počíta za 1,6 dňa, víkend za 0,8).</span>
             </li>
         </ul>
 
         <p class="mt-2.5 rounded border border-neutral-800 bg-neutral-900/60 px-2.5 py-2 text-[0.7rem] leading-relaxed text-neutral-400">
             <strong class="text-neutral-300">Napríklad:</strong> Janka aj Peter sa zapísali na rovnaké
-            4 dni tento týždeň. Janka má vyššie zásluhy (odrobila viac dní a viac piatkov), tak jej
-            panel odporučí o niečo viac zmien než Petrovi – najviac o štvrtinu.
+            4 dni tento týždeň. Janka má vyššie zásluhy (odrobila viac dní a&nbsp;viac piatkov), tak jej
+            panel odporučí o&nbsp;niečo viac zmien než Petrovi – najviac o&nbsp;štvrtinu.
         </p>
 
         <p class="mt-2.5 text-[0.7rem] leading-relaxed text-neutral-400">
@@ -126,7 +125,7 @@
 
     <h3 class="mb-3 mt-7 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-400">
         <i class="fa-solid fa-sliders text-[0.7rem]"></i>
-        Nastavenia a kde ich zmeniť
+        Nastavenia a&nbsp;kde ich zmeniť
     </h3>
 
     {{-- Live values, not documented defaults: a guide that prints "5 týždňov" while the cinema
@@ -135,7 +134,7 @@
         <section class="rounded-lg border border-neutral-800 bg-neutral-950/50 px-4 py-3">
             <p class="flex flex-wrap items-center gap-2 text-xs font-semibold text-neutral-200">
                 <i class="fa-solid fa-calendar-week text-[0.7rem] text-neutral-400"></i>
-                Týždeň, zapisovanie a absencie
+                Týždeň, zapisovanie a&nbsp;absencie
                 <a href="{{ route('team.settings.edit') }}" class="text-[0.7rem] font-semibold text-brand-400 underline hover:text-brand-300">
                     správa kina
                 </a>
@@ -163,12 +162,12 @@
 
             <p class="mt-1.5 text-[0.7rem] leading-relaxed text-neutral-400">
                 Váha hovorí, aký ťažký je deň na obsadenie – nie aký je dlhý. Ako
-                <strong class="text-amber-400">neobľúbený</strong> sa označí deň s váhou
+                <strong class="text-amber-400">neobľúbený</strong> sa označí deň s&nbsp;váhou
                 <strong>nad priemerom tvojho týždňa</strong> (teraz {{ number_format($guide['averageWeight'], 2) }});
-                v ňom sa nezaradení zoradia podľa toho, kto takých dní odrobil najmenej. Ako
-                <strong class="text-emerald-400">obľúbený</strong> sa označí deň s váhou <strong>pod 1,0</strong>;
-                v ňom sa zoradia podľa zásluh – kto odrobil najviac dní a najviac tých neobľúbených.
-                V oboch prípadoch sa pri menách zobrazí číslo, vyššie je vyššie v poradí. V bežný deň sa
+                v&nbsp;ňom sa nezaradení zoradia podľa toho, kto takých dní odrobil najmenej. Ako
+                <strong class="text-emerald-400">obľúbený</strong> sa označí deň s&nbsp;váhou <strong>pod 1,0</strong>;
+                v&nbsp;ňom sa zoradia podľa zásluh – kto odrobil najviac dní a&nbsp;najviac tých neobľúbených.
+                V&nbsp;oboch prípadoch sa pri menách zobrazí číslo, vyššie je vyššie v&nbsp;poradí. V&nbsp;bežný deň sa
                 zoraďujú podľa abecedy. Ak majú všetky dni rovnakú váhu, neoznačí sa žiadny.
             </p>
 
@@ -195,7 +194,7 @@
         <section class="rounded-lg border border-neutral-800 bg-neutral-950/50 px-4 py-3">
             <p class="flex flex-wrap items-center gap-2 text-xs font-semibold text-neutral-200">
                 <i class="fa-solid fa-list-check text-[0.7rem] text-neutral-400"></i>
-                Pozície a skupiny
+                Pozície a&nbsp;skupiny
                 <a href="{{ route('positions.index') }}" class="text-[0.7rem] font-semibold text-brand-400 underline hover:text-brand-300">
                     správa pozícií
                 </a>

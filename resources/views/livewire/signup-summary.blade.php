@@ -1,10 +1,5 @@
 <div>
     @if($this->signupCounts->isNotEmpty())
-        @php
-            $totalSignups = $this->signupCounts->sum('count');
-            $userCount = $this->signupCounts->count();
-        @endphp
-
         <section class="rounded-lg border border-neutral-800 bg-neutral-900 shadow-sm overflow-hidden flex flex-col">
             {{-- Card Header --}}
             <div class="px-4 py-3 border-b border-neutral-800 bg-neutral-950 flex items-center justify-between gap-3">
@@ -18,7 +13,7 @@
                 <div class="flex items-center gap-2 shrink-0">
                     <i wire:loading class="fa-solid fa-circle-notch fa-spin text-neutral-400 text-xs" aria-hidden="true"></i>
                     <span class="text-xs text-neutral-400">
-                        {{ $userCount }} {{ $userCount === 1 ? 'človek' : ($userCount < 5 ? 'ľudia' : 'ľudí') }} · {{ $totalSignups }} {{ $totalSignups === 1 ? 'deň' : ($totalSignups < 5 ? 'dni' : 'dní') }}
+                        {{ $totalsLabel }}
                     </span>
                 </div>
             </div>
@@ -35,12 +30,9 @@
                     </thead>
                     <tbody class="divide-y divide-neutral-800">
                         @foreach($this->signupCounts as $index => $row)
-                            @php
-                                $isCurrentUser = auth()->id() === $row->user_id;
-                            @endphp
                             <tr @class([
                                 'transition-colors duration-150',
-                                'bg-neutral-800/40' => $isCurrentUser,
+                                'bg-neutral-800/40' => $row->user_id === $viewerId,
                                 'hover:bg-neutral-800/60' => true,
                             ])>
                                 <td class="px-4 py-2.5 text-center text-xs text-neutral-400 font-medium">
@@ -48,17 +40,17 @@
                                 </td>
                                 <td class="px-4 py-2.5 min-w-0">
                                     <div class="flex items-center gap-2">
-                                        <span class="truncate text-sm {{ $isCurrentUser ? 'text-white font-semibold' : 'text-neutral-200' }}">
+                                        <span class="truncate text-sm {{ $row->user_id === $viewerId ? 'text-white font-semibold' : 'text-neutral-200' }}">
                                             {{ $row->lastname }} {{ Str::substr($row->name, 0, 1) }}.
                                         </span>
-                                        @if($isCurrentUser)
+                                        @if($row->user_id === $viewerId)
                                             <span class="text-xs text-neutral-400">(ja)</span>
                                         @endif
                                     </div>
                                 </td>
                                 <td class="px-4 py-2.5 text-right">
                                     <span class="text-sm font-semibold tabular-nums text-neutral-200">
-                                        {{ $row->count }} {{ $row->count === 1 ? 'deň' : ($row->count < 5 ? 'dni' : 'dní') }}
+                                        {{ $this->daysLabel($row->count) }}
                                     </span>
                                 </td>
                             </tr>

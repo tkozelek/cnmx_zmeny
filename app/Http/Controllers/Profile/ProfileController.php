@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Profile;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\AbsenceService;
+use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,9 +49,13 @@ class ProfileController extends Controller
             session(['profile_origin_url' => $referrer]);
         }
 
+        $viewer = $request->user();
+        $isOwnProfile = $viewer->is($user);
+        $canViewUsers = $viewer->can('viewAny', User::class);
+
         $backUrl = session('profile_origin_url');
         if (! $backUrl || str_contains($backUrl, '/profil')) {
-            $backUrl = (auth()->id() !== $user->id && auth()->user()->can('viewAny', User::class))
+            $backUrl = (! $isOwnProfile && $canViewUsers)
                 ? route('admin.users.index')
                 : route('calendar.index');
         }
@@ -91,6 +97,13 @@ class ProfileController extends Controller
 
         return view('profile.index', [
             'user' => $user,
+            'title' => $isOwnProfile ? 'Môj profil' : 'Profil používateľa',
+            'isOwnProfile' => $isOwnProfile,
+            'canViewUsers' => $canViewUsers,
+            'canEditUser' => ! $isOwnProfile && $viewer->can('update', $user),
+            'role' => Role::tryFrom($user->getRoleNames()->first() ?? '') ?? Role::Employee,
+            'memberSince' => SlovakDate::full($user->created_at),
+            'lastLogin' => $user->last_login_at ? SlovakDate::dateTime($user->last_login_at) : null,
             'periods' => $periods,
             'activePeriod' => $initialPeriod,
             'daysCount' => $periods[$initialPeriod]['total'],
@@ -128,14 +141,5 @@ class ProfileController extends Controller
             );
 
         return array_replace(array_fill(0, 7, 0), $counts->all());
-    }
-
-    private function periodStart(?string $period): ?CarbonImmutable
-    {
-        return match ($period) {
-            'month' => CarbonImmutable::now()->subMonth(),
-            'year' => CarbonImmutable::now()->subYear(),
-            default => null,
-        };
     }
 }

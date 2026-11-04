@@ -23,9 +23,9 @@
                     <form action="{{ request()->fullUrl() }}" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="flex min-h-12 w-full items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 px-6 py-3 text-base font-semibold text-neutral-100 transition hover:bg-neutral-700">
+                        <x-submit-button variant="custom" busy-label="Zamietam…" class="min-h-12 w-full rounded-lg border border-neutral-700 bg-neutral-800 px-6 py-3 text-base text-neutral-100 hover:bg-neutral-700">
                             Zmenu predsa zamietnuť
-                        </button>
+                        </x-submit-button>
                     </form>
                 @endif
             @else
@@ -50,9 +50,9 @@
                     <form action="{{ request()->fullUrl() }}" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="flex min-h-12 w-full items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800 px-6 py-3 text-base font-semibold text-neutral-100 transition hover:bg-neutral-700">
+                        <x-submit-button variant="custom" busy-label="Zamietam…" class="min-h-12 w-full rounded-lg border border-neutral-700 bg-neutral-800 px-6 py-3 text-base text-neutral-100 hover:bg-neutral-700">
                             Nie, zamietnuť zmenu
-                        </button>
+                        </x-submit-button>
                     </form>
                 </div>
             @endif

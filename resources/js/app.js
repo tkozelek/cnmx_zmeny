@@ -47,7 +47,14 @@ function loadFlatpickr() {
         import('flatpickr/dist/flatpickr.css'),
         import('flatpickr/dist/themes/dark.css'),
     ]).then(([{ default: flatpickr }, { Slovak }]) => {
-        flatpickr.localize(Slovak);
+        // Slovak writes month names in lower case; the bundled "November" reads as English.
+        flatpickr.localize({
+            ...Slovak,
+            months: {
+                shorthand: Slovak.months.shorthand.map((month) => month.toLowerCase()),
+                longhand: Slovak.months.longhand.map((month) => month.toLowerCase()),
+            },
+        });
         window.flatpickr = flatpickr;
         return flatpickr;
     }).catch(forgetFailedLoad(() => { flatpickrLoading = null; }));
@@ -126,6 +133,9 @@ document.addEventListener('alpine:init', () => {
             sortable = Sortable.create(el, {
                 group: el.dataset.sortableGroup ?? 'sortable',
                 animation: 150,
+                // On touch a press has to rest a moment before it drags, so a swipe still scrolls the page.
+                delay: 150,
+                delayOnTouchOnly: true,
                 ghostClass: 'opacity-40',
                 onAdd: (event) => {
                     const id = event.item.dataset.sortableId;
@@ -154,7 +164,11 @@ document.addEventListener('alpine:init', () => {
                 handle: '[data-drag-handle]',
                 draggable: '[data-slot-id]',
                 ghostClass: 'opacity-40',
-                onEnd: () => {
+                delay: 150,
+                delayOnTouchOnly: true,
+                onEnd: (event) => {
+                    if (event.oldIndex === event.newIndex) return;
+
                     const ids = Array.from(el.children)
                         .map((node) => node.dataset.slotId)
                         .filter(Boolean);
@@ -280,12 +294,14 @@ document.addEventListener('alpine:init', () => {
                 dateFormat: 'Y-m-d',
                 altInput: true,
                 altInputClass: 'w-full rounded-lg border border-neutral-500 bg-neutral-800 px-3.5 py-2.5 text-base sm:text-sm text-neutral-100 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none cursor-pointer',
-                altFormat: 'j.n.Y',
+                altFormat: 'j. n. Y',
                 defaultDate: [this.dateFrom, this.dateTo],
                 // The visible field is flatpickr's altInput; the <label for> and the hint point at it.
                 onReady: (_dates, _str, fp) => {
                     makeMonthArrowsButtons(fp);
                     keepOneDayTabbable(fp);
+                    fp.monthsDropdownContainer?.setAttribute('aria-label', 'Mesiac');
+                    fp.currentYearElement?.setAttribute('aria-label', 'Rok');
                     if (!fp.altInput) return;
                     fp.altInput.id = 'absence-range';
                     // The server's error summary, when there is one, describes the dates too.
@@ -421,6 +437,9 @@ document.addEventListener('alpine:init', () => {
                         if (dateFormatted === self.currentWeekRange[0]) dayElem.classList.add('is-week-start');
                         if (dateFormatted === self.currentWeekRange[6]) dayElem.classList.add('is-week-end');
                     }
+
+                    // A tap fires mouseenter too and would leave the band stuck - pointers that hover only.
+                    if (!matchMedia('(hover: hover)').matches) return;
 
                     dayElem.addEventListener('mouseenter', () => {
                         fp.calendarContainer.querySelectorAll('.flatpickr-day').forEach(el => {

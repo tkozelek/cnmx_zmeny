@@ -1,9 +1,11 @@
 <x-layout title="Nastavenia" description="Tvoje nastavenia v portáli pracovných zmien Cinemax.">
     <div class="container mx-auto max-w-lg px-4 py-8">
         <div class="flex flex-col gap-6">
-            <x-page-header icon="fa-sliders" title="Nastavenia" subtitle="Tvoj účet a ako sa ti má portál zobrazovať." />
+            <x-page-header icon="fa-sliders" title="Nastavenia" subtitle="Tvoj účet a ako sa ti má portál zobrazovať." />
 
-            <x-settings-section id="profil" title="Profil" description="Takto ťa uvidia manažéri a kolegovia v rozpise.">
+            <x-error-summary :fields="['email' => 'new-email', 'password' => 'email-password', 'compact_week' => 'zobrazenie']" />
+
+            <x-settings-section id="profil" title="Profil" description="Takto ťa uvidia manažéri a kolegovia v rozpise.">
                 <form action="{{ route('settings.name.update') }}" method="POST" class="flex flex-col gap-5">
                     @csrf
                     @method('PUT')
@@ -51,7 +53,7 @@
                 </form>
             </x-settings-section>
 
-            <x-settings-section id="zobrazenie" title="Týždeň na mobile" description="Na tablete a počítači sa týždeň vždy zobrazí ako karty vedľa seba.">
+            <x-settings-section id="zobrazenie" title="Týždeň na mobile" description="Na tablete a počítači sa týždeň vždy zobrazí ako karty vedľa seba.">
                 <form action="{{ route('settings.update') }}" method="POST" class="flex flex-col gap-5">
                     @csrf
                     @method('PUT')

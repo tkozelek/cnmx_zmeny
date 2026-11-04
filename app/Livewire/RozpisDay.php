@@ -12,7 +12,9 @@ use App\Services\AiRozpisSuggestionService;
 use App\Services\FairnessService;
 use App\Services\RozpisService;
 use App\Services\WeekService;
+use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -97,20 +99,28 @@ class RozpisDay extends Component
 
         // Both writes or neither: a slot holds one person by unique index now, so releasing the
         // previous occupant is not a courtesy, it is what makes the second write legal.
-        DB::transaction(function () use ($assignment, $slot): void {
-            // Whoever was there is bumped back to the pool rather than silently sharing it -
-            // the drop is the manager saying "this one instead".
-            Assignment::where('position_slot_id', $slot->getKey())
-                ->whereKeyNot($assignment->getKey())
-                ->update(['position_id' => null, 'position_slot_id' => null, 'start_time' => null, 'end_time' => null]);
+        try {
+            DB::transaction(function () use ($assignment, $slot): void {
+                // Whoever was there is bumped back to the pool rather than silently sharing it -
+                // the drop is the manager saying "this one instead".
+                Assignment::where('position_slot_id', $slot->getKey())
+                    ->whereKeyNot($assignment->getKey())
+                    ->update(['position_id' => null, 'position_slot_id' => null, 'start_time' => null, 'end_time' => null]);
 
-            $assignment->update([
-                'position_id' => $slot->position_id,
-                'position_slot_id' => $slot->getKey(),
-                'start_time' => $slot->start_time,
-                'end_time' => $slot->end_time,
-            ]);
-        });
+                $assignment->update([
+                    'position_id' => $slot->position_id,
+                    'position_slot_id' => $slot->getKey(),
+                    'start_time' => $slot->start_time,
+                    'end_time' => $slot->end_time,
+                ]);
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Another manager filled the same slot between our two writes.
+            $this->refresh();
+            $this->dispatch('toast', message: 'Pozícia sa medzitým obsadila – skús to znova.', type: 'error');
+
+            return;
+        }
 
         $this->refresh();
 
@@ -663,7 +673,7 @@ class RozpisDay extends Component
     {
         return [
             'date' => $day->toDateString(),
-            'label' => Str::title($day->locale('sk')->dayName).' '.$day->format('d.m.'),
+            'label' => SlovakDate::dayName($day).' '.SlovakDate::short($day),
         ];
     }
 

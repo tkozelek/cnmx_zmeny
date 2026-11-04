@@ -79,7 +79,7 @@
                 Skupiny pozícií
             </h2>
             <p class="mb-4 text-xs text-neutral-400">
-                Napríklad Bufet, Uvádzač, Manažment. Pozície tej istej skupiny sa v rozpise aj v Exceli
+                Napríklad Bufet, Uvádzač, Manažment. Pozície tej istej skupiny sa v&nbsp;rozpise aj v&nbsp;Exceli
                 zobrazia pod sebou. Poradie skupín určuje poradie na výslednom hárku.
             </p>
 

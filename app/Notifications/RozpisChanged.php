@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,6 +19,12 @@ use Illuminate\Support\HtmlString;
 class RozpisChanged extends Notification implements ShouldQueue
 {
     use Queueable;
+
+    /** An SMTP hiccup must not lose a verification or reset link for good. */
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [60, 300];
 
     public function __construct(private readonly CarbonImmutable $weekStart) {}
 
@@ -36,7 +43,7 @@ class RozpisChanged extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('Cinemax Zmeny | Rozpis upravený')
             ->greeting('Ahoj '.$notifiable->name.',')
-            ->line('Rozpis pre týždeň '.$this->weekStart->format('d.m.').' - '.$weekEnd->format('d.m.Y').' bol upravený.')
+            ->line('Rozpis pre týždeň '.SlovakDate::range($this->weekStart, $weekEnd).' bol upravený.')
             ->action('Zobraziť rozpis', route('rozpis.published', ['date' => $this->weekStart->toDateString()]))
             ->line('Skontroluj si prosím, či sa ťa niektorá zmena netýka.')
             ->salutation(new HtmlString('S pozdravom,<br><strong>Cinemax Zmeny</strong>'));

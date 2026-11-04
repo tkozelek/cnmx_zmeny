@@ -2,7 +2,7 @@
      those are what a link-preview bot (Slack, WhatsApp, iMessage, Twitter/X, ...) reads. Every
      page passes title/description via <x-layout>; unset ones fall back to the defaults below. --}}
 <meta name="robots" content="noindex"/>
-<meta name="description" content="{{ $description ?? 'Webová aplikácia pre zamestnancov Cinemaxu na zapisovanie pracovných zmien.' }}"/>
+<meta name="description" content="{{ $description ?? 'Webová aplikácia pre brigádnikov Cinemaxu na zapisovanie pracovných zmien.' }}"/>
 <meta name="author" content="T. Kozelek"/>
 
 <meta property="og:title" content="{{ $title ?? 'Cinemax Zmeny' }}"/>

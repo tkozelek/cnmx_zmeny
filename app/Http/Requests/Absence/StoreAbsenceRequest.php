@@ -4,6 +4,7 @@ namespace App\Http\Requests\Absence;
 
 use App\Models\Absence;
 use App\Models\Team;
+use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -52,7 +53,7 @@ class StoreAbsenceRequest extends FormRequest
                 if ($conflicts !== []) {
                     $validator->errors()->add(
                         'date_from',
-                        'Na tieto dni máš zápis: '.implode(', ', $conflicts).'. Najprv sa z nich odpíš – v zamknutom týždni ťa odpíše manažér.'
+                        'Na tieto dni máš zápis: '.implode(', ', $conflicts)." Najprv sa z nich odpíš – v\u{00A0}zamknutom týždni ťa odpíše manažér."
                     );
                 }
             },
@@ -102,7 +103,7 @@ class StoreAbsenceRequest extends FormRequest
             ->when($this->filled('day_of_week'), fn ($dates) => $dates->filter(
                 fn (CarbonInterface $date): bool => $date->dayOfWeekIso - 1 === $this->integer('day_of_week')
             ))
-            ->map(fn (CarbonInterface $date): string => $date->format('j.n.'))
+            ->map(fn (CarbonInterface $date): string => SlovakDate::short($date))
             ->values()
             ->all();
     }

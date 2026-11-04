@@ -83,7 +83,7 @@
                     </p>
 
                     <p class="text-xs text-neutral-400 leading-relaxed">
-                        Pred prihlásením prosím klikni na odkaz v e-maile a potvrď svoj účet. Potom ťa ešte schváli manažér kina.
+                        Pred prihlásením prosím klikni na odkaz v&nbsp;e-maile a&nbsp;potvrď svoj účet. Potom ťa ešte schváli manažér kina.
                     </p>
 
                     <div class="pt-3 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -137,7 +137,7 @@
                     </p>
 
                     <p class="text-xs text-neutral-400 leading-relaxed">
-                        Pred prihlásením je potrebné kliknúť na overovací odkaz v e-maile. Ak e-mail nevidíš, pozri sa do spamu.
+                        Pred prihlásením je potrebné kliknúť na overovací odkaz v&nbsp;e-maile. Ak e-mail nevidíš, pozri sa do spamu.
                     </p>
 
                     <div class="pt-3 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-center gap-3">

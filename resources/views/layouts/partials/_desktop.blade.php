@@ -1,5 +1,5 @@
 <nav aria-label="Hlavné menu" class="hidden lg:flex items-center gap-2">
-    @if(auth()->check() && auth()->user()->hasVerifiedEmail())
+    @if($navUser)
         <x-nav-link
             route="calendar.index"
             icon='<i class="fa-solid fa-calendar-week text-sm"></i>'
@@ -37,7 +37,7 @@
         Pomoc
     </x-nav-link>
 
-    @if(auth()->check() && auth()->user()->hasVerifiedEmail())
+    @if($navUser)
         <x-team-switcher />
 
         {{-- High-Contrast Vertical Separator --}}
@@ -55,12 +55,11 @@
                 x-ref="profileButton"
                 @click="openProfile = !openProfile"
                 :aria-expanded="openProfile.toString()"
-                aria-haspopup="menu"
-                aria-label="{{ auth()->user()->name }} {{ auth()->user()->lastname }}, používateľské menu"
+                aria-label="{{ $navUser->name }} {{ $navUser->lastname }}, používateľské menu"
                 class="group flex items-center gap-2.5 px-3 py-1.5 text-base font-semibold text-neutral-300 transition hover:bg-neutral-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 rounded-xl cursor-pointer"
             >
                 <i class="fa-solid fa-user text-sm text-neutral-400 group-hover:text-neutral-200 transition" aria-hidden="true"></i>
-                <span>{{ auth()->user()->name }} {{ auth()->user()->lastname }}</span>
+                <span>{{ $navUser->name }} {{ $navUser->lastname }}</span>
                 <i aria-hidden="true" class="fa-solid fa-chevron-down text-xs text-neutral-400 group-hover:text-neutral-300 transition-transform duration-200" :class="{'rotate-180': openProfile}"></i>
             </button>
 
@@ -80,7 +79,7 @@
                 <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-1.5 shadow-2xl">
                     <div class="px-3 py-2 border-b border-neutral-800 mb-1">
                         <p class="text-xs font-medium text-neutral-400">Prihlásený ako</p>
-                        <p class="truncate text-sm font-semibold text-neutral-100">{{ auth()->user()->name }} {{ auth()->user()->lastname }}</p>
+                        <p class="truncate text-sm font-semibold text-neutral-100">{{ $navUser->name }} {{ $navUser->lastname }}</p>
                     </div>
 
                     <a
@@ -91,7 +90,7 @@
                         Môj profil
                     </a>
 
-                    @can('viewSettings', app(\App\Models\Team::class))
+                    @if($canManageTeam)
                         <a
                             href="{{ route('team.settings.edit') }}"
                             class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
@@ -99,7 +98,7 @@
                             <i class="fa-solid fa-sliders text-xs text-brand-400"></i>
                             Správa kina
                         </a>
-                    @endcan
+                    @endif
 
                     @can('accessPlatform')
                         <a
@@ -138,17 +137,27 @@
                 </div>
             </div>
         </div>
-    @elseif(! auth()->check())
+    @elseif($isGuest)
         <div class="flex items-center gap-2 ml-2">
             <a
                 href="{{ route('login') }}"
-                class="rounded-lg px-4 py-2 text-base font-semibold text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
+                @if($activeGuestLink === 'login') aria-current="page" @endif
+                @class([
+                    'rounded-lg px-4 py-2 text-base font-semibold transition hover:bg-neutral-800 hover:text-white',
+                    'bg-brand-500/15 text-brand-300' => $activeGuestLink === 'login',
+                    'text-neutral-300' => $activeGuestLink !== 'login',
+                ])
             >
                 Prihlásenie
             </a>
             <a
                 href="{{ route('register') }}"
-                class="rounded-lg bg-neutral-100 px-4 py-2 text-base font-semibold text-neutral-900 transition hover:bg-white"
+                @if($activeGuestLink === 'register') aria-current="page" @endif
+                @class([
+                    'rounded-lg px-4 py-2 text-base font-semibold transition',
+                    'bg-brand-500/15 text-brand-300' => $activeGuestLink === 'register',
+                    'bg-neutral-100 text-neutral-900 hover:bg-white' => $activeGuestLink !== 'register',
+                ])
             >
                 Registrácia
             </a>

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Assignment;
 use App\Models\Team;
+use App\Support\SlovakPlural;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -54,6 +55,17 @@ class SignupSummary extends Component
 
     public function render()
     {
-        return view('livewire.signup-summary');
+        $people = $this->signupCounts->count();
+
+        return view('livewire.signup-summary', [
+            'viewerId' => auth()->id(),
+            'totalsLabel' => SlovakPlural::of($people, 'človek', 'ľudia', 'ľudí').' · '
+                .SlovakPlural::of((int) $this->signupCounts->sum('count'), 'deň', 'dni', 'dní'),
+        ]);
+    }
+
+    public function daysLabel(int $count): string
+    {
+        return SlovakPlural::of($count, 'deň', 'dni', 'dní');
     }
 }

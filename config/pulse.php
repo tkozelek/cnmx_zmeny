@@ -144,7 +144,7 @@ return [
 
     'recorders' => [
         Recorders\CacheInteractions::class => [
-            'enabled' => env('PULSE_CACHE_INTERACTIONS_ENABLED', true),
+            'enabled' => env('PULSE_CACHE_INTERACTIONS_ENABLED', false),
             'sample_rate' => env('PULSE_CACHE_INTERACTIONS_SAMPLE_RATE', 1),
             'ignore' => [
                 ...Pulse::defaultVendorCacheKeys(),
@@ -219,6 +219,10 @@ return [
             'ignore' => [
                 '#^/'.env('PULSE_PATH', 'pulse').'$#', // Pulse dashboard...
                 '#^/telescope#', // Telescope dashboard...
+                // These URLs carry a live reset/verification token - never store them.
+                '#^/zabudnute-heslo/#',
+                '#^/zmena-emailu/#',
+                '#^/overenie-emailu/#',
             ],
         ],
 

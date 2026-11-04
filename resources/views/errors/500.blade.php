@@ -4,7 +4,7 @@
 @section('title', 'Chyba servera')
 @section('caption', 'Technická porucha')
 @section('heading', 'Niečo sa pokazilo na našej strane')
-@section('message', 'Chybu sme zaznamenali. Skús stránku o chvíľu načítať znova.')
+@section('message', 'Chybu sme zaznamenali. Skús stránku o chvíľu načítať znova.')
 @section('hint', 'Ak problém pretrváva, daj vedieť manažérovi kina.')
 
 @section('actions')

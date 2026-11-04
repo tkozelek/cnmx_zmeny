@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTeam;
+use App\Traits\Loggable;
 use App\Traits\LogsRozpisActivity;
 use App\Traits\NotifiesRozpisChange;
 use Carbon\CarbonInterface;
@@ -25,6 +26,7 @@ class Assignment extends Model
     /** @use HasFactory<AssignmentFactory> */
     use HasFactory;
 
+    use Loggable;
     use LogsRozpisActivity;
     use NotifiesRozpisChange;
 

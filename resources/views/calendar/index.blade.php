@@ -1,12 +1,13 @@
+@use('App\Support\SlovakDate')
 <x-layout :title="$title" description="Zapíš sa na pracovné zmeny v aktuálnom týždni.">
     <div class="container mx-auto px-4 py-6 md:px-6 lg:px-8">
         <div class="flex flex-col gap-6">
 
             {{-- Centered Header & Week Selector --}}
             <header class="flex flex-col items-center justify-center gap-3 text-center">
-                <h1 class="sr-only">Týždeň {{ $weekStart->format('d.m.') }} – {{ $weekEnd->format('d.m.Y') }}</h1>
+                <h1 class="sr-only">{{ $title }}</h1>
 
-                <x-date :week-start="$weekStart" :week-end="$weekEnd" :previous="$previousWeek" :next="$nextWeek" :locked="$locked" :locked-week-starts="$lockedWeekStarts ?? []" />
+                <x-date :week-start="$weekStart" :week-end="$weekEnd" :previous="$previousWeek" :next="$nextWeek" :locked="$locked" :locked-week-starts="$lockedWeekStarts ?? []" :picker-options="$weekPickerOptions" />
 
                 @if($locked)
                     @cannot('lock', \App\Models\Assignment::class)
@@ -16,7 +17,7 @@
 
                 {{-- Action Buttons Under Week Selector --}}
                 @can('lock', \App\Models\Assignment::class)
-                    <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-1" data-print-hide>
                         @if($hasRozpis && $locked)
                             <a href="{{ route('rozpis.show', ['date' => $weekStart->toDateString()]) }}"
                                class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500">
@@ -26,15 +27,14 @@
                         @endif
 
                         <form method="POST" action="{{ route($locked ? 'weeks.unlock' : 'weeks.lock', ['date' => $weekStart->toDateString()]) }}"
-                              @if($locked && $rozpisPublished) onsubmit="return confirm('Odomknúť týždeň so zverejneným rozpisom? Rozpis ostane zverejnený a zmeny v ňom sa pošlú zamestnancom.')" @endif>
+                              @if($locked && $rozpisPublished) onsubmit="return confirm('Odomknúť týždeň so zverejneným rozpisom? Rozpis ostane zverejnený a zmeny v ňom sa pošlú brigádnikom.')" @endif>
                             @csrf
                             @if($locked)
                                 @method('DELETE')
                             @endif
-                            <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-900 px-4 text-sm font-semibold text-neutral-100 shadow-sm transition hover:border-brand-500/60 hover:bg-neutral-800 hover:text-white">
-                                <i class="fa-solid {{ $locked ? 'fa-lock-open' : 'fa-lock' }} text-xs text-brand-400" aria-hidden="true"></i>
-                                {{ $locked ? 'Odomknúť týždeň' : 'Zamknúť týždeň' }}
-                            </button>
+                            <x-submit-button variant="secondary" :busy-label="$locked ? 'Odomykám…' : 'Zamykám…'">
+                                <i class="fa-solid {{ $locked ? 'fa-lock-open' : 'fa-lock' }} mr-2 text-xs text-brand-400" aria-hidden="true"></i>{{ $locked ? 'Odomknúť týždeň' : 'Zamknúť týždeň' }}
+                            </x-submit-button>
                         </form>
 
                         <a href="{{ route('schedule.export', ['date' => $weekStart->toDateString()]) }}"
@@ -46,7 +46,7 @@
                 @endcan
 
                 @if($rozpisPublished)
-                    <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}"
+                    <a href="{{ route('rozpis.published', ['date' => $weekStart->toDateString()]) }}" data-print-hide
                        class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-700/60 bg-emerald-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600">
                         <i class="fa-solid fa-clipboard-list text-xs" aria-hidden="true"></i>
                         Rozpis zmien
@@ -55,14 +55,16 @@
             </header>
 
             {{-- Controls row: toggles on the left, the shared signup note on the right --}}
-            <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-2">
+            <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-2" data-print-hide>
                 <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
                     <x-names-toggle />
                     @can('lock', \App\Models\Assignment::class)
                         <x-names-toggle id="draw_checkbox" label="Zobraziť voľných na losovanie" :checked="false" />
                     @endcan
                 </div>
-                <livewire:extra-note />
+                @unless($locked)
+                    <livewire:extra-note />
+                @endunless
             </div>
 
             {{-- Day cards grid (items-start so columns don't stretch to uniform height) --}}
@@ -77,20 +79,15 @@
             </div>
 
             {{-- Bottom Insights Section (Signup Summary & Absences) --}}
-            @php
-                $canViewSummary = auth()->user()?->hasPermissionInTeam('user.view-any', app(\App\Models\Team::class));
-                $hasAbsences = $absences->isNotEmpty();
-            @endphp
-
-            @if($canViewSummary || $hasAbsences)
-                <div class="grid grid-cols-1 {{ ($canViewSummary && $hasAbsences) ? 'lg:grid-cols-12' : '' }} gap-6 pt-3 items-start">
+            @if($canViewSummary || $absences->isNotEmpty())
+                <div class="grid grid-cols-1 {{ ($canViewSummary && $absences->isNotEmpty()) ? 'lg:grid-cols-12' : '' }} gap-6 pt-3 items-start">
                     @if($canViewSummary)
-                        <div class="{{ $hasAbsences ? 'lg:col-span-5 xl:col-span-5' : 'w-full max-w-2xl' }}">
+                        <div class="{{ $absences->isNotEmpty() ? 'lg:col-span-5 xl:col-span-5' : 'w-full max-w-2xl' }}">
                             <livewire:signup-summary :week-start="$weekStart->toDateString()" :key="'summary-'.$weekStart->toDateString()" />
                         </div>
                     @endif
 
-                    @if($hasAbsences)
+                    @if($absences->isNotEmpty())
                         <div class="{{ $canViewSummary ? 'lg:col-span-7 xl:col-span-7' : 'w-full' }}">
                             <section class="rounded-lg border border-neutral-800 bg-neutral-900 shadow-sm overflow-hidden flex flex-col">
                                 {{-- Card Header --}}
@@ -98,12 +95,12 @@
                                     <div class="flex items-center gap-2 min-w-0">
                                         <i class="fa-solid fa-calendar-xmark text-neutral-400 text-xs shrink-0"></i>
                                         <div>
-                                            <h2 class="text-sm font-semibold text-neutral-100 truncate">Absencie v tomto týždni</h2>
+                                            <h2 class="text-sm font-semibold text-neutral-100 truncate">Absencie v&nbsp;tomto týždni</h2>
                                         </div>
                                     </div>
 
                                     <span class="text-xs text-neutral-400 shrink-0">
-                                        {{ $absences->count() }} {{ $absences->count() === 1 ? 'absencia' : ($absences->count() < 5 ? 'absencie' : 'absencií') }}
+                                        {{ $absenceCountLabel }}
                                     </span>
                                 </div>
 
@@ -120,20 +117,17 @@
                                         </thead>
                                         <tbody class="divide-y divide-neutral-800">
                                             @foreach($absences as $absence)
-                                                @php
-                                                    $isOwn = auth()->id() === $absence->user_id;
-                                                @endphp
                                                 <tr @class([
                                                     'transition-colors duration-150',
-                                                    'bg-neutral-800/40' => $isOwn,
+                                                    'bg-neutral-800/40' => $absence->user_id === $viewerId,
                                                     'hover:bg-neutral-800/60' => true,
                                                 ])>
                                                     <td class="px-4 py-2.5 min-w-0">
                                                         <div class="flex items-center gap-2">
-                                                            <span class="truncate text-sm {{ $isOwn ? 'text-white font-semibold' : 'text-neutral-200' }}">
+                                                            <span class="truncate text-sm {{ $absence->user_id === $viewerId ? 'text-white font-semibold' : 'text-neutral-200' }}">
                                                                 {{ $absence->user }}
                                                             </span>
-                                                            @if($isOwn)
+                                                            @if($absence->user_id === $viewerId)
                                                                 <span class="text-xs text-neutral-400">(ja)</span>
                                                             @endif
                                                         </div>
@@ -145,11 +139,11 @@
                                                     </td>
                                                     <td class="px-4 py-2.5 whitespace-nowrap">
                                                         <span class="text-xs text-neutral-200 font-medium">
-                                                            {{ $absence->date_from->format('d.m.') }}
+                                                            {{ SlovakDate::short($absence->date_from) }}
                                                             @if($absence->isOpenEnded())
                                                                 <span class="ml-1 text-neutral-400">– trvalá</span>
                                                             @elseif($absence->date_to && ! $absence->date_to->equalTo($absence->date_from))
-                                                                – {{ $absence->date_to->format('d.m.') }}
+                                                                – {{ SlovakDate::short($absence->date_to) }}
                                                             @endif
                                                         </span>
                                                     </td>
@@ -163,7 +157,7 @@
                                                         @endif
                                                     </td>
                                                     <td class="px-4 py-2.5 text-right whitespace-nowrap hidden md:table-cell text-xs text-neutral-400">
-                                                        {{ $absence->created_at->format('d.m. H:i') }}
+                                                        {{ SlovakDate::dateTime($absence->created_at) }}
                                                     </td>
                                                 </tr>
                                             @endforeach

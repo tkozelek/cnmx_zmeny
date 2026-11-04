@@ -82,16 +82,21 @@ The import (`app:import-legacy-data`):
    `.env` essentials:
    - `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://<production-domain>`
    - `SESSION_SECURE_COOKIE=true`, `SESSION_ENCRYPT=true`; `SESSION_DOMAIN` unset unless needed
-   - `TRUSTED_PROXIES` – the host sits behind a load balancer (`x-balancer-id`): set its IPs, never `*` on
-     a reachable origin. Read through config now, so `config:cache` is safe.
+   - `TRUSTED_PROXIES` – probably **not** needed: Apache on the host already logs ~50 distinct real client
+     IPs a day, so the balancer passes the visitor's IP through. Verify after deploy: log in from two
+     networks (phone data + wifi) and check the two `Prihlásenie.` lines in `storage/logs/security-*.log`
+     have different `ip_hash`. Only if they are identical, set the balancer's IPs here (never `*`).
    - `DB_*` → the new DB; `LEGACY_DB_*` → the read-only user from step 1
    - `MAIL_*` → a real mailer (not `log`); `MAIL_FROM_*` set
    - `QUEUE_CONNECTION=database`; **no** `TEST_USER_*`
    - `LOG_LEVEL=info` – the `Loggable` audit lines are info/warning
    - `PULSE_ADMIN_EMAILS=<your e-mail>` – the only people who can open `/pulse`
    - `PRIVACY_OPERATOR_EMAIL=<your contact e-mail>` – **required**, the privacy page shows it;
-     `PRIVACY_HOSTING`, `PRIVACY_MAIL_PROVIDER` once known; `PRIVACY_EU_ONLY=true` only when both are
-     confirmed to keep data in the EU
+     `PRIVACY_HOSTING`, `PRIVACY_MAIL_PROVIDER` (whoever runs the mail server sending `@cinemaxzmeny.eu`)
+     and `PRIVACY_MAIL_IN_EU=true` once the provider is confirmed to keep mail in the EU
+   - `BCRYPT_ROUNDS` unset or ≥ 10 – below 10 the legacy password hashes are rejected and the import aborts
+   - `PULSE_CACHE_INTERACTIONS_ENABLED=false` (the default now) and `PULSE_USER_REQUESTS_SAMPLE_RATE=0.25`
+   - `APP_URL=https://…` – in production the app forces https and this root for every link, and sends HSTS
 4. **Create the cinema** (the seeder is demo-only):
    ```bash
    php artisan tinker --execute '$t = App\Models\Team::create(["name" => "Žilina Max", "slug" => "zilina-max"]); App\Models\TeamSetting::create(["team_id" => $t->id]); echo $t->id;'
@@ -101,8 +106,14 @@ The import (`app:import-legacy-data`):
    - E-mail verification and "account approved" are **queued**. Without a worker, new registrations
      never get their link. Supervisor/systemd: `php artisan queue:work --tries=3 --max-time=3600`.
      Shared hosting without daemons: `* * * * * php /path/artisan queue:work --stop-when-empty --max-time=55`.
-   - `* * * * * php /path/artisan schedule:run` – runs the retention cleanup (`app:prune-personal-data`,
-     daily 03:30), `auth:clear-resets` and `queue:prune-failed`. The privacy page promises this cleanup.
+   - The hosting already runs a managed queue worker for the live site (`logs/laravel_worker_*.log`) – after
+     the switch it must run the **new** release with `php8.4`; check that in the panel. The worker is what
+     sends mail, so keep it pointed at the legacy app (or stopped for the new one) during rehearsals.
+   - **Scheduler – add after go-live, in the hosting panel's cron section:**
+     `* * * * * cd /var/www12/p40695/<site>/current && php8.4 artisan schedule:run >> /dev/null 2>&1`.
+     It sends no mail itself; it runs the retention cleanup (`app:prune-personal-data`, daily 03:30, with
+     its first run reviewed via `--dry-run` - see step 8), `auth:clear-resets` (both brokers),
+     `queue:prune-failed`, session gc and the Pulse trim. The privacy page promises this cleanup.
 6. **Pre-flight checks on the legacy DB** (read-only; run them against the live legacy DB):
    ```sql
    -- P1 role distribution (1 = pending, 4 = blocked - both are mapped, just know the numbers)
@@ -147,7 +158,7 @@ The import (`app:import-legacy-data`):
 | Time | Step |
 |---|---|
 | T-0 | **Freeze legacy**: in the legacy app folder `php artisan down --retry=60`. From now on nobody can write. |
-| T+1 | **Back up both DBs**: `mysqldump --single-transaction d40700_sys > legacy-<date>.sql`; also dump the new DB (the rehearsal state). |
+| T+1 | **Back up both DBs**: `mysqldump --single-transaction --no-tablespaces d40700_sys > legacy-<date>.sql` (a SELECT-only user needs `--no-tablespaces` on MySQL ≥ 8.0.21); also dump the new DB (the rehearsal state). |
 | T+3 | **Final import**: `php artisan app:import-legacy-data --team=<id> --force` |
 | T+4 | **Verify**: post-import checks (section 5) must equal the P6 baseline taken *now* during the freeze – re-run P6. |
 | T+6 | **Optimise** the new release: `php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache`, then `php artisan queue:restart`. |
@@ -184,8 +195,16 @@ legacy and new.
 - [ ] `curl -sI https://<domain>/` shows `X-Frame-Options: DENY` and `Referrer-Policy`.
 - [ ] `storage/logs` and `failed_jobs` are empty.
 
-nginx, while you're there: `location /build/ { add_header Cache-Control "public, max-age=31536000, immutable"; }`
-and a `Cache-Control` for `/images/` (e.g. 30 days) – the hashed build assets never change.
+Web server (Apache on HostCreators – `.htaccess` in `public/`, or ask the hosting):
+- http → https redirect (the app adds HSTS once it's served over https).
+- gzip/brotli for HTML, CSS, JS, SVG, JSON – the week page is ~240 KB raw, ~16 KB compressed.
+- Long cache for `/build/` (`Cache-Control: public, max-age=31536000, immutable`) and ~30 days for
+  `/images/` – via `mod_headers` in `public/.htaccess`; the hashed build assets never change.
+- CLI PHP defaults to 8.1 on this host: run every artisan/composer command with `php8.4`, and set the
+  site's web PHP to 8.4 in the panel.
+- `expose_php = Off` in php.ini, OPcache on.
+- **Backups of the new DB** from go-live: daily dump or hosting snapshot, kept 30 days, one restore test
+  during a rehearsal. After the point of no return it is the only copy of live data.
 
 ## 7. Rollback
 

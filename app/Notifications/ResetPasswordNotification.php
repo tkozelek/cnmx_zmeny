@@ -4,13 +4,21 @@ namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\HtmlString;
 
-class ResetPasswordNotification extends ResetPassword
+/** Queued: sent inline, the reply for a registered address took noticeably longer than for an unknown one. */
+class ResetPasswordNotification extends ResetPassword implements ShouldQueue
 {
     use Queueable;
+
+    /** An SMTP hiccup must not lose a verification or reset link for good. */
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [60, 300];
 
     public $token;
 

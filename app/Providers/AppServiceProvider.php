@@ -12,6 +12,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
 use Laravel\Pennant\Middleware\EnsureFeaturesAreActive;
@@ -32,6 +33,13 @@ class AppServiceProvider extends ServiceProvider
         $this->stampActivityWithTeamAndDay();
         $this->scopeFeaturesToTheCurrentTeam();
 
+        // Behind the hosting's load balancer the request itself may arrive as plain http; mail links,
+        // redirects and signed URLs must still be https on the real domain.
+        if ($this->app->isProduction()) {
+            URL::forceRootUrl(config('app.url'));
+            URL::forceScheme('https');
+        }
+
         Builder::macro('search', function ($field, $string) {
             return $string ? $this->where($field, 'like', '%'.$string.'%') : $this;
         });
@@ -44,7 +52,9 @@ class AppServiceProvider extends ServiceProvider
         // for any cinema's manager.
         Gate::define('accessPlatform', fn (User $user): bool => $user->actsAsSuperAdmin());
 
-        Gate::define('viewPulse', fn (User $user): bool => $user->actsAsSuperAdmin() || in_array(mb_strtolower($user->email), config('pulse.admins'), true));
+        // /pulse sits outside the `tenant` group, so EnsureUserIsActive never runs there - check it here.
+        Gate::define('viewPulse', fn (User $user): bool => $user->actsAsSuperAdmin()
+            || ($user->is_active && $user->hasVerifiedEmail() && in_array(mb_strtolower($user->email), config('pulse.admins'), true)));
 
         Pulse::user(fn ($user) => [
             'name' => $user,

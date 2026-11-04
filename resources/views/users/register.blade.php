@@ -1,11 +1,13 @@
 <x-layout title="Registrácia" description="Vytvor si účet a pridaj sa k tímu Cinemax.">
-    <x-auth-card title="Vytvoriť účet" subtitle="Pridaj sa k tímu a plánuj svoje zmeny." wide>
+    <x-auth-card title="Vytvoriť účet" subtitle="Pridaj sa k tímu a plánuj svoje zmeny." wide>
         <form class="flex flex-col gap-6" action="{{ route('register.store') }}" method="POST">
             @csrf
 
             @if(session('error'))
                 <x-alert>{{ session('error') }}</x-alert>
             @endif
+
+            <x-error-summary />
 
             <div class="field-row">
                 <x-form-input
@@ -104,7 +106,7 @@
             </div>
 
             <p class="text-sm leading-relaxed text-neutral-400">
-                Meno, e-mail a zvolené kino použijem na vedenie tvojho účtu a plánovanie zmien. Uvidí ich manažment zvoleného kina.
+                Meno, e-mail a&nbsp;zvolené kino použijem na vedenie tvojho účtu a&nbsp;plánovanie zmien. Uvidí ich manažment zvoleného kina.
                 <a href="{{ route('privacy') }}" class="font-semibold text-brand-400 underline-offset-4 hover:text-brand-300 hover:underline">Ochrana osobných údajov</a>
             </p>
 

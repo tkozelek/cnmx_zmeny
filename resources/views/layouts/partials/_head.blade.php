@@ -1,6 +1,7 @@
 <head>
-    {{-- Lets CSS hide scroll-reveal content only when JS is there to reveal it again - and shows it
-         anyway if the welcome script hasn't started within 4 s (blocked, offline, stale build). --}}
+    {{-- Lets CSS hide below-the-fold scroll-reveal content only when JS is there to reveal it again -
+         and shows it anyway if the welcome script hasn't started within 4 s (blocked, offline, stale
+         build). The hero above the fold animates in with CSS alone and never waits for this. --}}
     <script>
         document.documentElement.classList.add('js');
         setTimeout(function () {
@@ -14,6 +15,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="icon" href="{{asset('images/logo_cinemax_icon_cropped.png')}}"/>
 
+    @foreach($fontPreloads as $fontUrl)
+        <link rel="preload" href="{{ $fontUrl }}" as="font" type="font/woff2" crossorigin>
+    @endforeach
+
     @include('layouts.partials._meta')
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -23,5 +28,5 @@
     @livewireStyles
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @yield('additional')
+    @stack('head')
 </head>

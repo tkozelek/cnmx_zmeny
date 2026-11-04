@@ -14,6 +14,7 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
@@ -104,7 +105,7 @@ class ImportLegacyData extends Command
         }
 
         if (! $this->option('force') && ! $this->confirm(
-            "Toto nahradí zamestnancov a absencie tímu '{$team->name}' reálnymi dátami z legacy databázy. ".
+            "Toto nahradí brigádnikov a absencie tímu '{$team->name}' reálnymi dátami z legacy databázy. ".
             'Zapísané zmeny sa zlúčia. Pokračovať?'
         )) {
             return self::SUCCESS;
@@ -130,6 +131,8 @@ class ImportLegacyData extends Command
         });
 
         Storage::disk('local')->put($this->markerPath($team), now()->toDateTimeString());
+
+        Log::info('Import z legacy databázy dokončený.', ['team_id' => $team->id]);
 
         $this->info('Import dokončený.');
         $this->line('Preskočené (nová schéma pre ne nemá tabuľku): bugs, file_storage, shifts, rates.');

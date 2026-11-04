@@ -7,7 +7,7 @@
 <x-rozpis.dialog id="rozpis-history"
                  icon="fa-clock-rotate-left"
                  title="História zmien"
-                 subtitle="Kto čo v tomto týždni zmenil. Zoskupené po minútach, najnovšie hore."
+                 subtitle="Kto čo v tomto týždni zmenil. Zoskupené po minútach, najnovšie hore."
                  width="42rem">
     <x-slot:footer>
         <button type="submit"
@@ -24,14 +24,14 @@
 
                     @if($batch['day'])
                         <span class="rounded bg-neutral-800/80 px-1.5 py-0.5 text-[0.65rem] font-semibold text-neutral-300">
-                            {{ \Carbon\CarbonImmutable::parse($batch['day'])->locale('sk')->isoFormat('dd D.M.') }}
+                            {{ \App\Support\SlovakDate::shortWithDay($batch['day']) }}
                         </span>
                     @endif
 
                     <span class="text-[0.7rem] text-neutral-400">{{ count($batch['changes']) }}x</span>
 
                     <span class="ml-auto shrink-0 tabular-nums text-[0.7rem] text-neutral-400">
-                        {{ $batch['at']->format('d.m.Y H:i') }}
+                        {{ \App\Support\SlovakDate::dateTime($batch['at']) }}
                     </span>
                 </div>
 
