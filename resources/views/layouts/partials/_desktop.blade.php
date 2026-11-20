@@ -129,6 +129,14 @@
                         Nastavenia
                     </a>
 
+                    <a
+                        href="{{ route('bug-report.create') }}"
+                        class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
+                    >
+                        <i class="fa-solid fa-bug text-xs text-neutral-400" aria-hidden="true"></i>
+                        Nahlásiť chybu
+                    </a>
+
                     <div class="my-1 border-t border-neutral-800"></div>
 
                     <x-logout-button icon='<i class="fa-solid fa-right-from-bracket text-xs"></i>'>

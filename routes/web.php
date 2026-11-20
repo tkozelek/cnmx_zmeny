@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\PasswordRequestController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\BugReportController;
 use App\Http\Controllers\Calendar\AssignmentController;
 use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Calendar\ScheduleExportController;
@@ -50,6 +51,11 @@ Route::middleware(SetCurrentTeam::class.':optional')->group(function () {
 
     Route::get('/pomoc', [HelpController::class, 'index'])->name('help');
     Route::view('/ochrana-osobnych-udajov', 'privacy.index')->name('privacy');
+
+    Route::get('/nahlasit-chybu', [BugReportController::class, 'create'])->name('bug-report.create');
+    Route::post('/nahlasit-chybu', [BugReportController::class, 'store'])
+        ->middleware('throttle:bug-report')
+        ->name('bug-report.store');
 });
 
 Route::get('/overenie-emailu/{id}/{hash}', [EmailVerificationController::class, 'verify'])

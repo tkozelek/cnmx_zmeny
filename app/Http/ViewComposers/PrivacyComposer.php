@@ -2,6 +2,7 @@
 
 namespace App\Http\ViewComposers;
 
+use App\Models\BugReport;
 use App\Support\SlovakDate;
 use Carbon\CarbonImmutable;
 use Illuminate\View\View;
@@ -19,6 +20,7 @@ class PrivacyComposer
             'sessionMinutes' => config('session.lifetime'),
             'sessionCookie' => config('session.cookie'),
             'validFrom' => SlovakDate::full(CarbonImmutable::create(2026, 11, 20)),
+            'bugReportMonths' => BugReport::RETENTION_MONTHS,
         ]);
     }
 }

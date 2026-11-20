@@ -6,27 +6,13 @@
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
      @click="openn = false"
-     class="fixed inset-0 z-[100] grid h-full w-full place-items-center bg-neutral-950/60 backdrop-blur-xl lg:hidden overflow-y-auto p-4"
+     class="fixed inset-0 z-[100] flex h-dvh w-full flex-col items-center justify-center bg-neutral-950/60 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl lg:hidden"
      style="display: none;">
 
     {{-- The dialog wraps the nav: role="dialog" on the <nav> itself hid it as a navigation landmark. --}}
-    <div @click.stop x-trap.noscroll.inert="openn" role="dialog" aria-modal="true" aria-label="Menu" class="relative w-full max-w-xs rounded-lg bg-neutral-900 border border-neutral-800 p-6 shadow-xl">
+    <div @click.stop x-trap.noscroll.inert="openn" role="dialog" aria-modal="true" aria-label="Menu" class="flex max-h-full min-h-0 w-full max-w-xs flex-col items-center gap-4">
+    <div class="min-h-0 w-full overflow-y-auto overscroll-contain rounded-lg border border-neutral-800 bg-neutral-900 p-6 shadow-xl">
     <nav aria-label="Hlavné menu" class="flex w-full flex-col items-center space-y-3 text-center">
-
-        <!-- Dedicated Close Button -->
-        <button
-            type="button"
-            @click="openn = false"
-            class="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-800/80 text-neutral-400 hover:text-white hover:bg-neutral-700 transition"
-            aria-label="Zavrieť menu"
-            title="Zavrieť menu"
-        >
-            <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-
-
-
-
 
         @if($navUser)
             <div class="w-full mb-2 flex justify-center">
@@ -123,6 +109,14 @@
                 Nastavenia
             </x-nav-link>
 
+            <x-nav-link
+                route="bug-report.create"
+                :is-mobile="true"
+                icon='<i class="fa-solid fa-bug"></i>'
+            >
+                Nahlásiť chybu
+            </x-nav-link>
+
             <x-logout-button
                 :is-mobile="true"
                 icon='<i class="fa-solid fa-right-from-bracket"></i>'
@@ -151,5 +145,16 @@
             >Registrácia</a>
         @endif
     </nav>
+    </div>
+
+    <button
+        type="button"
+        @click="openn = false"
+        class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-neutral-700 bg-neutral-800 text-neutral-200 shadow-xl transition hover:bg-neutral-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+        aria-label="Zavrieť menu"
+        title="Zavrieť menu"
+    >
+        <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+    </button>
     </div>
 </div>

@@ -59,6 +59,18 @@ class RouteServiceProvider extends ServiceProvider
             Limit::perHour(3)->by($request->route()?->getName().'|email:'.$email($request)),
         ]);
 
+        // Shared daily ceilings stop IP rotation from filling the mailbox and disk.
+        RateLimiter::for('bug-report', fn (Request $request) => $request->user()
+            ? [
+                Limit::perHour(10)->by('bug-report|user:'.$request->user()->id),
+                Limit::perDay(100)->by('bug-report|members'),
+            ]
+            : [
+                Limit::perHour(5)->by('bug-report|ip:'.$request->ip()),
+                Limit::perDay(20)->by('bug-report|ip-day:'.$request->ip()),
+                Limit::perDay(50)->by('bug-report|guests'),
+            ]);
+
         $this->routes(function () {
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
