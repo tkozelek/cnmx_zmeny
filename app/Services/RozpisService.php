@@ -59,7 +59,7 @@ class RozpisService
                 $fairness,
             ),
             'history' => $this->history($team, $from, $to),
-            'positions' => Position::selectable()->get(),
+            'positions' => Position::selectableFor($team),
         ];
     }
 

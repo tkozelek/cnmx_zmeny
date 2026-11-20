@@ -6,6 +6,7 @@ use App\Traits\BelongsToTeam;
 use App\Traits\Loggable;
 use Database\Factories\PositionFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -91,6 +92,16 @@ class Position extends Model
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('name');
+    }
+
+    /**
+     * Once per request: the rozpis renders seven RozpisDay components that all need the list.
+     *
+     * @return EloquentCollection<int, Position>
+     */
+    public static function selectableFor(Team $team): EloquentCollection
+    {
+        return once(fn () => static::selectable()->where('team_id', $team->getKey())->get());
     }
 
     /**

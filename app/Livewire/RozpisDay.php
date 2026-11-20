@@ -658,7 +658,7 @@ class RozpisDay extends Component
     #[Computed]
     public function availablePositions(): Collection
     {
-        return Position::selectable()->get();
+        return Position::selectableFor($this->team);
     }
 
     /**
