@@ -2,6 +2,7 @@
 
 namespace App\Filament\Platform\Resources\BugReports\Pages;
 
+use App\Filament\Platform\Concerns\HasBackAction;
 use App\Filament\Platform\Resources\BugReports\BugReportResource;
 use App\Models\BugReport;
 use Filament\Actions\Action;
@@ -13,6 +14,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ViewBugReport extends ViewRecord
 {
+    use HasBackAction;
+
     protected static string $resource = BugReportResource::class;
 
     protected function getHeaderActions(): array
@@ -35,6 +38,7 @@ class ViewBugReport extends ViewRecord
         }
 
         return [
+            $this->backAction(),
             ...$actions,
             BugReportResource::toggleResolvedAction(),
             DeleteAction::make(),
