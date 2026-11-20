@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\Role;
+use App\Models\BugReport;
 use App\Models\User;
 use App\Services\AccountEraser;
 use Illuminate\Console\Command;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\Models\Activity;
 use Throwable;
 
@@ -21,6 +23,7 @@ use Throwable;
  * - members gone quiet: 12 months without a login and without a sign-up
  * - log files older than the daily channel's `days` (Monolog's own rotation counts files, not days)
  * - activity log rows (rozpis history, platform admin audit) older than 12 months
+ * - bug reports older than 6 months, with their attachments, and attachment folders left without a report
  * - expired file-cache entries, e.g. rate-limit keys derived from IPs and e-mails
  *
  * Managers are never pruned here, so a cinema can't lose its last manager to a cron job.
@@ -63,6 +66,7 @@ class PrunePersonalData extends Command
 
             $this->pruneOldLogs();
             $this->pruneOldActivity();
+            $this->pruneOldBugReports();
             $this->pruneExpiredCache();
         }
 
@@ -83,6 +87,20 @@ class PrunePersonalData extends Command
     private function pruneOldActivity(): void
     {
         Activity::query()->where('created_at', '<', now()->subMonths(12))->delete();
+    }
+
+    private function pruneOldBugReports(): void
+    {
+        BugReport::query()->where('created_at', '<', now()->subMonths(BugReport::RETENTION_MONTHS))->lazyById()->each->delete();
+
+        $disk = Storage::disk(BugReport::DISK);
+        $reportIds = BugReport::query()->pluck('id')->map(fn (int $id): string => (string) $id);
+
+        foreach ($disk->directories(BugReport::DIRECTORY) as $directory) {
+            if (! $reportIds->contains(basename($directory))) {
+                $disk->deleteDirectory($directory);
+            }
+        }
     }
 
     /** The file store only drops an expired entry when it is read again - most never are. */

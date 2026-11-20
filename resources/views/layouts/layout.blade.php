@@ -20,6 +20,7 @@
         <p>&copy; {{ $currentYear }} {{ $operatorName }}</p>
         <nav aria-label="Pätička" class="flex gap-3">
             <a href="{{ route('help') }}" class="inline-flex min-h-10 items-center px-1 hover:text-white">Pomoc</a>
+            <a href="{{ route('bug-report.create') }}" class="inline-flex min-h-10 items-center px-1 hover:text-white">Nahlásiť chybu</a>
             <a href="{{ route('privacy') }}" class="inline-flex min-h-10 items-center px-1 hover:text-white">Ochrana osobných údajov</a>
         </nav>
     </div>

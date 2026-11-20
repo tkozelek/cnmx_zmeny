@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BugReport;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -10,7 +11,8 @@ use Illuminate\Support\Facades\DB;
  *
  * The account row cascades to sign-ups, absences and memberships. What has no foreign key to
  * cascade through goes explicitly: Spatie's role/permission links in every team (with teams on,
- * its own delete hook only detaches the current team's), reset and invite tokens, sessions.
+ * its own delete hook only detaches the current team's), reset and invite tokens, sessions,
+ * and bug reports.
  */
 class AccountEraser
 {
@@ -27,6 +29,9 @@ class AccountEraser
             DB::table('password_reset_tokens')->where('email', $user->email)->delete();
             DB::table(config('auth.passwords.add_user.table'))->where('email', $user->email)->delete();
             DB::table('sessions')->where('user_id', $user->id)->delete();
+
+            // Via the model so the deleted hook removes the files.
+            BugReport::query()->where('user_id', $user->id)->get()->each->delete();
 
             $user->delete();
         });

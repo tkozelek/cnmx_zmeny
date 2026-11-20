@@ -26,7 +26,7 @@ final class AuditRedactor
      *
      * @var list<string>
      */
-    public const array VALUE_REDACTED = ['name', 'lastname', 'email', 'pending_email', 'reason', 'note'];
+    public const array VALUE_REDACTED = ['name', 'lastname', 'email', 'pending_email', 'reason', 'note', 'description', 'attachments'];
 
     /**
      * @param  array<string, mixed>  $attributes

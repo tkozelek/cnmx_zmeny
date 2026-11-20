@@ -5,7 +5,9 @@
 @section('caption', 'Technická porucha')
 @section('heading', 'Niečo sa pokazilo na našej strane')
 @section('message', 'Chybu sme zaznamenali. Skús stránku o chvíľu načítať znova.')
-@section('hint', 'Ak problém pretrváva, daj vedieť manažérovi kina.')
+@section('hint')
+    Ak problém pretrváva, <a href="{{ route('bug-report.create') }}">nahlás mi chybu</a>.
+@endsection
 
 @section('actions')
     <a href="{{ url()->current() }}" class="button button-primary">

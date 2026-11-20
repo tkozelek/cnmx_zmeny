@@ -139,6 +139,12 @@
 
         </div>
 
+        <p class="mx-auto mt-6 w-full max-w-4xl text-sm text-neutral-300">
+            Nenašiel si odpoveď alebo niečo nefunguje, ako má?
+            <a href="{{ route('bug-report.create') }}" class="font-semibold text-brand-300 underline underline-offset-2 hover:text-white">Nahlás mi chybu</a>
+            – aj bez prihlásenia.
+        </p>
+
     </div>
 </x-layout>
 

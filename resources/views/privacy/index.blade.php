@@ -65,12 +65,19 @@
                 <p>Ak mi napíšeš na {{ $operator['email'] }}, tvoja správa je v&nbsp;mojej schránke Gmail, ktorú prevádzkuje Google. Správy so žiadosťami k&nbsp;osobným údajom si nechám najviac 12 mesiacov po vybavení.</p>
             </section>
 
+            <section id="nahlasenie-chyby" class="space-y-3">
+                <h2 class="text-xl font-semibold text-white">Nahlásenie chyby</h2>
+                <p>Keď nahlásiš chybu, uložím tvoj popis, e-mail na odpoveď, prílohy, ktoré pripojíš, adresu stránky, z&nbsp;ktorej si prišiel, a&nbsp;údaj o&nbsp;prehliadači (jeho názov a&nbsp;verziu). Ak si prihlásený, aj číslo tvojho účtu a&nbsp;kino, v&nbsp;ktorom práve si. Z&nbsp;fotiek a&nbsp;snímok obrazovky sa pred uložením odstránia ďalšie údaje v&nbsp;súbore, napríklad poloha alebo údaje o&nbsp;fotoaparáte. IP adresu k&nbsp;hláseniu neukladám.</p>
+                <p>Hlásenie mi zároveň príde e-mailom do schránky Gmail, ktorú prevádzkuje Google. Vidím ho len ja, používam ho len na opravu chyby a&nbsp;na odpoveď tebe. Hlásenie aj s&nbsp;prílohami v&nbsp;aplikácii automaticky vymažem po {{ $bugReportMonths }} mesiacoch, e-mail v&nbsp;schránke najneskôr v&nbsp;rovnakej lehote.</p>
+                <p>Právnym základom je môj oprávnený záujem na fungujúcej aplikácii (čl. 6 ods. 1 písm. f) GDPR).</p>
+            </section>
+
             <section class="space-y-3">
                 <h2 class="text-xl font-semibold text-white">Bezpečnosť a&nbsp;prevádzka</h2>
                 <ul class="list-disc space-y-1.5 pl-5">
                     <li>Na ochranu prihlásenia a&nbsp;formulárov pred zneužitím si aplikácia najviac hodinu pamätá počet pokusov z&nbsp;tvojej IP adresy a&nbsp;pre zadaný e-mail – uložené len ako odtlačok (hash), nie v&nbsp;čitateľnej podobe. Potom tieto záznamy vymaže, najneskôr nasledujúci deň.</li>
                     <li>Záznamy o&nbsp;tom, ktorý účet (podľa čísla) vytvoril, zmenil alebo vymazal ktorý záznam a&nbsp;ktoré polia, záznamy o&nbsp;prihláseniach, neúspešných pokusoch o&nbsp;prihlásenie, zmenách rolí a&nbsp;odmietnutých prístupoch a&nbsp;záznamy o&nbsp;chybách uchovávam {{ $logDays }} dní. IP adresa a&nbsp;e-mail zadaný pri neúspešnom prihlásení sa v&nbsp;nich ukladajú len ako odtlačok (hash). Mená, e-maily ani dôvody absencií sa do záznamov nezapisujú a&nbsp;e-mailové adresy sa zo záznamov o&nbsp;chybách automaticky odstraňujú. Záznam o&nbsp;chybe môže výnimočne obsahovať iné údaje z&nbsp;požiadavky, pri ktorej chyba vznikla.</li>
-                    <li>Ako prevádzkovateľ spravujem všetky kiná cez správu platformy. Čo v&nbsp;nej zmením, sa zaznamená (kto, kedy, v&nbsp;ktorom kine, ktorý záznam a&nbsp;ktoré polia – bez mien, e-mailov a&nbsp;dôvodov absencií) a&nbsp;tieto záznamy uchovávam 12 mesiacov.</li>
+                    <li>Ako prevádzkovateľ spravujem všetky kiná cez správu platformy. Čo v&nbsp;nej zmením, sa zaznamená (kto, kedy, v&nbsp;ktorom kine, ktorý záznam a&nbsp;ktoré polia – bez mien, e-mailov, dôvodov absencií a&nbsp;textu nahlásených chýb) a&nbsp;tieto záznamy uchovávam 12 mesiacov.</li>
                     <li>Aby som videl, či aplikácia funguje a&nbsp;ktoré stránky sú pomalé, 7 dní uchovávam počet požiadaviek podľa účtu (jeho čísla), adresy pomalých stránok a&nbsp;technické záznamy o&nbsp;chybách a&nbsp;výkone. Vidím ich len ja.</li>
                     <li>Zálohy databázy uchovávam 30 dní – čo sa v&nbsp;aplikácii vymaže, zostane v&nbsp;nich najviac tak dlho.</li>
                     <li>Poskytovateľ webhostingu môže na zabezpečenie servera zaznamenávať technické údaje o&nbsp;prístupoch (IP adresu, čas, adresu stránky).</li>
