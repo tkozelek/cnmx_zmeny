@@ -2,6 +2,7 @@
 
 namespace App\Filament\Platform\Resources\Users\Pages;
 
+use App\Filament\Platform\Concerns\HasBackAction;
 use App\Filament\Platform\Resources\Users\UserResource;
 use App\Models\User;
 use App\Services\PlatformAudit;
@@ -18,11 +19,14 @@ use Filament\Support\Icons\Heroicon;
 
 class EditUser extends EditRecord
 {
+    use HasBackAction;
+
     protected static string $resource = UserResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
+            $this->backAction(),
             $this->guardedAction('grantSuperAdmin')
                 ->label('Udeliť super admina')
                 ->icon(Heroicon::OutlinedShieldCheck)

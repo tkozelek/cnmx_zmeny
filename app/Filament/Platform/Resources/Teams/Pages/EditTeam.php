@@ -2,6 +2,7 @@
 
 namespace App\Filament\Platform\Resources\Teams\Pages;
 
+use App\Filament\Platform\Concerns\HasBackAction;
 use App\Filament\Platform\Resources\Teams\TeamResource;
 use App\Models\Team;
 use Filament\Actions\DeleteAction;
@@ -10,11 +11,14 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditTeam extends EditRecord
 {
+    use HasBackAction;
+
     protected static string $resource = TeamResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
+            $this->backAction(),
             DeleteAction::make()
                 ->modalDescription('Vymaže kino so všetkými zápismi, absenciami a zámkami týždňov. Nedá sa to vrátiť.')
                 ->schema([

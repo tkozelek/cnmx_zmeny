@@ -515,7 +515,7 @@ document.addEventListener('alpine:init', () => {
                     });
                 },
                 onChange: (selectedDates, dateStr) => {
-                    if (dateStr) window.location.href = (options.weekUrl ?? '/week/__DATE__').replace('__DATE__', dateStr);
+                    if (dateStr) Livewire.navigate((options.weekUrl ?? '/week/__DATE__').replace('__DATE__', dateStr));
                 }
             });
         },
@@ -570,6 +570,7 @@ function syncCalendarToggles(restoreSaved) {
 }
 
 document.addEventListener('DOMContentLoaded', () => syncCalendarToggles(true));
+document.addEventListener('livewire:navigated', () => syncCalendarToggles(true));
 window.addEventListener('pageshow', () => syncCalendarToggles(false));
 
 document.addEventListener('change', function (event) {
