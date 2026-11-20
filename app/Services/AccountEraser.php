@@ -30,7 +30,7 @@ class AccountEraser
             DB::table(config('auth.passwords.add_user.table'))->where('email', $user->email)->delete();
             DB::table('sessions')->where('user_id', $user->id)->delete();
 
-            // Via the model so the deleted hook removes the files.
+            // Via the model: its deleted hook removes the files once this commits.
             BugReport::query()->where('user_id', $user->id)->get()->each->delete();
 
             $user->delete();

@@ -67,7 +67,6 @@ class RouteServiceProvider extends ServiceProvider
             ]
             : [
                 Limit::perHour(5)->by('bug-report|ip:'.$request->ip()),
-                Limit::perDay(20)->by('bug-report|ip-day:'.$request->ip()),
                 Limit::perDay(50)->by('bug-report|guests'),
             ]);
 
