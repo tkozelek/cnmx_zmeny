@@ -6,6 +6,7 @@ use Database\Factories\BugReportFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -49,7 +50,9 @@ class BugReport extends Model
 
     protected static function booted(): void
     {
-        static::deleted(fn (self $report) => Storage::disk(self::DISK)->deleteDirectory($report->directory()));
+        static::deleted(fn (self $report) => DB::afterCommit(
+            fn () => Storage::disk(self::DISK)->deleteDirectory($report->directory())
+        ));
     }
 
     public function directory(): string

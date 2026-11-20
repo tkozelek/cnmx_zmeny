@@ -94,9 +94,11 @@ class PrunePersonalData extends Command
         BugReport::query()->where('created_at', '<', now()->subMonths(BugReport::RETENTION_MONTHS))->lazyById()->each->delete();
 
         $disk = Storage::disk(BugReport::DISK);
+        // Folders before ids: a report saved in between already has its row when the ids are read.
+        $directories = $disk->directories(BugReport::DIRECTORY);
         $reportIds = BugReport::query()->pluck('id')->map(fn (int $id): string => (string) $id);
 
-        foreach ($disk->directories(BugReport::DIRECTORY) as $directory) {
+        foreach ($directories as $directory) {
             if (! $reportIds->contains(basename($directory))) {
                 $disk->deleteDirectory($directory);
             }

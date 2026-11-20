@@ -240,6 +240,8 @@
             color: var(--muted);
         }
 
+        .hint a { text-decoration: underline; text-underline-offset: 2px; }
+
         @media (min-width: 640px) {
             main { padding-top: 4rem; }
             .topbar-inner { padding-inline: 1.5rem; }

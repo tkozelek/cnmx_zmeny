@@ -93,11 +93,13 @@ class BugReportAttachments
             return null;
         }
 
+        // Scale before rotating, so the full-size bitmap is never copied.
+        $image = $this->fitWithin($image);
+
         if ($mime === 'image/jpeg') {
             $image = $this->upright($image, $source);
         }
 
-        $image = $this->fitWithin($image);
         imagesavealpha($image, true);
 
         ob_start();
@@ -115,14 +117,20 @@ class BugReportAttachments
     {
         $orientation = (int) (rescue(fn () => exif_read_data($source), [], report: false)['Orientation'] ?? 1);
 
-        $rotated = match ($orientation) {
+        $upright = match ($orientation) {
             3 => imagerotate($image, 180, 0),
-            6 => imagerotate($image, -90, 0),
-            8 => imagerotate($image, 90, 0),
+            5, 6 => imagerotate($image, -90, 0),
+            7, 8 => imagerotate($image, 90, 0),
             default => $image,
+        } ?: $image;
+
+        match ($orientation) {
+            2, 5, 7 => imageflip($upright, IMG_FLIP_HORIZONTAL),
+            4 => imageflip($upright, IMG_FLIP_VERTICAL),
+            default => null,
         };
 
-        return $rotated ?: $image;
+        return $upright;
     }
 
     private function fitWithin(GdImage $image): GdImage
