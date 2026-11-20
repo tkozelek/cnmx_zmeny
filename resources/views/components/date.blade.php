@@ -3,7 +3,7 @@
 
 <div class="flex items-center justify-between sm:justify-center gap-2 sm:gap-3 w-full sm:w-auto my-2">
     {{-- Previous Week --}}
-    <a href="{{ route('calendar.show', ['date' => $previous->toDateString()]) }}" data-print-hide
+    <a href="{{ route('calendar.show', ['date' => $previous->toDateString()]) }}" wire:navigate.hover data-print-hide
        class="inline-flex h-11 sm:h-12 w-11 sm:w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-600 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink-0 leading-none"
        aria-label="Predchádzajúci týždeň"
        title="Predchádzajúci týždeň">
@@ -50,7 +50,7 @@
 
     {{-- Next Week --}}
     @if($next)
-        <a href="{{ route('calendar.show', ['date' => $next->toDateString()]) }}" data-print-hide
+        <a href="{{ route('calendar.show', ['date' => $next->toDateString()]) }}" wire:navigate.hover data-print-hide
            class="inline-flex h-11 sm:h-12 w-11 sm:w-12 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 p-0 text-center font-bold text-neutral-100 transition hover:border-neutral-600 hover:bg-neutral-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-sm shrink-0 leading-none"
            aria-label="Nasledujúci týždeň"
            title="Nasledujúci týždeň">
