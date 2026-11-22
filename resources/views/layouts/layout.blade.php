@@ -17,7 +17,15 @@
 
 <footer class="border-t border-neutral-900 bg-neutral-950">
     <div class="container mx-auto flex flex-col items-center justify-between gap-2 px-4 py-4 text-sm text-neutral-400 sm:flex-row md:px-6 lg:px-8">
-        <p>&copy; {{ $currentYear }} {{ $operatorName }}</p>
+        <p class="flex flex-wrap items-center justify-center gap-x-1.5">
+            <span>&copy; {{ $currentYear }}</span>
+            <span aria-hidden="true" class="text-neutral-700">&middot;</span>
+            <a href="https://kozelek.sk" target="_blank" rel="noopener" class="group inline-flex min-h-10 items-center gap-1.5 px-1 text-neutral-300 hover:text-white">
+                <span class="underline decoration-neutral-700 decoration-1 underline-offset-4 transition-colors group-hover:decoration-brand-400">{{ $operatorName }}</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[0.6rem] text-neutral-500 transition group-hover:-translate-y-px group-hover:translate-x-px group-hover:text-brand-400" aria-hidden="true"></i>
+                <span class="sr-only">(kozelek.sk, otvorí sa v novom okne)</span>
+            </a>
+        </p>
         <nav aria-label="Pätička" class="flex gap-3">
             <a href="{{ route('help') }}" class="inline-flex min-h-10 items-center px-1 hover:text-white">Pomoc</a>
             <a href="{{ route('bug-report.create') }}" class="inline-flex min-h-10 items-center px-1 hover:text-white">Nahlásiť chybu</a>
