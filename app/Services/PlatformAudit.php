@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Support\AuditRedactor;
-use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Spatie\Activitylog\Models\Activity;
@@ -49,7 +48,9 @@ class PlatformAudit
     public function record(string $event, ?Model $subject, array $properties = []): void
     {
         $logger = activity(self::LOG)
-            ->causedBy(Filament::auth()->user())
+            // The panel's guard, read directly: member-side flows record here too, and Filament is
+            // not loaded outside the panel (AppServiceProvider::requestNeedsFilament).
+            ->causedBy(auth(SuperAdminSession::GUARD)->user())
             ->event($event)
             ->withProperties($properties);
 

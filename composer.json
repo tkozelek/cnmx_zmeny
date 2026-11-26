@@ -68,7 +68,18 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "filament/actions",
+                "filament/filament",
+                "filament/forms",
+                "filament/infolists",
+                "filament/notifications",
+                "filament/query-builder",
+                "filament/schemas",
+                "filament/support",
+                "filament/tables",
+                "filament/widgets"
+            ]
         }
     },
     "config": {

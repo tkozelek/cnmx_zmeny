@@ -7,6 +7,17 @@ use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\SetCurrentTeam;
 use App\Models\Team;
 use App\Models\User;
+use App\Providers\Filament\PlatformPanelProvider;
+use Filament\Actions\ActionsServiceProvider;
+use Filament\FilamentServiceProvider;
+use Filament\Forms\FormsServiceProvider;
+use Filament\Infolists\InfolistsServiceProvider;
+use Filament\Notifications\NotificationsServiceProvider;
+use Filament\QueryBuilder\QueryBuilderServiceProvider;
+use Filament\Schemas\SchemasServiceProvider;
+use Filament\Support\SupportServiceProvider;
+use Filament\Tables\TablesServiceProvider;
+use Filament\Widgets\WidgetsServiceProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
@@ -23,9 +34,73 @@ use Spatie\Activitylog\Models\Activity;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Filament's packages are excluded from package discovery (composer.json `dont-discover`) and
+     * registered here, together with the /platform panel.
+     *
+     * @var list<class-string<ServiceProvider>>
+     */
+    private const array FILAMENT_PROVIDERS = [
+        ActionsServiceProvider::class,
+        FilamentServiceProvider::class,
+        FormsServiceProvider::class,
+        InfolistsServiceProvider::class,
+        NotificationsServiceProvider::class,
+        QueryBuilderServiceProvider::class,
+        SchemasServiceProvider::class,
+        SupportServiceProvider::class,
+        TablesServiceProvider::class,
+        WidgetsServiceProvider::class,
+        PlatformPanelProvider::class,
+    ];
+
     public function register(): void
     {
-        //
+        if ($this->requestNeedsFilament()) {
+            foreach (self::FILAMENT_PROVIDERS as $provider) {
+                $this->app->register($provider);
+            }
+        }
+    }
+
+    /**
+     * Filament registers ~200 classes, which every request used to load although only the
+     * /platform panel needs them. On the NFS-backed hosting a request whose files are not in the
+     * cache reads each one from the network, so loading Filament everywhere made those requests
+     * noticeably slower.
+     *
+     * Only skipped once routes are cached: without the cache Filament's providers are what
+     * registers the panel's routes, and the member layout links to the panel by route name.
+     * Console runs (artisan, queue worker, tests) always load it.
+     */
+    private function requestNeedsFilament(): bool
+    {
+        if ($this->app->runningInConsole() || ! $this->app->routesAreCached()) {
+            return true;
+        }
+
+        $request = $this->app->make('request');
+
+        if ($request->is('platform', 'platform/*', 'filament/*')) {
+            return true;
+        }
+
+        // A Livewire action posts to the shared update endpoint; each component's snapshot
+        // records the page it was rendered on.
+        if (! $request->isMethod('POST') || ! $request->is('livewire*/update')) {
+            return false;
+        }
+
+        foreach ((array) $request->json('components', []) as $component) {
+            $snapshot = json_decode((string) ($component['snapshot'] ?? ''), true);
+            $path = (string) ($snapshot['memo']['path'] ?? '');
+
+            if ($path === 'platform' || str_starts_with($path, 'platform/')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function boot(): void
